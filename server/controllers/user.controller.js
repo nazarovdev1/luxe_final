@@ -17,6 +17,15 @@ export const getOrdersByPhone = async (req, res) => {
         // For now, we assume exact match or contains
         // Using regex to match phone number loosely
         const normalizedPhone = phone.replace(/\s+/g, '')
+
+        // Security Check: Only Admin or Owner can see these orders
+        if (!req.user.isAdmin && req.user.phone !== normalizedPhone) {
+            return res.status(403).json({
+                success: false,
+                message: 'Ruxsat berilmadi. Faqat o\'z buyurtmalaringizni ko\'ra olasiz.'
+            })
+        }
+
         // Escape special regex characters like + ( ) [ ] etc
         const escapedPhone = normalizedPhone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 

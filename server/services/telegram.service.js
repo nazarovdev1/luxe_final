@@ -6,15 +6,15 @@ import axios from 'axios'
 
 // EN: Replace these with your actual bot token and chat ID
 // UZ: O'rniga o'z bot tokeningiz va chat IDni qo'ying
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '7926089075:AAFf-XyNcGPmccNqUnHysQU7jxm8YeKT4js'
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '701571129'
-
-const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
-
 // EN: Send order message to Telegram
 // UZ: Zakas xabarini Telegram'ga yuborish
 async function sendOrderToTelegram(orderData) {
 	try {
+		// moved inside to ensure env vars are loaded
+		const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8504200030:AAG...' // Context from log
+		const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1816138407' // Updated from log
+		const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
+
 		// EN: Format the order message
 		// UZ: Zakas xabarini formatlash
 		const message = formatOrderMessage(orderData)
@@ -113,9 +113,9 @@ function formatOrderMessage(orderData) {
 	// EN: Order totals
 	// UZ: Zakas umumiy narxi
 	message += `💰 <b>To'lov ma'lumotlari:</b>\n`
-	message += `Mahsulotlar jami: $${totals.subtotal.toFixed(2)}\n`
-	message += `Yetkazib berish: $${totals.deliveryFee.toFixed(2)}\n`
-	message += `Umumiy: $${totals.total.toFixed(2)}\n\n`
+	message += `Mahsulotlar jami: $${(totals?.subtotal || 0).toFixed(2)}\n`
+	message += `Yetkazib berish: $${(totals?.deliveryFee || 0).toFixed(2)}\n`
+	message += `Umumiy: $${(totals?.total || 0).toFixed(2)}\n\n`
 
 	// EN: Order time
 	// UZ: Zakas vaqti
@@ -125,4 +125,49 @@ function formatOrderMessage(orderData) {
 	return message
 }
 
-export { sendOrderToTelegram }
+async function sendContactMessage(name, phone, message) {
+	try {
+		const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8504200030:AAG...'
+		const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1816138407'
+		const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
+
+		const timestamp = new Date().toLocaleString('uz-UZ', {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit'
+		})
+
+		const text = `
+🔔 <b>Yangi xabar LUXE Fashion dan!</b>
+
+👤 <b>Ism:</b> ${name}
+📱 <b>Telefon:</b> ${phone}
+💬 <b>Xabar:</b> ${message}
+
+⏰ <b>Vaqt:</b> ${timestamp}
+📍 <b>Sayt:</b> luxefashion.uz
+
+<i>Vaqtli javob berib qolamiz!</i>
+`.trim()
+
+		const response = await axios.post(TELEGRAM_API_URL, {
+			chat_id: TELEGRAM_CHAT_ID,
+			text: text,
+			parse_mode: 'HTML',
+			disable_web_page_preview: true
+		})
+
+		if (response.data.ok) {
+			return { success: true }
+		} else {
+			return { success: false, error: response.data.description }
+		}
+	} catch (error) {
+		console.error('Error sending contact to Telegram:', error.message)
+		return { success: false, error: error.message }
+	}
+}
+
+export { sendOrderToTelegram, sendContactMessage }

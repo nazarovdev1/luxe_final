@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Hero from '../components/Hero';
-import NewCollection from '../components/NewCollection';
-import Bestsellers from '../components/Bestsellers';
+import PremiumHomeSections from '../components/PremiumHomeSections';
+import AllProducts from '../components/AllProducts';
 import About from '../components/About';
-import FAQ from '../components/FAQ';
-import Contact from '../components/Contact';
 import Footer from '../components/Footer';
+
+import SEO from '../components/SEO';
 
 const Home = () => {
   const location = useLocation();
@@ -29,15 +29,20 @@ const Home = () => {
 
   return (
     <div>
+      <SEO
+        title="Ayollar kiyimlari, luxury kiyimlar va paltolar"
+        description="Luxx.uz - ayollar uchun premium va luxury kiyimlar onlayn do'koni. Yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar va zamonaviy kolleksiyalar."
+        keywords="luxx.uz, luxe uz, luxury uz, luxe, luxury, ayollar kiyimlari, luxury kiyimlar, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar, premium kiyimlar, moda do'kon"
+        canonicalPath="/"
+      />
       <Hero />
-      <NewCollection />
-      <Bestsellers />
+      <PremiumHomeSections />
+      <AllProducts />
       <About />
-      <FAQ />
-      <Contact />
       <Footer />
     </div>
   );
 };
 
 export default Home;
+

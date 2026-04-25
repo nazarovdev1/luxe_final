@@ -1,57 +1,197 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Admin from './pages/Admin';
-import ProductView from './pages/ProductView';
-import AllProducts from './pages/AllProducts';
-import SearchModal from './components/SearchModal';
-import CartDropdown from './components/CartDropdown';
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/RegisterForm';
-import Checkout from './pages/Checkout';
-import Profile from './pages/Profile';
+import Loading from './components/Loading';
+
+// Lazy load components
+const Navbar = React.lazy(() => import('./components/Navbar'));
+const Home = React.lazy(() => import('./pages/Home'));
+const Admin = React.lazy(() => import('./pages/Admin'));
+const ProductView = React.lazy(() => import('./pages/ProductView'));
+const AllProducts = React.lazy(() => import('./pages/AllProducts'));
+const SearchModal = React.lazy(() => import('./components/SearchModal'));
+const CartDropdown = React.lazy(() => import('./components/CartDropdown'));
+const LoginForm = React.lazy(() => import('./components/LoginForm'));
+const RegisterForm = React.lazy(() => import('./components/RegisterForm'));
+const Checkout = React.lazy(() => import('./pages/Checkout'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
+const FAQPage = React.lazy(() => import('./pages/FAQPage'));
+const ContactPage = React.lazy(() => import('./pages/ContactPage'));
+const Lookbooks = React.lazy(() => import('./pages/Lookbooks'));
+const MobileApp = React.lazy(() => import('./MobileApp'));
+const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
 import { ProductProvider } from './contexts/ProductContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import ScrollToTop from './components/ScrollToTop';
 
 
-function App() {
+import { useLocation } from 'react-router-dom';
+
+// Device detection helper
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || window.innerWidth <= 768;
+};
+
+// Bot detection - don't redirect search engine crawlers
+const isBot = () => {
+  return /Googlebot|Google-InspectionTool|GoogleOther|APIs-Google|bingbot|Baiduspider|yandex|DuckDuckBot|Slurp|msnbot|facebookexternalhit|Twitterbot|LinkedInBot/i.test(
+    navigator.userAgent
+  );
+};
+
+function MainContent() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isMobile = location.pathname.startsWith('/mobile');
+  const showDesktopChrome = !isMobile && !['/login', '/register', '/checkout'].includes(location.pathname);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const openSearch = () => setIsSearchOpen(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Auto redirect based on device
+  useEffect(() => {
+    const isMobileUser = isMobileDevice();
+    const isOnMobilePath = location.pathname.startsWith('/mobile');
+    const isOnAdminPath = location.pathname.startsWith('/admin');
+
+    // Don't redirect admin pages or search engine bots
+    if (isOnAdminPath || isBot()) return;
+
+    // Mobile user on desktop path -> redirect to mobile
+    if (isMobileUser && !isOnMobilePath) {
+      setIsRedirecting(true);
+      const mobilePath = '/mobile' + location.pathname;
+      navigate(mobilePath, { replace: true });
+      return;
+    }
+
+    // Desktop user on mobile path -> redirect to desktop
+    if (!isMobileUser && isOnMobilePath) {
+      setIsRedirecting(true);
+      const desktopPath = location.pathname.replace('/mobile', '') || '/';
+      navigate(desktopPath, { replace: true });
+      return;
+    }
+
+    setIsRedirecting(false);
+  }, [location.pathname, navigate]);
+
+  const openSearch = () => {
+    setIsCartOpen(false);
+    setIsSearchOpen(true);
+  };
   const closeSearch = () => setIsSearchOpen(false);
 
-  const openCart = () => setIsCartOpen(true);
+  const openCart = () => {
+    setIsSearchOpen(false);
+    setIsCartOpen(true);
+  };
   const closeCart = () => setIsCartOpen(false);
 
+  // Show loading while redirecting to avoid flashing wrong content
+  if (isRedirecting) return <Loading />;
+
+  // Avoid blocking search bots with a loading-only screen
+  if (
+    isMobileDevice() &&
+    !isBot() &&
+    !location.pathname.startsWith('/mobile') &&
+    !location.pathname.startsWith('/admin')
+  ) {
+    return <Loading />;
+  }
+
+  return (
+    <div className="min-h-screen text-foreground relative">
+      <React.Suspense fallback={<Loading />}>
+        {/* Fixed Header Container (Banner + Navbar) */}
+        {showDesktopChrome && (
+          <>
+            <AnnouncementBanner />
+            <Navbar onSearchClick={openSearch} onCartClick={openCart} />
+          </>
+        )}
+
+        {/* Main Content Area */}
+        <div className="relative z-10">
+          {showDesktopChrome && (
+            <>
+              <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
+              <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
+            </>
+          )}
+          <Routes>
+            {/* Mobile version - separate layout */}
+            <Route path="/mobile/*" element={<MobileApp />} />
+
+            {/* Desktop version */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<Navigate to="/#about" replace />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/products" element={<AllProducts />} />
+            <Route path="/product/:id" element={<ProductView />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/lookbooks" element={<Lookbooks />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </React.Suspense>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#1a1025',
+            color: '#fff',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
+            borderRadius: '12px',
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+          success: {
+            iconTheme: {
+              primary: '#22c55e',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+    </div>
+  );
+}
+
+function App() {
   return (
     <AuthProvider>
       <ProductProvider>
         <CartProvider>
-          <Router>
-            <div className="min-h-screen text-foreground relative">
-
-              <div className="relative z-10">
-                <Navbar onSearchClick={openSearch} onCartClick={openCart} />
-                <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
-                <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<LoginForm />} />
-                  <Route path="/register" element={<RegisterForm />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/products" element={<AllProducts />} />
-                  <Route path="/product/:id" element={<ProductView />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/profile" element={<Profile />} />
-                </Routes>
-              </div>
-              <Toaster position="bottom-right" duration={6000} />
-            </div>
-          </Router>
+          <FavoritesProvider>
+            <NotificationProvider>
+              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <ScrollToTop />
+                <MainContent />
+              </Router>
+            </NotificationProvider>
+          </FavoritesProvider>
         </CartProvider>
       </ProductProvider>
     </AuthProvider>

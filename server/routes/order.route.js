@@ -4,7 +4,7 @@
 
 import express from 'express'
 import { createOrder, getUserOrders, getAllOrders, updateOrderStatus, deleteOrder } from '../controllers/order.controller.js'
-import { protect } from '../middleware/auth.middleware.js'
+import { protect, authorize } from '../middleware/auth.middleware.js'
 import { getOrdersByPhone } from '../controllers/user.controller.js'
 
 const router = express.Router()
@@ -19,7 +19,7 @@ router.get('/my-orders', protect, getUserOrders)
 
 // EN: GET - Get all orders (Admin only)
 // UZ: Barcha buyurtmalarni olish (Admin uchun)
-router.get('/all', protect, getAllOrders)
+router.get('/all', protect, authorize('admin', 'manager'), getAllOrders)
 
 // EN: GET - Test Telegram connection
 // UZ: Telegram ulanishini sinov
@@ -48,16 +48,16 @@ router.get('/test-telegram', async (req, res) => {
 	}
 })
 
-// EN: GET - Get user orders by phone
-// UZ: Foydalanuvchi buyurtmalarini telefon orqali olish
-router.get('/user/:phone', getOrdersByPhone)
+// EN: GET - Get user orders by phone (Protected)
+// UZ: Foydalanuvchi buyurtmalarini telefon orqali olish (Himoyalangan)
+router.get('/user/:phone', protect, getOrdersByPhone)
 
 // EN: PATCH - Update order status (Admin only)
 // UZ: Buyurtma statusini o'zgartirish (Admin uchun)
-router.patch('/:id/status', protect, updateOrderStatus)
+router.patch('/:id/status', protect, authorize('admin', 'manager'), updateOrderStatus)
 
 // EN: DELETE - Delete order (Admin only)
 // UZ: Buyurtmani o'chirish (Admin uchun)
-router.delete('/:id', protect, deleteOrder)
+router.delete('/:id', protect, authorize('admin', 'manager'), deleteOrder)
 
 export default router

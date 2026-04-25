@@ -2,26 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import ProductCard from './ProductCard';
+import { ProductGridSkeleton } from './ProductCardSkeleton';
+import { ArrowRight } from 'lucide-react';
 
 const NewCollection = () => {
   const { getNewCollectionProducts, isLoading } = useProducts();
-
-  if (isLoading) {
-    return (
-      <section id="new-collection" className="py-20 bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   const products = getNewCollectionProducts();
 
   return (
-    <section id="new-collection" className="py-20 bg-black-900">
+    <section id="new-collection" className="py-20 bg-[#140e20]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -32,19 +21,24 @@ const NewCollection = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {isLoading ? (
+          <ProductGridSkeleton count={3} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
 
         {/* View All Button */}
-        <div className="text-center">
+        <div className="text-center mt-12">
           <Link
             to="/products"
-            className="inline-flex items-center px-8 py-4 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
           >
             Barcha mahsulotlarni ko'rish
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>

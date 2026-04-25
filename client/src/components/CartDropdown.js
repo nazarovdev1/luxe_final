@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, Trash2 } from 'lucide-react';
 
 const CartDropdown = ({ isOpen, onClose }) => {
   const { items, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleQuantityChange = (itemId, newQuantity) => {
@@ -19,6 +22,11 @@ const CartDropdown = ({ isOpen, onClose }) => {
 
   const handleCheckout = () => {
     onClose();
+    if (!isAuthenticated) {
+      toast.error("Iltimos, buyurtma berish uchun ro'yxatdan o'ting");
+      navigate('/login');
+      return;
+    }
     navigate('/checkout');
   };
 
@@ -28,115 +36,131 @@ const CartDropdown = ({ isOpen, onClose }) => {
     }
   };
 
-  if (!isOpen) return null;
+  // Prevent scrolling on body when cart is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const total = getCartTotal();
+  const money = (value) => `${Number(value || 0).toLocaleString('en-US').replace(/,/g, ',')} so'm`;
 
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16 px-4 md:justify-end md:pr-4"
-      onClick={handleOverlayClick}
-    >
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden lg:mr-64">
+  // Use Portal to render outside root hierarchy to cover Navbar
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <>
+      {/* Overlay for entire screen including navbar */}
+      <div
+        className={`fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        onClick={handleOverlayClick}
+      />
+
+      {/* Cart sidebar - highest z-index */}
+      <div
+        className={`fixed top-0 right-0 z-[10000] h-screen w-full sm:w-[500px] bg-[#0c0c0c] transform transition-transform duration-300 ease-in-out flex flex-col items-stretch border-l border-white/5 ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+      >
         {/* Header */}
-        <div className="p-6 border-b border-gray-700">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center space-x-2">
-              <ShoppingBag className="w-5 h-5" />
-              <span>Savat</span>
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-          <p className="text-gray-400 text-sm mt-1">
-            {items.length} ta mahsulot
-          </p>
+        <div className="flex items-center justify-between px-8 py-10 border-b border-white/5 shrink-0">
+          <h2 className="text-2xl font-normal text-[#d6b47c] tracking-wide">Savatcha</h2>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center text-white/50 hover:text-white transition-colors"
+            aria-label="Savatni yopish"
+          >
+            <X className="h-5 w-5" strokeWidth={1.5} />
+          </button>
         </div>
 
-        {/* Cart Items */}
-        <div className="max-h-96 overflow-y-auto">
+        {/* Cart Items Area */}
+        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
           {items.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">
-              <ShoppingBag className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">Savat bo'sh</p>
-              <p className="text-sm">Mahsulot qo'shish uchun xarid qiling!</p>
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                <span className="text-[#d6b47c] opacity-50"><X strokeWidth={1} size={32} /></span>
+              </div>
+              <div>
+                <h3 className="text-lg text-white mb-2">Savat bo'sh</h3>
+                <p className="text-[#a1a1aa] text-sm">Savatchangizga biror narsa qo'shing.</p>
+              </div>
+              <button
+                onClick={() => { onClose(); navigate('/products'); }}
+                className="px-8 py-3 bg-white/5 text-white text-xs tracking-widest uppercase hover:bg-white/10 transition-colors border border-white/10"
+              >
+                Katalogga o'tish
+              </button>
             </div>
           ) : (
-            <div className="p-4 space-y-4">
+            <div className="space-y-8">
               {items.map((item) => {
                 const price = typeof item.price === 'string'
                   ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
                   : parseFloat(item.price);
-                const itemTotal = price * item.quantity;
 
                 return (
-                  <div key={item.id} className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex space-x-3">
-                      {/* Product Image */}
+                  <div key={item.id} className="flex gap-6">
+                    <div className="shrink-0">
                       <img
-                        src={item.image}
+                        src={item.image || '/placeholder.png'}
                         alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg"
+                        className="h-[120px] w-[90px] object-cover bg-black"
                       />
+                    </div>
 
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-medium text-sm truncate">
-                          {item.name}
-                        </h3>
-
-                        {/* Selected Options */}
-                        <div className="text-gray-400 text-xs space-y-1 mt-1">
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <h3 className="text-[14px] text-white/90">
+                            {item.name}
+                          </h3>
                           {item.selectedColor && (
-                            <p>Rang: {item.selectedColor}</p>
+                            <p className="text-[12px] text-white/50">Rang: {item.selectedColor}</p>
                           )}
                           {item.selectedSize && (
-                            <p>O'lcham: {item.selectedSize}</p>
+                            <p className="text-[12px] text-white/50">O'lcham: {item.selectedSize}</p>
                           )}
                         </div>
+                      </div>
 
-                        {/* Quantity Controls */}
-                        <div className="flex items-center space-x-2 mt-2">
+                      <div className="mt-2">
+                        <p className="text-[#d6b47c] text-[13px] tracking-wide">
+                          {money(price)}
+                        </p>
+                      </div>
+
+                      <div className="mt-auto flex items-center gap-4">
+                        <div className="flex items-center border border-white/20">
                           <button
                             onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            className="p-1 bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                            className="flex h-[30px] w-[30px] items-center justify-center text-white/70 hover:text-white transition-colors"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="h-3 w-3" />
                           </button>
-                          <span className="text-white text-sm min-w-[2rem] text-center">
+                          <span className="w-[30px] text-center text-[13px] text-white border-l border-r border-white/20 flex items-center justify-center h-[30px]">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            className="p-1 bg-gray-600 hover:bg-gray-500 text-white rounded transition-colors"
+                            className="flex h-[30px] w-[30px] items-center justify-center text-white/70 hover:text-white transition-colors"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="h-3 w-3" />
                           </button>
                         </div>
-                      </div>
 
-                      {/* Price and Remove */}
-                      <div className="flex flex-col items-end space-y-2">
                         <button
                           onClick={() => handleRemoveItem(item.id)}
-                          className="text-red-400 hover:text-red-300 transition-colors"
+                          className="flex h-[30px] w-[30px] items-center justify-center text-[#d6b47c]/70 hover:text-[#d6b47c] hover:bg-[#d6b47c]/10 border border-[#d6b47c]/30 transition-colors ml-auto"
                         >
-                          <X className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
-                        <div className="text-right">
-                          <p className="text-white font-semibold text-sm">
-                            {itemTotal.toLocaleString()} so'm
-                          </p>
-                          <p className="text-gray-400 text-xs">
-                            {typeof item.price === 'string'
-                              ? parseFloat(item.price.replace(/[^0-9.]/g, '')).toLocaleString()
-                              : parseFloat(item.price).toLocaleString()} so'm x {item.quantity}
-                          </p>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -146,28 +170,27 @@ const CartDropdown = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer Area */}
         {items.length > 0 && (
-          <div className="border-t border-gray-700 p-4 bg-gray-900">
-            {/* Total */}
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white font-semibold">Jami:</span>
-              <span className="text-white font-bold text-lg">
-                {total.toLocaleString()} so'm
+          <div className="mt-auto px-8 py-8 shrink-0 border-t border-white/10 bg-[#1a1b1e]">
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-white text-sm">Jami:</span>
+              <span className="text-[#d6b47c] tracking-wide">
+                {money(total)}
               </span>
             </div>
 
-            {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-3 rounded-lg font-semibold transition-colors"
+              className="w-full bg-[#d6b47c] hover:bg-[#c6a366] text-black py-4 text-xs font-bold tracking-[0.15em] uppercase transition-colors"
             >
               Buyurtma berish
             </button>
           </div>
         )}
       </div>
-    </div>
+    </>,
+    document.body
   );
 };
 

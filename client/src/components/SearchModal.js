@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
-import { Search, X } from 'lucide-react';
+import { Search, X, Gem, TrendingUp, Package, ArrowUpRight } from 'lucide-react';
 
 const SearchModal = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,82 +51,127 @@ const SearchModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
+  // Use Portal to render outside root hierarchy to cover Navbar
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16 px-4"
+      className="fixed inset-0 z-[9999] bg-black/68 backdrop-blur-md animate-in fade-in duration-300"
       onClick={handleOverlayClick}
     >
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Mahsulot qidirish</h2>
+      <div className="absolute top-[74px] right-4 md:right-6 lg:right-[420px] w-[92vw] max-w-[430px] max-h-[82vh] overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0f1626]/96 via-[#111a2b]/97 to-[#0a111d]/95 shadow-[0_30px_70px_rgba(0,0,0,0.62)] animate-in fade-in zoom-in duration-300">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_10%,rgba(244,241,235,0.12),transparent_30%),radial-gradient(circle_at_90%_16%,rgba(141,155,184,0.18),transparent_36%),radial-gradient(circle_at_16%_96%,rgba(214,180,124,0.1),transparent_30%)]" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-[#f4f1eb]/35 to-transparent" />
+
+        <div className="relative p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f4f1eb]/10">
+                <Search className="h-4 w-4 text-[#f4f1eb]" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-[#9aa3b2]">Editorial Search</p>
+                <h2 className="text-lg font-semibold text-[#f4f1eb] leading-tight">Qidirish</h2>
+              </div>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#171f31]/85 text-[#9aa3b2] hover:bg-[#1f2940] hover:text-[#f4f1eb] transition-colors"
+              aria-label="Qidiruvni yopish"
             >
-              <X className="w-6 h-6" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Search Input */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c7ceda] w-4 h-4" />
             <input
               type="text"
               placeholder="Mahsulot nomini kiriting..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full h-[48px] pl-10 pr-3 rounded-xl bg-[#0a1221]/90 text-[#f4f1eb] text-sm placeholder:text-[#8f98a8] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#f4f1eb]/50"
               autoFocus
             />
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md bg-[#202a40] px-1.5 py-0.5 text-[10px] text-[#c7ceda]">
+              ESC
+            </kbd>
           </div>
+
+          <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-[#9aa3b2]/35 to-transparent" />
         </div>
 
-        {/* Results */}
-        <div className="max-h-96 overflow-y-auto">
+        <div className="relative max-h-[45vh] overflow-y-auto px-4 pb-4 sm:px-5">
           {searchQuery.trim() === '' ? (
-            <div className="p-8 text-center text-gray-400">
-              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Qidirish uchun mahsulot nomini kiriting</p>
+            <div className="rounded-2xl bg-gradient-to-br from-[#131c2e] to-[#0f1626] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f4f1eb]/10">
+                <Search className="h-7 w-7 text-[#f4f1eb]" />
+              </div>
+              <h3 className="text-[#f4f1eb] font-semibold text-base mb-1">Mavsumiy Topilmalar</h3>
+              <p className="text-[#9aa3b2] text-sm">Mahsulot topish uchun nomini yozing</p>
+
+              <div className="mt-6 flex flex-wrap justify-center gap-2.5">
+                {['Ko\'ylak', 'Libos', 'Yubka'].map((term) => (
+                  <button
+                    key={term}
+                    onClick={() => setSearchQuery(term)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#202a40] px-4 py-2 text-sm text-[#c7ceda] hover:bg-[#283550] hover:text-[#f4f1eb] transition-colors"
+                  >
+                    <TrendingUp className="w-3 h-3" />
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : searchResults.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">
-              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>"{searchQuery}" uchun natija topilmadi</p>
+            <div className="rounded-2xl bg-gradient-to-br from-[#141d2f] to-[#0f1626] p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-[#f4f1eb]/8 flex items-center justify-center">
+                <Package className="w-9 h-9 text-[#9aa3b2]" />
+              </div>
+              <h3 className="text-[#f4f1eb] font-semibold text-lg mb-2">Natija topilmadi</h3>
+              <p className="text-[#9aa3b2]">"{searchQuery}" uchun mahsulot topilmadi</p>
             </div>
           ) : (
-            <div className="p-4">
-              <div className="mb-4 text-sm text-gray-400">
-                {searchResults.length} ta natija topildi
+            <div className="pt-1 pb-2">
+              <div className="mb-3 px-1 flex items-center gap-2">
+                <span className="text-sm text-[#c7ceda] font-medium">{searchResults.length} ta natija</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-[#9aa3b2]/35 to-transparent" />
               </div>
               <div className="space-y-2">
                 {searchResults.map((product) => (
                   <div
                     key={product.id}
                     onClick={() => handleProductClick(product.id)}
-                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors"
+                    className="group flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-br from-[#141d2f] to-[#0f1626] cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] hover:from-[#19243a] hover:to-[#121b2c] transition-colors"
                   >
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-12 h-12 object-cover rounded-lg"
-                    />
-                    <div className="flex-1">
-                      <h3 className="text-white font-medium">{product.name}</h3>
-                      <p className="text-gray-400 text-sm">{product.category}</p>
+                    <div className="relative shrink-0">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-14 h-14 object-cover rounded-xl shadow-[0_8px_16px_rgba(2,6,16,0.45)]"
+                      />
                     </div>
-                    <div className="text-right">
-                      <div className="text-white font-semibold">{product.price}</div>
-                      {product.badge && (
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          product.badge === 'NEW'
-                            ? 'bg-accent text-accent-foreground'
-                            : 'bg-yellow-500 text-black'
-                        }`}>
-                          {product.badge}
-                        </span>
-                      )}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        {product.badge && (
+                          <span className={`shrink-0 text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold tracking-wider ${product.badge === 'NEW'
+                            ? 'bg-[#2d3442] text-[#f4f1eb]'
+                            : 'bg-[#f4f1eb] text-[#111827]'
+                            }`}>
+                            {product.badge}
+                          </span>
+                        )}
+                        <h3 className="text-[#f4f1eb] font-medium truncate">
+                          {product.name}
+                        </h3>
+                      </div>
+                      <p className="text-[#9aa3b2] text-xs">{product.category}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-[#f4f1eb] font-semibold text-sm">{product.price}</div>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-[#c7ceda] mt-0.5">
+                        Ko'rish <ArrowUpRight className="h-3 w-3" />
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -134,15 +180,22 @@ const SearchModal = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-700 bg-gray-900">
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            <span>ESC - yopish</span>
-            <span>Enter - tanlash</span>
+        <div className="relative p-4 bg-[#0b111e]/80">
+          <div className="h-px w-full mb-3 bg-gradient-to-r from-transparent via-[#9aa3b2]/35 to-transparent" />
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 text-[#9aa3b2]">
+              <kbd className="px-2 py-1 bg-[#1c263b] rounded-lg text-[10px] text-[#c7ceda]">ESC</kbd>
+              <span>yopish</span>
+            </div>
+            <div className="flex items-center gap-2 text-[#9aa3b2]">
+              <kbd className="px-2 py-1 bg-[#1c263b] rounded-lg text-[10px] text-[#c7ceda]">ENTER</kbd>
+              <span>tanlash</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

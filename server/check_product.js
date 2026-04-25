@@ -20,6 +20,7 @@ const checkLatestProduct = async () => {
             output += `Latest Product Name: ${product.name}\n`;
             output += `Latest Product Price: ${product.price}\n`;
             output += `Latest Product Original Price: ${product.originalPrice}\n`;
+            output += `Latest Product Images: ${JSON.stringify(product.images, null, 2)}\n`;
             output += `Latest Product ID: ${product._id}\n`;
         } else {
             output = 'No products found';

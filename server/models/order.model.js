@@ -5,6 +5,10 @@ const orderSchema = new mongoose.Schema({
         name: { type: String, required: true },
         phone: { type: String, required: true },
         address: { type: String, required: true },
+        location: {
+            lat: Number,
+            lng: Number
+        },
         comments: String
     },
     user: {
@@ -23,12 +27,14 @@ const orderSchema = new mongoose.Schema({
     totals: {
         subtotal: Number,
         deliveryFee: Number,
+        promoCode: { type: String, default: null },
+        discountAmount: { type: Number, default: 0 },
         total: Number
     },
     status: {
         type: String,
-        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-        default: 'pending'
+        enum: ['Kutilmoqda', 'Jarayonda', 'Yetkazilmoqda', 'Yetkazildi', 'Bekor qilindi'],
+        default: 'Kutilmoqda'
     },
     paymentMethod: {
         type: String,

@@ -1,129 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { Send, Mail, Phone, User, MessageSquare, CheckCircle, XCircle, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import {
+  CheckCircle,
+  Clock,
+  Mail,
+  MapPin,
+  Phone,
+  Send,
+  Shield,
+  Gem,
+  Truck,
+  User,
+  MessageSquare,
+  X,
+  XCircle,
+  ArrowUpRight,
+} from 'lucide-react';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+
+const CONTACT_METHODS = [
+  {
+    id: 'phone',
+    title: 'Telefon',
+    value: '+998 88 429 99 69',
+    href: 'tel:+998884299969',
+    icon: Phone,
+    tone: 'from-emerald-500/25 to-emerald-700/25 border-emerald-300/20 text-emerald-100',
+  },
+  {
+    id: 'telegram',
+    title: 'Telegram',
+    value: '@luxeecommercebot',
+    href: 'https://t.me/luxeecommercebot',
+    icon: Send,
+    tone: 'from-sky-500/25 to-blue-700/25 border-sky-300/20 text-sky-100',
+  },
+  {
+    id: 'email',
+    title: 'Email',
+    value: 'support@luxx.uz',
+    href: 'mailto:support@luxx.uz',
+    icon: Mail,
+    tone: 'from-amber-500/25 to-orange-700/25 border-amber-300/20 text-amber-100',
+  },
+];
+
+const TRUST_NOTES = [
+  { icon: Truck, text: 'Toshkent bo\'ylab tez yetkazish' },
+  { icon: Shield, text: 'Xavfsiz xarid va maxfiylik himoyasi' },
+  { icon: Clock, text: 'Har kuni: 09:00 - 22:00' },
+  { icon: Gem, text: 'Premium service support' },
+];
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    message: ''
+    message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
 
-  // Auto-hide toasts
   useEffect(() => {
-    if (showSuccessToast) {
-      const timer = setTimeout(() => setShowSuccessToast(false), 4000);
-      return () => clearTimeout(timer);
-    }
+    if (!showSuccessToast) return;
+    const timer = setTimeout(() => setShowSuccessToast(false), 4000);
+    return () => clearTimeout(timer);
   }, [showSuccessToast]);
 
   useEffect(() => {
-    if (showErrorToast) {
-      const timer = setTimeout(() => setShowErrorToast(false), 4000);
-      return () => clearTimeout(timer);
-    }
+    if (!showErrorToast) return;
+    const timer = setTimeout(() => setShowErrorToast(false), 4000);
+    return () => clearTimeout(timer);
   }, [showErrorToast]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Function to send message to Telegram bot
   const sendToTelegram = async (name, phone, message) => {
-    const botToken = '8322963763:AAH3M-up83trqTZMkFxwLLwjDPE6A-wn6FA';
-    const chatId = '701571129';
-    const timestamp = new Date().toLocaleString('uz-UZ', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    const telegramMessage = `
-🔔 *Yangi xabar LUXE Fashion dan!*
-
-👤 *Ism:* ${name}
-📱 *Telefon:* ${phone}
-💬 *Xabar:* ${message}
-
-⏰ *Vaqt:* ${timestamp}
-📍 *Sayt:* luxefashion.uz
-
-_Vaqtli javob berib qolamiz!_
-    `.trim();
-
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const response = await fetch(`${API_BASE}/contact`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: telegramMessage,
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone, message }),
     });
+
+    const result = await response.json();
 
     if (!response.ok) {
-      throw new Error('Telegram API error');
+      throw new Error(result.message || 'Server error');
     }
 
-    return response.json();
+    return result;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Validation
-      if (!formData.name.trim()) {
+      if (!formData.name.trim() || !formData.phone.trim() || !formData.message.trim()) {
         setShowErrorToast(true);
-        setIsSubmitting(false);
         return;
       }
 
-      if (!formData.phone.trim()) {
-        setShowErrorToast(true);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!formData.message.trim()) {
-        setShowErrorToast(true);
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Phone number validation (basic)
       const phoneRegex = /^[\+]?[0-9\-\s\(\)]{7,15}$/;
       if (!phoneRegex.test(formData.phone.trim())) {
         setShowErrorToast(true);
-        setIsSubmitting(false);
         return;
       }
 
-      // Send to Telegram
       await sendToTelegram(formData.name.trim(), formData.phone.trim(), formData.message.trim());
 
-      // Success
       setShowSuccessToast(true);
-
-      // Reset form
-      setFormData({
-        name: '',
-        phone: '',
-        message: ''
-      });
-
+      setFormData({ name: '', phone: '', message: '' });
     } catch (error) {
       console.error('Error submitting form:', error);
       setShowErrorToast(true);
@@ -133,199 +124,197 @@ _Vaqtli javob berib qolamiz!_
   };
 
   return (
-    <section id="contact-form" className="py-20 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Biz bilan bog'laning
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Savollaringiz bormi yoki takliflaringiz? Biz bilan bog'laning -
-            24 soat ichida javob beramiz!
-          </p>
-        </div>
+    <section id="contact" className="relative overflow-hidden bg-[#05070c] py-16 sm:py-20">
+      <div className="pointer-events-none absolute -top-20 left-1/2 h-64 w-[46rem] -translate-x-1/2 rounded-full bg-[#d6b47c]/20 blur-3xl" />
+      <div className="pointer-events-none absolute top-52 -left-20 h-64 w-64 rounded-full bg-[#1e3a6b]/25 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-10 -right-16 h-72 w-72 rounded-full bg-[#7a5a2a]/20 blur-3xl" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Contact Info */}
-          <div className="space-y-8">
+      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#121726]/95 via-[#0f1424]/95 to-[#121a2d]/95 p-6 sm:p-8 lg:p-10">
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end">
             <div>
-              <h3 className="text-2xl font-bold text-white mb-6">
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#d6b47c]/40 bg-[#d6b47c]/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-[#f4deb5]">
+                <Gem className="h-3.5 w-3.5" />
+                Contact Atelier
+              </p>
+              <h2 className="mt-4 text-3xl leading-tight text-[#f4f1eb] sm:text-5xl font-semibold">
                 Biz bilan bog'laning
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
-                    <Phone className="w-6 h-6 text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Telefon</p>
-                    <p className="text-gray-400">+998 88 429 99 69</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Email</p>
-                    <p className="text-gray-400">akbarnazarov109@gmail.com</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="w-6 h-6 text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Ish vaqti</p>
-                    <p className="text-gray-400">Har kuni: 9:00 - 22:00</p>
-                  </div>
-                </div>
-              </div>
+                <br />
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm sm:text-base text-neutral-300 leading-relaxed">
+                Buyurtma, o'lcham, yetkazish yoki premium tavsiya bo'yicha savol bo'lsa,
+                jamoamiz qisqa vaqt ichida javob qaytaradi.
+              </p>
             </div>
 
-            {/* Additional Info */}
-            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
-              <h4 className="text-lg font-semibold text-white mb-4">
-                Nima uchun bizni tanlashadi?
-              </h4>
-              <ul className="space-y-3 text-gray-300">
-                <li className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                  <span>3/6 soat ichida yetkazish</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                  <span>Premium sifat va zamonaviy dizayn</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                  <span>1 yil kafolat</span>
-                </li>
-                <li className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                  <span>Professional xizmat</span>
-                </li>
-              </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {TRUST_NOTES.map(item => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.text}
+                    className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-neutral-200"
+                  >
+                    <Icon className="mb-2 h-4 w-4 text-[#d6b47c]" />
+                    {item.text}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Contact Form */}
-          <div className="bg-gray-800 rounded-xl p-8 border border-gray-700">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Ismingiz *
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                    placeholder="Ismingizni kiriting"
-                    required
-                  />
+          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.05fr]">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-white/10 bg-black/25 p-5 sm:p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-xl font-semibold text-[#f4f1eb]">Direct aloqalar</h3>
+                  <span className="text-xs uppercase tracking-[0.2em] text-neutral-400">24/7 online</span>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {CONTACT_METHODS.map(method => {
+                    const Icon = method.icon;
+                    const external = method.href.startsWith('http');
+
+                    return (
+                      <a
+                        key={method.id}
+                        href={method.href}
+                        target={external ? '_blank' : undefined}
+                        rel={external ? 'noreferrer' : undefined}
+                        className={`group flex items-center justify-between gap-4 rounded-2xl border bg-gradient-to-r px-4 py-3 transition-all hover:translate-x-1 ${method.tone}`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-black/25">
+                            <Icon className="h-5 w-5" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs uppercase tracking-wide text-neutral-300">{method.title}</p>
+                            <p className="text-base font-semibold text-white truncate">{method.value}</p>
+                          </div>
+                        </div>
+                        <ArrowUpRight className="h-4 w-4 text-neutral-200 group-hover:text-white" />
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Telefon raqamingiz *
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                    placeholder="+998 90 123 45 67"
-                    required
-                  />
+              <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/25">
+                <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3 text-sm text-neutral-200">
+                  <MapPin className="h-4 w-4 text-[#d6b47c]" />
+                  Toshkent, O'zbekiston
                 </div>
+                <iframe
+                  title="Luxx.uz manzil"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=69.1803%2C41.2646%2C69.3200%2C41.3500&layer=mapnik&marker=41.2995%2C69.2401"
+                  className="h-56 w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
+            </div>
 
-              {/* Message */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Xabaringiz *
-                </label>
-                <div className="relative">
-                  <MessageSquare className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={5}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
-                    placeholder="Savolingiz yoki taklifingizni yozing..."
-                    required
-                  />
+            <div className="rounded-3xl border border-white/10 bg-black/30 p-6 sm:p-7">
+              <h3 className="text-2xl font-semibold text-[#f4f1eb]">Xabar yuboring</h3>
+              <p className="mt-2 text-sm text-neutral-400">Formani to'ldiring, jamoamiz siz bilan bog'lanadi.</p>
+
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm text-neutral-300">Ismingiz</label>
+                  <div className="relative">
+                    <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Ismingizni kiriting"
+                      className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.03] pl-11 pr-4 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d6b47c]/70"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full flex items-center justify-center space-x-2 bg-accent hover:bg-accent/90 text-accent-foreground py-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-foreground"></div>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5" />
-                    <span>Yuborish</span>
-                  </>
-                )}
-              </button>
+                <div>
+                  <label className="mb-2 block text-sm text-neutral-300">Telefon raqam</label>
+                  <div className="relative">
+                    <Phone className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+998 90 123 45 67"
+                      className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.03] pl-11 pr-4 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d6b47c]/70"
+                      required
+                    />
+                  </div>
+                </div>
 
-              {/* Privacy Note */}
-              <p className="text-xs text-gray-400 text-center">
-                Ma'lumotlaringiz maxfiy saqlanadi va faqat siz bilan bog'lanish uchun ishlatiladi.
-              </p>
-            </form>
+                <div>
+                  <label className="mb-2 block text-sm text-neutral-300">Xabaringiz</label>
+                  <div className="relative">
+                    <MessageSquare className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-neutral-500" />
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={5}
+                      placeholder="Savolingizni yozing..."
+                      className="w-full resize-none rounded-xl border border-white/15 bg-white/[0.03] pl-11 pr-4 py-3 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d6b47c]/70"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#d6b47c] to-[#ad7f3b] text-[#0f1117] font-semibold transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmitting ? (
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#0f1117] border-t-transparent" />
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Yuborish
+                    </>
+                  )}
+                </button>
+
+                <p className="flex items-center justify-center gap-2 text-xs text-neutral-500">
+                  <Shield className="h-3.5 w-3.5" />
+                  Sizning ma'lumotlaringiz xavfsiz saqlanadi.
+                </p>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Success Toast */}
       {showSuccessToast && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 animate-in slide-in-from-bottom-2">
-          <CheckCircle className="w-6 h-6 flex-shrink-0" />
+        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-xl border border-emerald-300/30 bg-emerald-600 px-5 py-3 text-white shadow-2xl">
+          <CheckCircle className="h-5 w-5" />
           <div>
-            <p className="font-medium">Xabar muvaffaqiyatli yuborildi!</p>
-            <p className="text-sm opacity-90">Siz bilan tez orada bog'lanamiz</p>
+            <p className="text-sm font-semibold">Xabar yuborildi</p>
+            <p className="text-xs opacity-90">Tez orada siz bilan bog'lanamiz.</p>
           </div>
-          <button
-            onClick={() => setShowSuccessToast(false)}
-            className="flex-shrink-0 hover:bg-black/20 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
+          <button onClick={() => setShowSuccessToast(false)}>
+            <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
-      {/* Error Toast */}
       {showErrorToast && (
-        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 animate-in slide-in-from-bottom-2">
-          <XCircle className="w-6 h-6 flex-shrink-0" />
+        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-xl border border-rose-300/30 bg-rose-600 px-5 py-3 text-white shadow-2xl">
+          <XCircle className="h-5 w-5" />
           <div>
-            <p className="font-medium">Xatolik yuz berdi! Iltimos formatni to'liq to'ldiring</p>
-            <p className="text-sm opacity-90">Yoki birozdan keyin urinib ko'ring</p>
+            <p className="text-sm font-semibold">Xatolik yuz berdi</p>
+            <p className="text-xs opacity-90">Iltimos formani to'g'ri to'ldiring.</p>
           </div>
-          <button
-            onClick={() => setShowErrorToast(false)}
-            className="flex-shrink-0 hover:bg-black/20 rounded-full p-1"
-          >
-            <X className="w-4 h-4" />
+          <button onClick={() => setShowErrorToast(false)}>
+            <X className="h-4 w-4" />
           </button>
         </div>
       )}

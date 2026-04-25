@@ -5,20 +5,27 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon server.js",
-		"start": "node server.js"
+		"start": "node server.js",
+		"create-admin": "node create_admin.js",
+		"debug-users": "node debug_users.js",
+		"check-telegram": "node check_telegram.js"
 	},
 	"type": "module",
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"axios": "^1.13.2",
+		"axios": "^1.13.5",
 		"bcryptjs": "^3.0.3",
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0",
+		"express-rate-limit": "^8.2.1",
+		"helmet": "^8.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^8.20.0",
-		"nodemon": "^3.1.11"
+		"nodemon": "^3.1.11",
+		"prerender-node": "^3.8.3",
+		"qs": "^6.15.0"
 	}
 }

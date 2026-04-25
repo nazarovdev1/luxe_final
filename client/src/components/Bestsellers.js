@@ -1,26 +1,14 @@
 import React from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import ProductCard from './ProductCard';
+import { ProductGridSkeleton } from './ProductCardSkeleton';
 
 const Bestsellers = () => {
   const { getBestsellerProducts, isLoading } = useProducts();
-
-  if (isLoading) {
-    return (
-      <section id="bestsellers" className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   const products = getBestsellerProducts();
 
   return (
-    <section id="bestsellers" className="py-20 bg-black">
+    <section id="bestsellers" className="py-20 bg-[#0e0818]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -31,25 +19,43 @@ const Bestsellers = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {isLoading ? (
+          <ProductGridSkeleton count={3} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
 
-        {/* Stats */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <div className="text-center bg-gray-900 rounded-xl p-8 border border-gray-800">
-            <div className="text-4xl font-bold text-accent mb-2">98%</div>
-            <div className="text-gray-400">Mijozlar qoniqishi</div>
+        {/* Stats - Modern Design */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {/* Stat 1 */}
+          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/20 via-gray-900 to-fuchsia-900/10 p-[1px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/30 via-purple-600/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="relative bg-gray-900/90 backdrop-blur-xl rounded-2xl p-8 text-center border border-white/5 group-hover:border-purple-500/30 transition-all duration-300">
+              <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500 mb-3 group-hover:scale-110 transition-transform duration-300">98%</div>
+              <div className="text-gray-400 font-medium">Mijozlar qoniqishi</div>
+            </div>
           </div>
-          <div className="text-center bg-gray-900 rounded-xl p-8 border border-gray-800">
-            <div className="text-4xl font-bold text-accent mb-2">50k+</div>
-            <div className="text-gray-400">Sotilgan mahsulotlar</div>
+
+          {/* Stat 2 */}
+          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/20 via-gray-900 to-fuchsia-900/10 p-[1px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/30 via-purple-600/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="relative bg-gray-900/90 backdrop-blur-xl rounded-2xl p-8 text-center border border-white/5 group-hover:border-purple-500/30 transition-all duration-300">
+              <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500 mb-3 group-hover:scale-110 transition-transform duration-300">100+</div>
+              <div className="text-gray-400 font-medium">Sotilgan mahsulotlar</div>
+            </div>
           </div>
-          <div className="text-center bg-gray-900 rounded-xl p-8 border border-gray-800">
-            <div className="text-4xl font-bold text-accent mb-2">24/7</div>
-            <div className="text-gray-400">Qo'llab-quvvatlash</div>
+
+          {/* Stat 3 */}
+          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/20 via-gray-900 to-fuchsia-900/10 p-[1px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/30 via-purple-600/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="relative bg-gray-900/90 backdrop-blur-xl rounded-2xl p-8 text-center border border-white/5 group-hover:border-purple-500/30 transition-all duration-300">
+              <div className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500 mb-3 group-hover:scale-110 transition-transform duration-300">24/7</div>
+              <div className="text-gray-400 font-medium">Qo'llab-quvvatlash</div>
+            </div>
           </div>
         </div>
       </div>

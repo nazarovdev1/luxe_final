@@ -1,10 +1,54 @@
 import mongoose from 'mongoose'
 import Product from '../models/product.model.js'
 
+// Simple in-memory cache for products
+let productsCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache for better performance
+
+// Clear cache helper
+const clearProductsCache = () => {
+	productsCache = null;
+	cacheTimestamp = 0;
+};
+
 export const getProduct = async (req, res) => {
 	try {
+		const now = Date.now();
+
+		// Check if cache is valid
+		if (productsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+			// Set cache headers for browser caching
+			res.set('Cache-Control', 'public, max-age=60');
+			return res.status(200).json({ success: true, data: productsCache });
+		}
+
+		// Fetch from database with lean() for better performance
+		// OPTIMIZATION: Only fetch the first image for the list view to reduce load time
+		// Images are stored as Base64, so fetching all of them at once is too heavy.
 		const products = await Product.find({})
-		res.status(200).json({ success: true, data: products })
+			.select({
+				name: 1,
+				price: 1,
+				originalPrice: 1,
+				category: 1,
+				badge: 1,
+				rating: 1,
+				colors: 1,
+				sizes: 1,
+				description: 1,
+				createdAt: 1,
+				images: { $slice: 1 } // Only get the first image
+			})
+			.lean();
+
+		// Update cache
+		productsCache = products;
+		cacheTimestamp = now;
+
+		// Set cache headers
+		res.set('Cache-Control', 'public, max-age=60');
+		res.status(200).json({ success: true, data: products });
 	} catch (error) {
 		console.error('error in fetching products:', error.message)
 		res.status(500).json({ success: false, message: 'Server Error' })
@@ -21,7 +65,8 @@ export const getSingleProduct = async (req, res) => {
 	}
 
 	try {
-		const product = await Product.findById(id)
+		// Use lean() for better performance
+		const product = await Product.findById(id).lean()
 
 		if (!product) {
 			return res.status(404).json({
@@ -30,6 +75,7 @@ export const getSingleProduct = async (req, res) => {
 			})
 		}
 
+		res.set('Cache-Control', 'public, max-age=300'); // 5 minutes for single product
 		res.status(200).json({ success: true, data: product })
 	} catch (error) {
 		console.error('Error fetching single product:', error.message)
@@ -42,7 +88,7 @@ export const getRelatedProducts = async (req, res) => {
 
 	try {
 		// Asosiy mahsulotni topamiz
-		const product = await Product.findById(id)
+		const product = await Product.findById(id).lean()
 
 		if (!product) {
 			return res.status(404).json({
@@ -51,12 +97,24 @@ export const getRelatedProducts = async (req, res) => {
 			})
 		}
 
-		// Shu product bilan bir xil category bo‘lgan boshqa mahsulotlarni olish
+		// Shu product bilan bir xil category bo'lgan boshqa mahsulotlarni olish
 		const relatedProducts = await Product.find({
 			category: product.category,
 			_id: { $ne: id }, // asosiy product chiqmaydi
-		}).limit(10) // ixtiyoriy limit
+		})
+			.select({
+				name: 1,
+				price: 1,
+				originalPrice: 1,
+				category: 1,
+				badge: 1,
+				rating: 1,
+				images: { $slice: 1 }
+			})
+			.limit(10)
+			.lean()
 
+		res.set('Cache-Control', 'public, max-age=300');
 		res.status(200).json({
 			success: true,
 			data: relatedProducts,
@@ -77,13 +135,16 @@ export const postProduct = async (req, res) => {
 	if (!product.name || !product.price || !product.category || !product.images || product.images.length === 0) {
 		return res.status(400).json({
 			success: false,
-			message: "Majburiy maydonlar to‘liq emas",
+			message: "Majburiy maydonlar to'liq emas",
 		});
 	}
 
 	try {
 		const newProduct = new Product(product);
 		await newProduct.save();
+
+		// Clear cache when new product is added
+		clearProductsCache();
 
 		res.status(201).json({ success: true, data: newProduct });
 	} catch (error) {
@@ -98,6 +159,9 @@ export const putProduct = async (req, res) => {
 	try {
 		const updated = await Product.findByIdAndUpdate(id, req.body, { new: true });
 
+		// Clear cache when product is updated
+		clearProductsCache();
+
 		res.status(200).json({ success: true, data: updated });
 	} catch (err) {
 		res.status(500).json({ success: false, message: "Yangilashda xato" });
@@ -110,6 +174,10 @@ export const deleteProduct = async (req, res) => {
 
 	try {
 		await Product.findByIdAndDelete(id)
+
+		// Clear cache when product is deleted
+		clearProductsCache();
+
 		res.status(200).json({ success: true, message: 'Product deleted' })
 	} catch (error) {
 		console.error('error in fetching products:', error.message)

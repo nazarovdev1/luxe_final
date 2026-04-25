@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import useProductService from '../server/server';
 
 // Cart reducer for state management
 const cartReducer = (state, action) => {
@@ -19,15 +20,12 @@ const cartReducer = (state, action) => {
 
       let newItems;
       if (existingItemIndex >= 0) {
-        // Update quantity if same product with same options exists
         newItems = [...state.items];
         newItems[existingItemIndex].quantity += action.payload.quantity;
       } else {
-        // Add new item
         newItems = [...state.items, action.payload];
       }
 
-      localStorage.setItem(action.userId ? `cart_${action.userId}` : 'cart', JSON.stringify(newItems));
       return {
         ...state,
         items: newItems,
@@ -39,7 +37,6 @@ const cartReducer = (state, action) => {
           ? { ...item, quantity: Math.max(1, action.payload.quantity) }
           : item
       );
-      localStorage.setItem(action.userId ? `cart_${action.userId}` : 'cart', JSON.stringify(updatedItems));
       return {
         ...state,
         items: updatedItems,
@@ -47,14 +44,12 @@ const cartReducer = (state, action) => {
       };
     case 'REMOVE_FROM_CART':
       const filteredItems = state.items.filter(item => item.id !== action.payload);
-      localStorage.setItem(action.userId ? `cart_${action.userId}` : 'cart', JSON.stringify(filteredItems));
       return {
         ...state,
         items: filteredItems,
         totalItems: filteredItems.reduce((sum, item) => sum + item.quantity, 0)
       };
     case 'CLEAR_CART':
-      localStorage.removeItem(action.userId ? `cart_${action.userId}` : 'cart');
       return {
         ...state,
         items: [],
@@ -72,31 +67,109 @@ const initialState = {
   totalItems: 0
 };
 
+// Helper: Get cart from localStorage for guests
+const getGuestCart = () => {
+  try {
+    const cart = localStorage.getItem('guestCart');
+    return cart ? JSON.parse(cart) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Helper: Save cart to localStorage for guests
+const saveGuestCart = (items) => {
+  try {
+    localStorage.setItem('guestCart', JSON.stringify(items));
+  } catch (e) {
+    console.error('Failed to save guest cart:', e);
+  }
+};
+
 export const CartProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Load cart from localStorage on mount and when user changes
+  const { updateUserCart } = useProductService();
+
+  // Load cart on mount or auth change
   useEffect(() => {
-    const cartKey = user ? `cart_${user.id}` : 'cart';
-    const savedCart = localStorage.getItem(cartKey);
-    if (savedCart) {
-      try {
-        const cartItems = JSON.parse(savedCart);
-        dispatch({ type: 'LOAD_CART', payload: cartItems });
-      } catch (error) {
-        console.error('Error loading cart:', error);
-        localStorage.removeItem(cartKey);
+    if (isAuthenticated && user) {
+      // User is logged in - load from user.cart (database)
+      // User is logged in
+      const userCart = user.cart || [];
+      const guestCart = getGuestCart();
+
+      if (userCart.length > 0) {
+        // User has items in DB - load them
+        console.log('📥 Loading user cart from DB:', userCart);
+        dispatch({ type: 'LOAD_CART', payload: userCart });
+      } else if (guestCart.length > 0) {
+        // User DB is empty, but we have a guest cart to merge
+        console.log('📥 Merging guest cart to user account');
+        dispatch({ type: 'LOAD_CART', payload: guestCart });
+        // Sync guest cart to backend
+        const token = localStorage.getItem('token');
+        if (token) {
+          updateUserCart(guestCart, token);
+        }
+        // Clear guest cart after merge
+        localStorage.removeItem('guestCart');
+      } else {
+        // Both DB and guest cart are empty - ensure state is cleared
+        // This fixes the bug where stale localStorage data might persist or items reappear
+        dispatch({ type: 'CLEAR_CART' });
       }
     } else {
-      // Clear cart if no saved cart for this user
-      dispatch({ type: 'LOAD_CART', payload: [] });
+      // Guest user - load from localStorage
+      const guestCart = getGuestCart();
+      dispatch({ type: 'LOAD_CART', payload: guestCart });
     }
-  }, [user]);
+  }, [isAuthenticated, user]);
+
+  // Auto-save cart whenever items change
+  // Use a ref to track if we've loaded the cart initially
+  const hasLoadedRef = React.useRef(false);
+
+  useEffect(() => {
+    // Skip only the very first render before loading from localStorage/database
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      return;
+    }
+
+    if (isAuthenticated) {
+      // Authenticated user - sync to database
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Optimistically update backend
+        updateUserCart(state.items, token).then(() => {
+          console.log('💾 Synced cart to database:', state.items);
+        }).catch(err => console.error('Sync error:', err));
+      }
+    } else {
+      // Guest user - save to localStorage
+      saveGuestCart(state.items);
+      console.log('💾 Saved guest cart:', state.items);
+    }
+  }, [state.items, isAuthenticated, updateUserCart]);
+
+  // Sync cart with backend database (for authenticated users)
+  const syncWithBackend = useCallback(async (newItems) => {
+    if (isAuthenticated) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await updateUserCart(newItems, token);
+      }
+    }
+    // Guest cart is now handled by useEffect above
+  }, [isAuthenticated, updateUserCart]);
 
   const addToCart = (product, selectedColor, selectedSize, quantity = 1) => {
+    // ALLOW GUESTS TO ADD TO CART (removed auth check here)
+
     const cartItem = {
-      id: Date.now().toString(), // Unique ID for cart item
+      id: Date.now().toString(),
       productId: product.id,
       name: product.name,
       price: product.price,
@@ -108,21 +181,49 @@ export const CartProvider = ({ children }) => {
     };
 
     console.log('🛍️ Adding to cart:', cartItem);
-    console.log('📸 Product image:', product.image);
 
-    dispatch({ type: 'ADD_TO_CART', payload: cartItem, userId: user?.id });
+    const currentItems = state.items;
+    const existingItemIndex = currentItems.findIndex(
+      item => item.productId === cartItem.productId &&
+        item.selectedColor === cartItem.selectedColor &&
+        item.selectedSize === cartItem.selectedSize
+    );
+
+    let newItems;
+    if (existingItemIndex >= 0) {
+      newItems = [...currentItems];
+      newItems[existingItemIndex] = {
+        ...newItems[existingItemIndex],
+        quantity: newItems[existingItemIndex].quantity + quantity
+      };
+    } else {
+      newItems = [...currentItems, cartItem];
+    }
+
+    dispatch({ type: 'ADD_TO_CART', payload: cartItem });
+    syncWithBackend(newItems);
+    return true;
   };
 
   const updateQuantity = (itemId, quantity) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id: itemId, quantity }, userId: user?.id });
+    const newItems = state.items.map(item =>
+      item.id === itemId
+        ? { ...item, quantity: Math.max(1, quantity) }
+        : item
+    );
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id: itemId, quantity } });
+    syncWithBackend(newItems);
   };
 
   const removeFromCart = (itemId) => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: itemId, userId: user?.id });
+    const newItems = state.items.filter(item => item.id !== itemId);
+    dispatch({ type: 'REMOVE_FROM_CART', payload: itemId });
+    syncWithBackend(newItems);
   };
 
   const clearCart = () => {
-    dispatch({ type: 'CLEAR_CART', userId: user?.id });
+    dispatch({ type: 'CLEAR_CART' });
+    syncWithBackend([]);
   };
 
   const getCartTotal = () => {

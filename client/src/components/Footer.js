@@ -6,55 +6,55 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer id="contact" className="bg-gray-900 border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <footer id="footer" className="bg-[#06040a] border-t border-white/5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Company Info */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-lg">L</span>
-              </div>
-              <span className="text-white font-bold text-xl">Luxury</span>
+          <div className="lg:col-span-4 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
+              <img src="/logoweb.png" alt="Logo" className="w-9 h-9 object-contain" />
+              <span className="text-white font-serif text-2xl tracking-wide">Luxury</span>
             </div>
-            <p className="text-gray-400 mb-6 leading-relaxed">
+            <p className="text-[#a1a1aa] text-[13px] leading-relaxed mb-8 max-w-sm">
               Zamonaviy fashion tendentsiyalari va premium sifatli mahsulotlar
-              bilan sizning uslubingizni yangi darajaga olib chiqamiz.
+              bilan sizning uslubingizni yangi darajaga olib chiqamiz. Har bir detalda nafosat.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Facebook className="w-5 h-5" />
+            <div className="flex justify-center md:justify-start gap-3">
+              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/5 text-[#a1a1aa] hover:bg-white/10 hover:text-white transition-all">
+                <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/5 text-[#a1a1aa] hover:bg-white/10 hover:text-white transition-all">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z" />
+                </svg>
               </a>
-              <a href="#" className="text-gray-400 hover:text-accent transition-colors">
-                <Twitter className="w-5 h-5" />
+              <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/5 text-[#a1a1aa] hover:bg-white/10 hover:text-white transition-all">
+                <Facebook className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Tezkor havolalar</h3>
-            <ul className="space-y-2">
+          <div className="lg:col-span-2 text-center md:text-left">
+            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 border-[#d6b47c] inline-block">Tezkor havolalar</h3>
+            <ul className="space-y-4">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-accent transition-colors">
+                <Link to="/" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Bosh sahifa
                 </Link>
               </li>
               <li>
-                <Link to="/#new-collection" className="text-gray-400 hover:text-accent transition-colors">
+                <Link to="/#new-collection" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Yangi kolleksiya
                 </Link>
               </li>
               <li>
-                <Link to="/#bestsellers" className="text-gray-400 hover:text-accent transition-colors">
+                <Link to="/#bestsellers" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Bestsellerlar
                 </Link>
               </li>
               <li>
-                <Link to="/#about" className="text-gray-400 hover:text-accent transition-colors">
+                <Link to="/#about" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Biz haqimizda
                 </Link>
               </li>
@@ -62,72 +62,89 @@ const Footer = () => {
           </div>
 
           {/* Categories */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Kategoriyalar</h3>
-            <ul className="space-y-2">
+          <div className="lg:col-span-2 text-center md:text-left">
+            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 border-[#d6b47c] inline-block">Kategoriyalar</h3>
+            <ul className="space-y-4">
               <li>
-                <a href="#" className="text-gray-400 hover:text-accent transition-colors">
+                <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Kombinezonlar
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-accent transition-colors">
+                <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Ko'ylaklar
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-accent transition-colors">
+                <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Sviterlar
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-accent transition-colors">
+                <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
                   Tuflilar
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-white font-semibold text-lg mb-4">Aloqa</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-accent flex-shrink-0" />
-                <span className="text-gray-400">
-                  Toshkent, O'zbekiston
-                </span>
+          {/* Contact Info Card */}
+          <div className="lg:col-span-4 text-center md:text-left">
+            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6">Aloqa</h3>
+            <div className="rounded-2xl border border-white/5 bg-[#100c14]/50 p-6 space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1a1525]">
+                  <MapPin className="w-4 h-4 text-[#d6b47c]" />
+                </div>
+                <div className="text-left mt-1">
+                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">Manzil</p>
+                  <p className="text-[13px] text-[#e4e4e7] leading-relaxed">
+                    Toshkent, O'zbekiston<br />Amir Temur ko'chasi 12
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-accent flex-shrink-0" />
-                <span className="text-gray-400">
-                  +998 90 123 45 67
-                </span>
+
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1a1525]">
+                  <Phone className="w-4 h-4 text-[#d6b47c]" />
+                </div>
+                <div className="text-left mt-1">
+                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">Telefon</p>
+                  <p className="text-[13px] text-[#e4e4e7]">
+                    +998 88 429 99 69
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-accent flex-shrink-0" />
-                <span className="text-gray-400">
-                  info@luxury.uz
-                </span>
+
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1a1525]">
+                  <Mail className="w-4 h-4 text-[#d6b47c]" />
+                </div>
+                <div className="text-left mt-1">
+                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">Email</p>
+                  <p className="text-[13px] text-[#e4e4e7]">
+                    support@luxx.uz
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © {currentYear} Luxury Fashion Store. Barcha huquqlar himoyalangan.
+        <div className="border-t border-white/5 mt-16 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[#71717a] text-[11px] tracking-wide">
+              © 2026 Luxury Fashion Store. Barcha huquqlar himoyalangan.
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-accent text-sm transition-colors">
+            <div className="flex space-x-8">
+              <Link to="/privacy-policy" className="text-[#71717a] hover:text-[#d6b47c] text-[12px] transition-colors">
                 Maxfiylik siyosati
-              </a>
-              <a href="#" className="text-gray-400 hover:text-accent text-sm transition-colors">
+              </Link>
+              <Link to="/terms" className="text-[#71717a] hover:text-[#d6b47c] text-[12px] transition-colors">
                 Foydalanish shartlari
-              </a>
-              <a href="#" className="text-gray-400 hover:text-accent text-sm transition-colors">
+              </Link>
+              <a href="#" className="text-[#71717a] hover:text-[#d6b47c] text-[12px] transition-colors">
                 Yetkazish
               </a>
             </div>

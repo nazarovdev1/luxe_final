@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /checkout
+Disallow: /cart
+Disallow: /profile
+Disallow: /mobile/admin
+Disallow: /mobile/checkout
+Sitemap: https://luxx.uz/sitemap.xml

@@ -1,259 +1,335 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, X } from 'lucide-react';
+import {
+  ChevronRight,
+  Crown,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Package,
+  Search,
+  ShoppingCart,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
 const Navbar = ({ onSearchClick, onCartClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { totalItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const userMenuRef = useRef(null);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const navItems = [
+    { name: 'Bosh sahifa', sectionId: 'hero' },
+    { name: 'Luxe kiyimlar', link: '/products' },
+    { name: 'Looklar', link: '/lookbooks' },
+    { name: 'Biz haqimizda', sectionId: 'about' },
+    { name: 'Savollar', link: '/faq' },
+    { name: 'Aloqa', link: '/contact' },
+  ];
 
-  // Smooth scroll to section
-  const scrollToSection = (sectionId) => {
-    // If not on home page, navigate to home with hash
+  const closeAllMenus = () => {
+    setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
+  };
+
+  const scrollToSection = sectionId => {
     if (location.pathname !== '/') {
       navigate(`/#${sectionId}`);
       return;
     }
 
-    // If on home page, scroll to section
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({
         behavior: 'smooth',
-        block: 'start'
+        block: 'start',
       });
     }
   };
 
-  // Handle navigation link clicks
   const handleNavClick = (e, sectionId) => {
     e.preventDefault();
     scrollToSection(sectionId);
-    setIsMenuOpen(false); // Close mobile menu
+    setIsMenuOpen(false);
   };
 
-  // Close user menu when clicking outside
+  const handleSearchClick = () => {
+    if (onSearchClick) onSearchClick();
+  };
+
+  const handleCartClick = () => {
+    if (onCartClick) {
+      onCartClick();
+      return;
+    }
+    navigate('/checkout');
+  };
+
+  const isItemActive = item => {
+    if (item.link) return location.pathname === item.link;
+    if (item.sectionId === 'hero') return location.pathname === '/';
+    return false;
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    closeAllMenus();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = event => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const navItems = [
-    { name: 'Bosh sahifa', sectionId: 'hero' },
-    { name: 'Yangi kolleksiya', sectionId: 'new-collection' },
-    { name: 'Bestsellerlar', sectionId: 'bestsellers' },
-    { name: 'Biz haqimizda', sectionId: 'about' },
-    { name: 'Savollar', sectionId: 'faq' },
-    { name: 'Aloqa', sectionId: 'contact' }
-  ];
-
   return (
-    <nav className="bg-gray-900/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50" style={{ backdropFilter: 'blur(10px)' }}>
+    <nav
+      className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 pointer-events-auto ${isScrolled
+        ? 'bg-[#0a0a0a]/75 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]'
+        : 'bg-transparent border-b border-transparent'
+        }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            {/* <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-              <span className="text-accent-foreground font-bold text-lg">L</span>
-            </div> */}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-600 to-purple-600 font-bold text-2xl">LUXE</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={(e) => handleNavClick(e, item.sectionId)}
-                className="text-gray-300 hover:text-white transition-all duration-300 font-medium relative group"
-              >
-                {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-fuchsia-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-              </button>
-            ))}
-          </div>
-
-          {/* Right side actions */}
-          <div className="flex items-center space-x-4 lg:space-x-7 h-full">
-            {/* Search */}
-            <button
-              onClick={onSearchClick}
-              className="text-gray-400 hover:text-white transition-colors"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-
-            {/* Profile Link or Login/Register */}
-            {isAuthenticated ? (
-              <Link to="/profile" className="text-gray-400 hover:text-white transition-colors">
-                <User className="h-5 w-5" />
-              </Link>
-            ) : (
-              <div className="hidden md:flex items-center space-x-4">
-                <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
-                  Kirish
-                </Link>
-                <Link to="/register" className="text-sm font-medium bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white px-5 py-2.5 rounded-full shadow-lg hover:shadow-fuchsia-500/25 transform hover:-translate-y-0.5 transition-all duration-200">
-                  Ro'yxatdan o'tish
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile Profile Icon (always show on mobile) */}
-            <Link to="/profile" className="md:hidden text-gray-400 hover:text-white transition-colors">
-              <User className="h-5 w-5" />
+        <div className="w-full">
+          <div className="relative h-[76px] flex items-center justify-between gap-4">
+            <Link to="/" className="flex items-center min-w-0">
+              <img src="/logonav.png" alt="Luxx logo" className="h-16 w-[90px] object-contain" />
             </Link>
 
-            {/* Cart */}
-            <button
-              onClick={onCartClick}
-              className="text-gray-400 hover:text-white transition-colors relative"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
-                  {totalItems > 9 ? '9+' : totalItems}
-                </span>
-              )}
-            </button>
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
+              {navItems.map(item => {
+                const active = isItemActive(item);
+                const baseClass = `relative group py-1 text-[12px] font-medium tracking-[0.1em] uppercase transition-all duration-300 ${active
+                  ? 'text-[#d6b47c]'
+                  : 'text-white hover:text-[#d6b47c]'
+                  }`;
 
-            {/* User Menu (Admin/Auth) - Keeping this if needed, but Profile Link is primary for now */}
-            {isAuthenticated && (
-              <div className="relative flex items-center h-full" ref={userMenuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="text-gray-400 hover:text-white transition-colors ml-2"
-                >
-                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-xs">
-                    {user?.username?.[0]?.toUpperCase()}
-                  </div>
-                </button>
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 top-full w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10">
-                    {isAdmin && (
-                      <Link
-                        to="/admin"
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        Admin panel
-                      </Link>
-                    )}
-                    <div className="px-4 py-2 text-sm text-gray-400 border-t border-gray-700">
-                      Salom, {user?.username}
-                    </div>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Mening buyurtmalarim
-                    </Link>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
-                    >
-                      Chiqish
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+                const underline = <span className={`absolute bottom-0 left-0 h-[1.5px] bg-[#d6b47c] transition-all duration-300 ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>;
 
-            {/* Mobile menu button */}
-            <button
-              onClick={toggleMenu}
-              className="md:hidden text-gray-400 hover:text-white transition-colors"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-800 rounded-md mt-2">
-              {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={(e) => handleNavClick(e, item.sectionId)}
-                  className="block w-full text-left px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-                >
-                  {item.name}
-                </button>
-              ))}
-              <Link
-                to="/profile"
-                className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Buyurtmalarim
-              </Link>
-              {isAuthenticated ? (
-                <>
-                  {isAdmin && (
-                    <Link
-                      to="/admin"
-                      className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Admin panel
-                    </Link>
-                  )}
-                  <div className="px-3 py-2 text-sm text-gray-400">
-                    Salom, {user?.username}
-                  </div>
+                return item.link ? (
+                  <Link key={item.name} to={item.link} className={baseClass}>
+                    {item.name}
+                    {underline}
+                  </Link>
+                ) : (
                   <button
-                    onClick={() => {
-                      logout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block w-full text-left px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
+                    key={item.name}
+                    onClick={e => handleNavClick(e, item.sectionId)}
+                    className={baseClass}
                   >
-                    Chiqish
+                    {item.name}
+                    {underline}
                   </button>
-                </>
-              ) : (
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-4 sm:gap-6">
+              <button
+                onClick={handleSearchClick}
+                className="text-white hover:text-[#d6b47c] transition-colors duration-300"
+                aria-label="Qidiruv"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+
+              <button
+                onClick={handleCartClick}
+                className="relative text-white hover:text-[#d6b47c] transition-colors duration-300"
+                aria-label="Savat"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[16px] h-[16px] px-1 rounded-full bg-[#d6b47c] text-[#0a0a0a] text-[10px] font-bold flex items-center justify-center">
+                    {totalItems > 9 ? '9+' : totalItems}
+                  </span>
+                )}
+              </button>
+
+              {!isAuthenticated && (
                 <>
                   <Link
                     to="/login"
-                    className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="hidden lg:inline-flex px-3.5 py-2 text-sm text-neutral-300 hover:text-white transition-colors"
                   >
                     Kirish
                   </Link>
                   <Link
                     to="/register"
-                    className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="hidden sm:inline-flex items-center justify-center rounded-[14px] bg-[#f4f4f4] px-[17px] py-2.5 text-[12px] font-semibold tracking-[0.05em] uppercase text-[#1a1a1a] hover:bg-white transition-colors"
                   >
                     Ro'yxatdan o'tish
                   </Link>
                 </>
               )}
+
+              {isAuthenticated && (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(prev => !prev)}
+                    className="h-10 w-10 rounded-xl border border-[#d6b47c]/30 bg-gradient-to-b from-white/[0.16] via-white/[0.08] to-white/[0.03] backdrop-blur-md text-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_0_0_1px_rgba(142,166,214,0.12),0_8px_24px_rgba(4,8,20,0.45)] hover:text-white hover:from-white/[0.2] hover:via-white/[0.1] hover:to-white/[0.05] hover:border-[#d6b47c]/45 transition-all duration-200 flex items-center justify-center"
+                  >
+                    <span className="text-sm font-semibold">{user?.username?.[0]?.toUpperCase() || 'U'}</span>
+                  </button>
+
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[#8ea6d6]/25 bg-[#111725]/95 backdrop-blur-xl p-2 shadow-2xl">
+                      <div className="px-3 py-2 border-b border-[#8ea6d6]/20">
+                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Akkount</p>
+                        <p className="mt-1 text-sm font-medium text-neutral-200 truncate">Salom, {user?.username}</p>
+                      </div>
+
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Admin panel
+                        </Link>
+                      )}
+
+                      <Link
+                        to="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
+                      >
+                        <Package className="h-4 w-4" />
+                        Mening buyurtmalarim
+                      </Link>
+
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Chiqish
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={() => setIsMenuOpen(prev => !prev)}
+                className="md:hidden h-10 w-10 rounded-xl border border-[#d6b47c]/30 bg-gradient-to-b from-white/[0.16] via-white/[0.08] to-white/[0.03] backdrop-blur-md text-neutral-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_0_0_1px_rgba(142,166,214,0.12),0_8px_24px_rgba(4,8,20,0.45)] hover:text-white hover:from-white/[0.2] hover:via-white/[0.1] hover:to-white/[0.05] hover:border-[#d6b47c]/45 transition-all duration-200 flex items-center justify-center"
+                aria-label="Menyu"
+              >
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
             </div>
           </div>
-        )}
+
+          {isMenuOpen && (
+            <div className="md:hidden relative pb-3">
+              <div className="rounded-2xl border border-[#8ea6d6]/25 bg-[#0f1422]/92 backdrop-blur-xl p-2.5 space-y-1.5">
+                {navItems.map(item => {
+                  const content = (
+                    <span className="flex items-center justify-between w-full">
+                      <span>{item.name}</span>
+                      <ChevronRight className="h-4 w-4 text-neutral-500" />
+                    </span>
+                  );
+
+                  return item.link ? (
+                    <Link
+                      key={item.name}
+                      to={item.link}
+                      className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {content}
+                    </Link>
+                  ) : (
+                    <button
+                      key={item.name}
+                      onClick={e => handleNavClick(e, item.sectionId)}
+                      className="w-full flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                    >
+                      {content}
+                    </button>
+                  );
+                })}
+
+                <div className="border-t border-[#8ea6d6]/20 pt-1.5 mt-1.5">
+                  {isAuthenticated ? (
+                    <>
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Admin panel
+                        </Link>
+                      )}
+                      <Link
+                        to="/profile"
+                        className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Buyurtmalarim
+                      </Link>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full text-left rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                      >
+                        Chiqish
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/login"
+                        className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Kirish
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="mt-1 flex items-center justify-center rounded-xl bg-[#f5f5f5] px-3 py-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#1a1a1a]"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Ro'yxatdan o'tish
+                      </Link>
+                    </>
+                  )}
+                </div>
+
+                <div className="rounded-xl border border-[#d6b47c]/30 bg-black/25 px-3 py-2 text-xs text-neutral-400 flex items-center gap-2 mt-1">
+                  <Crown className="h-3.5 w-3.5 text-[#d6b47c]" />
+                  Luxx premium navigation
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );

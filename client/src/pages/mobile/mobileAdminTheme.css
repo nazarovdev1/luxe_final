@@ -1,0 +1,364 @@
+.mobile-admin-shell {
+  --ma-bg-1: #06101b;
+  --ma-bg-2: #0e1a2b;
+  --ma-card: rgba(13, 24, 39, 0.86);
+  --ma-soft: rgba(16, 29, 47, 0.68);
+  --ma-border: rgba(124, 145, 177, 0.25);
+  --ma-text: #f2f6ff;
+  --ma-muted: #95a6c0;
+  --ma-accent: #f6b73a;
+  --ma-accent-2: #f2853f;
+  --ma-info: #5eb7f5;
+  --ma-danger: #ff6f81;
+  --ma-success: #42d79f;
+  min-height: 100vh;
+  color: var(--ma-text);
+  background:
+    radial-gradient(460px circle at 8% -4%, rgba(246, 183, 58, 0.22), transparent 50%),
+    radial-gradient(360px circle at 98% 8%, rgba(94, 183, 245, 0.2), transparent 54%),
+    linear-gradient(162deg, var(--ma-bg-1), var(--ma-bg-2));
+}
+
+.mobile-admin-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), transparent 70%);
+}
+
+.mobile-admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+  backdrop-filter: blur(14px);
+  background: rgba(5, 12, 21, 0.78);
+  border-bottom: 1px solid rgba(140, 160, 188, 0.22);
+}
+
+.mobile-admin-title {
+  font-family: 'Brilliant', 'Trebuchet MS', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mobile-admin-card {
+  background: var(--ma-card);
+  border: 1px solid var(--ma-border);
+  border-radius: 18px;
+  box-shadow: 0 14px 35px rgba(4, 8, 16, 0.42);
+}
+
+.mobile-admin-card-soft {
+  background: var(--ma-soft);
+  border: 1px solid rgba(124, 145, 177, 0.2);
+  border-radius: 14px;
+}
+
+.mobile-admin-muted {
+  color: var(--ma-muted);
+}
+
+.mobile-admin-tabs {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mobile-admin-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-admin-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(124, 145, 177, 0.3);
+  background: rgba(14, 24, 39, 0.8);
+  color: var(--ma-muted);
+  border-radius: 999px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.22s ease;
+}
+
+.mobile-admin-tab-active {
+  color: #0d1624;
+  border-color: rgba(246, 183, 58, 0.55);
+  background: linear-gradient(122deg, var(--ma-accent), var(--ma-accent-2));
+  box-shadow: 0 10px 24px rgba(246, 183, 58, 0.34);
+}
+
+.mobile-admin-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.58rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mobile-admin-pill-info {
+  background: rgba(94, 183, 245, 0.15);
+  border: 1px solid rgba(94, 183, 245, 0.35);
+  color: #9ad3fa;
+}
+
+.mobile-admin-pill-success {
+  background: rgba(66, 215, 159, 0.15);
+  border: 1px solid rgba(66, 215, 159, 0.34);
+  color: #9ef0ca;
+}
+
+.mobile-admin-pill-danger {
+  background: rgba(255, 111, 129, 0.15);
+  border: 1px solid rgba(255, 111, 129, 0.34);
+  color: #ffafba;
+}
+
+.mobile-admin-pill-warning {
+  background: rgba(246, 183, 58, 0.15);
+  border: 1px solid rgba(246, 183, 58, 0.34);
+  color: #ffd98c;
+}
+
+.mobile-admin-input,
+.mobile-admin-select,
+.mobile-admin-textarea {
+  width: 100%;
+  background: rgba(9, 18, 31, 0.78);
+  border: 1px solid rgba(124, 145, 177, 0.38);
+  border-radius: 12px;
+  padding: 0.72rem 0.86rem;
+  color: var(--ma-text);
+  font-size: 0.95rem;
+}
+
+.mobile-admin-input::placeholder,
+.mobile-admin-textarea::placeholder {
+  color: #7e8fab;
+}
+
+.mobile-admin-input:focus,
+.mobile-admin-select:focus,
+.mobile-admin-textarea:focus {
+  outline: none;
+  border-color: rgba(246, 183, 58, 0.74);
+  box-shadow: 0 0 0 3px rgba(246, 183, 58, 0.16);
+}
+
+.mobile-admin-btn-primary,
+.mobile-admin-btn-secondary,
+.mobile-admin-btn-danger,
+.mobile-admin-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.mobile-admin-btn-primary {
+  background: linear-gradient(122deg, var(--ma-accent), var(--ma-accent-2));
+  color: #0e1726;
+  box-shadow: 0 10px 24px rgba(246, 183, 58, 0.33);
+}
+
+.mobile-admin-btn-secondary {
+  background: rgba(12, 23, 37, 0.76);
+  border: 1px solid rgba(124, 145, 177, 0.34);
+  color: var(--ma-text);
+}
+
+.mobile-admin-btn-danger {
+  background: rgba(55, 17, 25, 0.82);
+  border: 1px solid rgba(255, 111, 129, 0.38);
+  color: #ffafba;
+}
+
+.mobile-admin-icon-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  background: rgba(13, 24, 39, 0.72);
+  border: 1px solid rgba(124, 145, 177, 0.3);
+  color: var(--ma-muted);
+}
+
+.mobile-admin-icon-btn-active {
+  border-color: rgba(246, 183, 58, 0.5);
+  color: var(--ma-accent);
+}
+
+.mobile-admin-empty {
+  border: 1px dashed rgba(124, 145, 177, 0.35);
+  border-radius: 15px;
+  background: rgba(9, 18, 31, 0.6);
+}
+
+.mobile-admin-loading {
+  border-width: 3px;
+  border-style: solid;
+  border-color: rgba(246, 183, 58, 0.25);
+  border-top-color: var(--ma-accent);
+  border-radius: 999px;
+  animation: mobile-admin-spin 0.92s linear infinite;
+}
+
+@keyframes mobile-admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* LookbookManager (admin-* classes) in mobile admin shell */
+.mobile-admin-shell .admin-section-title {
+  color: var(--ma-text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mobile-admin-shell .admin-muted {
+  color: var(--ma-muted);
+}
+
+.mobile-admin-shell .admin-card-soft {
+  background: var(--ma-soft);
+  border: 1px solid rgba(124, 145, 177, 0.2);
+  border-radius: 14px;
+}
+
+.mobile-admin-shell .admin-input,
+.mobile-admin-shell .admin-select,
+.mobile-admin-shell .admin-textarea {
+  width: 100%;
+  background: rgba(9, 18, 31, 0.78);
+  border: 1px solid rgba(124, 145, 177, 0.38);
+  border-radius: 12px;
+  padding: 0.72rem 0.86rem;
+  color: var(--ma-text);
+  font-size: 0.95rem;
+}
+
+.mobile-admin-shell .admin-input::placeholder,
+.mobile-admin-shell .admin-textarea::placeholder {
+  color: #7e8fab;
+}
+
+.mobile-admin-shell .admin-input:focus,
+.mobile-admin-shell .admin-select:focus,
+.mobile-admin-shell .admin-textarea:focus {
+  outline: none;
+  border-color: rgba(246, 183, 58, 0.74);
+  box-shadow: 0 0 0 3px rgba(246, 183, 58, 0.16);
+}
+
+.mobile-admin-shell .admin-btn-primary,
+.mobile-admin-shell .admin-btn-secondary,
+.mobile-admin-shell .admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.mobile-admin-shell .admin-btn-primary {
+  background: linear-gradient(122deg, var(--ma-accent), var(--ma-accent-2));
+  color: #0e1726;
+  box-shadow: 0 10px 24px rgba(246, 183, 58, 0.33);
+}
+
+.mobile-admin-shell .admin-btn-secondary {
+  background: rgba(12, 23, 37, 0.76);
+  border: 1px solid rgba(124, 145, 177, 0.34);
+  color: var(--ma-text);
+}
+
+.mobile-admin-shell .admin-btn-danger {
+  background: rgba(55, 17, 25, 0.82);
+  border: 1px solid rgba(255, 111, 129, 0.38);
+  color: #ffafba;
+}
+
+.mobile-admin-shell .admin-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.58rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mobile-admin-shell .admin-pill-info {
+  background: rgba(94, 183, 245, 0.15);
+  border: 1px solid rgba(94, 183, 245, 0.35);
+  color: #9ad3fa;
+}
+
+.mobile-admin-shell .admin-pill-best,
+.mobile-admin-shell .admin-pill-warning {
+  background: rgba(246, 183, 58, 0.15);
+  border: 1px solid rgba(246, 183, 58, 0.34);
+  color: #ffd98c;
+}
+
+.mobile-admin-shell .admin-pill-success,
+.mobile-admin-shell .admin-pill-new {
+  background: rgba(66, 215, 159, 0.15);
+  border: 1px solid rgba(66, 215, 159, 0.34);
+  color: #9ef0ca;
+}
+
+.mobile-admin-shell .admin-pill-danger {
+  background: rgba(255, 111, 129, 0.15);
+  border: 1px solid rgba(255, 111, 129, 0.34);
+  color: #ffafba;
+}
+
+.mobile-admin-shell .admin-empty-state {
+  border: 1px dashed rgba(124, 145, 177, 0.35);
+  border-radius: 15px;
+  background: rgba(9, 18, 31, 0.6);
+}
+
+.mobile-admin-shell .admin-loading-ring {
+  border-width: 3px;
+  border-style: solid;
+  border-color: rgba(246, 183, 58, 0.25);
+  border-top-color: var(--ma-accent);
+  border-radius: 999px;
+  animation: mobile-admin-spin 0.92s linear infinite;
+}
+
+.mobile-admin-shell .admin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(157, 174, 199, 0.45) rgba(9, 18, 31, 0.35);
+}
+
+.mobile-admin-shell .admin-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.mobile-admin-shell .admin-scroll::-webkit-scrollbar-track {
+  background: rgba(9, 18, 31, 0.35);
+}
+
+.mobile-admin-shell .admin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(157, 174, 199, 0.45);
+  border-radius: 999px;
+}

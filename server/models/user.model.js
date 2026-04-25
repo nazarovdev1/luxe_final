@@ -15,10 +15,26 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'manager'],
+        default: 'user'
+    },
     isAdmin: {
         type: Boolean,
         default: false
-    }
+    },
+    fcmToken: {
+        type: String,
+        default: null
+    },
+    cart: {
+        type: Array,
+        default: []
+    },
+    savedProducts: [{
+        type: String  // Product IDs
+    }]
 }, {
     timestamps: true
 })

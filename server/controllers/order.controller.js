@@ -4,6 +4,8 @@
 
 import { sendOrderToTelegram } from '../services/telegram.service.js'
 import Order from '../models/order.model.js'
+import User from '../models/user.model.js'
+// import { sendOrderStatusNotification } from '../utils/firebase.js'
 
 // EN: Process new order
 // UZ: Yangi zakasni qayta ishlash
@@ -54,7 +56,16 @@ export const createOrder = async (req, res) => {
 		})
 		await newOrder.save()
 
+
 		console.log('✅ Order saved to database:', newOrder._id)
+
+		// Clear user cart if userId exists
+		if (userId) {
+			console.log('🧹 Clearing cart for user:', userId)
+			await User.findByIdAndUpdate(userId, { cart: [] })
+		}
+
+		// TELEGRAM ENABLED
 		console.log('Sending order to Telegram...', { customer, items: items.length, totals: orderTotals })
 		const telegramResult = await sendOrderToTelegram({
 			customer,
@@ -121,13 +132,6 @@ export const getAllOrders = async (req, res) => {
 			.sort({ createdAt: -1 })
 
 		console.log('✅ Found orders:', orders.length)
-		if (orders.length > 0) {
-			console.log('Orders:', orders.map(o => ({
-				id: o._id.toString().slice(-6),
-				customer: o.customer.name,
-				total: o.totals?.total
-			})))
-		}
 
 		res.json({
 			success: true,
@@ -150,7 +154,7 @@ export const updateOrderStatus = async (req, res) => {
 		const { status } = req.body
 
 		// Validate status
-		const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+		const validStatuses = ['Kutilmoqda', 'Jarayonda', 'Yetkazilmoqda', 'Yetkazildi', 'Bekor qilindi']
 		if (!validStatuses.includes(status)) {
 			return res.status(400).json({
 				success: false,
@@ -162,7 +166,7 @@ export const updateOrderStatus = async (req, res) => {
 			id,
 			{ status },
 			{ new: true }
-		)
+		).populate('user', 'fcmToken')
 
 		if (!order) {
 			return res.status(404).json({
@@ -170,6 +174,24 @@ export const updateOrderStatus = async (req, res) => {
 				message: 'Buyurtma topilmadi'
 			})
 		}
+
+		// FIREBASE DISABLED
+		// Send push notification if user has FCM token
+		// if (order.user?.fcmToken) {
+		// 	console.log('📱 Sending push notification to user...')
+		// 	const pushResult = await sendOrderStatusNotification(
+		// 		order.user.fcmToken,
+		// 		order._id.toString(),
+		// 		status
+		// 	)
+		// 	if (pushResult.success) {
+		// 		console.log('✅ Push notification sent successfully')
+		// 	} else {
+		// 		console.log('⚠️ Push notification failed:', pushResult.error)
+		// 	}
+		// } else {
+		// 	console.log('ℹ️ No FCM token for this order user')
+		// }
 
 		res.json({
 			success: true,

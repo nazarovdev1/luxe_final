@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
 
 const FAQ = () => {
     const [openIndex, setOpenIndex] = useState(null);
@@ -13,13 +13,13 @@ const FAQ = () => {
             question: "Yetkazib berish qancha vaqt oladi?",
             answer: (
                 <>
-                    Toshkent shahri bo'ylab yetkazib berish 3-6 <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-600 to-purple-600 font-semibold">soat</span> ichida amalga oshiriladi. Boshqa viloyatlarga yetkazib berish hozircha mavjud emas :( | Barcha buyurtmalar bepul yetkazib beriladi.
+                    Toshkent shahri bo'ylab yetkazib berish <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500 font-semibold">3-6 soat</span> ichida amalga oshiriladi. Boshqa viloyatlarga yetkazib berish hozircha mavjud emas :( | Barcha buyurtmalar bepul yetkazib beriladi.
                 </>
             )
         },
         {
             question: "To'lov usullari qanday?",
-            answer: "Biz naqd pul, Click va Payme orqali to'lovni qabul qilamiz. Mahsulot yetkazib berilganda naqd to'lash yoki oldindan onlayn to'lash imkoniyati mavjud."
+            answer: "Naqd pul orqali, Click va Payme orqali to'lov tez orada amalga oshiriladi. Mahsulot yetkazib berilganda naqd to'lash imkoniyati mavjud."
         },
         {
             question: "Mahsulotni qaytarish mumkinmi?",
@@ -48,42 +48,68 @@ const FAQ = () => {
     };
 
     return (
-        <section id="faq" className="py-20 bg-gray-900">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="faq" className="py-20 bg-[#0c0815] relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-600/5 rounded-full blur-3xl" />
+
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                 {/* Header */}
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-600 to-purple-600 mb-4 pb-5">
-                        Ko'p beriladigan savollar
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/20 mb-6">
+                        <HelpCircle className="w-4 h-4 text-purple-400" />
+                        <span className="text-purple-400 text-sm font-medium">SAVOLLAR</span>
+                    </div>
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                        Ko'p beriladigan <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500">savollar</span>
                     </h2>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                    <p className="text-lg text-gray-400 max-w-2xl mx-auto">
                         Sizni qiziqtirgan savollar javoblari bilan tanishing
                     </p>
                 </div>
 
                 {/* FAQ Items */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {faqs.map((faq, index) => (
                         <div
                             key={index}
-                            className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden transition-all duration-300 hover:border-purple-600/50"
+                            className={`group relative rounded-2xl transition-all duration-300 ${openIndex === index
+                                    ? 'bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 border-purple-500/30'
+                                    : 'bg-white/5 hover:bg-white/10 border-white/10'
+                                } border backdrop-blur-sm`}
                         >
+                            {/* Question Button */}
                             <button
                                 onClick={() => toggleFAQ(index)}
-                                className="w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none group"
+                                className="w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none"
                             >
-                                <span className="text-lg font-semibold text-white group-hover:text-purple-400 transition-colors">
-                                    {faq.question}
-                                </span>
-                                <ChevronDown
-                                    className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${openIndex === index ? 'rotate-180 text-purple-400' : ''
-                                        }`}
-                                />
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${openIndex === index
+                                            ? 'bg-gradient-to-br from-purple-500 to-fuchsia-500'
+                                            : 'bg-white/10 group-hover:bg-purple-500/20'
+                                        }`}>
+                                        <span className={`text-sm font-semibold ${openIndex === index ? 'text-white' : 'text-gray-400'}`}>
+                                            {String(index + 1).padStart(2, '0')}
+                                        </span>
+                                    </div>
+                                    <span className={`text-lg font-medium transition-colors ${openIndex === index ? 'text-white' : 'text-gray-300 group-hover:text-white'
+                                        }`}>
+                                        {faq.question}
+                                    </span>
+                                </div>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${openIndex === index
+                                        ? 'bg-purple-500/20 rotate-180'
+                                        : 'bg-white/5 group-hover:bg-white/10'
+                                    }`}>
+                                    <ChevronDown className={`w-4 h-4 transition-colors ${openIndex === index ? 'text-purple-400' : 'text-gray-500'
+                                        }`} />
+                                </div>
                             </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-96' : 'max-h-0'
-                                    }`}
-                            >
-                                <div className="px-6 pb-5 text-gray-300 leading-relaxed">
+
+                            {/* Answer */}
+                            <div className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-96' : 'max-h-0'
+                                }`}>
+                                <div className="px-6 pb-5 pl-[4.5rem] text-gray-400 leading-relaxed">
                                     {faq.answer}
                                 </div>
                             </div>
@@ -92,16 +118,22 @@ const FAQ = () => {
                 </div>
 
                 {/* Contact CTA */}
-                <div className="mt-12 text-center">
-                    <p className="text-gray-400 mb-4">
-                        Javobini topa olmadingizmi?
-                    </p>
-                    <a
-                        href="#contact"
-                        className="inline-flex items-center px-6 py-3 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
-                    >
-                        Biz bilan bog'laning
-                    </a>
+                <div className="mt-16 text-center">
+                    <div className="inline-flex flex-col items-center gap-4 p-8 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 rounded-3xl border border-purple-500/20">
+                        <div className="w-14 h-14 bg-none rounded-2xl flex items-center justify-center">
+                            <MessageCircle className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-white font-semibold text-lg mb-1">Javobini topa olmadingizmi?</p>
+                            <p className="text-gray-400 text-sm">Biz bilan bog'laning, yordam beramiz</p>
+                        </div>
+                        <a
+                            href="#contact"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-400 hover:to-fuchsia-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-purple-500/30"
+                        >
+                            Bog'lanish
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>

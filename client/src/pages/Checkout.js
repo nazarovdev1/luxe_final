@@ -1,406 +1,716 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, MapPin, Phone, User, CreditCard, Truck, CheckCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle,
+  ChevronRight,
+  CreditCard,
+  MapPin,
+  Navigation,
+  Phone,
+  Gem,
+  Truck,
+  User,
+  Tag,
+  X
+} from 'lucide-react';
 import useProductService from '../server/server';
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+const THEME = {
+  bgBase: '#07090f',
+  panelA: '#121722',
+  panelB: '#1a202d',
+  accentIvory: '#f4f1eb',
+  accentGraphite: '#2d3442',
+  textMain: '#f4f1eb',
+  textMuted: '#9aa3b2',
+  textSoft: '#c7ceda',
+};
+
+const REGIONS = [
+  'Bektemir',
+  'Chilanzar',
+  'Yashnobod',
+  'Mirobod',
+  "Mirzo Ulug'bek",
+  'Sergeli',
+  'Shayxontohur',
+  'Olmazor',
+  'Uchtepa',
+  'Yakkasaray',
+  'Yunusabad',
+  'Yangihayot',
+];
+
+const parsePrice = (priceValue) => {
+  if (typeof priceValue === 'string') {
+    return parseFloat(priceValue.replace(/[^0-9.]/g, '')) || 0;
+  }
+  return parseFloat(priceValue) || 0;
+};
+
+const formatMoney = (value) => {
+  const number = Number(value) || 0;
+  return number.toLocaleString('en-US');
+};
+
+const DotLoader = ({ colorClass = 'bg-[#111319]' }) => {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${colorClass}`} />
+      <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${colorClass} [animation-delay:120ms]`} />
+      <span className={`h-1.5 w-1.5 animate-pulse rounded-full ${colorClass} [animation-delay:240ms]`} />
+    </span>
+  );
+};
+
+function LocationMarker({ position, setPosition }) {
+  const map = useMapEvents({
+    click(event) {
+      setPosition(event.latlng);
+      map.flyTo(event.latlng, map.getZoom());
+    },
+    locationfound(event) {
+      setPosition(event.latlng);
+      map.flyTo(event.latlng, map.getZoom());
+    },
+    locationerror() {
+      toast.error("Joylashuvni aniqlab bo'lmadi. Xaritadan belgilang.");
+    },
+  });
+
+  return position === null ? null : <Marker position={position} />;
+}
+
+function LocationButton() {
+  const map = useMap();
+
+  const handleLocate = (event) => {
+    event.preventDefault();
+    map.locate({ setView: true, maxZoom: 16 });
+  };
+
+  return (
+    <div className="leaflet-bottom leaflet-right">
+      <div className="leaflet-control leaflet-bar !border-0 !bg-transparent !shadow-none">
+        <button
+          onClick={handleLocate}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1b2130] text-[#f4f1eb] shadow-[0_8px_20px_rgba(8,10,18,0.45)] transition-colors hover:bg-[#232b3e]"
+          title="Mening manzilim"
+        >
+          <Navigation className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const Checkout = () => {
-    const navigate = useNavigate();
-    const { items, getCartTotal, clearCart } = useCart();
-    const { user } = useAuth();
-    const { createOrder } = useProductService();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { items, getCartTotal, clearCart } = useCart();
+  const { user, isAuthenticated, loading } = useAuth();
+  const { createOrder } = useProductService();
 
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        phone: '',
-        region: '',
-        district: '',
-        street: '',
-        house: '',
-        paymentMethod: 'cash', // cash, click, payme
-        comments: ''
-    });
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    region: '',
+    district: '',
+    street: '',
+    house: '',
+    location: null,
+    paymentMethod: 'cash',
+    comments: '',
+  });
 
-    const total = getCartTotal();
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      toast.error("Iltimos, buyurtma berish uchun ro'yxatdan o'ting");
+      navigate('/login');
+    }
+  }, [isAuthenticated, loading, navigate]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const total = getCartTotal();
+  const cartItems = useMemo(
+    () =>
+      items.map((item) => ({
+        ...item,
+        parsedPrice: parsePrice(item.price),
+      })),
+    [items]
+  );
 
-        if (items.length === 0) {
-            toast.error('Savatingiz bo\'sh!');
-            return;
-        }
+  const summaryTotal = useMemo(() => {
+    return cartItems.reduce((sum, item) => sum + item.parsedPrice * item.quantity, 0);
+  }, [cartItems]);
 
-        setIsSubmitting(true);
+  const discountAmount = useMemo(() => {
+    if (appliedPromo) {
+      return (summaryTotal * appliedPromo.discountPercentage) / 100;
+    }
+    return 0;
+  }, [summaryTotal, appliedPromo]);
 
-        try {
-            const orderData = {
-                customer: {
-                    name: `${formData.firstName} ${formData.lastName}`,
-                    phone: formData.phone.replace(/\s+/g, ''),
-                    address: `${formData.region}, ${formData.district}, ${formData.street}, ${formData.house}`,
-                    comments: formData.comments
-                },
-                items: items.map(item => ({
-                    product: item.productId,
-                    name: item.name,
-                    image: item.image,
-                    quantity: item.quantity,
-                    price: typeof item.price === 'string'
-                        ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
-                        : parseFloat(item.price),
-                    selectedColor: item.selectedColor,
-                    selectedSize: item.selectedSize
-                })),
-                paymentMethod: formData.paymentMethod,
-                totals: {
-                    subtotal: total,
-                    deliveryFee: 0,
-                    total: total
-                },
-                userId: user ? user._id || user.id : null
-            };
+  const finalTotal = summaryTotal - discountAmount;
 
-            console.log('🛒 Order Data before sending:', orderData);
-            console.log('📦 Items in order:', orderData.items);
+  const isStep1Valid = formData.firstName.trim() && formData.phone.trim();
+  const isStep2Valid = formData.region.trim() && formData.street.trim();
+  const canSubmit = isStep1Valid && isStep2Valid && agreeTerms && !isSubmitting;
 
-            // Call backend API
-            // Note: We need to implement createOrder in server.js first, but we use it here.
-            // If createOrder is not yet available in the imported hook, we might need to mock it or add it simultaneously.
-            // For now, I will assume it returns a promise.
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-            const result = await createOrder(orderData);
+  const nextFromStep1 = () => {
+    if (!isStep1Valid) {
+      toast.error("Iltimos, ism va telefon raqamni to'ldiring");
+      return;
+    }
+    setCurrentStep(2);
+  };
 
-            if (result && result.success) {
-                toast.success('Buyurtmangiz qabul qilindi! Buyurtma holatini kuzatishingiz mumkin.');
-                // Save phone for auto-login in profile
-                localStorage.setItem('userPhone', formData.phone);
-                clearCart();
-                navigate('/profile');
-            } else {
-                toast.error('Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
-            }
-        } catch (error) {
-            console.error('Checkout error:', error);
-            toast.error('Tizimda xatolik yuz berdi.');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  const nextFromStep2 = () => {
+    if (!isStep2Valid) {
+      toast.error("Iltimos, tuman va manzilni to'ldiring");
+      return;
+    }
+    setCurrentStep(3);
+  };
+
+  const { validatePromo } = useProductService();
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+
+    setIsValidatingPromo(true);
+    try {
+      const result = await validatePromo(promoCode.trim());
+      if (result.success) {
+        setAppliedPromo({
+          code: result.code,
+          discountPercentage: result.discountPercentage
+        });
+        toast.success(`${result.discountPercentage}% chegirma qo'llanildi!`);
+      } else {
+        setAppliedPromo(null);
+        toast.error(result.message || "Promokod noto'g'ri");
+      }
+    } catch (error) {
+      toast.error('Promokodni tekshirishda xatolik yuz berdi');
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+  };
+
+  const handleSubmit = async (event) => {
+    if (event) event.preventDefault();
 
     if (items.length === 0) {
-        return (
-            <div className="min-h-screen bg-gray-900 pt-2 px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    <div className="bg-gray-800 rounded-2xl p-12 shadow-xl border border-gray-700">
-                        <Truck className="w-24 h-24 mx-auto text-gray-600 mb-6" />
-                        <h1 className="text-3xl font-bold text-white mb-4">Savatingiz bo'sh</h1>
-                        <p className="text-gray-400 mb-8 text-lg">Buyurtma berish uchun avval mahsulot tanlang.</p>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="inline-flex items-center space-x-2 bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span>Xaridni boshlash</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
+      toast.error("Savatingiz bo'sh");
+      return;
     }
 
+    if (!isStep1Valid || !isStep2Valid) {
+      toast.error("Iltimos, barcha majburiy maydonlarni to'ldiring");
+      return;
+    }
+
+    if (!agreeTerms) {
+      toast.error('Buyurtmani tasdiqlash uchun shartlarga rozilik belgilang');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const orderData = {
+        customer: {
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          phone: formData.phone.replace(/\s+/g, ''),
+          address: `${formData.region}, ${formData.district}, ${formData.street}, ${formData.house}`.replace(
+            /,\s*,/g,
+            ','
+          ),
+          location: formData.location,
+          comments: formData.comments,
+        },
+        items: cartItems.map((item) => ({
+          product: item.productId,
+          name: item.name,
+          image: item.image,
+          quantity: item.quantity,
+          price: item.parsedPrice,
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
+        })),
+        paymentMethod: formData.paymentMethod,
+        totals: {
+          subtotal: summaryTotal,
+          deliveryFee: 0,
+          promoCode: appliedPromo ? appliedPromo.code : null,
+          discountAmount: discountAmount,
+          total: finalTotal,
+        },
+        userId: user ? user._id || user.id : null,
+      };
+
+      const result = await createOrder(orderData);
+
+      if (result && result.success) {
+        toast.success('Buyurtmangiz qabul qilindi');
+        clearCart();
+        navigate('/profile');
+      } else {
+        toast.error("Xatolik yuz berdi. Qayta urinib ko'ring.");
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Tizimda xatolik yuz berdi');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (items.length === 0) {
     return (
-        <div className="min-h-screen bg-gray-900 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
-                <button
-                    onClick={() => navigate('/')}
-                    className="flex items-center space-x-2 text-gray-400 hover:text-white mb-4 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>Ortga qaytish</span>
-                </button>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                    {/* Checkout Form */}
-                    <div className="space-y-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-white mb-2">Buyurtmani rasmiylashtirish</h1>
-                            <p className="text-gray-400">Ma'lumotlaringizni to'ldiring va buyurtmani tasdiqlang.</p>
-                        </div>
-
-                        <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
-                            {/* Personal Info */}
-                            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <User className="w-6 h-6 text-accent" />
-                                    <h2 className="text-xl font-semibold text-white">Shaxsiy ma'lumotlar</h2>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Ism *</label>
-                                        <input
-                                            type="text"
-                                            name="firstName"
-                                            value={formData.firstName}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                            placeholder="Ismingiz"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Familiya *</label>
-                                        <input
-                                            type="text"
-                                            name="lastName"
-                                            value={formData.lastName}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                            placeholder="Familiyangiz"
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Telefon raqam *</label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                            placeholder="+998 90 123 45 67"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Shipping Address */}
-                            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <MapPin className="w-6 h-6 text-accent" />
-                                    <h2 className="text-xl font-semibold text-white">Yetkazib berish manzili</h2>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Viloyat *</label>
-                                        <select
-                                            name="region"
-                                            value={formData.region}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                        >
-                                            <option value="">Tanlang</option>
-                                            <option value="Toshkent shahri">Toshkent shahri</option>
-                                            <option value="Toshkent viloyati">Toshkent viloyati</option>
-                                            <option value="Andijon">Andijon</option>
-                                            <option value="Buxoro">Buxoro</option>
-                                            <option value="Farg'ona">Farg'ona</option>
-                                            <option value="Jizzax">Jizzax</option>
-                                            <option value="Xorazm">Xorazm</option>
-                                            <option value="Namangan">Namangan</option>
-                                            <option value="Navoiy">Navoiy</option>
-                                            <option value="Qashqadaryo">Qashqadaryo</option>
-                                            <option value="Qoraqalpog'iston">Qoraqalpog'iston</option>
-                                            <option value="Samarqand">Samarqand</option>
-                                            <option value="Sirdaryo">Sirdaryo</option>
-                                            <option value="Surxondaryo">Surxondaryo</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Tuman/Shahar *</label>
-                                        <input
-                                            type="text"
-                                            name="district"
-                                            value={formData.district}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                            placeholder="Tuman yoki shahar"
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Ko'cha va uy *</label>
-                                        <input
-                                            type="text"
-                                            name="street"
-                                            value={formData.street}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                            placeholder="Ko'cha nomi, uy raqami, kvartira"
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-300 mb-1">Mo'ljal (ixtiyoriy)</label>
-                                        <input
-                                            type="text"
-                                            name="house"
-                                            value={formData.house}
-                                            onChange={handleChange}
-                                            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                                            placeholder="Masalan: Maktab yonida"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Payment Method */}
-                            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <CreditCard className="w-6 h-6 text-accent" />
-                                    <h2 className="text-xl font-semibold text-white">To'lov turi</h2>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <label className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.paymentMethod === 'cash' ? 'border-accent bg-accent/10' : 'border-gray-600 hover:border-gray-500 bg-gray-700'
-                                        }`}>
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="cash"
-                                            checked={formData.paymentMethod === 'cash'}
-                                            onChange={handleChange}
-                                            className="absolute opacity-0"
-                                        />
-                                        <Truck className={`w-8 h-8 mb-2 ${formData.paymentMethod === 'cash' ? 'text-accent' : 'text-gray-400'}`} />
-                                        <span className={`font-medium ${formData.paymentMethod === 'cash' ? 'text-white' : 'text-gray-300'}`}>Naqd pul</span>
-                                    </label>
-
-                                    <label className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.paymentMethod === 'click' ? 'border-accent bg-accent/10' : 'border-gray-600 hover:border-gray-500 bg-gray-700'
-                                        }`}>
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="click"
-                                            checked={formData.paymentMethod === 'click'}
-                                            onChange={handleChange}
-                                            className="absolute opacity-0"
-                                        />
-                                        <span className="text-xl font-bold mb-2 text-blue-400">CLICK</span>
-                                        <span className={`font-medium ${formData.paymentMethod === 'click' ? 'text-white' : 'text-gray-300'}`}>Click orqali</span>
-                                    </label>
-
-                                    <label className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.paymentMethod === 'payme' ? 'border-accent bg-accent/10' : 'border-gray-600 hover:border-gray-500 bg-gray-700'
-                                        }`}>
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="payme"
-                                            checked={formData.paymentMethod === 'payme'}
-                                            onChange={handleChange}
-                                            className="absolute opacity-0"
-                                        />
-                                        <span className="text-xl font-bold mb-2 text-teal-400">Payme</span>
-                                        <span className={`font-medium ${formData.paymentMethod === 'payme' ? 'text-white' : 'text-gray-300'}`}>Payme orqali</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            {/* Comments */}
-                            <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
-                                <label className="block text-sm font-medium text-gray-300 mb-2">Izoh (ixtiyoriy)</label>
-                                <textarea
-                                    name="comments"
-                                    value={formData.comments}
-                                    onChange={handleChange}
-                                    rows={3}
-                                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none"
-                                    placeholder="Buyurtma bo'yicha qo'shimcha izohlar..."
-                                />
-                            </div>
-                        </form>
-                    </div>
-
-                    {/* Order Summary */}
-                    <div className="lg:sticky lg:top-24 h-fit">
-                        <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 shadow-lg">
-                            <h2 className="text-xl font-semibold text-white mb-6">Buyurtma tarkibi</h2>
-
-                            <div className="space-y-4 mb-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                                {items.map((item) => {
-                                    const price = typeof item.price === 'string'
-                                        ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
-                                        : parseFloat(item.price);
-
-                                    return (
-                                        <div key={item.id} className="flex space-x-4 p-3 bg-gray-700/50 rounded-lg">
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-16 h-16 object-cover rounded-md"
-                                            />
-                                            <div className="flex-1">
-                                                <h3 className="text-white font-medium text-sm line-clamp-2">{item.name}</h3>
-                                                <div className="text-gray-400 text-xs mt-1">
-                                                    {item.selectedColor && <span>{item.selectedColor}</span>}
-                                                    {item.selectedSize && <span className="mx-1">• {item.selectedSize}</span>}
-                                                </div>
-                                                <div className="flex justify-between items-center mt-2">
-                                                    <span className="text-gray-400 text-xs">{item.quantity} dona</span>
-                                                    <span className="text-white font-medium text-sm">{(price * item.quantity).toLocaleString()} so'm</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="border-t border-gray-700 pt-4 space-y-3">
-                                <div className="flex justify-between text-gray-400">
-                                    <span>Mahsulotlar narxi</span>
-                                    <span>{total.toLocaleString()} so'm</span>
-                                </div>
-                                <div className="flex justify-between text-gray-400">
-                                    <span>Yetkazib berish</span>
-                                    <span className="text-accent">Bepul</span>
-                                </div>
-                                <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-gray-700">
-                                    <span>Jami to'lov</span>
-                                    <span>{total.toLocaleString()} so'm</span>
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                form="checkout-form"
-                                disabled={isSubmitting}
-                                className="w-full mt-8 bg-accent hover:bg-accent/90 text-accent-foreground py-4 rounded-xl font-bold text-lg shadow-lg shadow-accent/20 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                            >
-                                {isSubmitting ? (
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-foreground"></div>
-                                        <span>Rasmiylashtirilmoqda...</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <CheckCircle className="w-5 h-5" />
-                                        <span>Buyurtmani tasdiqlash</span>
-                                    </div>
-                                )}
-                            </button>
-
-                            <p className="text-center text-gray-500 text-xs mt-4">
-                                "Buyurtmani tasdiqlash" tugmasini bosish orqali siz foydalanish shartlariga rozilik bildirasiz.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+      <div className="min-h-screen px-4" style={{ backgroundColor: THEME.bgBase }}>
+        <div className="mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center">
+          <div className="w-full rounded-[2rem] bg-gradient-to-b from-[#171d2a] to-[#111722] px-8 py-10 text-center shadow-[0_28px_56px_rgba(4,8,18,0.58)]">
+            <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#1f2532]">
+              <Truck className="h-8 w-8 text-[#c7ceda]" />
             </div>
+            <h1 className="text-3xl font-semibold text-[#f4f1eb]">Savatingiz bo'sh</h1>
+            <p className="mt-2 text-[#9aa3b2]">Buyurtma berishdan oldin mahsulot tanlang va savatga qo'shing.</p>
+            <Link
+              to="/products"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#f4f1eb] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#111319] transition-transform active:scale-[0.985]"
+            >
+              Xaridni boshlash
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="min-h-screen px-4 pb-12 pt-6 animate-page-fade-in sm:px-6 lg:px-8" style={{ backgroundColor: THEME.bgBase }}>
+      <div className="mx-auto w-full max-w-7xl">
+        <header className="sticky top-4 z-30 mb-6 rounded-[1.5rem] bg-[#111722]/85 px-4 py-3 backdrop-blur-xl shadow-[0_18px_36px_rgba(2,6,16,0.52)]">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 rounded-full bg-[#2d3442]/70 px-3 py-2 text-sm font-medium text-[#f4f1eb] transition-colors hover:bg-[#364053]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Orqaga
+            </button>
+
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">Checkout</p>
+              <h1 className="text-lg font-semibold text-[#f4f1eb]">Cinematic Concierge</h1>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1f2532] px-3 py-1 text-xs font-semibold text-[#c7ceda]">
+
+              {currentStep}/3
+            </div>
+          </div>
+        </header>
+
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+          <section className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)] sm:p-7">
+            <div className="mb-6">
+              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">Order flow</p>
+              <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#f4f1eb]">Buyurtmani rasmiylashtirish</h2>
+              <p className="mt-2 text-sm text-[#9aa3b2]">Ma'lumotlarni 3 qadamda to'ldiring va buyurtmani tasdiqlang.</p>
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[1, 2, 3].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-1.5 rounded-full transition-colors ${step <= currentStep ? 'bg-[#f4f1eb]' : 'bg-[#2d3442]'
+                      }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {currentStep === 1 && (
+                <div className="space-y-4 rounded-[1.4rem] bg-[#121722]/70 p-5 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
+                      <User className="h-4 w-4" />
+                    </span>
+                    <h3 className="text-lg font-semibold text-[#f4f1eb]">Shaxsiy ma'lumotlar</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm text-[#c7ceda]">Ism *</span>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                        placeholder="Ismingiz"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm text-[#c7ceda]">Familiya</span>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                        placeholder="Familiyangiz"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Telefon raqam *</span>
+                    <div className="relative">
+                      <Phone className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9aa3b2]" />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] py-3 pl-10 pr-4 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                        placeholder="+998 90 123 45 67"
+                      />
+                    </div>
+                  </label>
+                </div>
+              )}
+
+              {currentStep === 2 && (
+                <div className="space-y-4 rounded-[1.4rem] bg-[#121722]/70 p-5 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
+                      <MapPin className="h-4 w-4" />
+                    </span>
+                    <h3 className="text-lg font-semibold text-[#f4f1eb]">Yetkazib berish manzili</h3>
+                  </div>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Tuman tanlang *</span>
+                    <select
+                      name="region"
+                      value={formData.region}
+                      onChange={handleChange}
+                      required
+                      className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                    >
+                      <option value="">Tanlang</option>
+                      {REGIONS.map((region) => (
+                        <option key={region} value={region}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Ko'cha va uy *</span>
+                    <input
+                      type="text"
+                      name="street"
+                      value={formData.street}
+                      onChange={handleChange}
+                      required
+                      className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      placeholder="Ko'cha nomi, uy raqami"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Mo'ljal (ixtiyoriy)</span>
+                    <input
+                      type="text"
+                      name="house"
+                      value={formData.house}
+                      onChange={handleChange}
+                      className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      placeholder="Masalan: Maktab yonida"
+                    />
+                  </label>
+
+                  <div>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Xaritadan belgilash</span>
+                    <div className="h-[230px] w-full overflow-hidden rounded-xl bg-[#0e131d] shadow-[0_14px_30px_rgba(3,6,14,0.45)]">
+                      <MapContainer center={[41.2995, 69.2401]} zoom={13} style={{ height: '100%', width: '100%' }}>
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <LocationMarker
+                          position={formData.location}
+                          setPosition={(position) => setFormData((prev) => ({ ...prev, location: position }))}
+                        />
+                        <LocationButton />
+                      </MapContainer>
+                    </div>
+                    <p className="mt-2 text-xs text-[#9aa3b2]">Aniq nuqtani belgilasangiz yetkazish tezlashadi.</p>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 3 && (
+                <div className="space-y-4 rounded-[1.4rem] bg-[#121722]/70 p-5 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
+                      <CreditCard className="h-4 w-4" />
+                    </span>
+                    <h3 className="text-lg font-semibold text-[#f4f1eb]">To'lov va yakuniy tekshiruv</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <label className="cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={formData.paymentMethod === 'cash'}
+                        onChange={handleChange}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`rounded-xl p-4 text-center transition-all ${formData.paymentMethod === 'cash'
+                          ? 'bg-[#f4f1eb] text-[#111319] shadow-[0_10px_22px_rgba(244,241,235,0.24)]'
+                          : 'bg-[#1a202d] text-[#c7ceda]'
+                          }`}
+                      >
+                        <Truck className="mx-auto mb-2 h-6 w-6" />
+                        <p className="text-sm font-semibold">Naqd pul</p>
+                      </div>
+                    </label>
+
+                    <div className="relative rounded-xl bg-[#1a202d]/65 p-4 text-center text-[#9aa3b2] opacity-70">
+                      <span className="absolute right-2 top-2 rounded-full bg-[#2d3442] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#c7ceda]">
+                        Tez orada
+                      </span>
+                      <p className="mb-2 text-base font-semibold">CLICK</p>
+                      <p className="text-sm">Click orqali</p>
+                    </div>
+
+                    <div className="relative rounded-xl bg-[#1a202d]/65 p-4 text-center text-[#9aa3b2] opacity-70">
+                      <span className="absolute right-2 top-2 rounded-full bg-[#2d3442] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#c7ceda]">
+                        Tez orada
+                      </span>
+                      <p className="mb-2 text-base font-semibold">Payme</p>
+                      <p className="text-sm">Payme orqali</p>
+                    </div>
+                  </div>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Izoh (ixtiyoriy)</span>
+                    <textarea
+                      name="comments"
+                      value={formData.comments}
+                      onChange={handleChange}
+                      rows={3}
+                      className="w-full resize-none rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      placeholder="Buyurtma bo'yicha qo'shimcha izoh..."
+                    />
+                  </label>
+
+                  <label
+                    htmlFor="checkout-terms"
+                    className="group flex cursor-pointer items-start gap-3 rounded-xl bg-gradient-to-r from-[#1a202d]/75 to-[#151c29]/75 px-4 py-3 shadow-[inset_0_0_0_1px_rgba(94,108,134,0.26)] transition-all hover:shadow-[inset_0_0_0_1px_rgba(170,183,205,0.34)]"
+                  >
+                    <input
+                      id="checkout-terms"
+                      type="checkbox"
+                      checked={agreeTerms}
+                      onChange={(event) => setAgreeTerms(event.target.checked)}
+                      className="peer sr-only"
+                    />
+                    <span className="relative mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border border-[#5f6c85] bg-[#0f1521] text-[#111319] transition-all after:content-['✓'] after:text-[12px] after:font-bold after:leading-none after:opacity-0 after:transition-opacity peer-checked:border-[#f4f1eb] peer-checked:bg-[#f4f1eb] peer-checked:after:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-[#f4f1eb]/35 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#151c29]" />
+                    <span className="text-sm leading-relaxed text-[#c7ceda]">
+                      Buyurtmani tasdiqlash orqali foydalanish shartlariga rozilik bildiraman.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                {currentStep > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+                    className="rounded-full bg-[#2d3442]/70 px-5 py-2.5 text-sm font-semibold text-[#f4f1eb] transition-transform active:scale-[0.985]"
+                  >
+                    Orqaga
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {currentStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={currentStep === 1 ? nextFromStep1 : nextFromStep2}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#f4f1eb] px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.07em] text-[#111319] transition-transform active:scale-[0.985]"
+                  >
+                    Davom etish
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <p className="text-sm text-[#9aa3b2]">Yakuniy tasdiq uchun o'ng paneldagi tugmadan foydalaning.</p>
+                )}
+              </div>
+            </form>
+          </section>
+
+          <aside className="xl:sticky xl:top-20 xl:h-fit">
+            <div className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)]">
+              <h3 className="text-xl font-semibold text-[#f4f1eb]">Order Capsule</h3>
+              <p className="mt-1 text-sm text-[#9aa3b2]">Tanlangan mahsulotlar va yakuniy to'lov.</p>
+
+              <div className="mt-5 max-h-[340px] space-y-3 overflow-y-auto pr-1">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex gap-3 rounded-xl bg-[#1a202d]/70 p-3">
+                    <img src={item.image} alt={item.name} className="h-14 w-14 rounded-lg object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-[#f4f1eb]">{item.name}</p>
+                      <p className="mt-0.5 text-xs text-[#9aa3b2]">
+                        {item.quantity} dona
+                        {item.selectedSize ? ` • ${item.selectedSize}` : ''}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[#c7ceda]">{formatMoney(item.parsedPrice * item.quantity)} so'm</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 space-y-3 border-t border-[#2d3442] pt-4">
+
+                {/* Promo Code Input Field */}
+                <div className="mb-4">
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 px-4 py-3 border border-emerald-500/20">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-emerald-400" />
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-400">{appliedPromo.code}</p>
+                          <p className="text-xs text-emerald-500/80">-{appliedPromo.discountPercentage}% chegirma</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleRemovePromo}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        placeholder="Promokod (agar bo'lsa)"
+                        className="w-full flex-1 rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-1 focus:ring-[#f4f1eb]/20 uppercase"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        disabled={isValidatingPromo || !promoCode.trim()}
+                        className="rounded-xl border border-[#2d3442] bg-[#1a202d] px-4 py-2 text-sm font-semibold text-[#f4f1eb] hover:bg-[#2d3442] transition-colors disabled:opacity-50"
+                      >
+                        {isValidatingPromo ? '...' : 'Qo\'llash'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
+                  <span>Mahsulot</span>
+                  <span>{formatMoney(summaryTotal)} so'm</span>
+                </div>
+
+                {appliedPromo && (
+                  <div className="flex items-center justify-between text-sm text-emerald-400">
+                    <span>Chegirma ({appliedPromo.code})</span>
+                    <span>-{formatMoney(discountAmount)} so'm</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
+                  <span>Yetkazib berish</span>
+                  <span className="text-[#c7ceda]">Bepul</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-[#2d3442] pt-3">
+                  <span className="text-base font-semibold text-[#f4f1eb]">Jami</span>
+                  <span className="text-2xl font-semibold text-[#f4f1eb]">{formatMoney(finalTotal)} so'm</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={currentStep !== 3 || !canSubmit}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#f4f1eb] px-4 py-3.5 text-sm font-semibold uppercase tracking-[0.08em] text-[#111319] transition-all active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <DotLoader />
+                    <span>Rasmiylashtirilmoqda...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Buyurtmani tasdiqlash</span>
+                  </>
+                )}
+              </button>
+
+              {currentStep !== 3 && <p className="mt-3 text-center text-xs text-[#9aa3b2]">Final tasdiq uchun 3-qadamga o'ting.</p>}
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Checkout;

@@ -1,10 +1,14 @@
+// API base URL - uses environment variable for production
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3003/api';
+
 const useProductService = () => {
-	const _apiBase = 'http://127.0.0.1:3003/api/products'
+	const _apiBase = `${API_BASE}/products`
 
 	// GET ALL PRODUCTS
 	const getAllProducts = async () => {
 		try {
-			const response = await fetch(_apiBase)
+			// Add timestamp to prevent browser caching
+			const response = await fetch(`${_apiBase}?_t=${Date.now()}`)
 			const products = await response.json()
 
 			if (!products.success) return []
@@ -47,11 +51,14 @@ const useProductService = () => {
 	}
 
 	// POST PRODUCT
-	const postProduct = async productObject => {
+	const postProduct = async (productObject, token) => {
 		try {
 			const response = await fetch(_apiBase, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
 				body: JSON.stringify(productObject),
 			})
 
@@ -67,11 +74,14 @@ const useProductService = () => {
 	}
 
 	// PUT PRODUCT (UPDATE)
-	const putProduct = async (id, updatedData) => {
+	const putProduct = async (id, updatedData, token) => {
 		try {
 			const response = await fetch(`${_apiBase}/${id}`, {
 				method: 'PUT',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
 				body: JSON.stringify(updatedData),
 			})
 
@@ -90,11 +100,14 @@ const useProductService = () => {
 	}
 
 	// DELETE PRODUCT
-	const deleteProduct = async id => {
+	const deleteProduct = async (id, token) => {
 		try {
 			const response = await fetch(`${_apiBase}/${id}`, {
 				method: 'DELETE',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
 			})
 
 			const product = await response.json()
@@ -114,7 +127,7 @@ const useProductService = () => {
 	// CREATE ORDER
 	const createOrder = async (orderData) => {
 		try {
-			const response = await fetch('http://127.0.0.1:3003/api/orders', {
+			const response = await fetch(`${API_BASE}/orders`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(orderData)
@@ -130,7 +143,7 @@ const useProductService = () => {
 	// GET USER ORDERS (BY PHONE)
 	const getUserOrders = async (phone) => {
 		try {
-			const response = await fetch(`http://127.0.0.1:3003/api/orders/user/${phone}`);
+			const response = await fetch(`${API_BASE}/orders/user/${phone}`);
 			const result = await response.json();
 			return result;
 		} catch (error) {
@@ -142,7 +155,7 @@ const useProductService = () => {
 	// REGISTER USER
 	const registerUser = async (userData) => {
 		try {
-			const response = await fetch('http://127.0.0.1:3003/api/auth/register', {
+			const response = await fetch(`${API_BASE}/auth/register`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(userData)
@@ -158,7 +171,7 @@ const useProductService = () => {
 	// LOGIN USER
 	const loginUser = async (credentials) => {
 		try {
-			const response = await fetch('http://127.0.0.1:3003/api/auth/login', {
+			const response = await fetch(`${API_BASE}/auth/login`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(credentials)
@@ -171,10 +184,26 @@ const useProductService = () => {
 		}
 	};
 
+	// GET USER PROFILE (AUTH)
+	const getUserProfile = async (token) => {
+		try {
+			const response = await fetch(`${API_BASE}/auth/profile`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Get profile error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 	// GET MY ORDERS (AUTH)
 	const getMyOrders = async (token) => {
 		try {
-			const response = await fetch('http://127.0.0.1:3003/api/orders/my-orders', {
+			const response = await fetch(`${API_BASE}/orders/my-orders`, {
 				headers: {
 					'Authorization': `Bearer ${token}`
 				}
@@ -209,7 +238,7 @@ const useProductService = () => {
 	// GET ALL ORDERS (ADMIN)
 	const getAllOrders = async (token) => {
 		try {
-			const response = await fetch('http://127.0.0.1:3003/api/orders/all', {
+			const response = await fetch(`${API_BASE}/orders/all`, {
 				headers: {
 					'Authorization': `Bearer ${token}`
 				}
@@ -226,7 +255,7 @@ const useProductService = () => {
 	// DELETE ORDER (ADMIN)
 	const deleteOrder = async (orderId, token) => {
 		try {
-			const url = `http://127.0.0.1:3003/api/orders/${orderId}`;
+			const url = `${API_BASE}/orders/${orderId}`;
 			console.log('🔗 DELETE URL:', url);
 			console.log('🔑 Order ID:', orderId);
 
@@ -251,7 +280,7 @@ const useProductService = () => {
 	// UPDATE ORDER STATUS (ADMIN)
 	const updateOrderStatus = async (orderId, status, token) => {
 		try {
-			const response = await fetch(`http://127.0.0.1:3003/api/orders/${orderId}/status`, {
+			const response = await fetch(`${API_BASE}/orders/${orderId}/status`, {
 				method: 'PATCH',
 				headers: {
 					'Content-Type': 'application/json',
@@ -267,10 +296,29 @@ const useProductService = () => {
 		}
 	};
 
+	// UPDATE USER CART
+	const updateUserCart = async (cart, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/auth/cart`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ cart })
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Update cart error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 	// GET ALL USERS (ADMIN)
 	const getAllUsers = async (token) => {
 		try {
-			const response = await fetch('http://127.0.0.1:3003/api/auth/users', {
+			const response = await fetch(`${API_BASE}/auth/users`, {
 				headers: {
 					'Authorization': `Bearer ${token}`
 				}
@@ -279,6 +327,138 @@ const useProductService = () => {
 			return result;
 		} catch (error) {
 			console.error('Get all users error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	// GET IMAGEKIT AUTH
+	const getImageKitAuth = async () => {
+		try {
+			const response = await fetch(`${API_BASE}/imagekit-auth`);
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('ImageKit auth error:', error);
+			return null;
+		}
+	};
+
+	// LOOKBOOK API
+	const getAllLooks = async () => {
+		try {
+			const response = await fetch(`${API_BASE}/looks`);
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Get looks error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const createLook = async (lookData, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify(lookData)
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Create look error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const deleteLook = async (id, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks/${id}`, {
+				method: 'DELETE',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Delete look error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	// PROMO CODES API
+	const validatePromo = async (code) => {
+		try {
+			const response = await fetch(`${API_BASE}/promos/validate`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ code })
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Validate promo error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const getPromos = async (token) => {
+		try {
+			const response = await fetch(`${API_BASE}/promos`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Get promos error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const createPromo = async (promoData, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/promos`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify(promoData)
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Create promo error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const updatePromoStatus = async (id, isActive, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/promos/${id}/status`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ isActive })
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Update promo status error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const deletePromo = async (id, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/promos/${id}`, {
+				method: 'DELETE',
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Delete promo error:', error);
 			return { success: false, message: error.message };
 		}
 	};
@@ -294,11 +474,22 @@ const useProductService = () => {
 		getUserOrders,
 		registerUser,
 		loginUser,
+		getUserProfile,
 		getMyOrders,
 		getAllOrders,
 		updateOrderStatus,
 		deleteOrder,
 		getAllUsers,
+		updateUserCart,
+		getImageKitAuth,
+		getAllLooks,
+		createLook,
+		deleteLook,
+		validatePromo,
+		getPromos,
+		createPromo,
+		updatePromoStatus,
+		deletePromo
 	}
 }
 
