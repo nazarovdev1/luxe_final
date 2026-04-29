@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, Package, Calendar, MapPin, ChevronRight, Search } from 'lucide-react';
+import { Phone, Package, Calendar, MapPin, ChevronRight, Search, Medal, Crown, Gem, RefreshCw } from 'lucide-react';
+import axios from 'axios';
 import useProductService from '../server/server';
 import { Link, Navigate } from 'react-router-dom';
 
@@ -9,24 +10,38 @@ const Profile = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
+    const [badges, setBadges] = useState([]);
+    const [points, setPoints] = useState(null);
     const { getMyOrders } = useProductService();
     const { user, isAuthenticated, logout } = useAuth();
 
     useEffect(() => {
-        const fetchOrders = async () => {
+        const fetchData = async () => {
             if (isAuthenticated) {
                 setLoading(true);
                 const token = localStorage.getItem('token');
-                const result = await getMyOrders(token);
-                if (result.success) {
-                    setOrders(result.data);
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                
+                try {
+                    const [ordersRes, badgesRes, pointsRes] = await Promise.all([
+                        getMyOrders(token),
+                        axios.get('/api/badges/my-badges', config),
+                        axios.get('/api/points', config)
+                    ]);
+
+                    if (ordersRes.success) setOrders(ordersRes.data);
+                    if (badgesRes.data.success) setBadges(badgesRes.data.data);
+                    if (pointsRes.data.success) setPoints(pointsRes.data.points);
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                    setSearched(true);
                 }
-                setLoading(false);
-                setSearched(true);
             }
         };
 
-        fetchOrders();
+        fetchData();
     }, [isAuthenticated]);
 
     if (!isAuthenticated) {
@@ -64,6 +79,107 @@ const Profile = () => {
                             <Link to="/register" className="text-white hover:text-gray-300 transition-colors border-b border-white/20 pb-1">
                                 Ro'yxatdan o'tish
                             </Link>
+                        </div>
+                    )}
+
+                    {isAuthenticated && (
+                        <div className="mt-12 space-y-8 max-w-4xl mx-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* VIP Status Card */}
+                                <Link to="/vip-club" className="relative overflow-hidden flex flex-col bg-[#111] border border-[#d6b47c]/20 p-8 rounded-[32px] hover:border-[#d6b47c]/40 transition-all group text-left">
+                                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                                        <Crown className="w-24 h-24 text-[#d6b47c]" />
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-6 mb-6">
+                                        <div className="w-16 h-16 rounded-2xl bg-[#d6b47c]/10 flex items-center justify-center text-[#d6b47c]">
+                                            <Crown className="w-8 h-8" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-[#d6b47c] font-black uppercase tracking-widest mb-1">VIP Darajangiz</p>
+                                            <h3 className="text-3xl font-serif text-white">{points?.level || 'Bronze'}</h3>
+                                        </div>
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    {points && points.level !== 'Diamond' && (
+                                        <div className="mt-auto pt-4 border-t border-white/5">
+                                            <div className="flex justify-between text-xs mb-2">
+                                                <span className="text-gray-400">Keyingi darajagacha</span>
+                                                <span className="text-white font-medium">
+                                                    {points.level === 'Bronze' ? 300 - points.totalEarned : 
+                                                     points.level === 'Silver' ? 650 - points.totalEarned : 
+                                                     1000 - points.totalEarned} ball
+                                                </span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-[#d6b47c] to-[#f0d0a4] transition-all duration-1000"
+                                                    style={{ 
+                                                        width: `${Math.min(100, (points.totalEarned / (
+                                                            points.level === 'Bronze' ? 300 : 
+                                                            points.level === 'Silver' ? 650 : 1000
+                                                        )) * 100)}%` 
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-gray-500 mt-2 italic text-center">
+                                                {points.level === 'Bronze' ? 'Silver' : points.level === 'Silver' ? 'Gold' : 'Diamond'} darajasiga yaqinlashmoqdasiz
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center justify-between mt-4">
+                                        <p className="text-sm text-gray-400">Jami to'plangan: <span className="text-white font-semibold">{points?.totalEarned?.toLocaleString()} pts</span></p>
+                                        <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full text-xs text-white">
+                                            <Gem className="w-3.5 h-3.5 text-amber-300" />
+                                            {points?.balance?.toLocaleString()} balans
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                {/* Points Transaction History */}
+                                <div className="bg-[#111] border border-white/5 p-8 rounded-[32px] text-left flex flex-col h-full">
+                                    <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                                        <RefreshCw className="w-3.5 h-3.5" /> Ballar tarixi
+                                    </p>
+                                    <div className="space-y-4 overflow-y-auto max-h-[160px] pr-2 scrollbar-thin scrollbar-thumb-white/10">
+                                        {points?.transactions?.length > 0 ? (
+                                            points.transactions.map((tx, idx) => (
+                                                <div key={idx} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs text-white truncate">{tx.description}</p>
+                                                        <p className="text-[10px] text-gray-500">{new Date(tx.date).toLocaleDateString()}</p>
+                                                    </div>
+                                                    <span className={`text-xs font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                                        {tx.amount > 0 ? '+' : ''}{tx.amount}
+                                                    </span>
+                                                </div>
+                                            )).reverse()
+                                        ) : (
+                                            <p className="text-xs text-gray-600 italic py-4">Hali ballar tarixi yo'q</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Badges Preview */}
+                            <div className="bg-[#111] border border-white/5 p-6 rounded-[32px] text-left">
+                                <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <Medal className="w-3.5 h-3.5" /> Erishilgan nishonlar
+                                </p>
+                                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                                    {badges.map(b => (
+                                        <div key={b._id} className="group relative flex flex-col items-center gap-2 shrink-0">
+                                            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl group-hover:bg-white/10 group-hover:border-white/20 transition-all cursor-help">
+                                                {b.badge.icon}
+                                            </div>
+                                            <span className="text-[10px] text-gray-400 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">{b.badge.name}</span>
+                                        </div>
+                                    ))}
+                                    {badges.length === 0 && <p className="text-xs text-gray-600 italic px-2">Hali nishonlar yo'q</p>}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

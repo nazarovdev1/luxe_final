@@ -12,6 +12,7 @@ import useProductService from '../../server/server';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import OrderSuccessModal from '../../components/OrderSuccessModal';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -90,6 +91,8 @@ const MobileCheckout = () => {
     const [currentStep, setCurrentStep] = useState(1); // 1: Info, 2: Address, 3: Payment
     const [mounted, setMounted] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [createdOrderId, setCreatedOrderId] = useState(null);
 
     useEffect(() => {
         setMounted(true);
@@ -176,6 +179,18 @@ const MobileCheckout = () => {
         setIsSubmitting(true);
 
         try {
+            // Format phone number to match +998XXXXXXXXX
+            let cleanPhone = formData.phone.replace(/\D/g, '');
+            if (cleanPhone.startsWith('998') && cleanPhone.length === 12) {
+                cleanPhone = '+' + cleanPhone;
+            } else if (cleanPhone.length === 9) {
+                cleanPhone = '+998' + cleanPhone;
+            } else if (!cleanPhone.startsWith('+')) {
+                // If it's something else, try to just add + if missing or let backend validate
+                if (!formData.phone.startsWith('+')) cleanPhone = '+' + cleanPhone;
+                else cleanPhone = formData.phone;
+            }
+
             let verifiedPromo = appliedPromo;
             if (appliedPromo?.code) {
                 const promoValidation = await validatePromo(appliedPromo.code);
@@ -199,14 +214,14 @@ const MobileCheckout = () => {
 
             const orderData = {
                 customer: {
-                    name: `${formData.firstName} ${formData.lastName}`,
-                    phone: formData.phone.replace(/\s+/g, ''),
-                    address: `${formData.region}, ${formData.district}, ${formData.street}, ${formData.house}`,
+                    name: `${formData.firstName} ${formData.lastName}`.trim(),
+                    phone: cleanPhone,
+                    address: `${formData.region}, ${formData.street}${formData.house ? ', ' + formData.house : ''}`,
                     location: formData.location,
                     comments: formData.comments
                 },
                 items: items.map(item => ({
-                    product: item.productId,
+                    product: item.productId || item.id,
                     name: item.name,
                     image: item.image,
                     quantity: item.quantity,
@@ -230,15 +245,20 @@ const MobileCheckout = () => {
             const result = await createOrder(orderData);
 
             if (result && result.success) {
-                toast.success('Buyurtmangiz qabul qilindi!');
+                setCreatedOrderId(result.orderId);
+                setShowSuccessModal(true);
                 clearCart();
-                navigate('/mobile/profile');
+                // We'll let the modal handle navigation
             } else {
-                toast.error('Xatolik yuz berdi');
+                const errorMsg = result.errors 
+                    ? result.errors.map(e => e.message).join(', ')
+                    : (result.message || 'Xatolik yuz berdi');
+                toast.error(errorMsg);
+                console.error('Order creation failed:', result);
             }
         } catch (error) {
             console.error('Checkout error:', error);
-            toast.error('Tizimda xatolik');
+            toast.error('Tizimda xatolik: ' + error.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -250,9 +270,7 @@ const MobileCheckout = () => {
         'Uchtepa', 'Yakkasaray', 'Yunusabad', 'Yangihayot'
     ];
 
-
-
-    if (items.length === 0) {
+    if (items.length === 0 && !showSuccessModal) {
         return (
             <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center px-6">
                 <div className="relative mb-8">
@@ -614,6 +632,12 @@ const MobileCheckout = () => {
                     animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
             `}</style>
+            <OrderSuccessModal 
+                isOpen={showSuccessModal} 
+                onClose={() => setShowSuccessModal(false)} 
+                orderId={createdOrderId}
+                isMobile={true}
+            />
         </div>
     );
 };

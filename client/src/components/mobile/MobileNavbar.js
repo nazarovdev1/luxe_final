@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, ShoppingBag, Search, ShoppingCart, User, Gem } from 'lucide-react';
+import { Home, ShoppingBag, Search, ShoppingCart, User, Gem, Camera, Play } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 
-const MobileNavbar = () => {
+const MobileNavbar = ({ onVisualSearch }) => {
     const { totalItems } = useCart();
     const { isAuthenticated } = useAuth();
     const location = useLocation();
@@ -12,8 +12,8 @@ const MobileNavbar = () => {
     const navItems = [
         { icon: Home, label: 'Bosh', path: '/mobile' },
         { icon: ShoppingBag, label: 'Shop', path: '/mobile/products' },
-        { icon: Gem, label: 'Looklar', path: '/mobile/lookbooks' },
-        { icon: Search, label: 'Qidiruv', path: '/mobile/search' },
+        { icon: Play, label: 'Reels', path: '/mobile/reels' },
+        { icon: Camera, label: 'Visual', path: null, action: onVisualSearch },
         { icon: ShoppingCart, label: 'Savat', path: '/mobile/cart', badge: totalItems },
         { icon: User, label: 'Profil', path: isAuthenticated ? '/mobile/profile' : '/mobile/login' },
     ];
@@ -28,6 +28,29 @@ const MobileNavbar = () => {
                 <div className="flex justify-between items-center px-1 py-1.5">
                     {navItems.map((item) => {
                         const Icon = item.icon;
+
+                        if (item.action) {
+                            return (
+                                <button
+                                    key={item.label}
+                                    onClick={item.action}
+                                    className="relative flex flex-col items-center justify-center w-full py-3 text-gray-500 hover:text-gray-300 transition-all duration-300"
+                                >
+                                    <div className="relative">
+                                        <Icon className="h-6 w-6 stroke-[1.5]" />
+                                        {item.label === 'Visual' && (
+                                            <span className="absolute -top-2.5 -right-3.5 px-1 py-0.5 bg-[#d6b47c] text-black text-[7px] font-black rounded-md transform rotate-12 shadow-sm border border-black/10">
+                                                BETA
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="absolute bottom-1 text-[9px] font-medium tracking-wide opacity-0 group-hover:opacity-100 transition-all">
+                                        {item.label}
+                                    </span>
+                                </button>
+                            );
+                        }
+
                         return (
                             <NavLink
                                 key={item.path}

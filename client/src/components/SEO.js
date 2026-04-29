@@ -5,11 +5,11 @@ const SITE_NAME = 'Luxx.uz';
 const SITE_URL = 'https://luxx.uz';
 const SITE_LOGO = `${SITE_URL}/logoweb2.png`;
 
-const DEFAULT_TITLE = "Luxx.uz - Ayollar kiyimlari, luxury kiyimlar va paltolar";
+const DEFAULT_TITLE = "Luxx.uz - Ayollar kiyimlari, luxury kiyimlar va paltolar | Женская одежда в Ташкенте";
 const DEFAULT_DESCRIPTION =
-    "Luxx.uz - O'zbekistondagi premium ayollar kiyimlari do'koni. Luxury kiyimlar, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar va zamonaviy kolleksiyalar.";
+    "Luxx.uz - O'zbekistondagi premium ayollar kiyimlari do'koni. Luxury kiyimlar, paltolar va zamonaviy kolleksiyalar. Женская одежда премиум-класса в Ташкенте. Купить платье, пальто и стильные образы с доставкой.";
 const DEFAULT_KEYWORDS =
-    "luxx.uz, luxx uz, luxe uz, luxury uz, luxe, luxury, luxury kiyimlar, ayollar kiyimlari, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar, ko'ylaklar, yubkalar, premium kiyimlar, onlayn kiyim do'kon";
+    "luxx.uz, luxx uz, luxe uz, luxury uz, luxe, luxury, luxury kiyimlar, ayollar kiyimlari, paltolar, ko'ylaklar, premium kiyimlar, onlayn kiyim do'kon, женская одежда ташкент, купить платье ташкент, брендовая одежда узбекистан, стильные образы, luxury clothing uzbekistan";
 
 const toAbsoluteUrl = (value) => {
     if (!value) return SITE_LOGO;
@@ -39,11 +39,10 @@ const buildCanonicalUrl = (pathCandidate) => {
 
 const CATEGORY_KEYWORDS = [
     'Luxury kiyimlar',
-    'Yozgi kiyimlar',
-    'Qishgi kiyimlar',
-    'Bahorgi kiyimlar',
-    'Kuzgi kiyimlar',
+    'Женская одежда',
     'Paltolar',
+    'Пальто Ташкент',
+    'Stil obrazlar',
 ];
 
 const SEO = ({
@@ -55,6 +54,7 @@ const SEO = ({
     canonicalPath,
     noIndex = false,
     structuredData,
+    breadcrumbSteps = [], // New prop for breadcrumbs
 }) => {
     const pageTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE;
     const pageDescription = description || DEFAULT_DESCRIPTION;
@@ -111,22 +111,30 @@ const SEO = ({
                 addressCountry: 'UZ',
             },
             keywords: CATEGORY_KEYWORDS.join(', '),
-        },
-        {
-            '@context': 'https://schema.org',
-            '@type': 'ItemList',
-            name: "Ayollar kiyimlari kategoriyalari",
-            itemListOrder: 'https://schema.org/ItemListOrderAscending',
-            itemListElement: CATEGORY_KEYWORDS.map((name, index) => ({
-                '@type': 'ListItem',
-                position: index + 1,
-                item: {
-                    '@type': 'Thing',
-                    name,
-                },
-            })),
-        },
+        }
     ];
+
+    // Add BreadcrumbList if steps provided
+    if (breadcrumbSteps && breadcrumbSteps.length > 0) {
+        schemas.push({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                {
+                    '@type': 'ListItem',
+                    position: 1,
+                    name: 'Asosiy',
+                    item: SITE_URL,
+                },
+                ...breadcrumbSteps.map((step, index) => ({
+                    '@type': 'ListItem',
+                    position: index + 2,
+                    name: step.name,
+                    item: step.url.startsWith('http') ? step.url : `${SITE_URL}${step.url}`,
+                })),
+            ],
+        });
+    }
 
     if (structuredData) {
         if (Array.isArray(structuredData)) {

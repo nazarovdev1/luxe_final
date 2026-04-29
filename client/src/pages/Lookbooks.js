@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, ShoppingBag, Gem, Play, ChevronDown } from 'lucide-react';
+import { ArrowRight, Eye, ShoppingBag, Gem, Play, ChevronDown, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LookDetailModal from '../components/LookDetailModal';
 import SEO from '../components/SEO';
@@ -16,6 +16,7 @@ function getSeason(index) {
 /* ─── sub-components ─────────────────────────────────────────── */
 
 function HeroSection() {
+    const navigate = useNavigate();
     const [scrollY, setScrollY] = useState(0);
     useEffect(() => {
         const onScroll = () => setScrollY(window.scrollY);
@@ -100,7 +101,7 @@ function HeroSection() {
                 </p>
 
                 <div
-                    className="flex items-center gap-4 mt-2 transition-transform duration-100 ease-out"
+                    className="flex flex-col sm:flex-row items-center gap-4 mt-2 transition-transform duration-100 ease-out"
                     style={{
                         transform: `translateY(${scrollY * 0.1}px)`,
                         opacity: Math.max(0, 1 - scrollY / 400)
@@ -110,6 +111,11 @@ function HeroSection() {
                         onClick={() => document.getElementById('lookbook-grid')?.scrollIntoView({ behavior: 'smooth' })}>
                         Kolleksiyani ko'rish
                         <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d6b47c]/30 text-[#d6b47c] text-xs font-semibold tracking-wide cursor-pointer hover:bg-[#d6b47c]/10 transition-colors"
+                        onClick={() => navigate('/lookbook-builder')}>
+                        Shaxsiy obraz yaratish
+                        <Plus className="w-3.5 h-3.5" />
                     </div>
                 </div>
             </div>

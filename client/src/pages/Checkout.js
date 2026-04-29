@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -21,6 +22,7 @@ import useProductService from '../server/server';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import OrderSuccessModal from '../components/OrderSuccessModal';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -121,7 +123,7 @@ function LocationButton() {
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, getCartTotal, clearCart } = useCart();
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, token } = useAuth();
   const { createOrder } = useProductService();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -140,9 +142,31 @@ const Checkout = () => {
     comments: '',
   });
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState(null);
+
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const [userTier, setUserTier] = useState(null);
+
+  useEffect(() => {
+    const fetchUserTier = async () => {
+      if (isAuthenticated && token) {
+        try {
+          const res = await axios.get('/api/points', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.data.success) {
+            setUserTier(res.data.points);
+          }
+        } catch (err) {
+          console.error('Error fetching tier:', err);
+        }
+      }
+    };
+    fetchUserTier();
+  }, [isAuthenticated, token]);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -165,14 +189,28 @@ const Checkout = () => {
     return cartItems.reduce((sum, item) => sum + item.parsedPrice * item.quantity, 0);
   }, [cartItems]);
 
-  const discountAmount = useMemo(() => {
-    if (appliedPromo) {
-      return (summaryTotal * appliedPromo.discountPercentage) / 100;
-    }
+  const tierDiscountAmount = useMemo(() => {
+    if (!userTier) return 0;
+    const level = userTier.level;
+    if (level === 'Gold') return (summaryTotal * 10) / 100;
+    if (level === 'Diamond') return (summaryTotal * 15) / 100;
     return 0;
-  }, [summaryTotal, appliedPromo]);
+  }, [summaryTotal, userTier]);
 
-  const finalTotal = summaryTotal - discountAmount;
+  const discountAmount = useMemo(() => {
+    let promoDiscount = 0;
+    if (appliedPromo) {
+      if (appliedPromo.discountAmount) {
+        promoDiscount = appliedPromo.discountAmount;
+      } else {
+        promoDiscount = (summaryTotal * appliedPromo.discountPercentage) / 100;
+      }
+    }
+    return promoDiscount + tierDiscountAmount;
+  }, [summaryTotal, appliedPromo, tierDiscountAmount]);
+
+  const deliveryFee = 0; // Free delivery for all
+  const finalTotal = summaryTotal - discountAmount + deliveryFee;
 
   const isStep1Valid = formData.firstName.trim() && formData.phone.trim();
   const isStep2Valid = formData.region.trim() && formData.street.trim();
@@ -202,23 +240,39 @@ const Checkout = () => {
     setCurrentStep(3);
   };
 
-  const { validatePromo } = useProductService();
+  const { validatePromo, validateCoupon } = useProductService();
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
 
     setIsValidatingPromo(true);
     try {
-      const result = await validatePromo(promoCode.trim());
-      if (result.success) {
+      // First try generic promo
+      const promoResult = await validatePromo(promoCode.trim());
+      if (promoResult.success) {
         setAppliedPromo({
-          code: result.code,
-          discountPercentage: result.discountPercentage
+          code: promoResult.code,
+          discountPercentage: promoResult.discountPercentage,
+          type: 'percentage'
         });
-        toast.success(`${result.discountPercentage}% chegirma qo'llanildi!`);
+        toast.success(`${promoResult.discountPercentage}% chegirma qo'llanildi!`);
+        setIsValidatingPromo(false);
+        return;
+      }
+
+      // If promo fails, try user-specific coupon
+      const couponResult = await validateCoupon(promoCode.trim(), summaryTotal, token);
+      if (couponResult.success) {
+        setAppliedPromo({
+          code: couponResult.code,
+          discountPercentage: couponResult.type === 'percentage' ? couponResult.value : (couponResult.discount / summaryTotal) * 100,
+          discountAmount: couponResult.discount,
+          type: couponResult.type
+        });
+        toast.success(`Kupon qo'llanildi!`);
       } else {
         setAppliedPromo(null);
-        toast.error(result.message || "Promokod noto'g'ri");
+        toast.error(couponResult.message || "Kupon yoki promokod noto'g'ri");
       }
     } catch (error) {
       toast.error('Promokodni tekshirishda xatolik yuz berdi');
@@ -253,32 +307,43 @@ const Checkout = () => {
     setIsSubmitting(true);
 
     try {
+      // Robust phone formatting
+      let cleanPhone = formData.phone.replace(/\D/g, '');
+      if (cleanPhone.startsWith('998') && cleanPhone.length === 12) {
+        cleanPhone = '+' + cleanPhone;
+      } else if (cleanPhone.length === 9) {
+        cleanPhone = '+998' + cleanPhone;
+      } else if (!cleanPhone.startsWith('+')) {
+        // If it's already 12 digits but no +, add it
+        if (cleanPhone.length === 12) cleanPhone = '+' + cleanPhone;
+      }
+
       const orderData = {
         customer: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
-          phone: formData.phone.replace(/\s+/g, ''),
+          phone: cleanPhone,
           address: `${formData.region}, ${formData.district}, ${formData.street}, ${formData.house}`.replace(
             /,\s*,/g,
             ','
-          ),
+          ).trim(),
           location: formData.location,
-          comments: formData.comments,
+          comments: formData.comments || '',
         },
         items: cartItems.map((item) => ({
-          product: item.productId,
+          product: item.productId || item.id,
           name: item.name,
           image: item.image,
           quantity: item.quantity,
           price: item.parsedPrice,
-          selectedColor: item.selectedColor,
-          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor || null,
+          selectedSize: item.selectedSize || null,
         })),
-        paymentMethod: formData.paymentMethod,
+        paymentMethod: formData.paymentMethod || 'cash',
         totals: {
           subtotal: summaryTotal,
           deliveryFee: 0,
           promoCode: appliedPromo ? appliedPromo.code : null,
-          discountAmount: discountAmount,
+          discountAmount: discountAmount || 0,
           total: finalTotal,
         },
         userId: user ? user._id || user.id : null,
@@ -287,9 +352,10 @@ const Checkout = () => {
       const result = await createOrder(orderData);
 
       if (result && result.success) {
-        toast.success('Buyurtmangiz qabul qilindi');
+        setCreatedOrderId(result.orderId);
+        setShowSuccessModal(true);
         clearCart();
-        navigate('/profile');
+        // Modal handles navigation
       } else {
         toast.error("Xatolik yuz berdi. Qayta urinib ko'ring.");
       }
@@ -301,7 +367,7 @@ const Checkout = () => {
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !showSuccessModal) {
     return (
       <div className="min-h-screen px-4" style={{ backgroundColor: THEME.bgBase }}>
         <div className="mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center">
@@ -668,16 +734,26 @@ const Checkout = () => {
                   <span>{formatMoney(summaryTotal)} so'm</span>
                 </div>
 
+                {userTier && tierDiscountAmount > 0 && (
+                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                    <div className="flex items-center gap-1.5">
+                      <Gem className="w-3.5 h-3.5" />
+                      <span>{userTier.level} Member chegirmasi</span>
+                    </div>
+                    <span>-{formatMoney(tierDiscountAmount)} so'm</span>
+                  </div>
+                )}
+
                 {appliedPromo && (
                   <div className="flex items-center justify-between text-sm text-emerald-400">
-                    <span>Chegirma ({appliedPromo.code})</span>
-                    <span>-{formatMoney(discountAmount)} so'm</span>
+                    <span>Promokod ({appliedPromo.code})</span>
+                    <span>-{formatMoney(discountAmount - tierDiscountAmount)} so'm</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
                   <span>Yetkazib berish</span>
-                  <span className="text-[#c7ceda]">Bepul</span>
+                  <span className="text-emerald-400 font-medium">Bepul</span>
                 </div>
                 <div className="flex items-center justify-between border-t border-[#2d3442] pt-3">
                   <span className="text-base font-semibold text-[#f4f1eb]">Jami</span>
@@ -709,6 +785,12 @@ const Checkout = () => {
           </aside>
         </div>
       </div>
+      <OrderSuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={() => setShowSuccessModal(false)} 
+        orderId={createdOrderId}
+        isMobile={false}
+      />
     </div>
   );
 };

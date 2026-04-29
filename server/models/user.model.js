@@ -34,6 +34,22 @@ const userSchema = new mongoose.Schema({
     },
     savedProducts: [{
         type: String  // Product IDs
+    }],
+    bio: {
+        type: String,
+        default: ''
+    },
+    profileImage: {
+        type: String,
+        default: ''
+    },
+    followers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    following: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }]
 }, {
     timestamps: true

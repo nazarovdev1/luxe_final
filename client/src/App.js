@@ -21,8 +21,17 @@ const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const Lookbooks = React.lazy(() => import('./pages/Lookbooks'));
+const LookbookBuilder = React.lazy(() => import('./pages/LookbookBuilder'));
+const StyleFeed = React.lazy(() => import('./pages/StyleFeed'));
+const VIPClub = React.lazy(() => import('./pages/VIPClub'));
+const Challenges = React.lazy(() => import('./pages/Challenges'));
+const LiveStreams = React.lazy(() => import('./pages/LiveStreams'));
+const LiveStreamView = React.lazy(() => import('./pages/LiveStreamView'));
+const EcoImpact = React.lazy(() => import('./pages/EcoImpact'));
+const Reels = React.lazy(() => import('./pages/Reels'));
 const MobileApp = React.lazy(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
+const VisualSearch = React.lazy(() => import('./components/VisualSearch'));
 import { ProductProvider } from './contexts/ProductContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -32,6 +41,9 @@ import ScrollToTop from './components/ScrollToTop';
 
 
 import { useLocation } from 'react-router-dom';
+import { usePWA } from './hooks/usePWA';
+import InstallPrompt from './components/InstallPrompt';
+import OfflineIndicator from './components/OfflineIndicator';
 
 // Device detection helper
 const isMobileDevice = () => {
@@ -50,9 +62,10 @@ function MainContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = location.pathname.startsWith('/mobile');
-  const showDesktopChrome = !isMobile && !['/login', '/register', '/checkout'].includes(location.pathname);
+  const showDesktopChrome = !isMobile && !['/login', '/register', '/checkout', '/reels', '/live/'].some(path => location.pathname.startsWith(path));
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
 
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -116,7 +129,7 @@ function MainContent() {
         {showDesktopChrome && (
           <>
             <AnnouncementBanner />
-            <Navbar onSearchClick={openSearch} onCartClick={openCart} />
+            <Navbar onSearchClick={openSearch} onCartClick={openCart} onVisualSearch={() => setIsVisualSearchOpen(true)} />
           </>
         )}
 
@@ -127,6 +140,11 @@ function MainContent() {
               <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
               <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
             </>
+          )}
+          {isVisualSearchOpen && (
+            <React.Suspense fallback={<Loading />}>
+              <VisualSearch onClose={() => setIsVisualSearchOpen(false)} />
+            </React.Suspense>
           )}
           <Routes>
             {/* Mobile version - separate layout */}
@@ -145,7 +163,16 @@ function MainContent() {
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/lookbooks" element={<Lookbooks />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/lookbook-builder" element={<React.Suspense fallback={<Loading />}><LookbookBuilder /></React.Suspense>} />
+            <Route path="/style-feed" element={<React.Suspense fallback={<Loading />}><StyleFeed /></React.Suspense>} />
+            <Route path="/vip-club" element={<React.Suspense fallback={<Loading />}><VIPClub /></React.Suspense>} />
+            <Route path="/challenges" element={<React.Suspense fallback={<Loading />}><Challenges /></React.Suspense>} />
+            <Route path="/live" element={<React.Suspense fallback={<Loading />}><LiveStreams /></React.Suspense>} />
+<Route path="/live/:id" element={<React.Suspense fallback={<Loading />}><LiveStreamView /></React.Suspense>} />
+<Route path="/eco-impact" element={<React.Suspense fallback={<Loading />}><EcoImpact /></React.Suspense>} />
+<Route path="/reels" element={<React.Suspense fallback={<Loading />}><Reels /></React.Suspense>} />
+<Route path="/reels/:id" element={<React.Suspense fallback={<Loading />}><Reels /></React.Suspense>} />
+<Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -180,6 +207,8 @@ function MainContent() {
 }
 
 function App() {
+  const pwa = usePWA()
+
   return (
     <AuthProvider>
       <ProductProvider>
@@ -188,7 +217,9 @@ function App() {
             <NotificationProvider>
               <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <ScrollToTop />
+                <OfflineIndicator isOnline={pwa.isOnline} updateAvailable={pwa.updateAvailable} onUpdate={pwa.updateApp} />
                 <MainContent />
+                <InstallPrompt isInstallable={pwa.isInstallable} onInstall={pwa.installApp} />
               </Router>
             </NotificationProvider>
           </FavoritesProvider>

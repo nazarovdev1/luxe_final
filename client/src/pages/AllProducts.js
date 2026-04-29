@@ -48,7 +48,21 @@ const PremiumCatalogCard = ({ product }) => {
 
         <div className="absolute inset-0 bg-gradient-to-t from-[#07080c] via-[#07080c]/20 to-transparent" />
 
-        {product.badge && (
+        {product.earlyAccessUntil && new Date(product.earlyAccessUntil) > new Date() && (
+          <div className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-black/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-400 backdrop-blur-md">
+            <Gem className="w-3.5 h-3.5" />
+            Early Access
+          </div>
+        )}
+
+        {product.isNewCollection && (
+          <div className={`absolute top-3 ${product.earlyAccessUntil && new Date(product.earlyAccessUntil) > new Date() ? 'left-32' : 'left-3'} z-10 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-black/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-400 backdrop-blur-md`}>
+            <Flame className="w-3.5 h-3.5" />
+            New Collection
+          </div>
+        )}
+
+        {product.badge && !product.earlyAccessUntil && !product.isNewCollection && (
           <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
             <Gem className="w-3.5 h-3.5 text-[#f0d0a4]" />
             {product.badge}
@@ -179,18 +193,23 @@ const AllProducts = () => {
   const seoData = React.useMemo(() => {
     if (selectedCategory === 'Barchasi') {
       return {
-        title: "Barcha ayollar kiyimlari - premium katalog",
+        title: "Barcha ayollar kiyimlari - premium katalog | Женская одежда",
         description:
-          "Luxx.uz premium katalogi: luxury kiyimlar, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar va paltolar.",
+          "Luxx.uz premium katalogi: luxury kiyimlar, paltolar va eksklyuziv modellar. Каталог женской одежды премиум-класса в Ташкенте.",
         keywords:
-          "luxury kiyimlar, ayollar kiyimlari, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar, premium katalog",
+          "luxury kiyimlar, ayollar kiyimlari, paltolar, premium katalog, женская одежда ташкент, каталог одежды",
+        breadcrumbs: [{ name: 'Kiyimlar', url: '/products' }]
       };
     }
 
     return {
-      title: `${selectedCategory} - Premium katalog`,
-      description: `Luxx.uz katalogida ${selectedCategory.toLowerCase()} kolleksiyasi. Premium fason va tez yetkazib berish bilan xarid qiling.`,
-      keywords: `${selectedCategory}, ayollar kiyimlari, luxx.uz, premium kiyimlar, luxury kiyimlar`,
+      title: `${selectedCategory} - Premium katalog | Luxx.uz`,
+      description: `Luxx.uz katalogida ${selectedCategory.toLowerCase()} kolleksiyasi. Premium fason va tez yetkazib berish. ${selectedCategory} в Ташкенте.`,
+      keywords: `${selectedCategory}, ayollar kiyimlari, luxx.uz, premium kiyimlar, luxury kiyimlar, купить ${selectedCategory.toLowerCase()}`,
+      breadcrumbs: [
+        { name: 'Kiyimlar', url: '/products' },
+        { name: selectedCategory, url: `/products?category=${selectedCategory}` }
+      ]
     };
   }, [selectedCategory]);
 
@@ -206,6 +225,7 @@ const AllProducts = () => {
         title={seoData.title}
         description={seoData.description}
         keywords={seoData.keywords}
+        breadcrumbSteps={seoData.breadcrumbs}
         canonicalPath="/products"
       />
 
@@ -227,7 +247,7 @@ const AllProducts = () => {
                   Orqaga
                 </Link>
 
-                <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-1 text-xs uppercase tracking-[0.2em] text-neutral-300">
+                <p className="mt-5 ml-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-6 py-1 text-xs uppercase tracking-[0.2em] text-neutral-300">
                   <Crown className="w-3.5 h-3.5 text-[#f0d0a4]" />
                   Curated catalog
                 </p>

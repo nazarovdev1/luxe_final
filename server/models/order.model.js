@@ -19,7 +19,7 @@ const orderSchema = new mongoose.Schema({
         product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         name: String,
         image: String,
-        quantity: Number,
+        quantity: { type: Number, required: true },
         price: Number,
         selectedColor: String,
         selectedSize: String
@@ -44,6 +44,10 @@ const orderSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+orderSchema.index({ 'customer.phone': 1 })
+orderSchema.index({ status: 1 })
+orderSchema.index({ createdAt: -1 })
 
 const Order = mongoose.model('Order', orderSchema)
 

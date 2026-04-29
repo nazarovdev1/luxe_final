@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
+  Camera,
   ChevronRight,
   Crown,
   LayoutDashboard,
@@ -14,7 +15,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 
-const Navbar = ({ onSearchClick, onCartClick }) => {
+const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,12 +34,21 @@ const Navbar = ({ onSearchClick, onCartClick }) => {
   const userMenuRef = useRef(null);
 
   const navItems = [
-    { name: 'Bosh sahifa', sectionId: 'hero' },
-    { name: 'Luxe kiyimlar', link: '/products' },
+    { name: 'Asosiy', sectionId: 'hero' },
+    { name: 'Kiyimlar', link: '/products' },
     { name: 'Looklar', link: '/lookbooks' },
+    { 
+      name: 'EVENTLAR', 
+      dropdown: [
+        { name: 'Reels', link: '/reels' },
+        { name: 'Community', link: '/style-feed' },
+        { name: 'Challenges', link: '/challenges' },
+        { name: 'Live', link: '/live' },
+        { name: 'VIP Club', link: '/vip-club' },
+        { name: 'Eco Impact', link: '/eco-impact' },
+      ]
+    },
     { name: 'Biz haqimizda', sectionId: 'about' },
-    { name: 'Savollar', link: '/faq' },
-    { name: 'Aloqa', link: '/contact' },
   ];
 
   const closeAllMenus = () => {
@@ -114,15 +124,38 @@ const Navbar = ({ onSearchClick, onCartClick }) => {
               <img src="/logonav.png" alt="Luxx logo" className="h-16 w-[90px] object-contain" />
             </Link>
 
-            <div className="hidden md:flex items-center gap-6 lg:gap-8">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-8">
               {navItems.map(item => {
-                const active = isItemActive(item);
-                const baseClass = `relative group py-1 text-[12px] font-medium tracking-[0.1em] uppercase transition-all duration-300 ${active
+                const active = isItemActive(item) || (item.dropdown && item.dropdown.some(sub => isItemActive(sub)));
+                const baseClass = `relative group py-1 text-[13px] font-medium tracking-[0.05em] uppercase whitespace-nowrap transition-all duration-300 ${active
                   ? 'text-[#d6b47c]'
                   : 'text-white hover:text-[#d6b47c]'
                   }`;
 
                 const underline = <span className={`absolute bottom-0 left-0 h-[1.5px] bg-[#d6b47c] transition-all duration-300 ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>;
+
+                if (item.dropdown) {
+                  return (
+                    <div key={item.name} className="relative group cursor-pointer h-full flex items-center">
+                      <div className={baseClass + " flex items-center gap-1.5"}>
+                        {item.name}
+                        <ChevronRight className="w-3.5 h-3.5 rotate-90 transition-transform duration-300 group-hover:-rotate-90" />
+                        {underline}
+                      </div>
+                      <div className="absolute top-[35px] left-1/2 -translate-x-1/2 mt-4 w-48 py-2 bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-2xl flex flex-col z-50">
+                        {item.dropdown.map(subItem => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.link}
+                            className={`px-5 py-2.5 text-[12px] font-medium tracking-[0.05em] uppercase transition-colors ${isItemActive(subItem) ? 'text-[#d6b47c] bg-white/5' : 'text-gray-400 hover:text-[#d6b47c] hover:bg-white/5'}`}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
 
                 return item.link ? (
                   <Link key={item.name} to={item.link} className={baseClass}>
@@ -150,6 +183,15 @@ const Navbar = ({ onSearchClick, onCartClick }) => {
               >
                 <Search className="h-5 w-5" />
               </button>
+
+              <button
+                onClick={onVisualSearch}
+                className="text-white hover:text-[#d6b47c] transition-colors duration-300"
+                aria-label="Visual qidiruv"
+              >
+                <Camera className="h-5 w-5" />
+              </button>
+
 
               <button
                 onClick={handleCartClick}
@@ -246,6 +288,28 @@ const Navbar = ({ onSearchClick, onCartClick }) => {
             <div className="md:hidden relative pb-3">
               <div className="rounded-2xl border border-[#8ea6d6]/25 bg-[#0f1422]/92 backdrop-blur-xl p-2.5 space-y-1.5">
                 {navItems.map(item => {
+                  if (item.dropdown) {
+                    return (
+                      <div key={item.name} className="flex flex-col rounded-xl overflow-hidden bg-white/[0.02]">
+                        <div className="flex items-center justify-between px-3 py-2.5 text-sm text-neutral-400 font-medium">
+                          {item.name}
+                        </div>
+                        <div className="flex flex-col pl-4 border-l border-white/5 ml-3 space-y-1 mb-2">
+                          {item.dropdown.map(subItem => (
+                            <Link
+                              key={subItem.name}
+                              to={subItem.link}
+                              className={`px-3 py-2 text-xs rounded-xl transition-colors ${isItemActive(subItem) ? 'text-[#d6b47c] bg-[#d6b47c]/10' : 'text-neutral-300 hover:bg-white/[0.06]'}`}
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              {subItem.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const content = (
                     <span className="flex items-center justify-between w-full">
                       <span>{item.name}</span>
@@ -266,7 +330,7 @@ const Navbar = ({ onSearchClick, onCartClick }) => {
                     <button
                       key={item.name}
                       onClick={e => handleNavClick(e, item.sectionId)}
-                      className="w-full flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                      className="w-full text-left flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
                     >
                       {content}
                     </button>

@@ -17,6 +17,13 @@ import MobilePrivacyPolicy from './pages/mobile/MobilePrivacyPolicy';
 import MobileTermsOfService from './pages/mobile/MobileTermsOfService';
 import MobileLookbooks from './pages/mobile/MobileLookbooks';
 import MobileLookDetail from './pages/mobile/MobileLookDetail';
+import MobileVIPClub from './pages/mobile/MobileVIPClub';
+import MobileEcoImpact from './pages/mobile/MobileEcoImpact';
+import MobileLive from './pages/mobile/MobileLive';
+import MobileStyleFeed from './pages/mobile/MobileStyleFeed';
+import MobileChallenges from './pages/mobile/MobileChallenges';
+import MobileReels from './pages/mobile/MobileReels';
+import LiveStreamView from './pages/LiveStreamView';
 import NotFound from './pages/NotFound';
 
 const MobileApp = () => {
@@ -41,7 +48,15 @@ const MobileApp = () => {
                 <Route path="/terms" element={<MobileTermsOfService />} />
                 <Route path="/lookbooks" element={<MobileLookbooks />} />
                 <Route path="/lookbooks/:id" element={<MobileLookDetail />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/vip-club" element={<MobileVIPClub />} />
+                <Route path="/eco-impact" element={<MobileEcoImpact />} />
+                <Route path="/live" element={<MobileLive />} />
+                <Route path="/live/:id" element={<LiveStreamView />} />
+<Route path="/style-feed" element={<MobileStyleFeed />} />
+<Route path="/challenges" element={<MobileChallenges />} />
+<Route path="/reels" element={<MobileReels />} />
+<Route path="/reels/:id" element={<MobileReels />} />
+<Route path="*" element={<NotFound />} />
             </Routes>
         </MobileLayout>
     );

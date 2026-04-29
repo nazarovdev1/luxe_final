@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -13,6 +13,7 @@ import {
   Layers,
   Tag,
   Gem,
+  Trophy,
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 import AdminOrders from './AdminOrders';
@@ -20,6 +21,13 @@ import AdminUsers from './AdminUsers';
 import AdminAnnouncements from './AdminAnnouncements';
 import LookbookManager from './LookbookManager';
 import AdminPromos from './AdminPromos';
+import AdminCoupons from './AdminCoupons';
+import AdminChallenges from './AdminChallenges';
+import AdminBadges from './AdminBadges';
+import AdminReels from './AdminReels';
+import axios from 'axios';
+import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import './admin/adminTheme.css';
 
 const formatCurrency = (value) => {
@@ -55,10 +63,28 @@ const tabs = [
     icon: Users,
   },
   {
-    id: 'announcements',
-    label: 'Xabarlar',
-    description: 'Banner va eʼlonlar',
-    icon: Bell,
+    id: 'reels',
+    label: 'Reels',
+    description: 'Videolar boshqaruvi',
+    icon: TrendingUp,
+  },
+  {
+    id: 'coupons',
+    label: 'Kuponlar',
+    description: 'Loyallik tizimi kuponlari',
+    icon: Tag,
+  },
+  {
+    id: 'challenges',
+    label: 'Musobaqalar',
+    description: 'Style challenges boshqaruvi',
+    icon: Gem,
+  },
+  {
+    id: 'badges',
+    label: 'Nishonlar',
+    description: 'Erishiladigan yutuqlar',
+    icon: Trophy,
   },
   {
     id: 'lookbook',
@@ -67,20 +93,39 @@ const tabs = [
     icon: Layers,
   },
   {
-    id: 'promos',
-    label: 'Promokodlar',
-    description: 'Aksiya kodlari',
-    icon: Tag,
+    id: 'announcements',
+    label: 'Xabarlar',
+    description: 'Banner va eʼlonlar',
+    icon: Bell,
   },
 ];
 
 const AdminDashboard = () => {
-  const { products, removeProduct, isLoading } = useProducts();
-  const { logout } = useAuth();
+  const { products, removeProduct, isLoading: productsLoading } = useProducts();
+  const { logout, token } = useAuth();
 
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [activeTab, setActiveTab] = useState('products');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [adminStats, setAdminStats] = useState(null);
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setIsStatsLoading(true);
+        const res = await axios.get('/api/admin-mgmt/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.success) setAdminStats(res.data.data);
+      } catch (err) {
+        toast.error('Statistikani yuklashda xato');
+      } finally {
+        setIsStatsLoading(false);
+      }
+    };
+    fetchStats();
+  }, [token]);
 
   const stats = useMemo(() => {
     const total = products.length;
@@ -119,13 +164,15 @@ const AdminDashboard = () => {
     setEditingProduct(null);
   };
 
-  if (isLoading) {
+  if (productsLoading) {
     return (
       <div className="admin-shell min-h-screen pt-16 flex items-center justify-center">
         <div className="admin-loading-ring w-12 h-12" />
       </div>
     );
   }
+
+  const tabsWithOverview = [{ id: 'overview', label: 'Umumiy', description: 'Statistika va hisobotlar', icon: BarChart3 }, ...tabs];
 
   return (
     <div className="admin-shell min-h-screen pt-16 pb-14">
@@ -142,9 +189,9 @@ const AdminDashboard = () => {
               </div>
 
               <div>
-                <h1 className="admin-title text-2xl sm:text-3xl leading-tight">Admin Panel</h1>
+                <h1 className="admin-title text-2xl sm:text-3xl leading-tight">Admin Dashboard</h1>
                 <p className="admin-muted mt-2 max-w-2xl text-sm sm:text-base">
-                  Barcha operatsiyalar bitta panelda: mahsulotlar, buyurtmalar, lookbook va promokodlar.
+                  Platformaning barcha qismlarini boshqarish va tahlil qilish uchun asosiy markaz.
                 </p>
               </div>
             </div>
@@ -169,33 +216,11 @@ const AdminDashboard = () => {
               </button>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-7">
-            <div className="admin-card-soft p-4">
-              <p className="admin-muted text-xs uppercase tracking-[0.16em]">Jami mahsulot</p>
-              <p className="admin-stat-value mt-2">{stats.total}</p>
-            </div>
-
-            <div className="admin-card-soft p-4">
-              <p className="admin-muted text-xs uppercase tracking-[0.16em]">Yangi</p>
-              <p className="admin-stat-value mt-2">{stats.newCount}</p>
-            </div>
-
-            <div className="admin-card-soft p-4">
-              <p className="admin-muted text-xs uppercase tracking-[0.16em]">Bestseller</p>
-              <p className="admin-stat-value mt-2">{stats.bestCount}</p>
-            </div>
-
-            <div className="admin-card-soft p-4">
-              <p className="admin-muted text-xs uppercase tracking-[0.16em]">Lookbook</p>
-              <p className="admin-stat-value mt-2">{stats.lookbookCount}</p>
-            </div>
-          </div>
         </header>
 
         <section className="admin-card sticky top-16 z-20 px-3 py-3">
           <div className="flex items-center gap-2 overflow-x-auto admin-scroll">
-            {tabs.map((tab) => {
+            {tabsWithOverview.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
 
@@ -215,13 +240,107 @@ const AdminDashboard = () => {
               );
             })}
           </div>
-
-          <p className="admin-muted text-xs sm:text-sm mt-3 px-2">
-            {activeTabConfig?.description}
-          </p>
         </section>
 
         <main className="space-y-6">
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              {isStatsLoading ? (
+                <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
+              ) : adminStats && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="admin-card p-6 border-l-4 border-amber-400">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Jami daromad</p>
+                          <h3 className="text-2xl font-bold text-white">{adminStats.totalRevenue.toLocaleString()} <span className="text-xs font-normal">so'm</span></h3>
+                        </div>
+                        <div className="p-3 bg-amber-400/10 rounded-2xl text-amber-400">
+                          <DollarSign className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="admin-card p-6 border-l-4 border-blue-400">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Buyurtmalar</p>
+                          <h3 className="text-2xl font-bold text-white">{adminStats.ordersCount}</h3>
+                        </div>
+                        <div className="p-3 bg-blue-400/10 rounded-2xl text-blue-400">
+                          <ShoppingCart className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="admin-card p-6 border-l-4 border-green-400">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Mijozlar</p>
+                          <h3 className="text-2xl font-bold text-white">{adminStats.usersCount}</h3>
+                        </div>
+                        <div className="p-3 bg-green-400/10 rounded-2xl text-green-400">
+                          <Users className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="admin-card p-6 border-l-4 border-purple-400">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Mahsulotlar</p>
+                          <h3 className="text-2xl font-bold text-white">{adminStats.productsCount}</h3>
+                        </div>
+                        <div className="p-3 bg-purple-400/10 rounded-2xl text-purple-400">
+                          <Package className="w-6 h-6" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="admin-card p-6">
+                      <h3 className="font-bold mb-6 flex items-center gap-2">
+                        <ShoppingBag className="w-5 h-5 text-amber-300" />
+                        Oxirgi buyurtmalar
+                      </h3>
+                      <div className="space-y-4">
+                        {adminStats.recentOrders.map(order => (
+                          <div key={order._id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <div>
+                              <p className="font-bold text-sm text-white">#{order._id.slice(-6).toUpperCase()}</p>
+                              <p className="text-xs text-gray-500">{order.user?.username || 'Noma\'lum'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-amber-200">{order.totals?.total?.toLocaleString() || '0'} so'm</p>
+                              <p className="text-[10px] text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="admin-card p-6">
+                      <h3 className="font-bold mb-6 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-amber-300" />
+                        Oylik savdo
+                      </h3>
+                      <div className="h-64 flex items-end gap-2 px-4 pb-4">
+                        {adminStats.salesByMonth.map((month, i) => (
+                          <div key={i} className="flex-1 bg-amber-400/20 hover:bg-amber-400/40 transition-all rounded-t-lg relative group" style={{ height: `${(month.total / Math.max(...adminStats.salesByMonth.map(m => m.total), 1)) * 100}%` }}>
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-[10px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                              {month.total.toLocaleString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between px-4 mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                        <span>Yan</span><span>Iyun</span><span>Dek</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
           {activeTab === 'products' ? (
             showForm ? (
               <section className="admin-card p-5 sm:p-7">
@@ -422,6 +541,30 @@ const AdminDashboard = () => {
           {activeTab === 'promos' ? (
             <section className="admin-card p-5 sm:p-6">
               <AdminPromos />
+            </section>
+          ) : null}
+
+          {activeTab === 'coupons' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <AdminCoupons />
+            </section>
+          ) : null}
+
+          {activeTab === 'challenges' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <AdminChallenges />
+            </section>
+          ) : null}
+
+          {activeTab === 'badges' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <AdminBadges />
+            </section>
+          ) : null}
+
+          {activeTab === 'reels' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <AdminReels />
             </section>
           ) : null}
         </main>

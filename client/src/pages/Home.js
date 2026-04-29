@@ -30,9 +30,9 @@ const Home = () => {
   return (
     <div>
       <SEO
-        title="Ayollar kiyimlari, luxury kiyimlar va paltolar"
-        description="Luxx.uz - ayollar uchun premium va luxury kiyimlar onlayn do'koni. Yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar va zamonaviy kolleksiyalar."
-        keywords="luxx.uz, luxe uz, luxury uz, luxe, luxury, ayollar kiyimlari, luxury kiyimlar, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, paltolar, premium kiyimlar, moda do'kon"
+        title="Ayollar kiyimlari, luxury kiyimlar va paltolar | Женская одежда"
+        description="Luxx.uz - ayollar uchun premium va luxury kiyimlar onlayn do'koni. Yozgi kiyimlar, paltolar va zamonaviy kolleksiyalar. Женская одежда премиум-класса в Ташкенте."
+        keywords="luxx.uz, luxe uz, luxury uz, luxe, luxury, ayollar kiyimlari, luxury kiyimlar, paltolar, premium kiyimlar, moda do'kon, женская одежда ташкент, купить платье ташкент"
         canonicalPath="/"
       />
       <Hero />

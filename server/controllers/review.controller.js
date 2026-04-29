@@ -1,5 +1,6 @@
 import Review from '../models/review.model.js'
 import Product from '../models/product.model.js'
+import pointsService from '../services/points.service.js'
 
 export const getReviews = async (req, res) => {
     try {
@@ -25,6 +26,18 @@ export const createReview = async (req, res) => {
         })
 
         await review.save()
+
+        // Award points for writing a review
+        try {
+            await pointsService.addPoints(userId, 50, {
+                source: 'review',
+                description: 'Mahsulotga sharh yozildi',
+                referenceId: review._id,
+                referenceModel: 'Review'
+            })
+        } catch (error) {
+            console.error('Points error for review:', error)
+        }
 
         // Update product rating
         const reviews = await Review.find({ product: productId })

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
 import {
@@ -20,6 +21,8 @@ import {
   Palette,
   Ruler,
   Clock3,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import ImageCarousel from '../components/ImageCarousel';
 import ReviewList from '../components/ReviewList';
@@ -145,6 +148,22 @@ export default function ProductView() {
 
   const subtotal = (Number(product.price) || 0) * quantity;
 
+  const [visualResults, setVisualResults] = useState([]);
+  const [visualLoading, setVisualLoading] = useState(false);
+
+  const fetchVisualSimilar = async () => {
+    if (!id) return;
+    setVisualLoading(true);
+    try {
+      const { data } = await axios.get(`${API_BASE}/visual-search/similar/${id}?limit=6`);
+      if (data.success) setVisualResults(data.data);
+    } catch {
+      setVisualResults([]);
+    } finally {
+      setVisualLoading(false);
+    }
+  };
+
   const handleAddToCart = async () => {
     if (product.colors && product.colors.length > 0 && !selectedColor) {
       toast.error('Iltimos, rang tanlang!', { duration: 6000 });
@@ -188,9 +207,14 @@ export default function ProductView() {
     <div className="relative min-h-screen overflow-hidden pt-20 pb-16" style={{ backgroundColor: THEME.bgBase }}>
       <SEO
         title={product.name}
-        description={product.description || `${product.name} - Luxx.uz internet do'konidan xarid qiling.`}
-        keywords={`${product.name}, ${product.category || 'ayollar kiyimlari'}, luxury kiyimlar, premium kiyimlar, luxx.uz`}
+        description={product.description || `${product.name} - Luxx.uz internet do'konidan xarid qiling. Женская одежда премиум-класса.`}
+        keywords={`${product.name}, ${product.category || 'ayollar kiyimlari'}, luxury kiyimlar, premium kiyimlar, luxx.uz, купить ${product.name}, одежда ташкент`}
         image={product.image}
+        breadcrumbSteps={[
+          { name: 'Kiyimlar', url: '/products' },
+          { name: product.category, url: `/products?category=${product.category}` },
+          { name: product.name, url: `/product/${id}` }
+        ]}
         canonicalPath={`/product/${id}`}
       />
 
@@ -496,13 +520,23 @@ export default function ProductView() {
               <h2 className="text-2xl sm:text-3xl font-semibold text-[#f4f1eb]">
                 Shu uslubga <span className="font-brilliant text-[#d6b47c]">mos</span> mahsulotlar
               </h2>
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0f182b] px-3 py-2 text-xs uppercase tracking-[0.14em] text-neutral-200 transition-colors hover:bg-[#16233d]"
-              >
-                Barchasi
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchVisualSimilar}
+                  disabled={visualLoading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-900/40 to-purple-700/30 border border-purple-500/20 px-3 py-2 text-xs uppercase tracking-[0.14em] text-purple-200 transition-colors hover:from-purple-900/60 hover:to-purple-700/40"
+                >
+                  {visualLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                  AI O'xshashlar
+                </button>
+                <Link
+                  to="/products"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#0f182b] px-3 py-2 text-xs uppercase tracking-[0.14em] text-neutral-200 transition-colors hover:bg-[#16233d]"
+                >
+                  Barchasi
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -528,6 +562,42 @@ export default function ProductView() {
                       </h3>
                     </Link>
                     <p className="mt-3 text-xl font-semibold text-[#f4f1eb]">{formatPrice(item.price)} so'm</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {visualResults.length > 0 && (
+          <section className="mt-12">
+            <div className="mb-5 flex items-center gap-3">
+              <Sparkles className="text-purple-400" size={20} />
+              <h2 className="text-2xl sm:text-3xl font-semibold text-[#f4f1eb]">
+                AI topgan <span className="font-brilliant text-purple-400">o'xshash</span> mahsulotlar
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {visualResults.map((item) => (
+                <article
+                  key={item._id}
+                  className="group overflow-hidden rounded-[1.6rem] bg-gradient-to-b from-[#1a1030]/94 to-[#0f0a1e]/94 border border-purple-500/10 shadow-[0_18px_42px_rgba(80,20,120,0.2)]"
+                >
+                  <Link to={`/product/${item._id}`} className="relative block aspect-[4/5] overflow-hidden">
+                    <img
+                      src={item.images?.[0]?.url}
+                      alt={item.name}
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                    />
+                    {item.similarity && (
+                      <div className="absolute top-3 left-3 px-2 py-1 rounded-lg bg-purple-600/80 text-white text-[10px] font-bold backdrop-blur-sm">
+                        {Math.round(item.similarity * 100)}% mos
+                      </div>
+                    )}
+                  </Link>
+                  <div className="p-3">
+                    <p className="text-white text-sm font-medium truncate">{item.name}</p>
+                    <p className="text-purple-300 text-sm font-bold mt-1">{Number(item.price).toLocaleString()} so'm</p>
                   </div>
                 </article>
               ))}

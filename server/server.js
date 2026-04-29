@@ -1,14 +1,36 @@
-console.log("1. Starting imports...");
 import express from 'express'
+import http from 'http'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
+import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
+import dns from 'dns'
+
+// Fix for Node.js 17+ DNS resolution issues on some Windows environments
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first')
+}
+
+// Force Node.js to use specific DNS servers for SRV lookups if system DNS is failing
+try {
+  dns.setServers(['1.1.1.1', '8.8.8.8'])
+} catch (err) {
+  logger.warn('Could not set DNS servers:', err.message)
+}
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Load .env from the server directory explicitly
+dotenv.config({ path: path.join(__dirname, '.env') })
+
 import { connectDB } from './config/db.js'
 import prerender from 'prerender-node'
+import logger from './utils/logger.js'
 
-// Route Imports
 import productRoutes from './routes/product.route.js'
 import orderRoutes from './routes/order.route.js'
 import authRoutes from './routes/auth.route.js'
@@ -16,266 +38,219 @@ import reviewRoutes from './routes/review.route.js'
 import contactRoutes from './routes/contact.route.js'
 import announcementRoutes from './routes/announcement.route.js'
 import promoRoutes from './routes/promo.route.js'
+import lookRoutes from './routes/look.route.js'
+import sitemapRoutes from './routes/sitemap.route.js'
+import visualSearchRoutes from './routes/visualSearch.route.js'
+import aiStylistRoutes from './routes/aiStylist.route.js'
+import pointsRoutes from './routes/points.routes.js'
+import badgeRoutes from './routes/badge.routes.js'
+import challengeRoutes from './routes/challenge.routes.js'
+import postRoutes from './routes/post.routes.js'
+import commentRoutes from './routes/comment.routes.js'
+import livestreamRoutes from './routes/livestream.routes.js'
+import lookbookRoutes from './routes/lookbook.routes.js'
+import sustainabilityRoutes from './routes/sustainability.routes.js'
+import couponRoutes from './routes/coupon.routes.js'
+import adminManagementRoutes from './routes/admin.routes.js'
+import reelRoutes from './routes/reel.route.js'
+import liveChatRoutes from './routes/liveChat.routes.js'
 
-console.log("2. Finished imports, config dotenv...");
-dotenv.config()
-console.log("3. Done config dotenv");
-
-// Define __dirname for ES Modules
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+import { initSocket } from './services/socket.service.js'
 
 const app = express()
+const server = http.createServer(app)
 const PORT = process.env.PORT || 3003
 
-// Middleware
-app.use(cors())
+// Initialize Socket.io
+initSocket(server)
+
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString()
+  next()
+})
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}))
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://luxx.uz', 'https://www.luxx.uz']
+    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3003', 'http://127.0.0.1:3003'],
+  credentials: true
+}))
+
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
-// Prerender.io for SEO - serves fully rendered HTML to search engine bots
-// In production, Prerender.io cloud service renders your React pages to HTML
-// so search engine bots receive fully-rendered content instead of empty JS shells
-const prerenderToken = process.env.PRERENDER_TOKEN;
-const isProduction = process.env.NODE_ENV === 'production';
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  message: { success: false, message: 'Juda ko\'p so\'rovlar, keyinroq urinib ko\'ring' }
+})
+app.use('/api', globalLimiter)
 
-if (prerenderToken) {
-	// For local development, we skip prerender middleware
-	// because Prerender.io cloud can't reach localhost
-	if (!isProduction) {
-		console.log('⚠️ Prerender.io disabled in dev mode (cloud can\'t reach localhost)');
-		console.log('   In production, bots will receive prerendered HTML');
-	} else {
-		app.use(prerender
-			.set('prerenderToken', prerenderToken)
-			.set('protocol', 'https')
-			.set('host', 'luxx.uz')
-			.set('logRequests', true));
-		console.log('✅ Prerender.io enabled for SEO (production mode)');
-	}
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { success: false, message: 'Login urinishlari cheklangan' }
+})
+app.use('/api/auth/login', authLimiter)
+app.use('/api/auth/register', authLimiter)
+
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Contact xabarlar cheklangan' }
+})
+app.use('/api/contact', contactLimiter)
+
+const prerenderToken = process.env.PRERENDER_TOKEN
+const isProduction = process.env.NODE_ENV === 'production'
+
+if (prerenderToken && isProduction) {
+  app.use(prerender
+    .set('prerenderToken', prerenderToken)
+    .set('protocol', 'https')
+    .set('host', 'luxx.uz')
+    .set('logRequests', false))
+  logger.info('Prerender.io enabled for SEO')
 } else {
-	console.log('⚠️ Prerender.io disabled - set PRERENDER_TOKEN env variable');
+  logger.info('Prerender.io disabled')
 }
 
-// Test route
 app.get('/api/test', (req, res) => {
-	res.json({ success: true, message: 'Server is running (Express 5)' })
+  res.json({ success: true, message: 'Server is running', timestamp: req.requestTime })
 })
 
-// DEBUG route - brauzerda https://luxx.uz/api/debug ochib tekshiring
-app.get('/api/debug', async (req, res) => {
-	const logs = []
-	const addLog = (msg) => { logs.push(msg); console.log(msg) }
-
-	try {
-		addLog('🔍 DEBUG STARTED')
-		addLog('----------------------------------------')
-
-		// 1. Environment
-		addLog('📋 STEP 1: Environment')
-		addLog('MONGO_URL: ' + (process.env.MONGO_URL ? '✅ Mavjud' : '❌ Topilmadi'))
-		addLog('NODE_ENV: ' + (process.env.NODE_ENV || 'not set'))
-
-		// Parse MONGO_URL to check format
-		if (process.env.MONGO_URL) {
-			const url = process.env.MONGO_URL
-			addLog('')
-			addLog('📋 MONGO_URL Analysis:')
-			addLog('Protocol: ' + (url.startsWith('mongodb+srv://') ? '✅ mongodb+srv' : url.startsWith('mongodb://') ? '⚠️ mongodb (old)' : '❌ Unknown'))
-			addLog('Has password: ' + (url.includes(':') && url.includes('@') ? '✅ Yes' : '❌ No'))
-			addLog('Cluster: ' + (url.match(/@(.+?)\//)?.[1] || 'Could not parse'))
-			addLog('Database: ' + (url.match(/\.net\/(\w+)/)?.[1] || 'Could not parse'))
-		}
-
-		addLog('')
-		addLog('📋 STEP 2: MongoDB Status')
-		const mongoose = (await import('mongoose')).default
-		addLog('Connection State: ' + mongoose.connection.readyState)
-		addLog('States: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting')
-
-		// Wait for connection if connecting
-		if (mongoose.connection.readyState === 2) {
-			addLog('⏳ Waiting for connection to complete...')
-			await new Promise(resolve => setTimeout(resolve, 5000))
-			addLog('Connection State after wait: ' + mongoose.connection.readyState)
-		}
-
-		if (mongoose.connection.readyState === 1) {
-			addLog('✅ MongoDB: Connected to ' + mongoose.connection.host)
-		} else if (mongoose.connection.readyState === 0) {
-			addLog('❌ MongoDB: Not connected!')
-			addLog('Attempting to connect with 30s timeout...')
-
-			try {
-				await mongoose.connect(process.env.MONGO_URL, {
-					serverSelectionTimeoutMS: 30000,
-				})
-				addLog('✅ Connection successful!')
-				addLog('Connection State now: ' + mongoose.connection.readyState)
-			} catch (connErr) {
-				addLog('❌ Connection failed: ' + connErr.message)
-			}
-		}
-
-		// Ensure we're connected before testing
-		if (mongoose.connection.readyState !== 1) {
-			addLog('⚠️ Still not connected, tests may fail')
-		}
-
-		// 3. Test Products
-		addLog('')
-		addLog('📋 STEP 3: Products Test')
-		try {
-			const Product = (await import('./models/product.model.js')).default
-			const count = await Product.countDocuments().maxTimeMS(30000)
-			addLog('✅ Products count: ' + count)
-		} catch (prodErr) {
-			addLog('❌ Products error: ' + prodErr.message)
-		}
-
-		// 4. Test Announcements
-		addLog('')
-		addLog('📋 STEP 4: Announcements Test')
-		try {
-			const Announcement = (await import('./models/announcement.model.js')).default
-			const count = await Announcement.countDocuments().maxTimeMS(30000)
-			addLog('✅ Announcements count: ' + count)
-		} catch (annErr) {
-			addLog('❌ Announcements error: ' + annErr.message)
-		}
-
-		addLog('')
-		addLog('========================================')
-		addLog('DEBUG COMPLETED')
-
-		res.json({ success: true, logs })
-	} catch (error) {
-		addLog('❌ FATAL ERROR: ' + error.message)
-		res.json({ success: false, error: error.message, logs })
-	}
-})
-
-// Client Setup Helper
-// Checks if React build exists
-const publicPath = path.join(__dirname, 'public')
-const indexHtmlPath = path.join(publicPath, 'index.html')
-
-// API Routes
 app.use('/api/products', productRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/reviews', reviewRoutes)
 app.use('/api/contact', contactRoutes)
 app.use('/api/announcements', announcementRoutes)
-console.log("4. Registering /api/promos");
 app.use('/api/promos', promoRoutes)
-console.log("5. Registering looks...");
-import lookRoutes from './routes/look.route.js'
-console.log('✅ Registering /api/looks route');
 app.use('/api/looks', lookRoutes)
+app.use('/api/visual-search', visualSearchRoutes)
+app.use('/api/ai-stylist', aiStylistRoutes)
+app.use('/api/points', pointsRoutes)
+app.use('/api/badges', badgeRoutes)
+app.use('/api/challenges', challengeRoutes)
+app.use('/api/posts', postRoutes)
+app.use('/api/comments', commentRoutes)
+app.use('/api/livestreams', livestreamRoutes)
+app.use('/api/lookbooks', lookbookRoutes)
+app.use('/api/sustainability', sustainabilityRoutes)
+app.use('/api/coupons', couponRoutes)
+app.use('/api/admin-mgmt', adminManagementRoutes)
+app.use('/api/reels', reelRoutes)
+app.use('/api/live-chat', liveChatRoutes)
+import ReelComment from './models/reelComment.model.js'
+import { protect, admin } from './middleware/auth.middleware.js'
+app.delete('/api/delete-reel-comment/:id', protect, async (req, res) => {
+  try {
+    const comment = await ReelComment.findById(req.params.id)
+    if (!comment) return res.status(404).json({ success: false, message: 'Not found' })
+    
+    if (comment.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).json({ success: false, message: 'Unauthorized' })
+    }
 
-// SITEMAP Route
-import sitemapRoutes from './routes/sitemap.route.js'
+    await ReelComment.findByIdAndDelete(req.params.id)
+    res.json({ success: true, message: 'Deleted' })
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message })
+  }
+})
 app.use('/', sitemapRoutes)
 
-// IMAGEKIT AUTH (No external dependencies)
 import crypto from 'crypto'
 app.get('/api/imagekit-auth', (req, res) => {
-	try {
-		const token = req.query.token || crypto.randomUUID();
-		const expire = req.query.expire || Math.floor(Date.now() / 1000) + 2400;
-		const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+  try {
+    const token = req.query.token || crypto.randomUUID()
+    const expire = req.query.expire || Math.floor(Date.now() / 1000) + 2400
+    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY
 
-		if (!privateKey) throw new Error('Private Key missing');
+    if (!privateKey) {
+      throw new Error('Private Key missing')
+    }
 
-		const signature = crypto.createHmac('sha1', privateKey)
-			.update(token + expire)
-			.digest('hex');
+    const signature = crypto.createHmac('sha1', privateKey)
+      .update(token + expire)
+      .digest('hex')
 
-		res.json({
-			token,
-			expire,
-			signature
-		});
-	} catch (error) {
-		console.error('ImageKit Auth Error:', error.message);
-		res.status(500).json({ error: error.message });
-	}
-});
-
-// TEMP Routes (Can be removed later)
-app.get('/api/setup-admin', async (req, res) => {
-	try {
-		const User = (await import('./models/user.model.js')).default
-		const adminUsername = 'admin536'
-		const adminPassword = 'admin126'
-		// ... Logic preserved from previous steps
-
-		const userExists = await User.findOne({ username: adminUsername })
-		if (userExists) {
-			userExists.password = adminPassword
-			userExists.isAdmin = true
-			await userExists.save()
-			return res.json({ success: true, message: 'Admin updated' })
-		}
-
-		await User.create({
-			username: adminUsername,
-			phone: '+998990000536',
-			password: adminPassword,
-			isAdmin: true
-		})
-		res.json({ success: true, message: 'Admin created' })
-	} catch (e) { res.status(500).json({ error: e.message }) }
+    res.json({ token, expire, signature })
+  } catch (error) {
+    logger.error('ImageKit Auth Error:', error)
+    res.status(500).json({ error: error.message })
+  }
 })
 
-app.get('/api/test-telegram', async (req, res) => {
-	try {
-		const { default: axios } = await import('axios')
-		const token = process.env.TELEGRAM_BOT_TOKEN
-		const chatId = process.env.TELEGRAM_CHAT_ID
-		const actualToken = token || '8504200030:AAG...'
-		const actualChatId = chatId || '1816138407'
+const publicPath = path.join(__dirname, 'public')
+const indexHtmlPath = path.join(publicPath, 'index.html')
 
-		await axios.post(`https://api.telegram.org/bot${actualToken}/sendMessage`, {
-			chat_id: actualChatId,
-			text: '🔔 Test message',
-		})
-		res.json({ success: true, message: 'Sent!' })
-	} catch (error) { res.status(500).json({ error: error.message }) }
-})
-
-// Serve Static Files
 app.use(express.static(publicPath))
 
-// SPA Fallback - FIXED for Express 5
-// Using regex instead of '*' string to avoid "Missing parameter name" error
 app.get(/.*/, (req, res) => {
-	if (fs.existsSync(indexHtmlPath)) {
-		res.sendFile(indexHtmlPath)
-	} else {
-		res.status(404).send('React Build Not Found in /public')
-	}
+  if (fs.existsSync(indexHtmlPath)) {
+    res.sendFile(indexHtmlPath)
+  } else {
+    res.status(404).send('React Build Not Found')
+  }
 })
 
-// Start server only after MongoDB is connected
+app.use((err, req, res, next) => {
+  logger.error('Unhandled error:', err)
+
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ success: false, message: 'Invalid JSON payload' })
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production'
+      ? 'Server xatosi yuz berdi'
+      : err.message
+  })
+})
+
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error)
+  if (error.code === 'EADDRINUSE') {
+    logger.error(`Port ${PORT} is already in use. Please kill the process using this port or use a different port.`)
+    process.exit(1)
+  }
+})
+
 const startServer = async () => {
-	console.log('6. Inside startServer()')
+  try {
+    const dbConnected = await connectDB()
 
-	// Connect to MongoDB FIRST
-	const dbConnected = await connectDB()
+    if (!dbConnected) {
+      logger.warn('MongoDB connection failed. Some features may not work.')
+    }
 
-	if (!dbConnected) {
-		console.log('Warning: MongoDB connection failed. Some features may not work.')
-	}
-
-	app.listen(PORT, () => {
-		console.log('Server is running on port ' + PORT)
-		console.log('MongoDB status:', dbConnected ? 'Connected' : 'Not connected')
-	})
+    server.listen(PORT, () => {
+      logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+      logger.info(`MongoDB status: ${dbConnected ? 'Connected' : 'Not connected'}`)
+    }).on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        logger.error(`Port ${PORT} band (allaqachon ishlatilmoqda). Iltimos, portni bo'shating yoki boshqa port ishlating.`)
+        process.exit(1)
+      } else {
+        logger.error('Server error:', err)
+      }
+    })
+  } catch (error) {
+    logger.error('Failed to start server:', error)
+    process.exit(1)
+  }
 }
 
-console.log('7. Calling startServer()...')
-startServer().catch(err => {
-	console.error('Failed to start server:', err)
-})
+startServer()

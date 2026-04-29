@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.5",
     "firebase": "^12.8.0",
+    "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.553.0",
     "qs": "^6.15.0",
@@ -17,8 +18,10 @@
     "react-helmet": "^6.1.0",
     "react-hot-toast": "^2.6.0",
     "react-leaflet": "^4.2.1",
+    "react-rnd": "^10.5.3",
     "react-router-dom": "^6.8.0",
     "react-swipeable": "^7.0.2",
+    "socket.io-client": "^4.8.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -44,6 +47,7 @@
     "postcss": "^8.4.21",
     "react-scripts": "^5.0.1",
     "sharp": "^0.34.5",
-    "tailwindcss": "^3.2.7"
+    "tailwindcss": "^3.2.7",
+    "workbox-webpack-plugin": "^7.4.0"
   }
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProducts } from '../contexts/ProductContext';
-import { X, Upload, Save, Pipette, Plus, Image as ImageIcon, Gem } from 'lucide-react';
+import { X, Upload, Save, Pipette, Plus, Image as ImageIcon, Gem, Flame } from 'lucide-react';
 
 const CATEGORIES = [
   'Palto plash',
@@ -31,6 +31,9 @@ const EMPTY_FORM = {
   sizes: '',
   description: '',
   isLookbook: false,
+  earlyAccessTier: 'none',
+  earlyAccessUntil: '',
+  isNewCollection: false,
 };
 
 const ProductForm = ({ product, onClose }) => {
@@ -78,6 +81,9 @@ const ProductForm = ({ product, onClose }) => {
       sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || '',
       description: product.description || '',
       isLookbook: Boolean(product.isLookbook),
+      earlyAccessTier: product.earlyAccessTier || 'none',
+      earlyAccessUntil: product.earlyAccessUntil ? new Date(product.earlyAccessUntil).toISOString().split('T')[0] : '',
+      isNewCollection: Boolean(product.isNewCollection),
     });
   }, [product]);
 
@@ -523,7 +529,7 @@ const ProductForm = ({ product, onClose }) => {
           />
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-6">
           <label className="inline-flex items-center gap-3 cursor-pointer select-none">
             <input
               type="checkbox"
@@ -549,9 +555,70 @@ const ProductForm = ({ product, onClose }) => {
             </span>
             <span className="text-sm text-slate-200 inline-flex items-center gap-1">
               <Gem className="w-4 h-4 text-amber-300" />
-              Lookbookda ko'rsatish
+              Lookbook
             </span>
           </label>
+
+          <label className="inline-flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={formData.isNewCollection}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isNewCollection: event.target.checked,
+                }))
+              }
+              className="sr-only"
+            />
+            <span
+              className={`relative w-12 h-6 rounded-full transition-colors ${
+                formData.isNewCollection ? 'bg-emerald-400' : 'bg-slate-700'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                  formData.isNewCollection ? 'translate-x-6' : ''
+                }`}
+              />
+            </span>
+            <span className="text-sm text-slate-200 inline-flex items-center gap-1">
+              <Flame className="w-4 h-4 text-emerald-400" />
+              New Collection
+            </span>
+          </label>
+        </div>
+
+        <div className="admin-card-soft p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:col-span-2">
+          <div className="col-span-full border-b border-white/5 pb-2 mb-2">
+            <h4 className="text-xs font-bold text-amber-300 uppercase tracking-widest flex items-center gap-2">
+              <Gem className="w-4 h-4" />
+              Early Access (VIP)
+            </h4>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-200 mb-2">Tier</label>
+            <select
+              name="earlyAccessTier"
+              value={formData.earlyAccessTier}
+              onChange={handleChange}
+              className="admin-select"
+            >
+              <option value="none">Hech kim (Ochiq)</option>
+              <option value="Gold">Gold & Diamond</option>
+              <option value="Diamond">Faqat Diamond</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-200 mb-2">Gacha (Sana)</label>
+            <input
+              type="date"
+              name="earlyAccessUntil"
+              value={formData.earlyAccessUntil}
+              onChange={handleChange}
+              className="admin-input"
+            />
+          </div>
         </div>
 
         <div className="lg:col-span-2">

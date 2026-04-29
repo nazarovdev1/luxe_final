@@ -8,4 +8,18 @@ Disallow: /cart
 Disallow: /profile
 Disallow: /mobile/admin
 Disallow: /mobile/checkout
+Disallow: /mobile/cart
+Disallow: /mobile/profile
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+
+User-agent: Yandex
+Allow: /
+Disallow: /admin
+Clean-param: token /api/imagekit-auth
+
+Crawl-delay: 1
 Sitemap: https://luxx.uz/sitemap.xml

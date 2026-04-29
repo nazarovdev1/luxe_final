@@ -251,6 +251,60 @@ const useProductService = () => {
 		}
 	};
 
+	// GET ALL USER POINTS (ADMIN)
+	const getAllUserPoints = async (token) => {
+		try {
+			const response = await fetch(`${API_BASE}/points/admin/all`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Get all points error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	// ADMIN ADJUST POINTS
+	const adminAdjustPoints = async (adjustmentData, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/points/admin/adjust`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify(adjustmentData)
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Adjust points error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	// SET CHALLENGE WINNER (ADMIN)
+	const setChallengeWinner = async (challengeId, userId, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/challenges/${challengeId}/winner`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ userId })
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Set challenge winner error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 
 	// DELETE ORDER (ADMIN)
 	const deleteOrder = async (orderId, token) => {
@@ -404,6 +458,23 @@ const useProductService = () => {
 		}
 	};
 
+	const validateCoupon = async (code, totalAmount, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/coupons/validate`, {
+				method: 'POST',
+				headers: { 
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ code, totalAmount })
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Validate coupon error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 	const getPromos = async (token) => {
 		try {
 			const response = await fetch(`${API_BASE}/promos`, {
@@ -486,10 +557,14 @@ const useProductService = () => {
 		createLook,
 		deleteLook,
 		validatePromo,
+		validateCoupon,
 		getPromos,
 		createPromo,
 		updatePromoStatus,
-		deletePromo
+		deletePromo,
+		getAllUserPoints,
+		adminAdjustPoints,
+		setChallengeWinner
 	}
 }
 

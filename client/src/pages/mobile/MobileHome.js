@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Crown, Shield, Gem, Star, Truck } from 'lucide-react';
+import { ArrowRight, Crown, Shield, Gem, Star, Truck, Leaf, Radio, Camera, Swords } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductContext';
 import MobileProductCard from './MobileProductCard';
 import LookDetailModal from '../../components/LookDetailModal';
@@ -165,8 +165,43 @@ const MobileHome = () => {
 
         <BrandJourney />
 
-        <section className="px-4 py-8">
-          <div className="flex items-center justify-between mb-4">
+        {/* Platform Features */}
+        <section className="py-6">
+          <div className="px-4 flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-[#f4f1eb]">Platform</h2>
+          </div>
+          <div className="relative">
+            <div className="flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide scroll-smooth">
+              {[
+                { label: 'VIP Club', icon: Crown, color: '#d6b47c', bg: 'rgba(214,180,124,0.1)', to: '/mobile/vip-club', sub: 'Darajangiz' },
+                { label: 'Jonli Efir', icon: Radio, color: '#ef4444', bg: 'rgba(239,68,68,0.1)', to: '/mobile/live', sub: 'Live Commerce' },
+                { label: 'Style Feed', icon: Camera, color: '#c9b8ff', bg: 'rgba(201,184,255,0.1)', to: '/mobile/style-feed', sub: 'Obrazlar' },
+                { label: 'Eco Impact', icon: Leaf, color: '#4ade80', bg: 'rgba(74,222,128,0.1)', to: '/mobile/eco-impact', sub: 'Tabiat' },
+                { label: 'Challenges', icon: Swords, color: '#a8d8ea', bg: 'rgba(168,216,234,0.1)', to: '/mobile/challenges', sub: 'Musobaqalar' },
+              ].map(item => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="min-w-[115px] rounded-2xl border border-white/5 p-4 flex-shrink-0 flex flex-col items-center text-center gap-2 transition-all active:scale-95"
+                  style={{ background: item.bg, borderColor: `${item.color}20` }}
+                >
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${item.color}20` }}>
+                    <item.icon className="w-5 h-5" style={{ color: item.color }} />
+                  </div>
+                  <p className="text-[13px] font-bold text-white">{item.label}</p>
+                  <p className="text-[10px] text-gray-500 font-medium">{item.sub}</p>
+                </Link>
+              ))}
+              {/* Extra spacing for scroll */}
+              <div className="min-w-[1px] h-1 flex-shrink-0" />
+            </div>
+            {/* Right Fade Indicator */}
+            <div className="absolute top-0 right-0 bottom-2 w-16 bg-gradient-to-l from-[#08090d] via-[#08090d]/60 to-transparent pointer-events-none z-10" />
+          </div>
+        </section>
+
+        <section className="py-8">
+          <div className="px-4 flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-[#f4f1eb]">Kategoriyalar</h2>
             <Link to="/mobile/products" className="text-sm text-neutral-300 inline-flex items-center gap-1">
               Hammasi
@@ -174,27 +209,32 @@ const MobileHome = () => {
             </Link>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-            {categoryCards.map((category) => (
-              <Link
-                key={category.name}
-                to={`/mobile/products?category=${encodeURIComponent(category.name)}`}
-                className="min-w-[180px] h-36 relative rounded-2xl overflow-hidden border border-white/10"
-              >
-                <img
-                  src={category.image || '/mobile.jpg'}
-                  alt={category.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#08090d] via-[#08090d]/30 to-transparent" />
-                <div className="relative h-full p-3.5 flex items-end">
-                  <div>
-                    <p className="text-base font-semibold text-[#f4f1eb]">{category.name}</p>
-                    <p className="text-xs text-neutral-300">{category.count} model</p>
+          <div className="relative">
+            <div className="flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide scroll-smooth">
+              {categoryCards.map((category) => (
+                <Link
+                  key={category.name}
+                  to={`/mobile/products?category=${encodeURIComponent(category.name)}`}
+                  className="min-w-[180px] h-36 relative rounded-2xl overflow-hidden border border-white/10 flex-shrink-0"
+                >
+                  <img
+                    src={category.image || '/mobile.jpg'}
+                    alt={category.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#08090d] via-[#08090d]/30 to-transparent" />
+                  <div className="relative h-full p-3.5 flex items-end">
+                    <div>
+                      <p className="text-base font-semibold text-[#f4f1eb]">{category.name}</p>
+                      <p className="text-xs text-neutral-300">{category.count} model</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+              <div className="min-w-[1px] h-1 flex-shrink-0" />
+            </div>
+            {/* Right Fade Indicator */}
+            <div className="absolute top-0 right-0 bottom-2 w-20 bg-gradient-to-l from-[#08090d] via-[#08090d]/60 to-transparent pointer-events-none z-10" />
           </div>
         </section>
 
