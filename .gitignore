@@ -1,19 +1,55 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+/dist
+/out
+.next/
+
+# Environment Variables
 .env
 .env.local
-.env.production
-.env.*.local
-dist/
-build/
-.DS_Store
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+client/.env*
+server/.env*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 *.log
-.gemini/
-*.pem
-*.key
+server/*.log
+client/*.log
+
+# IDEs and Editors
+.visualstudio
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Sensitive Files
 firebase-service-account.json
 server/config/firebase-service-account.json
-server/luxe_database/*.bson
-server/luxe_database/*.metadata.json
+*.pem
+*.key
+
+# Database
+server/luxe_database/
+*.bson
+*.metadata.json
+
+# Local/Temp Files
 perf_audit.js
 crud_tests.js
 api_verification.js
@@ -26,3 +62,7 @@ de_*.js
 verify_*.js
 create_admin.js
 migrate_database.js
+product_check_result.txt
+client/server.log
+server/server.log
+server/debug.log
