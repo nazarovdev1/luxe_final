@@ -3,13 +3,17 @@ import { useLocation } from 'react-router-dom';
 import Hero from '../components/Hero';
 import PremiumHomeSections from '../components/PremiumHomeSections';
 import AllProducts from '../components/AllProducts';
+import ProductBundles from '../components/ProductBundles';
 import About from '../components/About';
 import Footer from '../components/Footer';
+import RecentlyViewed from '../components/RecentlyViewed';
+import useRecentlyViewed from '../hooks/useRecentlyViewed';
 
 import SEO from '../components/SEO';
 
 const Home = () => {
   const location = useLocation();
+  const { recentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
 
   useEffect(() => {
     // Handle hash-based scrolling when coming from another page
@@ -38,6 +42,8 @@ const Home = () => {
       <Hero />
       <PremiumHomeSections />
       <AllProducts />
+      <ProductBundles />
+      <RecentlyViewed items={recentlyViewed} onClear={clearRecentlyViewed} />
       <About />
       <Footer />
     </div>

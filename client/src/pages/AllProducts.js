@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
+  BarChart3,
   Crown,
   Flame,
   Package,
@@ -11,9 +12,15 @@ import {
   Gem,
   Star,
   X,
+  Eye,
+  Filter,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useProducts } from '../contexts/ProductContext';
 import { ProductGridSkeleton } from '../components/ProductCardSkeleton';
+import QuickViewModal from '../components/QuickViewModal';
+import ProductComparison from '../components/ProductComparison';
 import SEO from '../components/SEO';
 
 const formatPrice = (price) => {
@@ -36,17 +43,41 @@ const productScore = (product) => {
   return (product.rating || 0) * 100 + badgeScore(product.badge) * 10;
 };
 
-const PremiumCatalogCard = ({ product }) => {
+const PremiumCatalogCard = ({ product, onQuickView, onCompare, isCompareSelected }) => {
   return (
     <article className="group relative overflow-hidden rounded-[1.7rem] border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] transition-all duration-500 hover:border-[#d6b47c]/40 hover:shadow-[0_24px_60px_rgba(20,16,10,0.5)]">
-      <Link to={`/product/${product.id}`} className="relative block aspect-[3/4] overflow-hidden">
-        <img
-          src={getImage(product)}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+      <div className="relative block aspect-[3/4] overflow-hidden">
+        <Link to={`/product/${product.id}`} className="block h-full">
+          <img
+            src={getImage(product)}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        </Link>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07080c] via-[#07080c]/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07080c] via-[#07080c]/20 to-transparent pointer-events-none" />
+
+        {/* Compare Button */}
+        <button
+          onClick={(e) => { e.preventDefault(); onCompare?.(product); }}
+          className={`absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-xl backdrop-blur-md border transition-all duration-300 ${
+            isCompareSelected
+              ? 'bg-[#d6b47c]/30 border-[#d6b47c]/40 text-[#d6b47c] opacity-100'
+              : 'bg-black/50 border-white/15 text-white opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 hover:bg-[#d6b47c]/30 hover:border-[#d6b47c]/40'
+          }`}
+          title="Taqqoslash"
+        >
+          <BarChart3 className="w-4 h-4" />
+        </button>
+
+        {/* Quick View Button */}
+        <button
+          onClick={(e) => { e.preventDefault(); onQuickView?.(product); }}
+          className="absolute top-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-xl bg-black/50 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-[#d6b47c]/30 hover:border-[#d6b47c]/40"
+          title="Tezkor ko'rish"
+        >
+          <Eye className="w-4 h-4" />
+        </button>
 
         {product.earlyAccessUntil && new Date(product.earlyAccessUntil) > new Date() && (
           <div className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-black/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-400 backdrop-blur-md">
@@ -68,7 +99,7 @@ const PremiumCatalogCard = ({ product }) => {
             {product.badge}
           </div>
         )}
-      </Link>
+      </div>
 
       <div className="p-4 sm:p-5">
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -95,13 +126,22 @@ const PremiumCatalogCard = ({ product }) => {
             )}
           </div>
 
-          <Link
-            to={`/product/${product.id}`}
-            className="inline-flex items-center gap-1 rounded-xl border border-white/20 bg-black/30 px-3 py-2 text-sm text-white hover:bg-black/45 transition-colors"
-          >
-            Ko'rish
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onQuickView?.(product)}
+              className="inline-flex items-center gap-1 rounded-xl border border-[#d6b47c]/20 bg-[#d6b47c]/5 px-3 py-2 text-sm text-[#d6b47c] hover:bg-[#d6b47c]/15 transition-colors"
+              title="Tezkor ko'rish"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+            <Link
+              to={`/product/${product.id}`}
+              className="inline-flex items-center gap-1 rounded-xl border border-white/20 bg-black/30 px-3 py-2 text-sm text-white hover:bg-black/45 transition-colors"
+            >
+              Ko'rish
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </article>
@@ -116,6 +156,37 @@ const AllProducts = () => {
   const [selectedCategory, setSelectedCategory] = React.useState(categoryFromUrl || 'Barchasi');
   const [searchText, setSearchText] = React.useState('');
   const [sortBy, setSortBy] = React.useState('featured');
+  const [quickViewProduct, setQuickViewProduct] = React.useState(null);
+  const [compareList, setCompareList] = React.useState([]);
+  const [showComparison, setShowComparison] = React.useState(false);
+  const [showFilters, setShowFilters] = React.useState(false);
+
+  // Advanced Filters
+  const [priceRange, setPriceRange] = React.useState([0, 5000000]);
+  const [selectedSizes, setSelectedSizes] = React.useState([]);
+  const [minRating, setMinRating] = React.useState(0);
+  const [inStockOnly, setInStockOnly] = React.useState(false);
+
+  // Compute dynamic price range
+  const priceBounds = React.useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 5000000 };
+    const prices = products.map(p => Number(p.price) || 0);
+    return { min: Math.min(...prices), max: Math.max(...prices) };
+  }, [products]);
+
+  // Compute available sizes
+  const availableSizes = React.useMemo(() => {
+    const sizeSet = new Set();
+    products.forEach(p => {
+      if (Array.isArray(p.sizes)) {
+        p.sizes.forEach(s => {
+          const str = String(s).trim();
+          if (str) sizeSet.add(str);
+        });
+      }
+    });
+    return Array.from(sizeSet).sort();
+  }, [products]);
 
   React.useEffect(() => {
     setSelectedCategory(categoryFromUrl || 'Barchasi');
@@ -146,6 +217,12 @@ const AllProducts = () => {
     }
   };
 
+  const toggleSize = (size) => {
+    setSelectedSizes(prev =>
+      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
+    );
+  };
+
   const filteredProducts = React.useMemo(() => {
     const q = searchText.trim().toLowerCase();
 
@@ -156,9 +233,22 @@ const AllProducts = () => {
         (product.name || '').toLowerCase().includes(q) ||
         (product.category || '').toLowerCase().includes(q);
 
-      return categoryMatch && searchMatch;
+      // Price range filter
+      const price = Number(product.price) || 0;
+      const priceMatch = price >= priceRange[0] && price <= priceRange[1];
+
+      // Size filter
+      const sizeMatch = selectedSizes.length === 0 || (Array.isArray(product.sizes) && selectedSizes.some(s => product.sizes.includes(s)));
+
+      // Rating filter
+      const ratingMatch = (product.rating || 0) >= minRating;
+
+      // Stock filter
+      const stockMatch = !inStockOnly || (product.stock === undefined || product.stock > 0);
+
+      return categoryMatch && searchMatch && priceMatch && sizeMatch && ratingMatch && stockMatch;
     });
-  }, [products, selectedCategory, searchText]);
+  }, [products, selectedCategory, searchText, priceRange, selectedSizes, minRating, inStockOnly]);
 
   const sortedProducts = React.useMemo(() => {
     const list = [...filteredProducts];
@@ -216,8 +306,19 @@ const AllProducts = () => {
   const clearFilters = () => {
     setSearchText('');
     setSortBy('featured');
+    setPriceRange([priceBounds.min, priceBounds.max]);
+    setSelectedSizes([]);
+    setMinRating(0);
+    setInStockOnly(false);
     handleCategoryChange('Barchasi');
   };
+
+  const activeFilterCount = [
+    selectedSizes.length > 0,
+    minRating > 0,
+    inStockOnly,
+    priceRange[0] > priceBounds.min || priceRange[1] < priceBounds.max,
+  ].filter(Boolean).length;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#07080c] pt-24 pb-16">
@@ -352,15 +453,149 @@ const AllProducts = () => {
           </div>
         </header>
 
+        {/* Advanced Filters Toggle */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <p className="text-sm text-neutral-300">
-            <span className="text-[#f4f1eb] font-medium">{sortedProducts.length}</span> ta natija topildi
-          </p>
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-1.5 text-xs uppercase tracking-wide text-neutral-300">
-            <Flame className="w-3.5 h-3.5 text-orange-300" />
-            Premium selection
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-neutral-300">
+              <span className="text-[#f4f1eb] font-medium">{sortedProducts.length}</span> ta natija topildi
+            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-1.5 text-xs uppercase tracking-wide text-neutral-300">
+              <Flame className="w-3.5 h-3.5 text-orange-300" />
+              Premium selection
+            </div>
           </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm transition-all ${
+              showFilters || activeFilterCount > 0
+                ? 'border-[#d6b47c]/40 bg-[#d6b47c]/10 text-[#f4f1eb]'
+                : 'border-white/15 bg-black/20 text-neutral-300 hover:text-white hover:bg-black/35'
+            }`}
+          >
+            <Filter className="w-4 h-4" />
+            Qo'shimcha filtrlar
+            {activeFilterCount > 0 && (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#d6b47c] text-[10px] font-bold text-[#0f1014]">
+                {activeFilterCount}
+              </span>
+            )}
+            {showFilters ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
         </div>
+
+        {/* Advanced Filters Panel */}
+        {showFilters && (
+          <div className="rounded-2xl border border-white/10 bg-[#11131e]/95 p-5 space-y-5 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Price Range */}
+              <div>
+                <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-3">Narx oralig'i</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={priceRange[0]}
+                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                      placeholder="Dan"
+                      className="w-full rounded-lg border border-[#2d3442] bg-[#0e131d] px-3 py-2 text-xs text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none focus:border-[#d6b47c]"
+                    />
+                    <span className="text-xs text-[#9aa3b2]">—</span>
+                    <input
+                      type="number"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                      placeholder="Gacha"
+                      className="w-full rounded-lg border border-[#2d3442] bg-[#0e131d] px-3 py-2 text-xs text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none focus:border-[#d6b47c]"
+                    />
+                  </div>
+                  <input
+                    type="range"
+                    min={priceBounds.min}
+                    max={priceBounds.max}
+                    value={priceRange[1]}
+                    onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                    className="w-full accent-[#d6b47c]"
+                  />
+                </div>
+              </div>
+
+              {/* Size Filter */}
+              {availableSizes.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-3">O'lcham</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableSizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => toggleSize(size)}
+                        className={`h-8 min-w-[36px] rounded-lg px-2 text-xs font-medium transition-all ${
+                          selectedSizes.includes(size)
+                            ? 'bg-[#d6b47c]/15 text-[#f4f1eb] border border-[#d6b47c]/30'
+                            : 'bg-white/5 text-[#9aa3b2] border border-white/10 hover:bg-white/10'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Rating Filter */}
+              <div>
+                <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-3">Minimal reyting</p>
+                <div className="flex gap-1.5">
+                  {[0, 3, 4, 4.5].map((rating) => (
+                    <button
+                      key={rating}
+                      onClick={() => setMinRating(rating)}
+                      className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs transition-all ${
+                        minRating === rating
+                          ? 'bg-[#d6b47c]/15 text-[#f4f1eb] border border-[#d6b47c]/30'
+                          : 'bg-white/5 text-[#9aa3b2] border border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      {rating === 0 ? 'Hammasi' : (
+                        <>
+                          <Star className="w-3 h-3 fill-current text-amber-400" />
+                          {rating}+
+                        </>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* In Stock Filter */}
+              <div>
+                <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-3">Mavjudligi</p>
+                <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <div className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-all ${inStockOnly ? 'bg-[#d6b47c]' : 'bg-[#2d3442]'}`}>
+                    <div className={`h-4 w-4 rounded-full bg-white transition-all ${inStockOnly ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                  <span className="text-xs text-[#9aa3b2] group-hover:text-[#f4f1eb] transition-colors">Faqat mavjud</span>
+                </label>
+              </div>
+            </div>
+
+            {activeFilterCount > 0 && (
+              <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                <p className="text-xs text-[#9aa3b2]">{activeFilterCount} ta faol filtr</p>
+                <button
+                  onClick={() => {
+                    setPriceRange([priceBounds.min, priceBounds.max]);
+                    setSelectedSizes([]);
+                    setMinRating(0);
+                    setInStockOnly(false);
+                  }}
+                  className="text-xs text-[#d6b47c] hover:text-[#e0c08e] transition-colors"
+                >
+                  Filtrlarni tozalash
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {isLoading ? (
           <ProductGridSkeleton count={8} />
@@ -463,13 +698,81 @@ const AllProducts = () => {
             {gridProducts.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 lg:gap-6">
                 {gridProducts.map((product) => (
-                  <PremiumCatalogCard key={product.id} product={product} />
+                  <PremiumCatalogCard
+                    key={product.id}
+                    product={product}
+                    onQuickView={setQuickViewProduct}
+                    onCompare={(p) => {
+                      setCompareList((prev) => {
+                        const exists = prev.find((x) => (x._id || x.id) === (p._id || p.id));
+                        if (exists) return prev.filter((x) => (x._id || x.id) !== (p._id || p.id));
+                        if (prev.length >= 3) return prev;
+                        return [...prev, p];
+                      });
+                    }}
+                    isCompareSelected={compareList.some((x) => (x._id || x.id) === (product._id || product.id))}
+                  />
                 ))}
               </div>
             )}
           </section>
         )}
       </div>
+
+      <QuickViewModal
+        isOpen={!!quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+        product={quickViewProduct}
+      />
+
+      {/* Comparison Bar */}
+      {compareList.length > 0 && !showComparison && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#11131e]/95 backdrop-blur-xl border-t border-white/10 px-6 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-5 h-5 text-[#d6b47c]" />
+              <span className="text-sm text-[#f4f1eb]">{compareList.length} ta mahsulot tanlandi</span>
+              <div className="flex gap-2">
+                {compareList.map((p) => (
+                  <div key={p._id || p.id} className="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
+                    {p.images?.[0] ? (
+                      <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#0d1423]" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCompareList([])}
+                className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-[#9aa3b2] hover:bg-white/10 transition-colors"
+              >
+                Tozalash
+              </button>
+              <button
+                onClick={() => setShowComparison(true)}
+                disabled={compareList.length < 2}
+                className="px-5 py-2 rounded-xl bg-[#d6b47c] text-black text-sm font-semibold hover:bg-[#c9a46d] transition-colors disabled:opacity-30"
+              >
+                Taqqoslash ({compareList.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Comparison Modal */}
+      {showComparison && (
+        <ProductComparison
+          products={compareList}
+          onClose={() => {
+            setShowComparison(false);
+            setCompareList([]);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, Package, Calendar, MapPin, ChevronRight, Search, Medal, Crown, Gem, RefreshCw } from 'lucide-react';
+import { Phone, Package, Calendar, MapPin, ChevronRight, Search, Medal, Crown, Gem, RefreshCw, Eye, X, RotateCcw } from 'lucide-react';
 import axios from 'axios';
 import useProductService from '../server/server';
 import { Link, Navigate } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
+import OrderTimeline from '../components/OrderTimeline';
+import ReturnRequestModal from '../components/ReturnRequestModal';
+import ReferralProgram from '../components/ReferralProgram';
 
 const Profile = () => {
     const [orders, setOrders] = useState([]);
@@ -12,6 +15,8 @@ const Profile = () => {
     const [searched, setSearched] = useState(false);
     const [badges, setBadges] = useState([]);
     const [points, setPoints] = useState(null);
+    const [trackingOrder, setTrackingOrder] = useState(null);
+    const [returnOrder, setReturnOrder] = useState(null);
     const { getMyOrders } = useProductService();
     const { user, isAuthenticated, logout } = useAuth();
 
@@ -180,6 +185,9 @@ const Profile = () => {
                                     {badges.length === 0 && <p className="text-xs text-gray-600 italic px-2">Hali nishonlar yo'q</p>}
                                 </div>
                             </div>
+
+                            {/* Referral Program */}
+                            <ReferralProgram user={user} />
                         </div>
                     )}
                 </div>
@@ -308,14 +316,56 @@ const Profile = () => {
                                 <div className="p-2.5 bg-white/5 rounded-xl border border-white/5">
                                     <MapPin className="w-5 h-5 text-gray-300" />
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <p className="text-gray-300 font-medium mb-1">Yetkazib berish manzili</p>
                                     <p className="text-gray-500 text-sm font-light leading-relaxed max-w-lg">{order.customer.address}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {order.status !== 'Bekor qilindi' && (
+                                        <button
+                                            onClick={() => setReturnOrder(order)}
+                                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all"
+                                        >
+                                            <RotateCcw className="w-4 h-4" />
+                                            Qaytarish
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => setTrackingOrder(order)}
+                                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[#d6b47c] text-sm font-medium hover:bg-[#d6b47c]/20 hover:border-[#d6b47c]/30 transition-all"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                        Kuzatish
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
+
+                {/* Order Tracking Modal */}
+                {trackingOrder && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setTrackingOrder(null)} />
+                        <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                            <button
+                                onClick={() => setTrackingOrder(null)}
+                                className="absolute -top-2 -right-2 z-20 w-10 h-10 rounded-full bg-[#11131e] border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <OrderTimeline order={trackingOrder} />
+                        </div>
+                    </div>
+                )}
+
+                {/* Return Request Modal */}
+                {returnOrder && (
+                    <ReturnRequestModal
+                        order={returnOrder}
+                        onClose={() => setReturnOrder(null)}
+                    />
+                )}
             </div>
         </div>
     );

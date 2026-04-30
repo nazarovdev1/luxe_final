@@ -4,6 +4,7 @@ import {
   Camera,
   ChevronRight,
   Crown,
+  Globe,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,8 +39,8 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
     { name: 'Asosiy', sectionId: 'hero' },
     { name: 'Kiyimlar', link: '/products' },
     { name: 'Looklar', link: '/lookbooks' },
-    { 
-      name: 'EVENTLAR', 
+    {
+      name: 'EVENTLAR',
       dropdown: [
         { name: 'Reels', link: '/reels' },
         { name: 'Community', link: '/style-feed' },
@@ -46,6 +48,8 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
         { name: 'Live', link: '/live' },
         { name: 'VIP Club', link: '/vip-club' },
         { name: 'Eco Impact', link: '/eco-impact' },
+        { name: '🎁 Sovg\'a Karta', link: '/gift-cards' },
+        { name: '📝 Blog', link: '/blog' },
       ]
     },
     { name: 'Biz haqimizda', sectionId: 'about' },
@@ -205,6 +209,9 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                   </span>
                 )}
               </button>
+
+              {/* Language Switcher */}
+              <LanguageSwitcher />
 
               {!isAuthenticated && (
                 <>
@@ -396,6 +403,62 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
         </div>
       </div>
     </nav>
+  );
+};
+
+/* ─── Language Switcher Component ─────────────────────────────── */
+const LanguageSwitcher = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { language, setLanguage, languageInfo, availableLanguages } = useLanguage();
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors"
+        title="Tilni o'zgartirish"
+      >
+        <Globe className="w-4 h-4" />
+        <span className="text-xs font-medium uppercase">{language}</span>
+      </button>
+
+      {/* Mobile: always show */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors"
+      >
+        <Globe className="w-4 h-4" />
+        <span className="text-xs font-medium uppercase">{language}</span>
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 top-full mt-2 z-50 w-40 rounded-xl border border-white/10 bg-[#11131e]/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+            {availableLanguages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  setLanguage(lang.code);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors ${
+                  lang.isActive
+                    ? 'bg-[#d6b47c]/10 text-[#d6b47c]'
+                    : 'text-neutral-300 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <span className="text-base">{lang.flag}</span>
+                <span className="font-medium">{lang.code.toUpperCase()}</span>
+                {lang.isActive && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#d6b47c]" />
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 

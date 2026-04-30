@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import StylePolls from '../components/StylePolls';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -202,6 +203,11 @@ const StyleFeed = () => {
                 </div>
             )}
         </div>
+
+            {/* Style Polls */}
+            <div className="mt-12">
+                <StylePolls />
+            </div>
 
             {/* Create Post Modal */}
             {isCreateModalOpen && (

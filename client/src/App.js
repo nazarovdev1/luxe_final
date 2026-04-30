@@ -29,12 +29,15 @@ const LiveStreams = React.lazy(() => import('./pages/LiveStreams'));
 const LiveStreamView = React.lazy(() => import('./pages/LiveStreamView'));
 const EcoImpact = React.lazy(() => import('./pages/EcoImpact'));
 const Reels = React.lazy(() => import('./pages/Reels'));
+const GiftCards = React.lazy(() => import('./pages/GiftCards'));
+const Blog = React.lazy(() => import('./pages/Blog'));
 const MobileApp = React.lazy(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
 const VisualSearch = React.lazy(() => import('./components/VisualSearch'));
 import { ProductProvider } from './contexts/ProductContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import ScrollToTop from './components/ScrollToTop';
@@ -173,8 +176,10 @@ function MainContent() {
 <Route path="/reels" element={<React.Suspense fallback={<Loading />}><Reels /></React.Suspense>} />
 <Route path="/reels/:id" element={<React.Suspense fallback={<Loading />}><Reels /></React.Suspense>} />
 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="*" element={<NotFound />} />
+<Route path="/terms" element={<TermsOfService />} />
+<Route path="/gift-cards" element={<React.Suspense fallback={<Loading />}><GiftCards /></React.Suspense>} />
+<Route path="/blog" element={<React.Suspense fallback={<Loading />}><Blog /></React.Suspense>} />
+<Route path="*" element={<NotFound />} />
           </Routes>
         </div>
       </React.Suspense>
@@ -210,8 +215,9 @@ function App() {
   const pwa = usePWA()
 
   return (
-    <AuthProvider>
-      <ProductProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <ProductProvider>
         <CartProvider>
           <FavoritesProvider>
             <NotificationProvider>
@@ -224,8 +230,9 @@ function App() {
             </NotificationProvider>
           </FavoritesProvider>
         </CartProvider>
-      </ProductProvider>
-    </AuthProvider>
+        </ProductProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
 

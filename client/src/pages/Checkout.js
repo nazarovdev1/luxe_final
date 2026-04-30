@@ -8,7 +8,10 @@ import {
   ArrowLeft,
   CheckCircle,
   ChevronRight,
+  Clock,
   CreditCard,
+  Calendar,
+  Gift,
   MapPin,
   Navigation,
   Phone,
@@ -150,6 +153,24 @@ const Checkout = () => {
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [userTier, setUserTier] = useState(null);
 
+  // Gift wrapping state
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [giftWrapType, setGiftWrapType] = useState('classic');
+  const [giftMessage, setGiftMessage] = useState('');
+
+  // Scheduled delivery state
+  const [scheduledDelivery, setScheduledDelivery] = useState(false);
+  const [deliveryDate, setDeliveryDate] = useState('');
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('');
+
+  const GIFT_WRAP_OPTIONS = {
+    classic: { name: 'Klassik qadoqlash', price: 25000, desc: 'Chiroyli qog\'oz va lenta bilan' },
+    premium: { name: 'Premium qadoqlash', price: 45000, desc: 'Luxury quti, lenta va gullar bilan' },
+    minimal: { name: 'Minimal qadoqlash', price: 15000, desc: 'Oddiy lekin zamonaviy qadoqlash' },
+  };
+
+  const giftWrapCost = giftWrap ? (GIFT_WRAP_OPTIONS[giftWrapType]?.price || 0) : 0;
+
   useEffect(() => {
     const fetchUserTier = async () => {
       if (isAuthenticated && token) {
@@ -209,8 +230,9 @@ const Checkout = () => {
     return promoDiscount + tierDiscountAmount;
   }, [summaryTotal, appliedPromo, tierDiscountAmount]);
 
+  const expressDeliveryFee = (scheduledDelivery && deliveryTimeSlot === 'express') ? 25000 : 0;
   const deliveryFee = 0; // Free delivery for all
-  const finalTotal = summaryTotal - discountAmount + deliveryFee;
+  const finalTotal = summaryTotal - discountAmount + deliveryFee + giftWrapCost + expressDeliveryFee;
 
   const isStep1Valid = formData.firstName.trim() && formData.phone.trim();
   const isStep2Valid = formData.region.trim() && formData.street.trim();
@@ -342,11 +364,17 @@ const Checkout = () => {
         totals: {
           subtotal: summaryTotal,
           deliveryFee: 0,
+          giftWrap: giftWrap ? { type: giftWrapType, cost: giftWrapCost, message: giftMessage } : null,
           promoCode: appliedPromo ? appliedPromo.code : null,
           discountAmount: discountAmount || 0,
           total: finalTotal,
         },
         userId: user ? user._id || user.id : null,
+        scheduledDelivery: scheduledDelivery ? {
+          date: deliveryDate,
+          timeSlot: deliveryTimeSlot,
+          isExpress: deliveryTimeSlot === 'express',
+        } : null,
       };
 
       const result = await createOrder(orderData);
@@ -557,6 +585,128 @@ const Checkout = () => {
                     </div>
                     <p className="mt-2 text-xs text-[#9aa3b2]">Aniq nuqtani belgilasangiz yetkazish tezlashadi.</p>
                   </div>
+
+                  {/* Scheduled Delivery */}
+                  <div className="mt-4 pt-4 border-t border-white/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-[#d6b47c]" />
+                        <span className="text-sm text-[#c7ceda] font-medium">Yetkazib berish vaqtini tanlash</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScheduledDelivery(!scheduledDelivery);
+                          if (scheduledDelivery) {
+                            setDeliveryDate('');
+                            setDeliveryTimeSlot('');
+                          }
+                        }}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${scheduledDelivery ? 'bg-[#d6b47c]' : 'bg-[#2d3442]'}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${scheduledDelivery ? 'translate-x-5' : ''}`} />
+                      </button>
+                    </div>
+
+                    {scheduledDelivery && (
+                      <div className="space-y-3 animate-in fade-in duration-200">
+                        {/* Date Selection */}
+                        <div>
+                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">Sana tanlang</span>
+                          <div className="grid grid-cols-4 gap-2">
+                            {[...Array(4)].map((_, i) => {
+                              const date = new Date();
+                              date.setDate(date.getDate() + i + 1);
+                              const dayName = date.toLocaleDateString('uz-UZ', { weekday: 'short' });
+                              const dayNum = date.getDate();
+                              const monthName = date.toLocaleDateString('uz-UZ', { month: 'short' });
+                              const dateValue = date.toISOString().split('T')[0];
+                              const isToday = i === 0;
+                              return (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => setDeliveryDate(dateValue)}
+                                  className={`p-2.5 rounded-xl border text-center transition-all ${
+                                    deliveryDate === dateValue
+                                      ? 'bg-[#d6b47c]/10 border-[#d6b47c]/30'
+                                      : 'bg-[#0e131d] border-[#2d3442] hover:border-[#3f4a5c]'
+                                  }`}
+                                >
+                                  <p className={`text-[10px] uppercase ${deliveryDate === dateValue ? 'text-[#d6b47c]' : 'text-[#6f7c90]'}`}>
+                                    {isToday ? 'Ertaga' : dayName}
+                                  </p>
+                                  <p className={`text-lg font-bold ${deliveryDate === dateValue ? 'text-[#d6b47c]' : 'text-[#f4f1eb]'}`}>
+                                    {dayNum}
+                                  </p>
+                                  <p className={`text-[10px] ${deliveryDate === dateValue ? 'text-[#d6b47c]/70' : 'text-[#6f7c90]'}`}>
+                                    {monthName}
+                                  </p>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Time Slot Selection */}
+                        {deliveryDate && (
+                          <div>
+                            <span className="mb-1.5 block text-xs text-[#9aa3b2]">Vaqt tanlang</span>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { value: 'morning', label: '09:00 – 12:00', icon: '🌅', name: 'Ertalab' },
+                                { value: 'afternoon', label: '12:00 – 15:00', icon: '☀️', name: 'Kunduzi' },
+                                { value: 'evening', label: '15:00 – 18:00', icon: '🌤️', name: 'Kechqurun' },
+                                { value: 'late_evening', label: '18:00 – 21:00', icon: '🌙', name: 'Kechasi' },
+                                { value: 'express', label: '2 soat ichida', icon: '⚡', name: 'Tezkor' },
+                                { value: 'any', label: 'Har qanday vaqt', icon: '🕐', name: 'Ahamiyatsiz' },
+                              ].map((slot) => (
+                                <button
+                                  key={slot.value}
+                                  type="button"
+                                  onClick={() => setDeliveryTimeSlot(slot.value)}
+                                  className={`p-2.5 rounded-xl border text-center transition-all ${
+                                    deliveryTimeSlot === slot.value
+                                      ? 'bg-[#d6b47c]/10 border-[#d6b47c]/30'
+                                      : 'bg-[#0e131d] border-[#2d3442] hover:border-[#3f4a5c]'
+                                  }`}
+                                >
+                                  <span className="text-base">{slot.icon}</span>
+                                  <p className={`text-[10px] font-medium mt-1 ${deliveryTimeSlot === slot.value ? 'text-[#d6b47c]' : 'text-[#9aa3b2]'}`}>
+                                    {slot.name}
+                                  </p>
+                                  <p className={`text-[9px] mt-0.5 ${deliveryTimeSlot === slot.value ? 'text-[#d6b47c]/70' : 'text-[#6f7c90]'}`}>
+                                    {slot.label}
+                                  </p>
+                                </button>
+                              ))}
+                            </div>
+                            {deliveryTimeSlot === 'express' && (
+                              <p className="mt-2 text-[11px] text-[#d6b47c] bg-[#d6b47c]/5 border border-[#d6b47c]/10 rounded-lg px-3 py-1.5">
+                                ⚡ Tezkor yetkazib berish uchun qo'shimcha 25,000 so'm to'lanadi
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {deliveryDate && deliveryTimeSlot && (
+                          <div className="rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/20 p-3 flex items-center gap-3">
+                            <Clock className="w-4 h-4 text-[#d6b47c] flex-shrink-0" />
+                            <p className="text-xs text-[#c7ceda]">
+                              Yetkazib berish: <span className="text-[#d6b47c] font-semibold">
+                                {new Date(deliveryDate).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' })}
+                                {' '}{deliveryTimeSlot === 'express' ? '2 soat ichida' :
+                                  deliveryTimeSlot === 'morning' ? '09:00 – 12:00' :
+                                  deliveryTimeSlot === 'afternoon' ? '12:00 – 15:00' :
+                                  deliveryTimeSlot === 'evening' ? '15:00 – 18:00' :
+                                  deliveryTimeSlot === 'late_evening' ? '18:00 – 21:00' : 'kun davomida'}
+                              </span>
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -618,6 +768,60 @@ const Checkout = () => {
                       placeholder="Buyurtma bo'yicha qo'shimcha izoh..."
                     />
                   </label>
+
+                  {/* Gift Wrapping */}
+                  <div className="rounded-xl bg-[#121722]/70 p-4 space-y-3 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                    <label className="flex cursor-pointer items-center gap-3">
+                      <div
+                        onClick={() => setGiftWrap(!giftWrap)}
+                        className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-all cursor-pointer ${giftWrap ? 'bg-[#d6b47c]' : 'bg-[#2d3442]'}`}
+                      >
+                        <div className={`h-4 w-4 rounded-full bg-white transition-all ${giftWrap ? 'translate-x-4' : 'translate-x-0'}`} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Gift className="h-4 w-4 text-[#d6b47c]" />
+                        <span className="text-sm font-medium text-[#f4f1eb]">Sovg'a qadoqlash</span>
+                      </div>
+                    </label>
+
+                    {giftWrap && (
+                      <div className="space-y-3 pl-1 animate-fade-in">
+                        <div className="grid grid-cols-3 gap-2">
+                          {Object.entries(GIFT_WRAP_OPTIONS).map(([key, opt]) => (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => setGiftWrapType(key)}
+                              className={`rounded-xl p-3 text-left transition-all ${
+                                giftWrapType === key
+                                  ? 'bg-[#d6b47c]/15 border border-[#d6b47c]/30'
+                                  : 'bg-[#0e131d] border border-[#2d3442] hover:border-[#3d4a5c]'
+                              }`}
+                            >
+                              <p className={`text-xs font-semibold ${giftWrapType === key ? 'text-[#d6b47c]' : 'text-[#f4f1eb]'}`}>
+                                {opt.name}
+                              </p>
+                              <p className="text-[10px] text-[#9aa3b2] mt-0.5">{opt.desc}</p>
+                              <p className={`text-xs font-bold mt-1.5 ${giftWrapType === key ? 'text-[#d6b47c]' : 'text-[#c7ceda]'}`}>
+                                {opt.price.toLocaleString()} so'm
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                        <label className="block">
+                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">Sovg'a maktubi (ixtiyoriy)</span>
+                          <input
+                            type="text"
+                            value={giftMessage}
+                            onChange={(e) => setGiftMessage(e.target.value)}
+                            maxLength={200}
+                            className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
+                            placeholder="Masalan: Tabriklayman, azizim!"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
 
                   <label
                     htmlFor="checkout-terms"
@@ -755,6 +959,27 @@ const Checkout = () => {
                   <span>Yetkazib berish</span>
                   <span className="text-emerald-400 font-medium">Bepul</span>
                 </div>
+
+                {giftWrap && giftWrapCost > 0 && (
+                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                    <div className="flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5" />
+                      <span>Sovg'a qadoqlash ({GIFT_WRAP_OPTIONS[giftWrapType]?.name})</span>
+                    </div>
+                    <span>{formatMoney(giftWrapCost)} so'm</span>
+                  </div>
+                )}
+
+                {expressDeliveryFee > 0 && (
+                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Tezkor yetkazib berish</span>
+                    </div>
+                    <span>{formatMoney(expressDeliveryFee)} so'm</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between border-t border-[#2d3442] pt-3">
                   <span className="text-base font-semibold text-[#f4f1eb]">Jami</span>
                   <span className="text-2xl font-semibold text-[#f4f1eb]">{formatMoney(finalTotal)} so'm</span>

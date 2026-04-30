@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
+import useRecentlyViewed from '../hooks/useRecentlyViewed';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -28,6 +29,12 @@ import ImageCarousel from '../components/ImageCarousel';
 import ReviewList from '../components/ReviewList';
 import ReviewForm from '../components/ReviewForm';
 import SEO from '../components/SEO';
+import SizeGuideModal from '../components/SizeGuideModal';
+import InstallmentCalculator from '../components/InstallmentCalculator';
+import FlashSaleTimer from '../components/FlashSaleTimer';
+import BackInStockButton from '../components/BackInStockButton';
+import PriceDropAlert from '../components/PriceDropAlert';
+import CustomerPhotoReviews from '../components/CustomerPhotoReviews';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -69,13 +76,22 @@ export default function ProductView() {
   const { id } = useParams();
   const { getProduct, fetchProductDetails, isLoading, products } = useProducts();
   const { addToCart } = useCart();
+  const { addToRecentlyViewed } = useRecentlyViewed();
   const product = getProduct(id);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   React.useEffect(() => {
     if (id) {
       fetchProductDetails(id);
     }
   }, [id]);
+
+  // Track recently viewed
+  React.useEffect(() => {
+    if (product && !isLoading) {
+      addToRecentlyViewed(product);
+    }
+  }, [product?.id, isLoading]);
 
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
@@ -431,11 +447,20 @@ export default function ProductView() {
 
               {sizeOptions.length > 0 && (
                 <div className="mt-5">
-                  <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-neutral-300">
-                    <Ruler className="h-4 w-4 text-[#d6b47c]" />
-                    O'lcham tanlang
-                    <span className="text-[#d6b47c]">*</span>
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.14em] text-neutral-300">
+                      <Ruler className="h-4 w-4 text-[#d6b47c]" />
+                      O'lcham tanlang
+                      <span className="text-[#d6b47c]">*</span>
+                    </h3>
+                    <button
+                      onClick={() => setIsSizeGuideOpen(true)}
+                      className="flex items-center gap-1.5 rounded-lg border border-[#d6b47c]/20 bg-[#d6b47c]/5 px-3 py-1.5 text-[11px] font-medium text-[#d6b47c] hover:bg-[#d6b47c]/10 transition-all"
+                    >
+                      <Ruler className="h-3 w-3" />
+                      O'lcham jadvali
+                    </button>
+                  </div>
 
                   <div className="mt-3 flex flex-wrap gap-2.5">
                     {sizeOptions.map((size, index) => (
@@ -510,9 +535,51 @@ export default function ProductView() {
                   </div>
                 ))}
               </div>
+
+              {/* Back in Stock Notification (when out of stock) */}
+              {product.stock !== undefined && product.stock <= 0 && (
+                <div className="mt-4">
+                  <BackInStockButton
+                    productId={product.id}
+                    productName={product.name}
+                    hasStock={product.stock > 0}
+                  />
+                </div>
+              )}
+
+              {/* Installment Calculator */}
+              {product.price >= 50000 && (
+                <div className="mt-4">
+                  <InstallmentCalculator price={product.price} />
+                </div>
+              )}
+
+              {/* Flash Sale Timer (when on sale) */}
+              {product.originalPrice && product.originalPrice > product.price && (
+                <div className="mt-4">
+                  <FlashSaleTimer
+                    endTime={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}
+                    originalPrice={product.originalPrice}
+                    salePrice={product.price}
+                    totalStock={product.stock || 10}
+                    soldCount={Math.floor(Math.random() * 7) + 3}
+                    productName={product.name}
+                  />
+                </div>
+              )}
+
+              {/* Price Drop Alert */}
+              <div className="mt-4">
+                <PriceDropAlert product={product} />
+              </div>
             </article>
           </aside>
         </div>
+
+        {/* Customer Photo Reviews */}
+        <section className="mt-12">
+          <CustomerPhotoReviews productName={product.name} />
+        </section>
 
         {relatedProducts.length > 0 && (
           <section className="mt-12">
@@ -629,6 +696,12 @@ export default function ProductView() {
           </div>
         </section>
       </div>
+
+      <SizeGuideModal
+        isOpen={isSizeGuideOpen}
+        onClose={() => setIsSizeGuideOpen(false)}
+        productCategory={product?.category}
+      />
     </div>
   );
 }
