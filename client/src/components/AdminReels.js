@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Edit, Trash2, Eye, X, Youtube, Link, Image, Tag, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, X, Youtube, Link, Image, Tag, Package, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { uploadVideoToAppwrite } from '../utils/appwrite';
 
 const AdminReels = () => {
   const [reels, setReels] = useState([]);
@@ -9,6 +10,8 @@ const AdminReels = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingReel, setEditingReel] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -58,30 +61,51 @@ const AdminReels = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.videoUrl) {
-      toast.error('Barcha majburiy maydonlarni to\'ldiring');
+    if (!formData.title || (!formData.videoUrl && !videoFile)) {
+      toast.error('Sarlavha va video kiritilishi shart');
       return;
     }
 
     try {
+      setIsUploading(true);
+      let finalVideoUrl = formData.videoUrl;
+
+      // Upload to Appwrite if file selected
+      if (videoFile) {
+        toast.loading('Video Appwrite\'ga yuklanmoqda...', { id: 'admin-upload' });
+        try {
+          finalVideoUrl = await uploadVideoToAppwrite(videoFile);
+          toast.success('Video yuklandi!', { id: 'admin-upload' });
+        } catch (err) {
+          toast.error('Xatolik: ' + err.message, { id: 'admin-upload' });
+          setIsUploading(false);
+          return;
+        }
+      }
+
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
+      const payload = { ...formData, videoUrl: finalVideoUrl };
+
       if (editingReel) {
-        await axios.put(`/api/reels/${editingReel._id}`, formData, { headers });
+        await axios.put(`/api/reels/${editingReel._id}`, payload, { headers });
         toast.success('Reel yangilandi!');
       } else {
-        await axios.post('/api/reels', formData, { headers });
+        await axios.post('/api/reels', payload, { headers });
         toast.success('Reel qo\'shildi!');
       }
 
       setShowForm(false);
       setEditingReel(null);
+      setVideoFile(null);
       resetForm();
       fetchReels();
     } catch (error) {
       console.error('Error saving reel:', error);
       toast.error('Xatolik yuz berdi');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -198,6 +222,40 @@ const AdminReels = () => {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                <Upload size={16} className="text-amber-400" />
+                Video Yuklash (Appwrite)
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => setVideoFile(e.target.files[0])}
+                  className="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-700"
+                />
+                {videoFile && (
+                  <button 
+                    type="button" 
+                    onClick={() => setVideoFile(null)}
+                    className="p-2 text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+              {videoFile && (
+                <p className="text-[10px] text-amber-500 mt-1 ml-1">Tanlandi: {videoFile.name}</p>
+              )}
+            </div>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-700"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase font-bold text-slate-500 bg-[#0f111a] px-2">yoki</div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Video URL *</label>
               <div className="relative">
                 <Link className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -207,10 +265,9 @@ const AdminReels = () => {
                   onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                   className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-amber-500"
                   placeholder="https://ik.imagekit.io/..."
-                  required
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">ImageKit video linkini yoki MP4/WebM URL manzilini kiriting</p>
+              <p className="text-xs text-gray-500 mt-1">ImageKit, YouTube yoki Appwrite video linkini kiriting</p>
             </div>
 
 

@@ -31,6 +31,7 @@ const EcoImpact = React.lazy(() => import('./pages/EcoImpact'));
 const Reels = React.lazy(() => import('./pages/Reels'));
 const GiftCards = React.lazy(() => import('./pages/GiftCards'));
 const Blog = React.lazy(() => import('./pages/Blog'));
+const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const MobileApp = React.lazy(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
 const VisualSearch = React.lazy(() => import('./components/VisualSearch'));
@@ -71,6 +72,18 @@ function MainContent() {
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
 
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+        setIsCartOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Auto redirect based on device
   useEffect(() => {
@@ -179,6 +192,7 @@ function MainContent() {
 <Route path="/terms" element={<TermsOfService />} />
 <Route path="/gift-cards" element={<React.Suspense fallback={<Loading />}><GiftCards /></React.Suspense>} />
 <Route path="/blog" element={<React.Suspense fallback={<Loading />}><Blog /></React.Suspense>} />
+<Route path="/blog/:slug" element={<React.Suspense fallback={<Loading />}><BlogPost /></React.Suspense>} />
 <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

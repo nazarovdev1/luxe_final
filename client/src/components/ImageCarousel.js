@@ -70,11 +70,11 @@ const ImageCarousel = ({ images, productName }) => {
         </div>
 
         <div className="relative flex flex-1 items-center justify-center" onClick={(e) => e.stopPropagation()}>
-          <img
-            src={images[currentIndex]}
-            alt={`${productName} - rasm ${currentIndex + 1}`}
-            className="h-auto max-h-[85vh] w-auto max-w-[95vw] object-contain"
-          />
+         <img
+           src={images[currentIndex]}
+           alt={`${productName} - rasm ${currentIndex + 1}`}
+           className="h-auto max-h-[60vh] w-auto max-w-[70vw] object-contain"
+         />
 
           {images.length > 1 && (
             <>
@@ -138,13 +138,13 @@ const ImageCarousel = ({ images, productName }) => {
 
   return (
     <>
-      <div className="group relative cursor-pointer" onClick={openModal}>
-        <div className="relative overflow-hidden rounded-xl bg-[#090f1b] shadow-[inset_0_0_18px_rgba(255,255,255,0.04)]">
+<div className="group relative cursor-pointer" onClick={openModal}>
+        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[#090f1b] shadow-[inset_0_0_18px_rgba(255,255,255,0.04)]">
           <img
-            src={images[currentIndex]}
-            alt={`${productName} - Luxx.uz premium ayollar kiyimi - rasm ${currentIndex + 1}`}
-            className="h-auto w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
-          />
+           src={images[currentIndex]}
+           alt={`${productName} - rasm ${currentIndex + 1}`}
+           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+         />
         </div>
 
         {images.length > 1 && (

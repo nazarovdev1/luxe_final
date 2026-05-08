@@ -1,5 +1,5 @@
 import express from 'express'
-import { registerUser, loginUser, getAllUsers, updateCart, getFavorites, addFavorite, removeFavorite, saveFcmToken, getProfile } from '../controllers/auth.controller.js'
+import { registerUser, loginUser, telegramLogin, getAllUsers, updateCart, getFavorites, addFavorite, removeFavorite, saveFcmToken, getProfile } from '../controllers/auth.controller.js'
 import { requestPasswordReset, verifyResetCode, resetPassword } from '../controllers/passwordReset.controller.js'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
@@ -8,6 +8,7 @@ const router = express.Router()
 
 router.post('/register', validate('register'), registerUser)
 router.post('/login', validate('login'), loginUser)
+router.post('/telegram-login', telegramLogin)
 router.put('/cart', protect, updateCart)
 router.get('/profile', protect, getProfile)
 

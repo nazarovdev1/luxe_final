@@ -1,6 +1,7 @@
 import Order from '../models/order.model.js'
 import Product from '../models/product.model.js'
 import User from '../models/user.model.js'
+import GiftCard from '../models/giftCard.model.js'
 import { sendOrderToTelegram } from '../services/telegram.service.js'
 import pointsService from '../services/points.service.js'
 import logger from '../utils/logger.js'
@@ -38,6 +39,18 @@ export const createOrder = async (req, res) => {
     })
 
     await newOrder.save()
+
+    // Handle Gift Card redemption
+    if (orderTotals.promoCode) {
+      const giftCard = await GiftCard.findOne({ code: orderTotals.promoCode.toUpperCase() })
+      if (giftCard && !giftCard.isUsed) {
+        giftCard.isUsed = true
+        giftCard.usedAt = new Date()
+        giftCard.usedBy = userId || null
+        await giftCard.save()
+        logger.info(`Gift card ${giftCard.code} marked as used for order ${newOrder._id}`)
+      }
+    }
 
     logger.info(`Order created: ${newOrder._id}`)
 

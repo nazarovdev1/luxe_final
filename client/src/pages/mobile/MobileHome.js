@@ -2,14 +2,16 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Crown, Shield, Gem, Star, Truck, Leaf, Radio, Camera, Swords } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import MobileProductCard from './MobileProductCard';
 import LookDetailModal from '../../components/LookDetailModal';
 import useProductService from '../../server/server';
 import { MobileHero, BrandJourney, Manifesto } from '../../components/mobile/MobileLandingSections';
+import ParticleCanvas from '../../components/ParticleCanvas';
 
 const formatPrice = (price) => {
-  if (typeof price !== 'number') return 'Narx yoq';
-  return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} so'm`;
+  if (typeof price !== 'number') return '';
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
 const getProductImage = (product) => {
@@ -29,6 +31,7 @@ const uniqueById = (items) => {
 };
 
 const MobileHome = () => {
+  const { t } = useLanguage();
   const { products, isLoading } = useProducts();
   const { getAllLooks } = useProductService();
   const [looks, setLooks] = useState([]);
@@ -160,8 +163,12 @@ const MobileHome = () => {
   return (
     <>
       {activeLookId && <LookDetailModal lookId={activeLookId} onClose={closeLook} />}
-      <div className="min-h-screen bg-[#08090d] pb-20 text-white">
-        <MobileHero product={newestProducts[0]} />
+      <div className="min-h-screen bg-[#060a14] pb-20 text-white relative overflow-hidden">
+        <div className="pointer-events-none fixed left-1/4 top-1/4 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d6b47c]/[0.02] blur-[100px] z-0" />
+        <div className="pointer-events-none fixed bottom-1/4 right-1/4 h-[300px] w-[300px] translate-x-1/2 translate-y-1/2 rounded-full bg-white/[0.01] blur-[80px] z-0" />
+        <ParticleCanvas />
+        <div className="relative z-10">
+          <MobileHero product={newestProducts[0]} />
 
         <BrandJourney />
 
@@ -196,7 +203,7 @@ const MobileHome = () => {
               <div className="min-w-[1px] h-1 flex-shrink-0" />
             </div>
             {/* Right Fade Indicator */}
-            <div className="absolute top-0 right-0 bottom-2 w-16 bg-gradient-to-l from-[#08090d] via-[#08090d]/60 to-transparent pointer-events-none z-10" />
+            <div className="absolute top-0 right-0 bottom-2 w-16 bg-gradient-to-l from-[#060a14] via-[#060a14]/60 to-transparent pointer-events-none z-10" />
           </div>
         </section>
 
@@ -222,7 +229,7 @@ const MobileHome = () => {
                     alt={category.name}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#08090d] via-[#08090d]/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-[#060a14]/30 to-transparent" />
                   <div className="relative h-full p-3.5 flex items-end">
                     <div>
                       <p className="text-base font-semibold text-[#f4f1eb]">{category.name}</p>
@@ -234,7 +241,7 @@ const MobileHome = () => {
               <div className="min-w-[1px] h-1 flex-shrink-0" />
             </div>
             {/* Right Fade Indicator */}
-            <div className="absolute top-0 right-0 bottom-2 w-20 bg-gradient-to-l from-[#08090d] via-[#08090d]/60 to-transparent pointer-events-none z-10" />
+            <div className="absolute top-0 right-0 bottom-2 w-20 bg-gradient-to-l from-[#060a14] via-[#060a14]/60 to-transparent pointer-events-none z-10" />
           </div>
         </section>
 
@@ -266,7 +273,7 @@ const MobileHome = () => {
                       <Star className="w-3.5 h-3.5 text-amber-300 fill-current" />
                       {(product.rating || 5).toFixed(1)}
                     </span>
-                    <span className="text-xs font-semibold text-[#f4f1eb]">{formatPrice(product.price)}</span>
+                    <span className="text-xs font-semibold text-[#f4f1eb]">{formatPrice(product.price)} {t('common.sum')}</span>
                   </div>
                 </div>
               </Link>
@@ -369,6 +376,7 @@ const MobileHome = () => {
             </div>
           )}
         </section>
+        </div>
       </div>
     </>
   );

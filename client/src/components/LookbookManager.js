@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2, Image as ImageIcon, Loader2, X, Search } from 'lucide-react';
 import useProductService from '../server/server';
+import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -25,6 +26,7 @@ const INITIAL_FORM = {
 };
 
 const LookbookManager = () => {
+  const { t } = useLanguage();
   const { getAllLooks, createLook, deleteLook, getAllProducts, getImageKitAuth } = useProductService();
 
   const [looks, setLooks] = useState([]);
@@ -355,7 +357,7 @@ const LookbookManager = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-100 truncate">{product.name}</p>
                         <p className="admin-muted text-xs truncate">
-                          {product.category} • {Number(product.price || 0).toLocaleString('uz-UZ')} so'm
+                          {product.category} • {Number(product.price || 0).toLocaleString('uz-UZ')} {t('common.sum')}
                         </p>
                       </div>
 

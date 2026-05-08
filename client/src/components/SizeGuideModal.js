@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Ruler, Info, ChevronDown, ChevronUp } from 'lucide-react';
 
 const SIZE_CHARTS = {
@@ -43,13 +43,40 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
   const [activeChart, setActiveChart] = useState('default');
   const [expandedChart, setExpandedChart] = useState(null);
 
-  // Calculator state
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [chest, setChest] = useState('');
   const [waist, setWaist] = useState('');
   const [hips, setHips] = useState('');
   const [recommendedSize, setRecommendedSize] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    document.body.style.overflow = 'hidden';
+
+    const navbar = document.querySelector('nav.fixed');
+    if (navbar) {
+      navbar.style.opacity = '0';
+      navbar.style.pointerEvents = 'none';
+      navbar.style.transition = 'opacity 0.3s ease';
+    }
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.body.style.overflow = '';
+      if (navbar) {
+        navbar.style.opacity = '';
+        navbar.style.pointerEvents = '';
+        navbar.style.transition = '';
+      }
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -118,12 +145,72 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
   const currentChart = SIZE_CHARTS[activeChart];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[100] grid place-items-center p-4">
+      {/* ── Liquid Glass Backdrop ─────────────────────── */}
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={onClose}
+        style={{ isolation: 'isolate' }}
+      >
+        {/* Blur layer — blurs the page content behind */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+            backgroundColor: 'rgba(5, 5, 8, 0.60)',
+          }}
+        />
+        {/* Gold blob — top left */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '55%',
+            height: '55%',
+            top: '-5%',
+            left: '-5%',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(201,169,110,0.35) 0%, transparent 70%)',
+            filter: 'blur(70px)',
+            animation: 'liquid-blob-1 14s ease-in-out infinite alternate',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Purple blob — bottom right */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '50%',
+            height: '50%',
+            bottom: '-5%',
+            right: '-5%',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+            animation: 'liquid-blob-2 11s ease-in-out infinite alternate-reverse',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Rose blob — top right */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '35%',
+            height: '35%',
+            top: '10%',
+            right: '5%',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(244,114,182,0.15) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+            animation: 'liquid-blob-1 18s ease-in-out infinite alternate-reverse',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] shadow-[0_32px_64px_rgba(0,0,0,0.6)] border border-white/10">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] shadow-[0_32px_64px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in-scale">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-white/10 bg-[#151b27]/95 backdrop-blur-xl rounded-t-[2rem]">
           <div className="flex items-center gap-3">

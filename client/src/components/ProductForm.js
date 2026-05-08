@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useProducts } from '../contexts/ProductContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { X, Upload, Save, Pipette, Plus, Image as ImageIcon, Gem, Flame } from 'lucide-react';
 
 const CATEGORIES = [
@@ -37,6 +38,7 @@ const EMPTY_FORM = {
 };
 
 const ProductForm = ({ product, onClose }) => {
+  const { t } = useLanguage();
   const { addProduct, updateProduct, getImageKitAuth } = useProducts();
 
   const [formData, setFormData] = useState(EMPTY_FORM);
@@ -356,7 +358,7 @@ const ProductForm = ({ product, onClose }) => {
               placeholder="299 000"
               required
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">so'm</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{t('common.sum')}</span>
           </div>
         </div>
 
@@ -371,7 +373,7 @@ const ProductForm = ({ product, onClose }) => {
               className="admin-input pr-14"
               placeholder="399 000"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">so'm</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{t('common.sum')}</span>
           </div>
         </div>
       </div>

@@ -24,6 +24,19 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    telegramId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    telegramUsername: {
+        type: String,
+        default: null
+    },
+    photoUrl: {
+        type: String,
+        default: null
+    },
     fcmToken: {
         type: String,
         default: null

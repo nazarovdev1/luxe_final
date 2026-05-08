@@ -20,12 +20,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProducts } from '../contexts/ProductContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import Loading from '../components/Loading';
 
 const StyleFeed = () => {
     const { user, isAuthenticated, token, isAdmin } = useAuth();
     const { products, getImageKitAuth } = useProducts();
+    const { t } = useLanguage();
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -33,7 +35,6 @@ const StyleFeed = () => {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
 
-    // Fetch posts
     const fetchPosts = async (pageNum = 1, append = false) => {
         try {
             if (pageNum === 1) setIsLoading(true);
@@ -45,7 +46,7 @@ const StyleFeed = () => {
             }
         } catch (error) {
             console.error('Fetch posts error:', error);
-            toast.error('Postlarni yuklashda xatolik');
+            toast.error(t('styleFeed.error'));
         } finally {
             setIsLoading(false);
         }
@@ -57,7 +58,7 @@ const StyleFeed = () => {
 
     const handleLike = async (postId) => {
         if (!isAuthenticated) {
-            toast.error('Layk bosish uchun tizimga kiring');
+            toast.error(t('styleFeed.loginToLike'));
             return;
         }
         try {
@@ -87,7 +88,7 @@ const StyleFeed = () => {
                 }
             }
         } catch (error) {
-            toast.error('Xatolik yuz berdi');
+            toast.error(t('styleFeed.error'));
         }
     };
 
@@ -104,7 +105,7 @@ const StyleFeed = () => {
                 setSelectedPost(null);
             }
         } catch (error) {
-            toast.error('O\'chirishda xatolik yuz berdi');
+            toast.error(t('styleFeed.error'));
         }
     };
 
@@ -122,36 +123,36 @@ const StyleFeed = () => {
                 <div className="max-w-2xl">
                     <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#d6b47c]/20 to-transparent border-l-2 border-[#d6b47c] px-4 py-2 mb-6">
                         <ImageIcon className="w-4 h-4 text-[#d6b47c]" />
-                        <span className="text-[#d6b47c] text-[10px] tracking-[0.3em] uppercase font-black">Hamjamiyat Galereyasi</span>
+                        <span className="text-[#d6b47c] text-[10px] tracking-[0.3em] uppercase font-black">{t('styleFeed.title')}</span>
                     </div>
                     <h1 className="text-6xl md:text-8xl font-brilliant text-white mb-6 leading-[0.9]">
                         Style <span className="text-[#d6b47c]">Feed</span>
                     </h1>
                     <p className="text-gray-400 text-lg md:text-xl font-light leading-relaxed pt-4">
-                        Luxe hamjamiyatidan ilhom oling. O'zingizning eng sara obrazlaringizni ulashing, boshqalarni baholang va <span className="text-white font-medium italic underline decoration-[#d6b47c]/40 underline-offset-4">Luxe ballariga</span> ega bo'ling.
+                        {t('styleFeed.subtitle')}
                     </p>
                 </div>
                 
                 <div className="flex flex-col items-end gap-6">
                     <button 
-                        onClick={() => isAuthenticated ? setIsCreateModalOpen(true) : toast.error('Post yaratish uchun tizimga kiring')}
+                        onClick={() => isAuthenticated ? setIsCreateModalOpen(true) : toast.error(t('styleFeed.loginToCreate'))}
                         className="group relative px-10 py-5 bg-transparent overflow-hidden rounded-full"
                     >
                         <div className="absolute inset-0 bg-[#d6b47c] opacity-10 group-hover:opacity-20 transition-opacity" />
                         <div className="absolute inset-0 border border-[#d6b47c]/30 rounded-full" />
                         <span className="relative z-10 flex items-center gap-3 text-[#d6b47c] text-sm font-black tracking-widest uppercase">
-                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> Obraz ulashish
+                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> {t('styleFeed.shareLook')}
                         </span>
                     </button>
 
                     <div className="flex items-center gap-8">
                         <div className="text-right">
-                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Jami postlar</p>
+                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('styleFeed.totalPosts')}</p>
                             <p className="text-2xl font-brilliant text-white">{posts.length}+</p>
                         </div>
                         <div className="w-px h-10 bg-white/10" />
                         <div className="text-right">
-                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Top stilistlar</p>
+                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('styleFeed.topStylists')}</p>
                             <p className="text-2xl font-brilliant text-[#d6b47c]">124</p>
                         </div>
                     </div>
@@ -162,7 +163,7 @@ const StyleFeed = () => {
             {isLoading && page === 1 ? (
                 <div className="flex flex-col items-center justify-center py-32 gap-6">
                     <div className="w-12 h-12 border-[3px] border-[#d6b47c] border-t-transparent rounded-full animate-spin" />
-                    <p className="text-[#d6b47c] text-sm tracking-widest font-medium animate-pulse">Galereya yuklanmoqda...</p>
+                    <p className="text-[#d6b47c] text-sm tracking-widest font-medium animate-pulse">{t('styleFeed.loading')}</p>
                 </div>
             ) : (
                 <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-8 space-y-8">
@@ -181,8 +182,8 @@ const StyleFeed = () => {
             {posts.length === 0 && !isLoading && (
                 <div className="text-center py-32 border border-dashed border-white/5 rounded-[40px] bg-white/[0.02]">
                     <Camera className="w-20 h-20 text-gray-800 mx-auto mb-6 opacity-20" />
-                    <h3 className="text-2xl text-gray-400 font-light">Hozircha postlar yo'q</h3>
-                    <p className="text-gray-600 mt-3">Birinchilardan bo'lib o'z obrazingizni qo'shing!</p>
+                    <h3 className="text-2xl text-gray-400 font-light">{t('styleFeed.noPosts')}</h3>
+                    <p className="text-gray-600 mt-3">{t('styleFeed.beFirst')}</p>
                 </div>
             )}
 
@@ -220,6 +221,7 @@ const StyleFeed = () => {
                     token={token}
                     products={products}
                     getImageKitAuth={getImageKitAuth}
+                    t={t}
                 />
             )}
 
@@ -234,6 +236,7 @@ const StyleFeed = () => {
                     isAdmin={isAdmin}
                     token={token}
                     isAuthenticated={isAuthenticated}
+                    t={t}
                 />
             )}
         </div>
@@ -315,7 +318,7 @@ const PostCard = ({ post, onLike, currentUserId, onClick }) => {
     );
 };
 
-const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth }) => {
+const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth, t }) => {
     const [images, setImages] = useState([]);
     const [caption, setCaption] = useState('');
     const [taggedProducts, setTaggedProducts] = useState([]);
@@ -354,15 +357,15 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
             setImages([...images, ...uploadedUrls]);
             toast.success('Tayyor!', { id: loadingToast });
         } catch (error) {
-            toast.error('Xatolik yuz berdi', { id: loadingToast });
+            toast.error(t('styleFeed.error'), { id: loadingToast });
         } finally {
             setIsUploading(false);
         }
     };
 
     const handleSubmit = async () => {
-        if (images.length === 0) return toast.error('Rasm yuklang');
-        if (!caption.trim()) return toast.error('Tavsif kiriting');
+        if (images.length === 0) return toast.error(t('styleFeed.uploadError'));
+        if (!caption.trim()) return toast.error(t('styleFeed.enterCaption'));
 
         setIsSubmitting(true);
         try {
@@ -375,11 +378,11 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
             });
 
             if (response.data.success) {
-                toast.success('Post muvaffaqiyatli yaratildi! +30 ball');
+                toast.success(t('styleFeed.postCreated'));
                 onSuccess();
             }
         } catch (error) {
-            toast.error('Xatolik yuz berdi');
+            toast.error(t('styleFeed.error'));
         } finally {
             setIsSubmitting(false);
         }
@@ -426,7 +429,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
                             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <Upload className="w-6 h-6 text-[#d6b47c]" />
                             </div>
-                            <p className="font-semibold text-gray-300">Rasm yuklang</p>
+                            <p className="font-semibold text-gray-300">{t('styleFeed.uploadImage')}</p>
                             <p className="text-xs text-gray-600 mt-2">Kiyimlaringiz kiygan obrazingizni ko'rsating</p>
                         </div>
                     )}
@@ -442,17 +445,17 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
 
                     <div className="space-y-6 flex-1">
                         <div>
-                            <label className="block text-xs uppercase tracking-[0.2em] text-[#d6b47c] font-bold mb-3">Tavsif</label>
+                            <label className="block text-xs uppercase tracking-[0.2em] text-[#d6b47c] font-bold mb-3">{t('styleFeed.caption')}</label>
                             <textarea 
                                 value={caption}
                                 onChange={(e) => setCaption(e.target.value)}
                                 className="w-full bg-[#1a1a1a] border border-white/5 rounded-2xl p-4 text-sm focus:border-[#d6b47c]/50 focus:ring-0 outline-none transition-all resize-none h-32"
-                                placeholder="Obrazingiz haqida yozing..."
+                                placeholder={t('styleFeed.captionPlaceholder')}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-xs uppercase tracking-[0.2em] text-[#d6b47c] font-bold mb-3">Mahsulotlarni belgilash (Tag)</label>
+                            <label className="block text-xs uppercase tracking-[0.2em] text-[#d6b47c] font-bold mb-3">{t('styleFeed.tagProducts')}</label>
                             <div className="relative mb-4">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                                 <input 
@@ -460,7 +463,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-[#1a1a1a] border border-white/5 rounded-full pl-12 pr-4 py-3 text-sm focus:border-[#d6b47c]/50 outline-none"
-                                    placeholder="Mahsulot qidirish..."
+                                    placeholder={t('styleFeed.searchProducts')}
                                 />
                             </div>
 
@@ -510,7 +513,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
                             disabled={isSubmitting || isUploading}
                             className="w-full py-4 bg-[#d6b47c] text-[#0a0a0a] rounded-full font-black text-sm uppercase tracking-widest hover:bg-[#e8c98a] transition-all disabled:opacity-50"
                         >
-                            {isSubmitting ? 'Tayyorlanmoqda...' : 'Postni ulashish'}
+                            {isSubmitting ? 'Tayyorlanmoqda...' : t('styleFeed.sharePost')}
                         </button>
                     </div>
                 </div>
@@ -526,7 +529,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth 
     );
 };
 
-const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdmin, token, isAuthenticated }) => {
+const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdmin, token, isAuthenticated, t }) => {
     const navigate = useNavigate();
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
@@ -554,7 +557,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
 
     const handleAddComment = async (e) => {
         e.preventDefault();
-        if (!isAuthenticated) return toast.error('Izoh qoldirish uchun tizimga kiring');
+        if (!isAuthenticated) return toast.error(t('styleFeed.loginToComment'));
         if (!newComment.trim()) return;
 
         setIsSubmittingComment(true);
@@ -567,10 +570,10 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
             if (response.data.success) {
                 setComments([...comments, response.data.data]);
                 setNewComment('');
-                toast.success('Izoh qo\'shildi');
+                toast.success(t('styleFeed.commentAdded'));
             }
         } catch (error) {
-            toast.error('Xatolik yuz berdi');
+            toast.error(t('styleFeed.error'));
         } finally {
             setIsSubmittingComment(false);
         }
@@ -588,7 +591,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                 toast.success('Izoh o\'chirildi');
             }
         } catch (error) {
-            toast.error('Xatolik yuz berdi');
+            toast.error(t('styleFeed.error'));
         }
     };
 
@@ -667,7 +670,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
 
                         {/* Comments Section */}
                         <div className="space-y-6">
-                            <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">Izohlar ({comments.length})</h4>
+                            <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">{t('styleFeed.comments')} ({comments.length})</h4>
                             
                             {isLoadingComments ? (
                                 <div className="flex justify-center py-4">
@@ -697,7 +700,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                                         </div>
                                     ))}
                                     {comments.length === 0 && (
-                                        <p className="text-xs text-gray-600 text-center py-4 italic">Hozircha izohlar yo'q</p>
+                                        <p className="text-xs text-gray-600 text-center py-4 italic">{t('styleFeed.noComments')}</p>
                                     )}
                                 </div>
                             )}
@@ -712,7 +715,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                                 className="flex items-center gap-2 group"
                             >
                                 <Heart className={`w-6 h-6 transition-all ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-white group-hover:text-red-400'}`} />
-                                <span className="font-bold text-sm">{post.likes?.length || 0} ta layk</span>
+                                <span className="font-bold text-sm">{post.likes?.length || 0} {t('styleFeed.likesCount')}</span>
                             </button>
                             <div className="text-[10px] text-gray-500 uppercase tracking-widest">
                                 Obraz ulashildi
@@ -724,7 +727,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                                 type="text"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Izoh qoldiring..."
+                                placeholder={t('styleFeed.leaveComment')}
                                 className="w-full bg-[#1a1a1a] border border-white/5 rounded-full py-3 pl-5 pr-12 text-xs focus:border-[#d6b47c]/50 outline-none transition-all"
                             />
                             <button 

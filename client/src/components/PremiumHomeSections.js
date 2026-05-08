@@ -2,16 +2,12 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Crown, Shield, ShoppingBag, Gem, Star, Truck } from 'lucide-react';
 import { useProducts } from '../contexts/ProductContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { ProductGridSkeleton } from './ProductCardSkeleton';
 import LookDetailModal from './LookDetailModal';
 import useProductService from '../server/server';
 
 const CUSTOMER_NAMES = ['Madina R.', 'Aziza K.', 'Sevinch T.'];
-
-const formatPrice = (price) => {
-  if (typeof price !== 'number') return 'Narx mavjud emas';
-  return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} so'm`;
-};
 
 const getProductImage = (product) => {
   return product?.image || product?.images?.[0] || '/hero.jpg';
@@ -32,7 +28,13 @@ const uniqueById = (items) => {
 const PremiumHomeSections = () => {
   const { products, isLoading } = useProducts();
   const { getAllLooks } = useProductService();
+  const { t } = useLanguage();
   const [looks, setLooks] = useState([]);
+
+  const formatPrice = (price) => {
+    if (typeof price !== 'number') return t('premiumHome.priceUnavailable');
+    return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} ${t('common.sum')}`;
+  };
 
   useEffect(() => {
     const fetchLooks = async () => {
@@ -102,9 +104,9 @@ const PremiumHomeSections = () => {
   const customerVoices = useMemo(() => {
     const source = uniqueById([...bestsellerProducts, ...newestProducts]).slice(0, 3);
     const customQuotes = [
-      "Bu yerda haqiqatan ham noyob va sifatli kiyimlar bor. Har bir tafsilotga e'tibor qaratilgan. Men doimiy mijozman!",
-      "LUXX.UZ dan olgan har bir kiyimim mening kutganimdan ham a'lo chiqdi. Sifati va dizayni haqiqatan ham premium darajada!",
-      "Mijozlarga xizmat ko'rsatish darajasi a'lo. Yetkazib berish tez va mahsulotlar sifatli. Tavsiya qilaman!"
+      t('premiumHome.quote1'),
+      t('premiumHome.quote2'),
+      t('premiumHome.quote3')
     ];
 
     return source.map((product, index) => ({
@@ -114,11 +116,10 @@ const PremiumHomeSections = () => {
       quote: customQuotes[index] || customQuotes[0],
       productName: product.name,
     }));
-  }, [bestsellerProducts, newestProducts]);
+  }, [bestsellerProducts, newestProducts, t]);
 
   const [activeLookId, setActiveLookId] = React.useState(null);
 
-  // Parse URL for look query param on mount
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const lookId = params.get('look');
@@ -144,7 +145,7 @@ const PremiumHomeSections = () => {
   return (
     <>
       {activeLookId && <LookDetailModal lookId={activeLookId} onClose={closeLook} />}
-      <section id="premium-home" className="bg-[#08090d] text-white">
+      <section id="premium-home" className="bg-transparent text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 space-y-16 md:space-y-20">
           <div className="relative overflow-hidden rounded-[2rem] border border-white/10">
             <img
@@ -159,25 +160,24 @@ const PremiumHomeSections = () => {
               <div className="space-y-6 max-w-xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3 py-1.5 text-xs tracking-wide uppercase">
                   <Gem className="w-3.5 h-3.5 text-amber-300" />
-                  Editorial Drop
+                  {t('premiumHome.editorialBadge')}
                 </div>
 
                 <h2 className="font-brilliant text-5xl md:text-7xl tracking-tight text-[#f4f1eb] flex flex-col gap-4">
-                  <span className="leading-none">Yangi</span>
-                  <span className="leading-none">Kolleksiya</span>
+                  <span className="leading-none">{t('premiumHome.newCollection')}</span>
+                  <span className="leading-none">{t('premiumHome.collection')}</span>
                   <span className="leading-none">2026</span>
                 </h2>
 
                 <p className="text-sm md:text-base text-neutral-200/90 max-w-lg">
-                  Premium fasonlar, cheklangan drop va mukammal tikuv sifati. Har bir detal
-                  ko'cha modasidan emas, podium kayfiyatidan ilhomlangan.
+                  {t('premiumHome.editorialDesc')}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     className="inline-flex items-center gap-2 px-8 py-4 rounded-tr-[30px] rounded-bl-[30px] rounded-tl-none rounded-br-none border-2 border-black bg-white text-black font-semibold hover:bg-neutral-100 transition-colors"
                   >
-                    Ko'rish
+                    {t('premiumHome.view')}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
@@ -186,7 +186,7 @@ const PremiumHomeSections = () => {
                       to={`/lookbooks`}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-white/25 bg-black/25 text-white font-medium hover:bg-black/35 transition-colors"
                     >
-                      Lookbook item
+                      {t('premiumHome.lookbook')}
                       <ShoppingBag className="w-4 h-4" />
                     </Link>
                   )}
@@ -220,13 +220,13 @@ const PremiumHomeSections = () => {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Shop by style</p>
-                <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">Kategoriyalar</h3>
+                <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.categories')}</h3>
               </div>
               <Link
                 to="/products"
                 className="inline-flex items-center gap-2 text-sm text-[#f4f1eb] border border-white/20 rounded-full px-4 py-2 hover:bg-white/10 transition-colors"
               >
-                Hammasini ochish
+                {t('premiumHome.viewAllCategories')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -250,7 +250,7 @@ const PremiumHomeSections = () => {
                       <p className="text-sm text-neutral-300 mt-1">{category.count} ta model</p>
                     </div>
                     <span className="w-9 h-9 rounded-full border border-white/30 flex items-center justify-center bg-black/25">
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 w-4" />
                     </span>
                   </div>
                 </Link>
@@ -261,9 +261,9 @@ const PremiumHomeSections = () => {
           <section id="home-bestsellers" className="space-y-6">
             <div className="max-w-3xl">
               <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Top picks</p>
-              <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">Bestsellerlar</h3>
+              <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.bestsellers')}</h3>
               <p className="text-neutral-300 mt-3 text-sm md:text-base">
-                Eng ko'p tanlangan pozitsiyalar. Narx, fason va sifat balansida eng kuchli lineup.
+                {t('premiumHome.bestsellersDesc')}
               </p>
             </div>
 
@@ -305,7 +305,7 @@ const PremiumHomeSections = () => {
                           to={`/product/${product.id}`}
                           className="inline-flex items-center gap-1 text-sm text-neutral-200 hover:text-white transition-colors"
                         >
-                          Ko'rish
+                          {t('premiumHome.view')}
                           <ArrowRight className="w-4 h-4" />
                         </Link>
                       </div>
@@ -319,10 +319,9 @@ const PremiumHomeSections = () => {
           <section id="home-lookbook" className="space-y-8">
             <div className="max-w-3xl">
               <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Lookbook</p>
-              <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">Evening to Street stories</h3>
+              <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.lookbookTitle')}</h3>
               <p className="text-neutral-300 mt-3 text-sm md:text-base">
-                Bir nechta kayfiyat, bitta premium standart. Outfitlar orasida tez tanlash uchun
-                lookbook kadrlarini oldindan ko'rsatdik.
+                {t('premiumHome.lookbookDesc')}
               </p>
             </div>
 
@@ -341,10 +340,9 @@ const PremiumHomeSections = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/10 to-transparent" />
 
-                  {/* Shop The Look CTA */}
                   <div className="absolute top-4 right-4 z-10 translate-x-4 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
                     <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-black shadow-lg">
-                      Shop Look
+                      {t('premiumHome.shopLook')}
                       <ShoppingBag className="w-3 h-3" />
                     </span>
                   </div>
@@ -360,8 +358,8 @@ const PremiumHomeSections = () => {
 
             <div id="customer-voices" className="pt-2">
               <div className="flex items-end justify-between flex-wrap gap-4 mb-5">
-                <h4 className="text-2xl md:text-3xl font-semibold text-[#f4f1eb]">Mijozlar fikri</h4>
-                <p className="text-sm text-neutral-400">Lookbookdan keyingi real tajribalar</p>
+                <h4 className="text-2xl md:text-3xl font-semibold text-[#f4f1eb]">{t('premiumHome.customerVoices')}</h4>
+                <p className="text-sm text-neutral-400">{t('premiumHome.customerSubtitle')}</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {customerVoices.map((voice) => (
@@ -385,13 +383,13 @@ const PremiumHomeSections = () => {
 
           <section id="home-journey" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-7">
-              <h4 className="text-2xl font-semibold text-[#f4f1eb]">Xarid jarayoni</h4>
+              <h4 className="text-2xl font-semibold text-[#f4f1eb]">{t('premiumHome.journeyTitle')}</h4>
               <div className="mt-6 space-y-4">
                 {[
-                  { title: '01. Kolleksiyani kashf qiling', desc: 'Nafis kategoriyalar va lookbook orqali mos uslubni toping.' },
-                  { title: '02. Variantni belgilang', desc: 'Rang, o\'lcham va detalni bir oynada tanlab chiqing.' },
-                  { title: '03. Tez checkout', desc: 'Minimal qadam bilan buyurtmani tasdiqlang.' },
-                  { title: '04. Yetkazib berish', desc: 'Buyurtma holatini profile va bildirishnomalarda kuzating.' },
+                  { title: `01. ${t('premiumHome.journeyDiscover')}`, desc: t('premiumHome.journeyDiscoverDesc') },
+                  { title: `02. ${t('premiumHome.journeySelect')}`, desc: t('premiumHome.journeySelectDesc') },
+                  { title: `03. ${t('premiumHome.journeyCheckout')}`, desc: t('premiumHome.journeyCheckoutDesc') },
+                  { title: `04. ${t('premiumHome.journeyDelivery')}`, desc: t('premiumHome.journeyDeliveryDesc') },
                 ].map((step) => (
                   <div key={step.title} className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3.5">
                     <p className="text-sm font-semibold text-[#f4f1eb]">{step.title}</p>
@@ -402,23 +400,23 @@ const PremiumHomeSections = () => {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-7">
-              <h4 className="text-2xl font-semibold text-[#f4f1eb]">Nega Luxx.uz</h4>
+              <h4 className="text-2xl font-semibold text-[#f4f1eb]">{t('premiumHome.whyLuxx')}</h4>
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
                   <Shield className="w-5 h-5 text-emerald-300" />
-                  <p className="mt-3 font-semibold text-[#f4f1eb]">Sifat nazorati</p>
-                  <p className="text-sm text-neutral-300 mt-1">Har model tekshiruvdan o'tib keyin vitrinaga chiqadi.</p>
+                  <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.qualityControl')}</p>
+                  <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.qualityControlDesc')}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
                   <Truck className="w-5 h-5 text-sky-300" />
-                  <p className="mt-3 font-semibold text-[#f4f1eb]">Tez logistika</p>
-                  <p className="text-sm text-neutral-300 mt-1">Buyurtma atigi 3 soat ichida yetkazib beriladi.</p>
+                  <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.fastLogistics')}</p>
+                  <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.fastLogisticsDesc')}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/25 p-4 sm:col-span-2">
                   <Crown className="w-5 h-5 text-amber-300" />
-                  <p className="mt-3 font-semibold text-[#f4f1eb]">Premium ko'rinish</p>
+                  <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.premiumLook')}</p>
                   <p className="text-sm text-neutral-300 mt-1">
-                    Barcha kiyimlar PREMIUM darajada sifatli va original.
+                    {t('premiumHome.premiumLookDesc')}
                   </p>
                 </div>
               </div>

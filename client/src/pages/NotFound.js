@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NotFound = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
   const isMobile = location.pathname.startsWith('/mobile');
 
   const goBack = () => {
@@ -215,9 +217,9 @@ const NotFound = () => {
         </div>
 
         <div className="page-message">
-          <p className="message-text">Oops, sahifa topilmadi!</p>
+          <p className="message-text">{t('notFound.message')}</p>
           <button className="go-back-btn" onClick={goBack}>
-            Bosh sahifaga
+            {t('notFound.goHome')}
           </button>
         </div>
       </div>

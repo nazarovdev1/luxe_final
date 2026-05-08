@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNotifications } from '../../contexts/NotificationContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import useProductService from '../../server/server';
 import toast from 'react-hot-toast';
 import {
@@ -18,7 +19,9 @@ import {
     ArrowLeft,
     MessageCircle,
     Mail,
-    Clock,
+    Gift,
+    MessageSquare,
+    Globe,
     Star,
     Heart,
     Bell,
@@ -59,6 +62,7 @@ const formatMoney = (value) => {
 };
 
 const MobileProfile = () => {
+    const { t } = useLanguage();
     const { isAuthenticated, user, logout } = useAuth();
     const { favorites, toggleFavorite } = useFavorites();
     const { products } = useProducts();
@@ -137,8 +141,8 @@ const MobileProfile = () => {
     }
 
     const menuItems = [
-        { id: 'orders', label: 'Buyurtmalarim', icon: ShoppingBag, subtitle: 'Holat va tarix' },
-        { id: 'saved', label: 'Saqlangan', icon: Heart, subtitle: 'Wishlist', count: favorites.length },
+        { id: 'orders', label: t('profile.myOrders'), icon: ShoppingBag, subtitle: t('profile.orderHistory') },
+        { id: 'saved', label: t('profile.saved'), icon: Heart, subtitle: 'Wishlist', count: favorites.length },
         { id: 'vip', label: 'VIP Club', icon: Crown, subtitle: 'Ball va imtiyozlar', isLink: true, linkTo: '/mobile/vip-club', color: '#d6b47c' },
         { id: 'eco', label: 'Eco Impact', icon: Leaf, subtitle: 'Tabiatga hissam', isLink: true, linkTo: '/mobile/eco-impact', color: '#4ade80' },
         { id: 'live', label: 'Jonli Efirlar', icon: Radio, subtitle: 'Live Commerce', isLink: true, linkTo: '/mobile/live', color: '#ef4444' },
@@ -147,6 +151,8 @@ const MobileProfile = () => {
         { id: 'notifications', label: 'Xabarnomalar', icon: Bell, subtitle: 'Push status', isNotification: true },
         { id: 'contact', label: "Biz bilan bog'lanish", icon: Phone, subtitle: 'Support markazi' },
         { id: 'faq', label: "Ko'p beriladigan savollar", icon: HelpCircle, subtitle: 'Tez javoblar' },
+        { id: 'gift-cards', label: "Sovg'a kartalari", icon: Gift, subtitle: 'Mening kartalarim', color: '#fb923c' },
+        { id: 'blog', label: 'Fashion Blog', icon: MessageSquare, subtitle: 'Trendlar va stil', isLink: true, linkTo: '/mobile/blog', color: '#f472b6' },
         { id: 'about', label: 'Biz haqimizda', icon: Info, subtitle: 'Brand hikoyasi' },
         { id: 'privacy', label: 'Maxfiylik siyosati', icon: Shield, subtitle: 'Shaxsiy ma\'lumotlar', isLink: true, linkTo: '/mobile/privacy-policy' },
         { id: 'terms', label: 'Foydalanish shartlari', icon: FileText, subtitle: 'Qoidalar', isLink: true, linkTo: '/mobile/terms' },
@@ -191,7 +197,7 @@ const MobileProfile = () => {
 
                         <div className="mt-4 grid grid-cols-3 gap-2">
                             <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
-                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">Buyurtma</p>
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('profile.orders')}</p>
                                 <p className="mt-1 text-sm font-semibold text-white">{orders.length}</p>
                             </div>
                             <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
@@ -216,7 +222,7 @@ const MobileProfile = () => {
                                 </span>
                                 <div className="text-left">
                                     <p className="text-sm font-semibold text-white">Admin Panel</p>
-                                    <p className="text-xs text-gray-400">Boshqaruv markazi</p>
+                                    <p className="text-xs text-gray-400">{t('profile.adminCenter')}</p>
                                 </div>
                             </div>
                             <ChevronRight className="h-5 w-5 text-gray-500" />
@@ -306,7 +312,7 @@ const MobileProfile = () => {
                                 <ArrowLeft className="w-5 h-5 text-gray-300" />
                             </button>
                             <div className="text-center">
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black">Buyurtma Tafsiloti</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black">{t('profile.orderDetails')}</p>
                                 <p className="text-sm font-bold text-[#d6b47c]">#{selectedOrder._id.slice(-6).toUpperCase()}</p>
                             </div>
                             <div className="w-10" />
@@ -355,23 +361,23 @@ const MobileProfile = () => {
                                     <span className="text-white font-bold">{formatMoney(selectedOrder.totals?.subtotal)} UZS</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Yetkazib berish</span>
-                                    <span className="text-[#4ade80] font-bold">Bepul</span>
+                                    <span className="text-gray-500">{t('checkoutPage.delivery')}</span>
+                                    <span className="text-[#4ade80] font-bold">{t('checkoutPage.free')}</span>
                                 </div>
                                 <div className="h-px bg-white/5" />
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-black uppercase tracking-widest text-[#d6b47c]">Jami</span>
+                                    <span className="text-sm font-black uppercase tracking-widest text-[#d6b47c]">{t('common.total')}</span>
                                     <span className="text-xl font-black text-white">{formatMoney(selectedOrder.totals?.total)} UZS</span>
                                 </div>
                             </div>
 
                             <div className="mt-8 space-y-4">
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Yetkazib berish manzili</p>
+                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">{t('checkoutPage.step2')}</p>
                                     <p className="text-sm text-gray-300 italic leading-relaxed">"{selectedOrder.shippingAddress || 'Manzil ko\'rsatilmagan'}"</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Telefon raqam</p>
+                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">{t('checkoutPage.phone')}</p>
                                     <p className="text-sm text-gray-300">{selectedOrder.phoneNumber || user?.phone || 'Mavjud emas'}</p>
                                 </div>
                             </div>
@@ -388,7 +394,7 @@ const MobileProfile = () => {
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Xaridlar Tarixi</span>
                     </div>
                     <h1 className="text-4xl font-brilliant text-white leading-none">
-                        Mening <span className="text-[#d6b47c]">Buyurtmalarim</span>
+                        {t('profile.myOrders')}
                     </h1>
                 </div>
 
@@ -466,7 +472,7 @@ const MobileProfile = () => {
 
                                 <div className="relative z-10 flex items-center justify-between pt-4 border-t border-white/5">
                                     <div className="flex flex-col">
-                                        <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">Jami summa</p>
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">{t('checkoutPage.total')}</p>
                                         <p className="text-lg font-black text-white">
                                             {formatMoney(order.totals?.total || 0)} <span className="text-xs text-[#d6b47c]">UZS</span>
                                         </p>
@@ -524,7 +530,7 @@ const MobileProfile = () => {
                                 <div className="p-2.5">
                                     <h3 className="line-clamp-1 text-sm font-medium text-white">{product.name}</h3>
                                     <p className="mt-1 text-sm font-semibold text-white">
-                                        {formatMoney(product.price)} so'm
+                                        {formatMoney(product.price)} {t('common.sum')}
                                     </p>
                                 </div>
                             </Link>
@@ -582,6 +588,16 @@ const MobileProfile = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+        );
+    }
+
+    if (activeSection === 'gift-cards') {
+        return (
+            <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
+                <BackButton />
+                <h2 className="mb-4 text-xl font-semibold text-white">Mening sovg'a kartalarim</h2>
+                <MyGiftCards />
             </div>
         );
     }

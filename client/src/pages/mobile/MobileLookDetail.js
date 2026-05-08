@@ -13,13 +13,14 @@ import {
 import toast from 'react-hot-toast';
 import { useProducts } from '../../contexts/ProductContext';
 import { useCart } from '../../contexts/CartContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') {
     return '';
   }
 
-  return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} so'm`;
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
 const getSizes = (product) =>
@@ -57,7 +58,7 @@ const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct })
           <h3 className="text-sm font-medium text-[#f4efe7] line-clamp-1">{product.name}</h3>
 
           <div className="flex items-center justify-between mt-2">
-            <p className="text-sm font-semibold text-[#d6b47c]">{formatPrice(product.price)}</p>
+            <p className="text-sm font-semibold text-[#d6b47c]">{formatPrice(product.price)} {t('common.sum')}</p>
             <button
               type="button"
               onClick={() => onOpenProduct(product.id)}
@@ -143,6 +144,7 @@ const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct })
 };
 
 const MobileLookDetail = () => {
+  const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const { products } = useProducts();
@@ -446,8 +448,8 @@ const MobileLookDetail = () => {
       <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pt-3 pb-[calc(0.9rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-[#070b13] via-[#070b13]/95 to-transparent">
         <div className="rounded-2xl border border-white/10 bg-[#090f1c] p-3.5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-500">Jami narx</span>
-            <span className="text-lg font-semibold text-[#d6b47c]">{formatPrice(totalPrice)}</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-500">{t('common.total')}</span>
+            <span className="text-lg font-semibold text-[#d6b47c]">{formatPrice(totalPrice)} {t('common.sum')}</span>
           </div>
 
           <div className="grid grid-cols-[1fr_auto] gap-2.5">

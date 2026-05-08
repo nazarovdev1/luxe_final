@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, Package, Calendar, MapPin, ChevronRight, Search, Medal, Crown, Gem, RefreshCw, Eye, X, RotateCcw } from 'lucide-react';
+import { Phone, Package, Calendar, MapPin, ChevronRight, Search, Medal, Crown, Gem, RefreshCw, Eye, X, RotateCcw, Gift } from 'lucide-react';
 import axios from 'axios';
 import useProductService from '../server/server';
 import { Link, Navigate } from 'react-router-dom';
 
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import OrderTimeline from '../components/OrderTimeline';
 import ReturnRequestModal from '../components/ReturnRequestModal';
 import ReferralProgram from '../components/ReferralProgram';
+import MyGiftCards from '../components/MyGiftCards';
 
 const Profile = () => {
     const [orders, setOrders] = useState([]);
@@ -19,6 +21,7 @@ const Profile = () => {
     const [returnOrder, setReturnOrder] = useState(null);
     const { getMyOrders } = useProductService();
     const { user, isAuthenticated, logout } = useAuth();
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -67,22 +70,22 @@ const Profile = () => {
             <div className="relative z-10 max-w-5xl mx-auto">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl font-light text-white mb-4 tracking-tight">
-                        {isAuthenticated ? `Xush kelibsiz` : 'Mening Buyurtmalarim'}
+                        {isAuthenticated ? t('profile.welcome') : t('profile.myOrders')}
                     </h1>
                     <p className="text-gray-400 font-light text-lg">
                         {isAuthenticated
-                            ? 'Sizning barcha premium xaridlaringiz tarixi'
-                            : 'Telefon raqamingiz orqali buyurtmalaringizni kuzating'}
+                            ? t('profile.orderHistory')
+                            : t('profile.orderHistory')}
                     </p>
 
                     {!isAuthenticated && (
                         <div className="mt-8 flex justify-center items-center space-x-6 text-sm tracking-wide uppercase">
                             <Link to="/login" className="text-white hover:text-gray-300 transition-colors border-b border-white/20 pb-1">
-                                Kirish
+                                {t('profile.login')}
                             </Link>
                             <span className="text-gray-700">|</span>
                             <Link to="/register" className="text-white hover:text-gray-300 transition-colors border-b border-white/20 pb-1">
-                                Ro'yxatdan o'tish
+                                {t('profile.register')}
                             </Link>
                         </div>
                     )}
@@ -101,7 +104,7 @@ const Profile = () => {
                                             <Crown className="w-8 h-8" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-[#d6b47c] font-black uppercase tracking-widest mb-1">VIP Darajangiz</p>
+                                            <p className="text-xs text-[#d6b47c] font-black uppercase tracking-widest mb-1">{t('profile.vipStatus')}</p>
                                             <h3 className="text-3xl font-serif text-white">{points?.level || 'Bronze'}</h3>
                                         </div>
                                     </div>
@@ -188,6 +191,14 @@ const Profile = () => {
 
                             {/* Referral Program */}
                             <ReferralProgram user={user} />
+
+                            {/* My Gift Cards Section */}
+                            <div className="bg-[#111] border border-white/5 p-8 rounded-[32px] text-left">
+                                <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                                    <Gift className="w-3.5 h-3.5" /> Mening sovg'a kartalarim
+                                </p>
+                                <MyGiftCards />
+                            </div>
                         </div>
                     )}
                 </div>
@@ -230,8 +241,8 @@ const Profile = () => {
                         <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Package className="w-8 h-8 text-gray-400" />
                         </div>
-                        <h3 className="text-xl font-medium text-white mb-2">Buyurtmalar mavjud emas</h3>
-                        <p className="text-gray-500 font-light mb-8">Hozircha sizda hech qanday buyurtma yo'q</p>
+                        <h3 className="text-xl font-medium text-white mb-2">{t('profile.noOrders')}</h3>
+                        <p className="text-gray-500 font-light mb-8">{t('profile.noOrders')}</p>
                         <Link to="/" className="inline-flex items-center gap-2 text-white border-b border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-colors uppercase text-sm tracking-widest">
                             Xaridni boshlash <ChevronRight className="w-4 h-4" />
                         </Link>
@@ -266,7 +277,7 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">Umumiy qiymat</p>
+                                    <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">{t('checkoutPage.total')}</p>
                                     <p className="text-2xl font-light text-white">
                                         {(order.totals?.total || order.totalAmount || 0).toLocaleString()} <span className="text-sm text-gray-500 font-normal">so'm</span>
                                     </p>
@@ -317,7 +328,7 @@ const Profile = () => {
                                     <MapPin className="w-5 h-5 text-gray-300" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-gray-300 font-medium mb-1">Yetkazib berish manzili</p>
+                                    <p className="text-gray-300 font-medium mb-1">{t('checkoutPage.step2')}</p>
                                     <p className="text-gray-500 text-sm font-light leading-relaxed max-w-lg">{order.customer.address}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -327,7 +338,7 @@ const Profile = () => {
                                             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/10 hover:border-white/20 transition-all"
                                         >
                                             <RotateCcw className="w-4 h-4" />
-                                            Qaytarish
+                                            {t('returnRequest.title')}
                                         </button>
                                     )}
                                     <button
@@ -335,7 +346,7 @@ const Profile = () => {
                                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[#d6b47c] text-sm font-medium hover:bg-[#d6b47c]/20 hover:border-[#d6b47c]/30 transition-all"
                                     >
                                         <Eye className="w-4 h-4" />
-                                        Kuzatish
+                                        {t('common.track')}
                                     </button>
                                 </div>
                             </div>

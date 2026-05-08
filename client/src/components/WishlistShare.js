@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Share2, Copy, CheckCircle, Eye, Heart, X, Link2, Gift } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
+const WishlistShare = ({ favorites = [], userName }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareMethod, setShareMethod] = useState(null);
   const [shareAsGiftList, setShareAsGiftList] = useState(false);
+  const { t } = useLanguage();
 
   const wishlistCode = Buffer.from(`wl_${Date.now()}`).toString('base64').slice(0, 10).toLowerCase();
   const shareUrl = `${window.location.origin}/wishlist/${wishlistCode}`;
@@ -50,7 +52,7 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[#d6b47c] text-sm font-medium hover:bg-[#d6b47c]/20 hover:border-[#d6b47c]/30 transition-all"
       >
         <Share2 className="w-4 h-4" />
-        Ulashish
+        {t('referralProgram.share')}
       </button>
 
       {/* Modal */}
@@ -65,8 +67,8 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
                   <Heart className="w-5 h-5 text-[#d6b47c]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#f4f1eb]">Sevimlilarim</h3>
-                  <p className="text-[11px] text-[#9aa3b2]">{itemCount} ta mahsulot</p>
+                  <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('wishlistShare.title')}</h3>
+                  <p className="text-[11px] text-[#9aa3b2]">{itemCount} {t('wishlistShare.itemCount')}</p>
                 </div>
               </div>
               <button
@@ -85,8 +87,8 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
                     {displayName.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#f4f1eb]">{displayName} ning tanlovlari</p>
-                    <p className="text-[10px] text-[#9aa3b2]">LUXX.UZ premium kolleksiyadan</p>
+                    <p className="text-sm font-semibold text-[#f4f1eb]">{displayName} {t('wishlistShare.userSelections')}</p>
+                    <p className="text-[10px] text-[#9aa3b2]">{t('wishlistShare.fromCollection')}</p>
                   </div>
                 </div>
                 {/* Mini product grid */}
@@ -115,8 +117,8 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
                 <div className="flex items-center gap-3">
                   <Gift className="w-4 h-4 text-[#d6b47c]" />
                   <div>
-                    <p className="text-xs font-medium text-[#f4f1eb]">Sovg'a ro'yxati sifatida</p>
-                    <p className="text-[10px] text-[#9aa3b2]">Do'stlaringizga sovg'a sifatida ko'rsating</p>
+                    <p className="text-xs font-medium text-[#f4f1eb]">{t('wishlistShare.asGiftList')}</p>
+                    <p className="text-[10px] text-[#9aa3b2]">{t('wishlistShare.asGiftListDesc')}</p>
                   </div>
                 </div>
                 <button
@@ -129,7 +131,7 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
 
               {/* Share Link */}
               <div>
-                <p className="text-xs text-[#9aa3b2] mb-2">Havola</p>
+                <p className="text-xs text-[#9aa3b2] mb-2">{t('wishlistShare.link')}</p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-[#0d1423] border border-white/5 overflow-hidden">
                     <Link2 className="w-4 h-4 text-[#d6b47c] flex-shrink-0" />
@@ -150,7 +152,7 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
 
               {/* Share Buttons */}
               <div>
-                <p className="text-xs text-[#9aa3b2] mb-2">Yoki orqali ulashing</p>
+                <p className="text-xs text-[#9aa3b2] mb-2">{t('wishlistShare.shareVia')}</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleShare('telegram')}
@@ -187,7 +189,7 @@ const WishlistShare = ({ favorites = [], userName = 'Foydalanuvchi' }) => {
                     }`}
                   >
                     {shareMethod === 'copy' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    {shareMethod === 'copy' ? 'Nusxalandi!' : 'Matn nusxa'}
+                    {shareMethod === 'copy' ? t('common.copied') : t('wishlistShare.link')}
                   </button>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import {
     ArrowLeft, MapPin, Phone, User, CreditCard,
@@ -83,10 +84,11 @@ const InputField = ({ label, icon: Icon, ...props }) => (
 
 
 const MobileCheckout = () => {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const { items, getCartTotal, clearCart } = useCart();
     const { user, isAuthenticated, loading } = useAuth();
-    const { createOrder, validatePromo } = useProductService();
+    const { createOrder, validatePromo, validateGiftCard } = useProductService();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentStep, setCurrentStep] = useState(1); // 1: Info, 2: Address, 3: Payment
     const [mounted, setMounted] = useState(false);
@@ -123,7 +125,10 @@ const MobileCheckout = () => {
 
     const discountAmount = useMemo(() => {
         if (appliedPromo) {
-            return (total * appliedPromo.discountPercentage) / 100;
+            if (appliedPromo.type === 'giftcard') {
+                return appliedPromo.discountAmount || 0;
+            }
+            return (total * (appliedPromo.discountPercentage || 0)) / 100;
         }
         return 0;
     }, [total, appliedPromo]);
@@ -140,19 +145,46 @@ const MobileCheckout = () => {
         if (!normalizedCode) return;
 
         setIsValidatingPromo(true);
+        let lastErrorMessage = "Promokod yoki kupon yaroqsiz";
+
         try {
+            // 1. Try generic promo
             const result = await validatePromo(normalizedCode);
             if (result.success) {
                 setAppliedPromo({
                     code: result.code,
-                    discountPercentage: result.discountPercentage
+                    discountPercentage: result.discountPercentage,
+                    type: 'percentage'
                 });
                 setPromoCode(result.code);
                 toast.success(`Promokod qo'llanildi: -${result.discountPercentage}% chegirma!`);
-            } else {
-                setAppliedPromo(null);
-                toast.error(result.message || "Promokod yaroqsiz");
+                setIsValidatingPromo(false);
+                return;
+            } else if (result.message && !result.message.includes('mavjud emas')) {
+                lastErrorMessage = result.message;
             }
+
+            // 2. Try gift card
+            const giftCardResult = await validateGiftCard(normalizedCode);
+
+            if (giftCardResult.success) {
+                setAppliedPromo({
+                    code: giftCardResult.code,
+                    discountAmount: giftCardResult.amount,
+                    discountPercentage: 0,
+                    type: 'giftcard'
+                });
+                setPromoCode(giftCardResult.code);
+                toast.success(`${t('common.giftCardApplied')}! ${giftCardResult.amount.toLocaleString()} ${t('common.sum')}`);
+                setIsValidatingPromo(false);
+                return;
+            } else if (giftCardResult.message && !giftCardResult.message.includes('mavjud emas')) {
+                lastErrorMessage = giftCardResult.message;
+            }
+
+            // 3. Fallback error
+            setAppliedPromo(null);
+            toast.error(lastErrorMessage);
         } catch (error) {
             toast.error('Tekshirishda xatolik yuz berdi');
         } finally {
@@ -192,24 +224,31 @@ const MobileCheckout = () => {
             }
 
             let verifiedPromo = appliedPromo;
-            if (appliedPromo?.code) {
-                const promoValidation = await validatePromo(appliedPromo.code);
-                if (!promoValidation.success) {
-                    setAppliedPromo(null);
-                    toast.error("Promokod hozir yaroqsiz. Qayta tekshirib ko'ring");
-                    return;
-                }
+            let verifiedDiscountAmount = 0;
 
-                verifiedPromo = {
-                    code: promoValidation.code,
-                    discountPercentage: promoValidation.discountPercentage
-                };
+            if (appliedPromo?.code) {
+                if (appliedPromo.type === 'giftcard') {
+                    const giftCardValidation = await validateGiftCard(appliedPromo.code);
+                    if (!giftCardValidation.success) {
+                        setAppliedPromo(null);
+                        toast.error("Sovg'a kartasi hozir yaroqsiz");
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    verifiedDiscountAmount = giftCardValidation.amount;
+                } else {
+                    const promoValidation = await validatePromo(appliedPromo.code);
+                    if (!promoValidation.success) {
+                        setAppliedPromo(null);
+                        toast.error("Promokod hozir yaroqsiz");
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    verifiedDiscountAmount = (total * promoValidation.discountPercentage) / 100;
+                }
                 setAppliedPromo(verifiedPromo);
             }
 
-            const verifiedDiscountAmount = verifiedPromo
-                ? (total * verifiedPromo.discountPercentage) / 100
-                : 0;
             const verifiedFinalTotal = Math.max(total - verifiedDiscountAmount, 0);
 
             const orderData = {
@@ -339,7 +378,7 @@ const MobileCheckout = () => {
                                 <span className="font-serif italic text-amber-500 mr-2">Shaxsiy</span>
                                 ma'lumotlar
                             </h2>
-                            <p className="text-gray-500 text-sm">Buyurtma uchun aloqa ma'lumotlaringizni kiriting</p>
+                            <p className="text-gray-500 text-sm">{t('checkoutPage.step1')}</p>
                         </div>
 
                         <div className="space-y-5">
@@ -377,8 +416,7 @@ const MobileCheckout = () => {
                     <div className="px-5 py-8 space-y-6 animate-fade-in-up">
                         <div className="text-center space-y-2">
                             <h2 className="text-3xl font-light tracking-tight">
-                                <span className="font-serif italic text-amber-500 mr-2">Yetkazib</span>
-                                berish
+                                <span className="font-serif italic text-amber-500 mr-2">{t('checkoutPage.delivery')}</span>
                             </h2>
                             <p className="text-gray-500 text-sm">Manzilingizni xaritadan aniq belgilang</p>
                         </div>
@@ -499,7 +537,11 @@ const MobileCheckout = () => {
                                                 <ShieldCheck className="w-3.5 h-3.5" />
                                                 {appliedPromo.code}
                                             </p>
-                                            <p className="text-gray-400 text-xs mt-1">-{appliedPromo.discountPercentage}% chegirma faol</p>
+                                            <p className="text-gray-400 text-xs mt-1">
+                                                {appliedPromo.type === 'giftcard'
+                                                    ? `-${appliedPromo.discountAmount.toLocaleString()} ${t('common.sum')} ${t('common.discount')}`
+                                                    : `-${appliedPromo.discountPercentage}% ${t('common.discount')}`}
+                                            </p>
                                         </div>
                                         <button
                                             onClick={handleRemovePromo}
@@ -530,24 +572,24 @@ const MobileCheckout = () => {
 
                             <div className="flex justify-between items-end border-b border-white/5 pb-4">
                                 <div className="space-y-1 w-full relative">
-                                    <p className="text-gray-500 text-xs uppercase tracking-wider">Jami summa</p>
+                                    <p className="text-gray-500 text-xs uppercase tracking-wider">{t('checkoutPage.total')}</p>
 
                                     {appliedPromo && (
                                         <div className="flex items-center justify-between text-sm py-1">
-                                            <span className="text-gray-400">Mahsulot</span>
-                                            <span className="text-gray-400 line-through">{total.toLocaleString()} so'm</span>
+                                            <span className="text-gray-400">{t('common.price')}</span>
+                                            <span className="text-gray-400 line-through">{total.toLocaleString()} {t('common.sum')}</span>
                                         </div>
                                     )}
 
                                     {appliedPromo && (
                                         <div className="flex items-center justify-between text-sm py-1">
-                                            <span className="text-amber-500">Chegirma</span>
-                                            <span className="text-amber-500">-{discountAmount.toLocaleString()} so'm</span>
+                                            <span className="text-amber-500">{t('common.discount')}</span>
+                                            <span className="text-amber-500">-{discountAmount.toLocaleString()} {t('common.sum')}</span>
                                         </div>
                                     )}
 
                                     <div className="flex items-center justify-between pt-1">
-                                        <p className="text-2xl font-light text-white">{finalTotal.toLocaleString()} <span className="text-sm text-gray-400">so'm</span></p>
+                                        <p className="text-2xl font-light text-white">{finalTotal.toLocaleString()} <span className="text-sm text-gray-400">{t('common.sum')}</span></p>
                                         <ShieldCheck className="w-5 h-5 text-gray-700 absolute right-0 bottom-2" />
                                     </div>
                                 </div>
@@ -614,7 +656,7 @@ const MobileCheckout = () => {
                             <span className="animate-pulse">Bajarilmoqda...</span>
                         ) : (
                             <>
-                                {currentStep === 3 ? "To'lov qilish" : "Davom etish"}
+                                {currentStep === 3 ? t('checkoutPage.placeOrder') : t('checkoutPage.next')}
                                 <ArrowLeft className="w-4 h-4 rotate-180" />
                             </>
                         )}

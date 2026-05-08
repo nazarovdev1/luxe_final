@@ -81,10 +81,9 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8 border-b border-white/5 pb-8">
-      <h3 className="mb-4 text-base font-medium text-white">Fikr bildirish</h3>
-
-      <div className="mb-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#f5f5f3] mb-6">O'z fikringizni qoldiring</h3>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -93,10 +92,10 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}
               onClick={() => setRating(star)}
-              className="group focus:outline-none"
+              className="group transition-transform active:scale-90"
             >
               <Star
-                className={`h-6 w-6 transition-all ${star <= (hoveredRating || rating) ? 'fill-[#d6b47c] text-[#d6b47c]' : 'text-neutral-600 group-hover:text-neutral-500'}`}
+                className={`h-6 w-6 transition-all duration-300 ${star <= (hoveredRating || rating) ? 'fill-[#c9a96e] text-[#c9a96e] drop-shadow-[0_0_8px_rgba(201,169,110,0.4)]' : 'text-white/10 group-hover:text-white/20'}`}
                 strokeWidth={1.5}
               />
             </button>
@@ -104,21 +103,21 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
         </div>
       </div>
 
-      <div className="mb-4">
+      <div>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          className="h-28 w-full resize-none rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-[#f4f1eb] placeholder-neutral-500 outline-none focus:border-[#d6b47c]/50 focus:bg-black/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.2)] transition-all"
-          placeholder="Mahsulot haqida fikringiz..."
+          className="h-32 w-full resize-none rounded-2xl border border-white/5 bg-white/[0.02] p-5 text-sm text-[#f5f5f3] placeholder-[#6b6b6e] outline-none focus:border-[#c9a96e]/30 focus:bg-white/[0.04] transition-all duration-500"
+          placeholder="Mahsulot haqida taassurotlaringizni yozing..."
         />
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-2xl bg-[#f4f1eb] py-3.5 text-xs font-bold uppercase tracking-widest text-[#0a1220] transition-all hover:bg-white hover:-translate-y-0.5 shadow-lg disabled:opacity-50 disabled:hover:translate-y-0"
+        className="w-full rounded-2xl bg-[#c9a96e] py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#0a0a0b] transition-all hover:bg-[#d4b87a] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 shadow-[0_10px_20px_rgba(201,169,110,0.15)]"
       >
-        {isSubmitting ? 'Yuborilmoqda...' : 'Yuborish'}
+        {isSubmitting ? 'Yuborilmoqda...' : 'Sharhni yuborish'}
       </button>
     </form>
   );

@@ -3,6 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Crown, Star, Zap, Trophy, Gift, ShieldCheck, Truck, Unlock, ChevronRight, Flame, Medal, History, Gem } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,17 +77,18 @@ const VIP_TIERS = [
 ];
 
 const HOW_TO_EARN = [
-  { icon: <ShieldCheck className="w-5 h-5" />, action: 'Xarid qilish', points: '+3 ball / 10 000 so\'m', desc: 'Har bir xariddan ball to\'plang' },
-  { icon: <Unlock className="w-5 h-5" />, action: 'Ro\'yxatdan o\'tish', points: '+30 ball', desc: 'Yangi hisob ochganingiz uchun' },
-  { icon: <Star className="w-5 h-5" />, action: 'Izoh qoldirish', points: '+20 ball', desc: 'Mahsulotlarga sharh yozing' },
-  { icon: <Trophy className="w-5 h-5" />, action: 'Musobaqada g\'alaba', points: '(Musobaqada belgilangan ballga qarab beriladi)', desc: 'Style Challenge\'da g\'olib bo\'ling' },
-  { icon: <Zap className="w-5 h-5" />, action: 'Kunlik kirish', points: '+5 ball', desc: 'Har kuni saytga kiring' },
-  { icon: <Gift className="w-5 h-5" />, action: 'Tug\'ilgan kun', points: '+100 ball', desc: 'Tug\'ilgan kuningizda sovg\'a' },
+  { icon: <ShieldCheck className="w-5 h-5" />, actionKey: 'vip.purchase', points: '+3 ball / 10 000 so\'m', desc: 'Har bir xariddan ball to\'plang' },
+  { icon: <Unlock className="w-5 h-5" />, actionKey: 'vip.register', points: '+30 ball', desc: 'Yangi hisob ochganingiz uchun' },
+  { icon: <Star className="w-5 h-5" />, actionKey: 'vip.review', points: '+20 ball', desc: 'Mahsulotlarga sharh yozing' },
+  { icon: <Trophy className="w-5 h-5" />, actionKey: 'vip.challengeWin', points: '(Musobaqada belgilangan ballga qarab beriladi)', desc: 'Style Challenge\'da g\'olib bo\'ling' },
+  { icon: <Zap className="w-5 h-5" />, actionKey: 'vip.dailyLogin', points: '+5 ball', desc: 'Har kuni saytga kiring' },
+  { icon: <Gift className="w-5 h-5" />, actionKey: 'vip.birthday', points: '+100 ball', desc: 'Tug\'ilgan kuningizda sovg\'a' },
 ];
 
 const VIPClub = () => {
   const { isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [pointsData, setPointsData] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [badges, setBadges] = useState([]);
@@ -127,7 +129,7 @@ const VIPClub = () => {
     fetchData();
   }, [isAuthenticated, token]);
 
-  const currentTier = VIP_TIERS.find(t => t.level === pointsData?.points?.level) || VIP_TIERS[0];
+  const currentTier = VIP_TIERS.find(tier => tier.level === pointsData?.points?.level) || VIP_TIERS[0];
   const nextTier = VIP_TIERS[VIP_TIERS.indexOf(currentTier) + 1];
   const progress = nextTier
     ? Math.min(100, ((pointsData?.points?.totalEarned - currentTier.threshold) / (nextTier.threshold - currentTier.threshold)) * 100)
@@ -151,24 +153,24 @@ const VIPClub = () => {
         <div className="flex flex-col items-center text-center mb-20">
           <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#d6b47c]/20 via-[#d6b47c]/10 to-transparent border-l-2 border-[#d6b47c] px-6 py-2 mb-8">
             <Crown className="w-4 h-4 text-[#d6b47c]" />
-            <span className="text-[#d6b47c] text-[10px] tracking-[0.4em] uppercase font-black">Eksklyuziv Imtiyozlar</span>
+            <span className="text-[#d6b47c] text-[10px] tracking-[0.4em] uppercase font-black">{t('vip.exclusivePerks')}</span>
           </div>
           <h1 className="text-6xl md:text-9xl font-brilliant text-white mb-8 leading-tight">
-            Luxe <span className="text-[#d6b47c]">VIP Club</span>
+            Luxe <span className="text-[#d6b47c]">{t('vip.title')}</span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl font-light max-w-3xl leading-relaxed">
-            Xarid qilgan sari darajangiz oshadi. Har bir daraja yangi <span className="text-white font-medium italic underline decoration-[#d6b47c]/40 underline-offset-4">eksklyuziv imtiyozlar</span> va shaxsiy imkoniyatlar eshigini ochadi.
+            {t('vip.subtitle')}
           </p>
         </div>
 
         {/* Cinematic Tab Bar */}
         <div className="flex flex-nowrap justify-center gap-2 mb-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-2 max-w-4xl mx-auto shadow-2xl overflow-x-auto scrollbar-hide">
           {[
-            { id: 'overview', label: 'Darajam', icon: <Crown className="w-4 h-4" /> },
-            { id: 'badges', label: 'Nishonlar', icon: <Medal className="w-4 h-4" /> },
-            { id: 'leaderboard', label: 'Reyting', icon: <Trophy className="w-4 h-4" /> },
-            { id: 'history', label: 'Tarix', icon: <History className="w-4 h-4" /> },
-            { id: 'earn', label: 'Ishlash', icon: <Zap className="w-4 h-4" /> }
+            { id: 'overview', label: t('vip.tabMyLevel'), icon: <Crown className="w-4 h-4" /> },
+            { id: 'badges', label: t('vip.tabBadges'), icon: <Medal className="w-4 h-4" /> },
+            { id: 'leaderboard', label: t('vip.tabLeaderboard'), icon: <Trophy className="w-4 h-4" /> },
+            { id: 'history', label: t('vip.tabHistory'), icon: <History className="w-4 h-4" /> },
+            { id: 'earn', label: t('vip.tabEarn'), icon: <Zap className="w-4 h-4" /> }
           ].map(tab => (
             <button
               key={tab.id}
@@ -201,7 +203,7 @@ const VIPClub = () => {
                           {currentTier.icon}
                         </div>
                         <div>
-                          <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 mb-3 font-black">Joriy Darajangiz</p>
+                          <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 mb-3 font-black">{t('vip.currentLevel')}</p>
                           <h2 className="text-6xl md:text-8xl font-brilliant text-white tracking-tight leading-none">
                             {currentTier.level}
                           </h2>
@@ -212,7 +214,7 @@ const VIPClub = () => {
                         <p className="text-8xl md:text-9xl font-brilliant text-[#d6b47c] leading-none mb-3">
                           {pointsData.points.balance.toLocaleString()}
                         </p>
-                        <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-black">To'plangan Ballar</p>
+                        <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-black">{t('vip.accumulatedPoints')}</p>
                       </div>
                     </div>
 
@@ -225,8 +227,8 @@ const VIPClub = () => {
                             <span className="text-xs font-bold text-[#d6b47c] bg-[#d6b47c]/10 px-2 py-0.5 rounded-md">{Math.round(progress)}%</span>
                           </div>
                           <div className="text-right">
-                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-2 font-black">Keyingi darajagacha</p>
-                            <p className="text-xl font-black text-white">{ (nextTier.threshold - pointsData.points.totalEarned).toLocaleString() } <span className="text-xs font-normal text-gray-500">ball</span></p>
+                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-2 font-black">{t('vip.toNextLevel')}</p>
+                            <p className="text-xl font-black text-white">{ (nextTier.threshold - pointsData.points.totalEarned).toLocaleString() } <span className="text-xs font-normal text-gray-500">{t('vip.points')}</span></p>
                           </div>
                         </div>
                         <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
@@ -270,7 +272,7 @@ const VIPClub = () => {
                 <h3 className="text-3xl font-serif mb-3">VIP darajangizni ko'ring</h3>
                 <p className="text-gray-500 mb-10 max-w-sm mx-auto text-lg font-light">Tizimga kirish orqali o'z ballaringiz, nishonlaringiz va eksklyuziv darajangizni ko'ring.</p>
                 <button onClick={() => navigate('/login')} className="px-12 py-5 bg-[#d6b47c] text-black rounded-full font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform">
-                  Tizimga Kirish
+                  {t('vip.login')}
                 </button>
               </div>
             )}
@@ -279,7 +281,7 @@ const VIPClub = () => {
             <div>
               <div className="flex items-center gap-6 mb-16">
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                <h2 className="text-[10px] uppercase tracking-[0.5em] text-gray-500 font-black">Barcha Darajalar</h2>
+                <h2 className="text-[10px] uppercase tracking-[0.5em] text-gray-500 font-black">{t('vip.allLevels')}</h2>
                 <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               </div>
 
@@ -295,7 +297,7 @@ const VIPClub = () => {
                     >
                       {isCurrentTier && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#d6b47c] text-black text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-lg">
-                          Siz bu yerdasiz
+                          {t('vip.youAreHere')}
                         </div>
                       )}
 
@@ -310,7 +312,7 @@ const VIPClub = () => {
 
                       <h3 className="text-4xl font-brilliant text-white mb-3">{tier.level}</h3>
                       <p className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-10">
-                        {tier.threshold.toLocaleString()} <span className="opacity-50">ball dan</span>
+                        {tier.threshold.toLocaleString()} <span className="opacity-50">{t('vip.points')} dan</span>
                       </p>
 
                       <div className="space-y-5 mb-12">
@@ -355,10 +357,9 @@ const VIPClub = () => {
                   <h3 className="font-bold text-base mb-1 text-white">{userBadge.badge.name}</h3>
                   <p className="text-[11px] text-gray-400 mb-3">{userBadge.badge.description}</p>
                   
-                  {/* Rewards Badge */}
                   {userBadge.badge.reward?.points > 0 && (
                     <div className="mt-auto px-3 py-1 bg-[#d6b47c]/20 border border-[#d6b47c]/30 rounded-full text-[10px] text-[#d6b47c] font-black uppercase tracking-widest">
-                      +{userBadge.badge.reward.points} ball
+                      +{userBadge.badge.reward.points} {t('vip.points')}
                     </div>
                   )}
 
@@ -366,14 +367,13 @@ const VIPClub = () => {
                     <ShieldCheck className="w-3.5 h-3.5" />
                   </div>
                   
-                  {/* Glass highlight effect */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </div>
               ))}
               {badges.length === 0 && (
                 <div className="col-span-full py-20 text-center rounded-3xl border border-white/5 bg-[#111]">
                   <Medal className="w-16 h-16 text-gray-800 mx-auto mb-4" />
-                  <p className="text-gray-500">Hali nishonlar yo'q. Musobaqalarda qatnashing va xaridlar qiling!</p>
+                  <p className="text-gray-500">{t('vip.noBadges')}</p>
                 </div>
               )}
             </div>
@@ -399,12 +399,12 @@ const VIPClub = () => {
                   <p className={`font-black ${tx.type === 'earned' ? 'text-green-400' : 'text-red-400'}`}>
                     {tx.type === 'earned' ? '+' : '-'}{tx.amount.toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-gray-600">ball</p>
+                  <p className="text-[10px] text-gray-600">{t('vip.points')}</p>
                 </div>
               </div>
             ))}
             {history.length === 0 && (
-              <div className="text-center py-12 text-gray-600 italic">Hali operatsiyalar mavjud emas</div>
+              <div className="text-center py-12 text-gray-600 italic">{t('vip.noOperations')}</div>
             )}
           </div>
         )}
@@ -412,9 +412,9 @@ const VIPClub = () => {
         {/* --- LEADERBOARD TAB --- */}
         {activeTab === 'leaderboard' && (
           <div className="max-w-2xl mx-auto space-y-4">
-            <h2 className="text-2xl font-serif text-center mb-8">🏆 Top 10 Luxe VIP</h2>
+            <h2 className="text-2xl font-serif text-center mb-8">{t('vip.top10')}</h2>
             {leaderboard.map((entry, index) => {
-              const tier = VIP_TIERS.find(t => t.level === entry.level) || VIP_TIERS[0];
+              const tier = VIP_TIERS.find(tier => tier.level === entry.level) || VIP_TIERS[0];
               return (
                 <div
                   key={entry._id}
@@ -432,13 +432,13 @@ const VIPClub = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-black text-[#d6b47c]">{entry.balance?.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">ball</p>
+                    <p className="text-xs text-gray-500">{t('vip.points')}</p>
                   </div>
                 </div>
               );
             })}
             {leaderboard.length === 0 && (
-              <div className="text-center py-12 text-gray-600">Hali reytingda hech kim yo'q</div>
+              <div className="text-center py-12 text-gray-600">{t('vip.emptyLeaderboard')}</div>
             )}
           </div>
         )}
@@ -446,7 +446,7 @@ const VIPClub = () => {
         {/* --- HOW TO EARN TAB --- */}
         {activeTab === 'earn' && (
           <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="text-2xl font-serif text-center mb-8">💰 Qanday ball ishlash mumkin?</h2>
+            <h2 className="text-2xl font-serif text-center mb-8">{t('vip.howToEarn')}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {HOW_TO_EARN.map((item, i) => (
                 <div key={i} className="flex items-start gap-5 p-6 rounded-3xl border border-white/5 bg-[#111] hover:border-[#d6b47c]/20 transition-all group">
@@ -454,7 +454,7 @@ const VIPClub = () => {
                     {item.icon}
                   </div>
                   <div>
-                    <p className="font-bold mb-1">{item.action}</p>
+                    <p className="font-bold mb-1">{t(item.actionKey)}</p>
                     <p className="text-[#d6b47c] text-sm font-black mb-1">{item.points}</p>
                     <p className="text-xs text-gray-500">{item.desc}</p>
                   </div>
@@ -465,7 +465,7 @@ const VIPClub = () => {
             {!isAuthenticated && (
               <div className="text-center mt-8">
                 <button onClick={() => navigate('/login')} className="px-10 py-4 bg-[#d6b47c] text-black rounded-full font-black text-sm hover:bg-[#e8c98a] transition-all">
-                  Hoziroq ball to'play boshlash
+                  {t('vip.startEarning')}
                 </button>
               </div>
             )}

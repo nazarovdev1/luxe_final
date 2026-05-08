@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Copy, Share2, Users, Gift, TrendingUp, CheckCircle, Send, Link2 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ReferralProgram = ({ user }) => {
   const [copied, setCopied] = useState(false);
   const [shareMethod, setShareMethod] = useState(null);
+  const { t } = useLanguage();
 
   // Generate referral code from user ID or use a stored one
   const referralCode = user
@@ -75,8 +77,8 @@ const ReferralProgram = ({ user }) => {
             <Users className="w-5 h-5 text-[#d6b47c]" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-[#f4f1eb]">Do'stni Taklif Qilish</h3>
-            <p className="text-[11px] text-[#9aa3b2]">Har bir do'stingiz uchun 50 ball oling</p>
+            <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('referralProgram.title')}</h3>
+            <p className="text-[11px] text-[#9aa3b2]">{t('referralProgram.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -85,9 +87,9 @@ const ReferralProgram = ({ user }) => {
       <div className="px-6 pb-4">
         <div className="grid grid-cols-3 gap-3">
           {[
-            { step: '1', icon: <Link2 className="w-4 h-4" />, label: "Havolani ulashing" },
-            { step: '2', icon: <Users className="w-4 h-4" />, label: "Do'stingiz ro'yxatdan o'tsin" },
-            { step: '3', icon: <Gift className="w-4 h-4" />, label: "Ikkalangiz ball oling" },
+            { step: '1', icon: <Link2 className="w-4 h-4" />, label: t('referralProgram.step1') },
+            { step: '2', icon: <Users className="w-4 h-4" />, label: t('referralProgram.step2') },
+            { step: '3', icon: <Gift className="w-4 h-4" />, label: t('referralProgram.step3') },
           ].map((s) => (
             <div key={s.step} className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/5">
               <div className="w-7 h-7 rounded-lg bg-[#d6b47c]/10 flex items-center justify-center text-[#d6b47c] mx-auto mb-2">
@@ -119,7 +121,7 @@ const ReferralProgram = ({ user }) => {
 
       {/* Referral Link */}
       <div className="px-6 pb-4">
-        <p className="text-xs text-[#9aa3b2] mb-2">Sizning taklif havolangiz</p>
+        <p className="text-xs text-[#9aa3b2] mb-2">{t('referralProgram.yourLink')}</p>
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl bg-[#0d1423] border border-white/5 overflow-hidden">
             <Link2 className="w-4 h-4 text-[#d6b47c] flex-shrink-0" />
@@ -134,14 +136,14 @@ const ReferralProgram = ({ user }) => {
             }`}
           >
             {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Nusxalandi!' : 'Nusxa'}
+            {copied ? t('common.copied') : t('referralProgram.share')}
           </button>
         </div>
       </div>
 
       {/* Share Buttons */}
       <div className="px-6 pb-4">
-        <p className="text-xs text-[#9aa3b2] mb-2">Ulashish</p>
+        <p className="text-xs text-[#9aa3b2] mb-2">{t('referralProgram.share')}</p>
         <div className="flex gap-2">
           <button
             onClick={() => handleShare('telegram')}
@@ -178,7 +180,7 @@ const ReferralProgram = ({ user }) => {
             }`}
           >
             <Share2 className="w-4 h-4" />
-            {shareMethod === 'instagram' ? 'Nusxalandi!' : 'Instagram'}
+            {shareMethod === 'instagram' ? t('common.copied') : 'Instagram'}
           </button>
         </div>
       </div>
@@ -188,9 +190,9 @@ const ReferralProgram = ({ user }) => {
         <div className="flex items-start gap-3">
           <Gift className="w-5 h-5 text-[#d6b47c] flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-[#d6b47c]">Taklif qiluvchi: +50 ball</p>
-            <p className="text-xs text-[#d6b47c]/70">Yangi foydalanuvchi: +30 ball</p>
-            <p className="text-[10px] text-[#9aa3b2] mt-1">Do'stingiz birinchi xarid qilganda ball hisoblanadi</p>
+            <p className="text-xs font-semibold text-[#d6b47c]">{t('referralProgram.referrerPoints')}</p>
+            <p className="text-xs text-[#d6b47c]/70">{t('referralProgram.newUserPoints')}</p>
+            <p className="text-[10px] text-[#9aa3b2] mt-1">{t('referralProgram.firstPurchaseNote')}</p>
           </div>
         </div>
       </div>
@@ -198,7 +200,7 @@ const ReferralProgram = ({ user }) => {
       {/* Referral History */}
       <div className="px-6 pb-6">
         <p className="text-xs text-[#9aa3b2] mb-3 flex items-center gap-2">
-          <Users className="w-3.5 h-3.5" /> Taklif qilinganlar
+          <Users className="w-3.5 h-3.5" /> {t('referralProgram.invitedUsers')}
         </p>
         <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
           {referralHistory.map((ref, idx) => (
@@ -217,10 +219,10 @@ const ReferralProgram = ({ user }) => {
                   <span className="text-xs font-semibold text-emerald-400">+{ref.points} ball</span>
                 )}
                 {ref.status === 'pending' && (
-                  <span className="text-[10px] text-yellow-400/70 bg-yellow-400/5 px-2 py-0.5 rounded-full">Kutilmoqda</span>
+                  <span className="text-[10px] text-yellow-400/70 bg-yellow-400/5 px-2 py-0.5 rounded-full">{t('referralProgram.pending')}</span>
                 )}
                 {ref.status === 'expired' && (
-                  <span className="text-[10px] text-[#3f4658]">Muddati o'tdi</span>
+                  <span className="text-[10px] text-[#3f4658]">{t('referralProgram.expired')}</span>
                 )}
               </div>
             </div>

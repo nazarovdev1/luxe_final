@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
   Plus,
   Package,
@@ -14,6 +15,7 @@ import {
   Tag,
   Gem,
   Trophy,
+  BookOpen,
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 import AdminOrders from './AdminOrders';
@@ -25,6 +27,7 @@ import AdminCoupons from './AdminCoupons';
 import AdminChallenges from './AdminChallenges';
 import AdminBadges from './AdminBadges';
 import AdminReels from './AdminReels';
+import BlogManager from './admin/BlogManager';
 import axios from 'axios';
 import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -32,7 +35,7 @@ import './admin/adminTheme.css';
 
 const formatCurrency = (value) => {
   const numericValue = Number(value || 0);
-  return `${numericValue.toLocaleString('uz-UZ')} so'm`;
+  return `${numericValue.toLocaleString('uz-UZ')} ${t('common.sum')}`;
 };
 
 const getProductImage = (product) => {
@@ -89,8 +92,14 @@ const tabs = [
   {
     id: 'lookbook',
     label: 'Lookbook',
-    description: 'Editorial bo‘lim',
+    description: 'Editorial bo\u02BClim',
     icon: Layers,
+  },
+  {
+    id: 'blog',
+    label: 'Blog',
+    description: 'Maqolalar boshqaruvi',
+    icon: BookOpen,
   },
   {
     id: 'announcements',
@@ -101,6 +110,7 @@ const tabs = [
 ];
 
 const AdminDashboard = () => {
+  const { t } = useLanguage();
   const { products, removeProduct, isLoading: productsLoading } = useProducts();
   const { logout, token } = useAuth();
 
@@ -254,7 +264,7 @@ const AdminDashboard = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Jami daromad</p>
-                          <h3 className="text-2xl font-bold text-white">{adminStats.totalRevenue.toLocaleString()} <span className="text-xs font-normal">so'm</span></h3>
+                          <h3 className="text-2xl font-bold text-white">{adminStats.totalRevenue.toLocaleString()} <span className="text-xs font-normal">{t('common.sum')}</span></h3>
                         </div>
                         <div className="p-3 bg-amber-400/10 rounded-2xl text-amber-400">
                           <DollarSign className="w-6 h-6" />
@@ -310,7 +320,7 @@ const AdminDashboard = () => {
                               <p className="text-xs text-gray-500">{order.user?.username || 'Noma\'lum'}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-bold text-amber-200">{order.totals?.total?.toLocaleString() || '0'} so'm</p>
+                              <p className="text-sm font-bold text-amber-200">{order.totals?.total?.toLocaleString() || '0'} {t('common.sum')}</p>
                               <p className="text-[10px] text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                             </div>
                           </div>
@@ -565,6 +575,12 @@ const AdminDashboard = () => {
           {activeTab === 'reels' ? (
             <section className="admin-card p-5 sm:p-6">
               <AdminReels />
+            </section>
+          ) : null}
+
+          {activeTab === 'blog' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <BlogManager />
             </section>
           ) : null}
         </main>

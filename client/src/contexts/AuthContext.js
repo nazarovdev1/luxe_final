@@ -105,6 +105,16 @@ export const AuthProvider = ({ children }) => {
     setIsAdmin(false);
   };
 
+  const setAuthData = (userData, authToken) => {
+    const { token: _, ...userDataWithoutToken } = userData;
+    localStorage.setItem('token', authToken);
+    localStorage.setItem('user', JSON.stringify(userDataWithoutToken));
+    setToken(authToken);
+    setIsAuthenticated(true);
+    setUser(userDataWithoutToken);
+    setIsAdmin(userDataWithoutToken.isAdmin);
+  };
+
   const updateUser = (userData) => {
     setUser(prev => ({ ...prev, ...userData }));
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -121,6 +131,7 @@ export const AuthProvider = ({ children }) => {
       loading,
       register,
       login,
+      setAuthData,
       logout,
       updateUser
     }}>

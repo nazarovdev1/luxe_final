@@ -46,35 +46,39 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {reviews.map((review) => (
         <article
           key={review._id}
-          className="border-b border-white/5 pb-6 last:border-0"
+          className="group animate-fade-in"
         >
-          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-[#f4f1eb]">{review.user?.username || 'Foydalanuvchi'}</span>
-              <span className="text-xs text-neutral-600">•</span>
-              <span className="text-xs text-neutral-400">{new Date(review.createdAt).toLocaleDateString('uz-UZ')}</span>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#c9a96e]/20 to-transparent border border-[#c9a96e]/10 flex items-center justify-center text-xs font-bold text-[#c9a96e]">
+                {review.user?.username?.charAt(0).toUpperCase() || 'F'}
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#f5f5f3] tracking-wide">{review.user?.username || 'Foydalanuvchi'}</h4>
+                <p className="text-[10px] text-[#8a8a8d] uppercase tracking-[0.1em] mt-0.5">{new Date(review.createdAt).toLocaleDateString('uz-UZ')}</p>
+              </div>
             </div>
 
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${i < review.rating ? 'fill-[#d6b47c] text-[#d6b47c]' : 'text-neutral-600'}`}
+                  className={`h-3 w-3 ${i < review.rating ? 'fill-[#c9a96e] text-[#c9a96e]' : 'text-white/10'}`}
                 />
               ))}
             </div>
           </div>
 
-          <p className="text-sm leading-relaxed text-white/80">{review.comment}</p>
+          <p className="text-sm leading-relaxed text-[#8a8a8d] group-hover:text-[#f5f5f3] transition-colors duration-500">{review.comment}</p>
 
           {user && user.isAdmin && (
             <button
               onClick={() => handleDelete(review._id)}
-              className="mt-3 text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+              className="mt-4 text-[10px] font-bold uppercase tracking-widest text-red-400/50 hover:text-red-400 transition-all flex items-center gap-2"
             >
               <Trash2 className="h-3 w-3" />
               O'chirish

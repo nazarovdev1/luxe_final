@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Footer = () => {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer id="footer" className="bg-[#06040a] border-t border-white/5">
+    <footer id="footer" className="bg-transparent border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Company Info */}
@@ -16,8 +18,7 @@ const Footer = () => {
               <span className="text-white font-serif text-2xl tracking-wide">Luxury</span>
             </div>
             <p className="text-[#a1a1aa] text-[13px] leading-relaxed mb-8 max-w-sm">
-              Zamonaviy fashion tendentsiyalari va premium sifatli mahsulotlar
-              bilan sizning uslubingizni yangi darajaga olib chiqamiz. Har bir detalda nafosat.
+              {t('footer.description')}
             </p>
             <div className="flex justify-center md:justify-start gap-3">
               <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/5 text-[#a1a1aa] hover:bg-white/10 hover:text-white transition-all">
@@ -36,26 +37,26 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="lg:col-span-2 text-center md:text-left">
-            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 border-[#d6b47c] inline-block">Tezkor havolalar</h3>
+            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 border-[#d6b47c] inline-block">{t('footer.quickLinks')}</h3>
             <ul className="space-y-4">
               <li>
                 <Link to="/" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Bosh sahifa
+                  {t('footer.home')}
                 </Link>
               </li>
               <li>
                 <Link to="/#new-collection" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Yangi kolleksiya
+                  {t('footer.newCollection')}
                 </Link>
               </li>
               <li>
                 <Link to="/#bestsellers" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Bestsellerlar
+                  {t('footer.bestsellers')}
                 </Link>
               </li>
               <li>
                 <Link to="/#about" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Biz haqimizda
+                  {t('footer.aboutUs')}
                 </Link>
               </li>
             </ul>
@@ -63,26 +64,26 @@ const Footer = () => {
 
           {/* Categories */}
           <div className="lg:col-span-2 text-center md:text-left">
-            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 border-[#d6b47c] inline-block">Kategoriyalar</h3>
+            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 border-[#d6b47c] inline-block">{t('footer.categories')}</h3>
             <ul className="space-y-4">
               <li>
                 <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Kombinezonlar
+                  {t('footer.jumpsuits')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Ko'ylaklar
+                  {t('footer.dresses')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Sviterlar
+                  {t('footer.sweaters')}
                 </a>
               </li>
               <li>
                 <a href="#" className="text-[13px] text-[#a1a1aa] hover:text-[#d6b47c] transition-colors">
-                  Tuflilar
+                  {t('footer.shoes')}
                 </a>
               </li>
             </ul>
@@ -90,16 +91,16 @@ const Footer = () => {
 
           {/* Contact Info Card */}
           <div className="lg:col-span-4 text-center md:text-left">
-            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6">Aloqa</h3>
+            <h3 className="text-white text-[15px] font-medium tracking-wide mb-6">{t('footer.contact')}</h3>
             <div className="rounded-2xl border border-white/5 bg-[#100c14]/50 p-6 space-y-6">
               <div className="flex items-start gap-4">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1a1525]">
                   <MapPin className="w-4 h-4 text-[#d6b47c]" />
                 </div>
                 <div className="text-left mt-1">
-                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">Manzil</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">{t('footer.address')}</p>
                   <p className="text-[13px] text-[#e4e4e7] leading-relaxed">
-                    Toshkent, O'zbekiston<br />Amir Temur ko'chasi 12
+                    {t('footer.addressValue')}<br />{t('footer.addressStreet')}
                   </p>
                 </div>
               </div>
@@ -109,7 +110,7 @@ const Footer = () => {
                   <Phone className="w-4 h-4 text-[#d6b47c]" />
                 </div>
                 <div className="text-left mt-1">
-                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">Telefon</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">{t('footer.phone')}</p>
                   <p className="text-[13px] text-[#e4e4e7]">
                     +998 88 429 99 69
                   </p>
@@ -121,7 +122,7 @@ const Footer = () => {
                   <Mail className="w-4 h-4 text-[#d6b47c]" />
                 </div>
                 <div className="text-left mt-1">
-                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">Email</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#666] mb-1">{t('footer.email')}</p>
                   <p className="text-[13px] text-[#e4e4e7]">
                     support@luxx.uz
                   </p>
@@ -135,17 +136,17 @@ const Footer = () => {
         <div className="border-t border-white/5 mt-16 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-[#71717a] text-[11px] tracking-wide">
-              © 2026 Luxury Fashion Store. Barcha huquqlar himoyalangan.
+              {t('footer.copyright')}
             </p>
             <div className="flex space-x-8">
               <Link to="/privacy-policy" className="text-[#71717a] hover:text-[#d6b47c] text-[12px] transition-colors">
-                Maxfiylik siyosati
+                {t('footer.privacyPolicy')}
               </Link>
               <Link to="/terms" className="text-[#71717a] hover:text-[#d6b47c] text-[12px] transition-colors">
-                Foydalanish shartlari
+                {t('footer.terms')}
               </Link>
               <a href="#" className="text-[#71717a] hover:text-[#d6b47c] text-[12px] transition-colors">
-                Yetkazish
+                {t('footer.delivery')}
               </a>
             </div>
           </div>

@@ -1,38 +1,6 @@
 import React, { useState } from 'react';
 import { X, RotateCcw, RefreshCw, AlertCircle, CheckCircle, Camera, ChevronDown } from 'lucide-react';
-
-const RETURN_REASONS = [
-  { value: 'size', label: "O'lcham mos kelmayapti", icon: '📏' },
-  { value: 'color', label: 'Rang farq qiladi', icon: '🎨' },
-  { value: 'defect', label: 'Nuqson bor', icon: '⚠️' },
-  { value: 'not_match', label: "Rasmdagidan farq qiladi", icon: '🖼️' },
-  { value: 'changed_mind', label: "Fikrim o'zgarib qoldi", icon: '🤷' },
-  { value: 'other', label: 'Boshqa sabab', icon: '📝' },
-];
-
-const RETURN_TYPES = [
-  {
-    value: 'refund',
-    label: 'Pulni qaytarish',
-    description: "To'lov kartangizga qaytariladi",
-    icon: '💰',
-    timeline: '3-5 ish kuni',
-  },
-  {
-    value: 'exchange',
-    label: 'Almashtirish',
-    description: "Boshqa o'lcham yoki rangga almashtiring",
-    icon: '🔄',
-    timeline: '5-7 ish kuni',
-  },
-  {
-    value: 'store_credit',
-    label: 'Do\'kon balansi',
-    description: 'Do\'kon hisobingizga qo\'shiladi (+10% bonus)',
-    icon: '🏪',
-    timeline: '1-2 ish kuni',
-  },
-];
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ReturnRequestModal = ({ order, onClose }) => {
   const [step, setStep] = useState(1); // 1: select items, 2: reason, 3: type, 4: confirm
@@ -44,6 +12,40 @@ const ReturnRequestModal = ({ order, onClose }) => {
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [returnId, setReturnId] = useState('');
+  const { t } = useLanguage();
+
+  const RETURN_REASONS = [
+    { value: 'size', label: t('returnRequest.reasonWrongSize'), icon: '📏' },
+    { value: 'color', label: t('returnRequest.reasonDifferent'), icon: '🎨' },
+    { value: 'defect', label: t('returnRequest.reasonDefective'), icon: '⚠️' },
+    { value: 'not_match', label: t('returnRequest.reasonDifferent'), icon: '🖼️' },
+    { value: 'changed_mind', label: t('returnRequest.reasonOther'), icon: '🤷' },
+    { value: 'other', label: t('returnRequest.reasonOther'), icon: '📝' },
+  ];
+
+  const RETURN_TYPES = [
+    {
+      value: 'refund',
+      label: t('returnRequest.typeRefund'),
+      description: t('returnRequest.typeRefund'),
+      icon: '💰',
+      timeline: '3-5',
+    },
+    {
+      value: 'exchange',
+      label: t('returnRequest.typeExchange'),
+      description: t('returnRequest.typeExchange'),
+      icon: '🔄',
+      timeline: '5-7',
+    },
+    {
+      value: 'store_credit',
+      label: t('returnRequest.typeStoreCredit'),
+      description: t('returnRequest.bonusNote'),
+      icon: '🏪',
+      timeline: '1-2',
+    },
+  ];
 
   const toggleItem = (idx) => {
     setSelectedItems((prev) =>
@@ -99,7 +101,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
-          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">Qaytarish muddati o'tgan</h3>
+          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('returnRequest.expiredTitle')}</h3>
           <p className="text-sm text-[#9aa3b2] mb-6">
             Buyurtma qilinganiga {daysSinceOrder} kun o'tdi. Qaytarish oynasi 14 kun bilan cheklangan.
           </p>
@@ -122,12 +124,12 @@ const ReturnRequestModal = ({ order, onClose }) => {
           <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-5">
             <CheckCircle className="w-10 h-10 text-emerald-400" />
           </div>
-          <h3 className="text-2xl font-semibold text-[#f4f1eb] mb-2">So'rov yuborildi!</h3>
+          <h3 className="text-2xl font-semibold text-[#f4f1eb] mb-2">{t('returnRequest.submittedTitle')}</h3>
           <p className="text-sm text-[#9aa3b2] mb-4">
             Qaytarish so'rovingiz muvaffaqiyatli qabul qilindi
           </p>
           <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4 mb-6">
-            <p className="text-xs text-[#9aa3b2] mb-1">So'rov raqami</p>
+            <p className="text-xs text-[#9aa3b2] mb-1">{t('returnRequest.requestId')}</p>
             <p className="text-lg font-bold text-[#d6b47c]">{returnId}</p>
           </div>
           <div className="space-y-2 text-left mb-6">
@@ -161,8 +163,8 @@ const ReturnRequestModal = ({ order, onClose }) => {
               <RotateCcw className="w-5 h-5 text-[#d6b47c]" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#f4f1eb]">Qaytarish / Almashtirish</h3>
-              <p className="text-[11px] text-[#9aa3b2]">#{order._id?.slice(-8).toUpperCase()} • {daysRemaining} kun qoldi</p>
+              <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('returnRequest.title')}</h3>
+              <p className="text-[11px] text-[#9aa3b2]">#{order._id?.slice(-8).toUpperCase()} • {daysRemaining} {t('returnRequest.daysLeft')}</p>
             </div>
           </div>
           <button
@@ -185,10 +187,10 @@ const ReturnRequestModal = ({ order, onClose }) => {
             ))}
           </div>
           <div className="flex justify-between mt-2 mb-4">
-            <span className={`text-[10px] ${step >= 1 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>Mahsulot</span>
-            <span className={`text-[10px] ${step >= 2 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>Sabab</span>
-            <span className={`text-[10px] ${step >= 3 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>Tur</span>
-            <span className={`text-[10px] ${step >= 4 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>Tasdiq</span>
+            <span className={`text-[10px] ${step >= 1 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>{t('returnRequest.stepProduct')}</span>
+            <span className={`text-[10px] ${step >= 2 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>{t('returnRequest.stepReason')}</span>
+            <span className={`text-[10px] ${step >= 3 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>{t('returnRequest.stepType')}</span>
+            <span className={`text-[10px] ${step >= 4 ? 'text-[#d6b47c]' : 'text-[#3f4658]'}`}>{t('returnRequest.stepConfirm')}</span>
           </div>
         </div>
 
@@ -196,7 +198,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
           {/* Step 1: Select Items */}
           {step === 1 && (
             <div>
-              <p className="text-sm text-[#9aa3b2] mb-4">Qaysi mahsulotlarni qaytarmoqchisiz?</p>
+              <p className="text-sm text-[#9aa3b2] mb-4">{t('returnRequest.whichProducts')}</p>
               <div className="space-y-3">
                 {order.items.map((item, idx) => (
                   <button
@@ -230,7 +232,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
                         {item.selectedColor ? ` • ${item.selectedColor}` : ''}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-[#f4f1eb]">{formatPrice(item.price)} so'm</p>
+                    <p className="text-sm font-semibold text-[#f4f1eb]">{formatPrice(item.price)} {t('common.sum')}</p>
                   </button>
                 ))}
               </div>
@@ -240,7 +242,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
           {/* Step 2: Reason */}
           {step === 2 && (
             <div>
-              <p className="text-sm text-[#9aa3b2] mb-4">Qaytarish sababini tanlang</p>
+              <p className="text-sm text-[#9aa3b2] mb-4">{t('returnRequest.selectReason')}</p>
               <div className="space-y-2.5">
                 {RETURN_REASONS.map((r) => (
                   <button
@@ -287,7 +289,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
                   {photos.length < 5 && (
                     <label className="w-16 h-16 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-white/20 transition-colors">
                       <Camera className="w-5 h-5 text-[#3f4658]" />
-                      <span className="text-[9px] text-[#3f4658] mt-0.5">Yuklash</span>
+                      <span className="text-[9px] text-[#3f4658] mt-0.5">{t('returnRequest.upload')}</span>
                       <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
                     </label>
                   )}
@@ -299,7 +301,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
           {/* Step 3: Return Type */}
           {step === 3 && (
             <div>
-              <p className="text-sm text-[#9aa3b2] mb-4">Qaytarish turini tanlang</p>
+              <p className="text-sm text-[#9aa3b2] mb-4">{t('returnRequest.selectType')}</p>
               <div className="space-y-3">
                 {RETURN_TYPES.map((t) => (
                   <button
@@ -329,7 +331,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
               </div>
 
               <div className="mt-5">
-                <p className="text-xs text-[#9aa3b2] mb-2">Qo'shimcha izoh (ixtiyoriy)</p>
+                <p className="text-xs text-[#9aa3b2] mb-2">{t('returnRequest.additionalNote')}</p>
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -345,31 +347,31 @@ const ReturnRequestModal = ({ order, onClose }) => {
             <div>
               <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4 space-y-3">
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#9aa3b2]">Buyurtma</span>
+                  <span className="text-[#9aa3b2]">{t('returnRequest.orderLabel')}</span>
                   <span className="text-[#f4f1eb]">#{order._id?.slice(-8).toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#9aa3b2]">Mahsulotlar soni</span>
+                  <span className="text-[#9aa3b2]">{t('returnRequest.productCount')}</span>
                   <span className="text-[#f4f1eb]">{selectedItems.length} ta</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#9aa3b2]">Sabab</span>
+                  <span className="text-[#9aa3b2]">{t('returnRequest.reason')}</span>
                   <span className="text-[#f4f1eb]">{RETURN_REASONS.find((r) => r.value === reason)?.label}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#9aa3b2]">Qaytarish turi</span>
+                  <span className="text-[#9aa3b2]">{t('returnRequest.returnType')}</span>
                   <span className="text-[#f4f1eb]">{RETURN_TYPES.find((t) => t.value === returnType)?.label}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#9aa3b2]">Kutilayotgan vaqt</span>
+                  <span className="text-[#9aa3b2]">{t('returnRequest.expectedTime')}</span>
                   <span className="text-[#d6b47c]">{RETURN_TYPES.find((t) => t.value === returnType)?.timeline}</span>
                 </div>
                 <div className="border-t border-white/5 pt-3 flex justify-between text-sm">
-                  <span className="text-[#9aa3b2]">Qaytariladigan summa</span>
+                  <span className="text-[#9aa3b2]">{t('returnRequest.refundAmount')}</span>
                   <span className="text-[#f4f1eb] font-bold">
                     {formatPrice(
                       selectedItems.reduce((sum, idx) => sum + (order.items[idx]?.price || 0) * (order.items[idx]?.quantity || 1), 0)
-                    )} so'm
+                    )} {t('common.sum')}
                   </span>
                 </div>
               </div>
@@ -379,15 +381,14 @@ const ReturnRequestModal = ({ order, onClose }) => {
                   <span className="text-lg">🎁</span>
                   <div>
                     <p className="text-xs font-semibold text-emerald-400">+10% bonus</p>
-                    <p className="text-[10px] text-[#9aa3b2]">Do'kon balansingizga qo'shimcha 10% bonus olasiz</p>
+                    <p className="text-[10px] text-[#9aa3b2]">{t('returnRequest.bonusNote')}</p>
                   </div>
                 </div>
               )}
 
               <div className="mt-4 rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/20 p-3">
                 <p className="text-[11px] text-[#9aa3b2]">
-                  📌 <strong className="text-[#d6b47c]">Eslatma:</strong> Mahsulot tegishli holda (ishlatilmagan, teglar saqlanmagan) qaytarilishi kerak.
-                  Kuryer sizning manzilinga kelib mahsulotni olib ketadi.
+                  {t('returnRequest.note')}
                 </p>
               </div>
             </div>
@@ -400,7 +401,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
                 onClick={() => setStep((s) => s - 1)}
                 className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 transition-colors"
               >
-                Ortga
+                {t('checkoutPage.back')}
               </button>
             )}
             {step < 4 ? (
@@ -412,14 +413,14 @@ const ReturnRequestModal = ({ order, onClose }) => {
                 }
                 className="flex-1 py-3 rounded-xl bg-[#d6b47c] text-black text-sm font-semibold hover:bg-[#c9a46d] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                Davom etish
+                {t('checkoutPage.next')}
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 className="flex-1 py-3 rounded-xl bg-[#d6b47c] text-black text-sm font-semibold hover:bg-[#c9a46d] transition-colors"
               >
-                So'rov yuborish
+                {t('common.submit')}
               </button>
             )}
           </div>

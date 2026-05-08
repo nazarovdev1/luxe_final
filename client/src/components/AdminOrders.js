@@ -13,6 +13,7 @@ import {
   Ban,
   Loader2,
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import useProductService from '../server/server';
 
 const STATUS_OPTIONS = ['Kutilmoqda', 'Jarayonda', 'Yetkazilmoqda', 'Yetkazildi', 'Bekor qilindi'];
@@ -82,6 +83,7 @@ const getStatusIcon = (status) => {
 };
 
 const AdminOrders = () => {
+  const { t } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -354,14 +356,14 @@ const AdminOrders = () => {
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-white font-medium truncate">{item.name}</p>
                                 <p className="admin-muted text-xs mt-1">
-                                  {item.quantity} x {Number(item.price || 0).toLocaleString('uz-UZ')} so'm
+                                  {item.quantity} x {Number(item.price || 0).toLocaleString('uz-UZ')} {t('common.sum')}
                                   {item.selectedColor ? ` • ${item.selectedColor}` : ''}
                                   {item.selectedSize ? ` • ${item.selectedSize}` : ''}
                                 </p>
                               </div>
 
                               <p className="text-sm text-amber-200 font-semibold whitespace-nowrap">
-                                {Number((item.price || 0) * (item.quantity || 0)).toLocaleString('uz-UZ')} so'm
+                                {Number((item.price || 0) * (item.quantity || 0)).toLocaleString('uz-UZ')} {t('common.sum')}
                               </p>
                             </div>
                           ))}
@@ -370,7 +372,7 @@ const AdminOrders = () => {
                         <div className="pt-3 border-t border-slate-700/60 flex items-center justify-between">
                           <span className="admin-muted text-sm">Jami summa</span>
                           <span className="text-lg font-bold text-amber-200">
-                            {Number(order.totals?.total || 0).toLocaleString('uz-UZ')} so'm
+                            {Number(order.totals?.total || 0).toLocaleString('uz-UZ')} {t('common.sum')}
                           </span>
                         </div>
                       </div>

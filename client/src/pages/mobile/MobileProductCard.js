@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag } from 'lucide-react';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const MobileProductCard = ({ product, index = 0 }) => {
     const { isFavorite, toggleFavorite } = useFavorites();
     const { addToCart } = useCart();
+    const { t } = useLanguage();
 
     // Helper to parse price if it comes as a string with symbols
     const parsePrice = (value) => {
@@ -14,7 +16,7 @@ const MobileProductCard = ({ product, index = 0 }) => {
         return Number(value || 0);
     };
 
-    const formatPrice = (value) => `${parsePrice(value).toLocaleString()} so'm`;
+    const formatPrice = (value) => `${parsePrice(value).toLocaleString()} ${t('common.sum')}`;
 
     const handleAddToCart = (e) => {
         e.preventDefault();

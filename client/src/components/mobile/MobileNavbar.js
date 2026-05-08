@@ -3,19 +3,21 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, Search, ShoppingCart, User, Gem, Camera, Play } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const MobileNavbar = ({ onVisualSearch }) => {
     const { totalItems } = useCart();
     const { isAuthenticated } = useAuth();
+    const { t } = useLanguage();
     const location = useLocation();
 
     const navItems = [
-        { icon: Home, label: 'Bosh', path: '/mobile' },
-        { icon: ShoppingBag, label: 'Shop', path: '/mobile/products' },
+        { icon: Home, label: t('nav.home'), path: '/mobile' },
+        { icon: ShoppingBag, label: t('nav.shop'), path: '/mobile/products' },
         { icon: Play, label: 'Reels', path: '/mobile/reels' },
         { icon: Camera, label: 'Visual', path: null, action: onVisualSearch },
-        { icon: ShoppingCart, label: 'Savat', path: '/mobile/cart', badge: totalItems },
-        { icon: User, label: 'Profil', path: isAuthenticated ? '/mobile/profile' : '/mobile/login' },
+        { icon: ShoppingCart, label: t('nav.cart'), path: '/mobile/cart', badge: totalItems },
+        { icon: User, label: t('nav.profile'), path: isAuthenticated ? '/mobile/profile' : '/mobile/login' },
     ];
 
     // Navbar is now visible on all pages EXCEPT product details (to show Add to Cart button cleanly)

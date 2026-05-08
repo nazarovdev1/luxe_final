@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus, Check, BarChart3, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ProductComparison = ({ products = [], onClose }) => {
   const [compareProducts, setCompareProducts] = useState(products.slice(0, 3));
+  const { t } = useLanguage();
 
   const formatPrice = (val) => Number(val || 0).toLocaleString();
 
@@ -16,13 +18,13 @@ const ProductComparison = ({ products = [], onClose }) => {
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
         <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#11131e] to-[#0d0f18] p-8 text-center">
           <BarChart3 className="w-12 h-12 text-[#3f4658] mx-auto mb-4" />
-          <h3 className="text-xl text-[#f4f1eb] mb-2">Taqqoslash uchun mahsulot yo'q</h3>
-          <p className="text-sm text-[#9aa3b2] mb-6">Mahsulotlar sahifasidan taqqoslash uchun mahsulot qo'shing</p>
+          <h3 className="text-xl text-[#f4f1eb] mb-2">{t('productComparison.emptyTitle')}</h3>
+          <p className="text-sm text-[#9aa3b2] mb-6">{t('productComparison.emptyDesc')}</p>
           <button
             onClick={onClose}
             className="px-6 py-3 rounded-xl bg-[#d6b47c] text-black font-semibold text-sm hover:bg-[#c9a46d] transition-colors"
           >
-            Yopish
+            {t('productComparison.close')}
           </button>
         </div>
       </div>
@@ -32,10 +34,10 @@ const ProductComparison = ({ products = [], onClose }) => {
   // Comparison attributes
   const comparisonRows = [
     {
-      label: 'Narx',
+      label: t('productComparison.price'),
       key: 'price',
       render: (p) => (
-        <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(p.price)} so'm</span>
+        <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(p.price)} {t('common.sum')}</span>
       ),
       getBest: (prods) => {
         const min = Math.min(...prods.map((p) => p.price));
@@ -43,7 +45,7 @@ const ProductComparison = ({ products = [], onClose }) => {
       },
     },
     {
-      label: "O'lchamlar",
+      label: t('productComparison.sizes'),
       key: 'sizes',
       render: (p) => (
         <div className="flex flex-wrap gap-1 justify-center">
@@ -56,7 +58,7 @@ const ProductComparison = ({ products = [], onClose }) => {
       ),
     },
     {
-      label: 'Ranglar',
+      label: t('productComparison.colors'),
       key: 'colors',
       render: (p) => (
         <div className="flex flex-wrap gap-1.5 justify-center">
@@ -72,7 +74,7 @@ const ProductComparison = ({ products = [], onClose }) => {
       ),
     },
     {
-      label: 'Reyting',
+      label: t('productComparison.rating'),
       key: 'rating',
       render: (p) => (
         <div className="flex items-center gap-1.5 justify-center">
@@ -86,33 +88,33 @@ const ProductComparison = ({ products = [], onClose }) => {
       },
     },
     {
-      label: 'Mavjud',
+      label: t('productComparison.available'),
       key: 'stock',
       render: (p) => (
         <span className={`text-sm font-medium ${(p.stock || 10) > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-          {(p.stock || 10) > 0 ? `✓ Mavjud (${p.stock || 10})` : '✗ Tugagan'}
+          {(p.stock || 10) > 0 ? `✓ ${t('productComparison.available')} (${p.stock || 10})` : `✗ ${t('productComparison.outOfStock')}`}
         </span>
       ),
     },
     {
-      label: 'Kategoriya',
+      label: t('productComparison.category'),
       key: 'category',
       render: (p) => (
-        <span className="text-sm text-[#f4f1eb]">{p.category || 'Premium'}</span>
+        <span className="text-sm text-[#f4f1eb]">{p.category || t('productComparison.premium')}</span>
       ),
     },
     {
-      label: 'Brend',
+      label: t('productComparison.brand'),
       key: 'brand',
       render: (p) => (
-        <span className="text-sm text-[#f4f1eb]">{p.brand || 'LUXX'}</span>
+        <span className="text-sm text-[#f4f1eb]">{p.brand || t('productComparison.luxx')}</span>
       ),
     },
     {
-      label: 'Material',
+      label: t('productComparison.material'),
       key: 'material',
       render: (p) => (
-        <span className="text-sm text-[#f4f1eb]">{p.material || 'Tabiiy matolar'}</span>
+        <span className="text-sm text-[#f4f1eb]">{p.material || t('productComparison.naturalFabrics')}</span>
       ),
     },
   ];
@@ -128,8 +130,8 @@ const ProductComparison = ({ products = [], onClose }) => {
               <BarChart3 className="w-5 h-5 text-[#d6b47c]" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-[#f4f1eb]">Mahsulot Taqqoslash</h2>
-              <p className="text-[11px] text-[#9aa3b2]">{compareProducts.length} ta mahsulot taqqoslanmoqda</p>
+              <h2 className="text-xl font-semibold text-[#f4f1eb]">{t('productComparison.title')}</h2>
+              <p className="text-[11px] text-[#9aa3b2]">{compareProducts.length} {t('productComparison.comparing')}</p>
             </div>
           </div>
           <button
@@ -145,7 +147,7 @@ const ProductComparison = ({ products = [], onClose }) => {
           {/* Product Headers */}
           <div className="grid border-b border-white/5" style={{ gridTemplateColumns: `140px repeat(${compareProducts.length}, 1fr)` }}>
             <div className="p-4 flex items-center">
-              <span className="text-xs text-[#9aa3b2] uppercase tracking-wider">Xususiyat</span>
+              <span className="text-xs text-[#9aa3b2] uppercase tracking-wider">{t('productComparison.feature')}</span>
             </div>
             {compareProducts.map((product, idx) => (
               <div key={product._id || idx} className="p-4 border-l border-white/5 relative group">
@@ -166,7 +168,7 @@ const ProductComparison = ({ products = [], onClose }) => {
                     )}
                   </div>
                   <p className="text-xs font-medium text-[#f4f1eb] line-clamp-2 mb-1">{product.name}</p>
-                  <p className="text-sm font-bold text-[#d6b47c]">{formatPrice(product.price)} so'm</p>
+                  <p className="text-sm font-bold text-[#d6b47c]">{formatPrice(product.price)} {t('common.sum')}</p>
                 </div>
               </div>
             ))}
@@ -196,7 +198,7 @@ const ProductComparison = ({ products = [], onClose }) => {
                       {row.render(product)}
                       {bestIdx === idx && (
                         <span className="text-[9px] text-[#d6b47c] font-semibold flex items-center gap-0.5">
-                          <Check className="w-2.5 h-2.5" /> Eng yaxshi
+                          <Check className="w-2.5 h-2.5" /> {t('productComparison.best')}
                         </span>
                       )}
                     </div>
@@ -212,7 +214,7 @@ const ProductComparison = ({ products = [], onClose }) => {
             style={{ gridTemplateColumns: `140px repeat(${compareProducts.length}, 1fr)` }}
           >
             <div className="p-3 flex items-center border-r border-white/5">
-              <span className="text-xs text-[#9aa3b2] font-medium">Amal</span>
+              <span className="text-xs text-[#9aa3b2] font-medium">{t('productComparison.action')}</span>
             </div>
             {compareProducts.map((product, idx) => (
               <div key={idx} className="p-3 flex items-center justify-center border-l border-white/5">
@@ -220,7 +222,7 @@ const ProductComparison = ({ products = [], onClose }) => {
                   href={`/product/${product._id || product.id}`}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[#d6b47c] text-xs font-medium hover:bg-[#d6b47c]/20 transition-colors"
                 >
-                  Batafsil <ArrowRight className="w-3 h-3" />
+                  {t('common.more')} <ArrowRight className="w-3 h-3" />
                 </a>
               </div>
             ))}

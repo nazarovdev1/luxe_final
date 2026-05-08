@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const FAQ = () => {
+    const { t } = useLanguage();
     const [openIndex, setOpenIndex] = useState(null);
 
     const faqs = [
@@ -49,26 +51,23 @@ const FAQ = () => {
 
     return (
         <section id="faq" className="py-20 bg-[#0c0815] relative overflow-hidden">
-            {/* Background Effects */}
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-600/5 rounded-full blur-3xl" />
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                {/* Header */}
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/20 mb-6">
                         <HelpCircle className="w-4 h-4 text-purple-400" />
-                        <span className="text-purple-400 text-sm font-medium">SAVOLLAR</span>
+                        <span className="text-purple-400 text-sm font-medium">{t('faq.badge')}</span>
                     </div>
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                        Ko'p beriladigan <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500">savollar</span>
+                        {t('faq.title1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500">{t('faq.title2')}</span>
                     </h2>
                     <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                        Sizni qiziqtirgan savollar javoblari bilan tanishing
+                        {t('faq.subtitle')}
                     </p>
                 </div>
 
-                {/* FAQ Items */}
                 <div className="space-y-3">
                     {faqs.map((faq, index) => (
                         <div
@@ -78,7 +77,6 @@ const FAQ = () => {
                                     : 'bg-white/5 hover:bg-white/10 border-white/10'
                                 } border backdrop-blur-sm`}
                         >
-                            {/* Question Button */}
                             <button
                                 onClick={() => toggleFAQ(index)}
                                 className="w-full px-6 py-5 flex justify-between items-center text-left focus:outline-none"
@@ -106,7 +104,6 @@ const FAQ = () => {
                                 </div>
                             </button>
 
-                            {/* Answer */}
                             <div className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-96' : 'max-h-0'
                                 }`}>
                                 <div className="px-6 pb-5 pl-[4.5rem] text-gray-400 leading-relaxed">
@@ -117,21 +114,20 @@ const FAQ = () => {
                     ))}
                 </div>
 
-                {/* Contact CTA */}
                 <div className="mt-16 text-center">
                     <div className="inline-flex flex-col items-center gap-4 p-8 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 rounded-3xl border border-purple-500/20">
                         <div className="w-14 h-14 bg-none rounded-2xl flex items-center justify-center">
                             <MessageCircle className="w-7 h-7 text-white" />
                         </div>
                         <div>
-                            <p className="text-white font-semibold text-lg mb-1">Javobini topa olmadingizmi?</p>
-                            <p className="text-gray-400 text-sm">Biz bilan bog'laning, yordam beramiz</p>
+                            <p className="text-white font-semibold text-lg mb-1">{t('faq.ctaTitle')}</p>
+                            <p className="text-gray-400 text-sm">{t('faq.ctaDescription')}</p>
                         </div>
                         <a
                             href="#contact"
                             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-400 hover:to-fuchsia-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-purple-500/30"
                         >
-                            Bog'lanish
+                            {t('faq.ctaButton')}
                         </a>
                     </div>
                 </div>

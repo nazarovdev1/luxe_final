@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import {
   ArrowLeft,
@@ -93,7 +94,7 @@ function LocationMarker({ position, setPosition }) {
       map.flyTo(event.latlng, map.getZoom());
     },
     locationerror() {
-      toast.error("Joylashuvni aniqlab bo'lmadi. Xaritadan belgilang.");
+      toast.error(t('checkoutPage.locationError'));
     },
   });
 
@@ -128,6 +129,7 @@ const Checkout = () => {
   const { items, getCartTotal, clearCart } = useCart();
   const { user, isAuthenticated, loading, token } = useAuth();
   const { createOrder } = useProductService();
+  const { t } = useLanguage();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -221,9 +223,14 @@ const Checkout = () => {
   const discountAmount = useMemo(() => {
     let promoDiscount = 0;
     if (appliedPromo) {
-      if (appliedPromo.discountAmount) {
+      if (appliedPromo.type === 'giftcard') {
+        // Gift card: use the fixed amount
+        promoDiscount = appliedPromo.discountAmount || 0;
+      } else if (appliedPromo.discountAmount) {
+        // Fixed amount coupon
         promoDiscount = appliedPromo.discountAmount;
       } else {
+        // Percentage-based discount
         promoDiscount = (summaryTotal * appliedPromo.discountPercentage) / 100;
       }
     }
@@ -262,12 +269,14 @@ const Checkout = () => {
     setCurrentStep(3);
   };
 
-  const { validatePromo, validateCoupon } = useProductService();
+  const { validatePromo, validateGiftCard, validateCoupon } = useProductService();
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
 
     setIsValidatingPromo(true);
+    let lastErrorMessage = "Kupon yoki promokod noto'g'ri";
+
     try {
       // First try generic promo
       const promoResult = await validatePromo(promoCode.trim());
@@ -280,9 +289,30 @@ const Checkout = () => {
         toast.success(`${promoResult.discountPercentage}% chegirma qo'llanildi!`);
         setIsValidatingPromo(false);
         return;
+      } else if (promoResult.message && !promoResult.message.includes('mavjud emas')) {
+        // If it exists but is inactive/expired, show that specific error
+        lastErrorMessage = promoResult.message;
       }
 
-      // If promo fails, try user-specific coupon
+      // If promo fails, try gift card
+      const giftCardResult = await validateGiftCard(promoCode.trim());
+
+      if (giftCardResult.success) {
+        const discountAmount = giftCardResult.amount;
+        setAppliedPromo({
+          code: giftCardResult.code,
+          discountAmount: discountAmount,
+          discountPercentage: 0,
+          type: 'giftcard'
+        });
+        toast.success(`${t('common.giftCardApplied')}! ${formatMoney(discountAmount)} ${t('common.sum')}`);
+        setIsValidatingPromo(false);
+        return;
+      } else if (giftCardResult.message && !giftCardResult.message.includes('mavjud emas')) {
+        lastErrorMessage = giftCardResult.message;
+      }
+
+      // If gift card fails, try user-specific coupon
       const couponResult = await validateCoupon(promoCode.trim(), summaryTotal, token);
       if (couponResult.success) {
         setAppliedPromo({
@@ -294,7 +324,7 @@ const Checkout = () => {
         toast.success(`Kupon qo'llanildi!`);
       } else {
         setAppliedPromo(null);
-        toast.error(couponResult.message || "Kupon yoki promokod noto'g'ri");
+        toast.error(couponResult.message || lastErrorMessage);
       }
     } catch (error) {
       toast.error('Promokodni tekshirishda xatolik yuz berdi');
@@ -322,7 +352,7 @@ const Checkout = () => {
     }
 
     if (!agreeTerms) {
-      toast.error('Buyurtmani tasdiqlash uchun shartlarga rozilik belgilang');
+      toast.error(t('checkoutPage.agreeTerms'));
       return;
     }
 
@@ -403,8 +433,8 @@ const Checkout = () => {
             <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#1f2532]">
               <Truck className="h-8 w-8 text-[#c7ceda]" />
             </div>
-            <h1 className="text-3xl font-semibold text-[#f4f1eb]">Savatingiz bo'sh</h1>
-            <p className="mt-2 text-[#9aa3b2]">Buyurtma berishdan oldin mahsulot tanlang va savatga qo'shing.</p>
+            <h1 className="text-3xl font-semibold text-[#f4f1eb]">{t('cart.empty')}</h1>
+            <p className="mt-2 text-[#9aa3b2]">{t('cart.emptyDesc')}</p>
             <Link
               to="/products"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#f4f1eb] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#111319] transition-transform active:scale-[0.985]"
@@ -447,8 +477,8 @@ const Checkout = () => {
           <section className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)] sm:p-7">
             <div className="mb-6">
               <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">Order flow</p>
-              <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#f4f1eb]">Buyurtmani rasmiylashtirish</h2>
-              <p className="mt-2 text-sm text-[#9aa3b2]">Ma'lumotlarni 3 qadamda to'ldiring va buyurtmani tasdiqlang.</p>
+              <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#f4f1eb]">{t('checkoutPage.placeOrder')}</h2>
+              <p className="mt-2 text-sm text-[#9aa3b2]">{t('checkoutPage.step1')}</p>
 
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[1, 2, 3].map((step) => (
@@ -473,7 +503,7 @@ const Checkout = () => {
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <label className="block">
-                      <span className="mb-1.5 block text-sm text-[#c7ceda]">Ism *</span>
+                      <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.firstName')} *</span>
                       <input
                         type="text"
                         name="firstName"
@@ -486,7 +516,7 @@ const Checkout = () => {
                     </label>
 
                     <label className="block">
-                      <span className="mb-1.5 block text-sm text-[#c7ceda]">Familiya</span>
+                      <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.lastName')}</span>
                       <input
                         type="text"
                         name="lastName"
@@ -499,7 +529,7 @@ const Checkout = () => {
                   </div>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Telefon raqam *</span>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.phone')} *</span>
                     <div className="relative">
                       <Phone className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9aa3b2]" />
                       <input
@@ -522,7 +552,7 @@ const Checkout = () => {
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
                       <MapPin className="h-4 w-4" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[#f4f1eb]">Yetkazib berish manzili</h3>
+                    <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.step2')}</h3>
                   </div>
 
                   <label className="block">
@@ -716,7 +746,7 @@ const Checkout = () => {
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
                       <CreditCard className="h-4 w-4" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[#f4f1eb]">To'lov va yakuniy tekshiruv</h3>
+                    <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.step3')}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -736,7 +766,7 @@ const Checkout = () => {
                           }`}
                       >
                         <Truck className="mx-auto mb-2 h-6 w-6" />
-                        <p className="text-sm font-semibold">Naqd pul</p>
+                        <p className="text-sm font-semibold">{t('checkoutPage.cash')}</p>
                       </div>
                     </label>
 
@@ -836,7 +866,7 @@ const Checkout = () => {
                     />
                     <span className="relative mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border border-[#5f6c85] bg-[#0f1521] text-[#111319] transition-all after:content-['✓'] after:text-[12px] after:font-bold after:leading-none after:opacity-0 after:transition-opacity peer-checked:border-[#f4f1eb] peer-checked:bg-[#f4f1eb] peer-checked:after:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-[#f4f1eb]/35 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#151c29]" />
                     <span className="text-sm leading-relaxed text-[#c7ceda]">
-                      Buyurtmani tasdiqlash orqali foydalanish shartlariga rozilik bildiraman.
+                      {t('checkoutPage.agreeTerms')}
                     </span>
                   </label>
                 </div>
@@ -861,7 +891,7 @@ const Checkout = () => {
                     onClick={currentStep === 1 ? nextFromStep1 : nextFromStep2}
                     className="inline-flex items-center gap-2 rounded-full bg-[#f4f1eb] px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.07em] text-[#111319] transition-transform active:scale-[0.985]"
                   >
-                    Davom etish
+                    {t('checkoutPage.next')}
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 ) : (
@@ -902,7 +932,11 @@ const Checkout = () => {
                         <Tag className="w-4 h-4 text-emerald-400" />
                         <div>
                           <p className="text-sm font-semibold text-emerald-400">{appliedPromo.code}</p>
-                          <p className="text-xs text-emerald-500/80">-{appliedPromo.discountPercentage}% chegirma</p>
+                          <p className="text-xs text-emerald-500/80">
+                            {appliedPromo.type === 'giftcard' 
+                              ? `-${formatMoney(appliedPromo.discountAmount)} so'm chegirma` 
+                              : `-${appliedPromo.discountPercentage}% chegirma`}
+                          </p>
                         </div>
                       </div>
                       <button
@@ -956,8 +990,8 @@ const Checkout = () => {
                 )}
 
                 <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
-                  <span>Yetkazib berish</span>
-                  <span className="text-emerald-400 font-medium">Bepul</span>
+                  <span>{t('checkoutPage.delivery')}</span>
+                  <span className="text-emerald-400 font-medium">{t('checkoutPage.free')}</span>
                 </div>
 
                 {giftWrap && giftWrapCost > 0 && (
@@ -981,8 +1015,8 @@ const Checkout = () => {
                 )}
 
                 <div className="flex items-center justify-between border-t border-[#2d3442] pt-3">
-                  <span className="text-base font-semibold text-[#f4f1eb]">Jami</span>
-                  <span className="text-2xl font-semibold text-[#f4f1eb]">{formatMoney(finalTotal)} so'm</span>
+                  <span className="text-base font-semibold text-[#f4f1eb]">{t('checkoutPage.total')}</span>
+                  <span className="text-2xl font-semibold text-[#f4f1eb]">{formatMoney(finalTotal)} {t('common.sum')}</span>
                 </div>
               </div>
 
@@ -1000,7 +1034,7 @@ const Checkout = () => {
                 ) : (
                   <>
                     <CheckCircle className="h-4 w-4" />
-                    <span>Buyurtmani tasdiqlash</span>
+                    <span>{t('checkoutPage.placeOrder')}</span>
                   </>
                 )}
               </button>

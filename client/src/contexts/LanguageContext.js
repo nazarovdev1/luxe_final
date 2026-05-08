@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import translations from '../data/translations';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 
 const LanguageContext = createContext();
 
@@ -7,7 +8,7 @@ const LANGUAGE_KEY = 'luxx_language';
 const SUPPORTED_LANGUAGES = ['uz', 'ru', 'en'];
 
 const LANGUAGE_LABELS = {
-  uz: '🇺🇿 O\'zbek',
+  uz: "🇺🇿 O'zbek",
   ru: '🇷🇺 Русский',
   en: '🇬🇧 English',
 };
@@ -19,21 +20,22 @@ const LANGUAGE_FLAGS = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguageState] = useState(() => {
-    try {
-      const saved = localStorage.getItem(LANGUAGE_KEY);
-      if (saved && SUPPORTED_LANGUAGES.includes(saved)) {
-        return saved;
-      }
-    } catch (e) {
-      // ignore
-    }
-    return 'uz'; // Default to Uzbek
-  });
+  const [language, setLanguageState] = useState(() => i18n.language || 'uz');
+
+  // Sync state when i18next language changes externally
+  useEffect(() => {
+    const handleLanguageChanged = (lng) => {
+      setLanguageState(lng);
+    };
+    i18n.on('languageChanged', handleLanguageChanged);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, []);
 
   const setLanguage = useCallback((lang) => {
     if (SUPPORTED_LANGUAGES.includes(lang)) {
-      setLanguageState(lang);
+      i18n.changeLanguage(lang);
       try {
         localStorage.setItem(LANGUAGE_KEY, lang);
       } catch (e) {
@@ -43,28 +45,14 @@ export const LanguageProvider = ({ children }) => {
   }, []);
 
   // Translation function: t('nav.login') => 'Kirish'
+  // Uses i18next under the hood for proper pluralization, interpolation, etc.
   const t = useCallback((key, fallback) => {
-    const keys = key.split('.');
-    let value = translations[language];
-
-    for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k];
-      } else {
-        // Fallback to Uzbek if key not found in current language
-        let fallbackValue = translations.uz;
-        for (const fk of keys) {
-          if (fallbackValue && typeof fallbackValue === 'object' && fk in fallbackValue) {
-            fallbackValue = fallbackValue[fk];
-          } else {
-            return fallback || key;
-          }
-        }
-        return typeof fallbackValue === 'string' ? fallbackValue : (fallback || key);
-      }
+    const value = i18n.t(key);
+    // If i18next returns the key itself, it means translation not found
+    if (value === key && fallback) {
+      return fallback;
     }
-
-    return typeof value === 'string' ? value : (fallback || key);
+    return value;
   }, [language]);
 
   // Get current language info

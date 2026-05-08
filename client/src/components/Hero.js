@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Crown, Shield, Gem, Star, Truck } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Hero = () => {
+  const { t } = useLanguage();
   const canvasRef = useRef(null);
   const sectionRef = useRef(null);
   const imagesRef = useRef([]);
@@ -114,7 +116,7 @@ const Hero = () => {
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
-      const sectionHeight = section.offsetHeight - window.innerHeight;
+      const sectionHeight = Math.max(1, section.offsetHeight - window.innerHeight);
       const progress = Math.max(0, Math.min(1, -rect.top / sectionHeight));
       targetFrameRef.current = progress * (frameCount - 1);
       setScrollProgress(progress); // Update scroll progress for text animation
@@ -167,16 +169,16 @@ const Hero = () => {
   }, [isDesktop, imagesLoaded, drawFrame]);
 
   const heroFeatures = [
-    { icon: Crown, label: 'QUALITY' },
-    { icon: Truck, label: '3 SOAT ICHIDA YETKAZIB BERISH' },
-    { icon: Shield, label: 'ISHONCHLI SERVIS' },
+    { icon: Crown, label: t('hero.featureQuality') },
+    { icon: Truck, label: t('hero.featureDelivery') },
+    { icon: Shield, label: t('hero.featureService') },
   ];
 
   return (
     <section
       id="hero"
       ref={sectionRef}
-      style={{ height: isDesktop ? '200vh' : '100vh' }}
+      className="h-[100vh] lg:h-screen"
     >
       {/* Sticky wrapper for desktop */}
       <div
@@ -200,7 +202,7 @@ const Hero = () => {
             {/* The canvas was removed/disabled temporarily or just rendered behind the primary static image */}
             {/* Overlays */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#05060b]/80 via-[#05060b]/45 to-[#05060b]/25"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#06070d] via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-transparent to-transparent"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_40%,rgba(214,180,124,0.15),transparent_35%)]"></div>
           </div>
         )}
@@ -216,14 +218,14 @@ const Hero = () => {
               <div className="max-w-4xl">
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/25 px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-neutral-200 animate-fade-in-up">
                   <Gem className="w-3.5 h-3.5 text-[#d6b47c]" />
-                  LUXE Editorial Drop
+                  {t('hero.badge')}
                 </p>
 
                 <h1
                   className="mt-4 text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.88] tracking-tight uppercase animate-fade-in-up"
                   style={{ animationDelay: '0.1s' }}
                 >
-                  {'PREMIUM'.split('').map((letter, index) => {
+                  {t('hero.title1').split('').map((letter, index) => {
                     const totalLetters = 11;
                     const letterProgress = Math.max(0, Math.min(1, (scrollProgress * totalLetters) - index));
                     const r = Math.round(244 - letterProgress * 20);
@@ -243,7 +245,7 @@ const Hero = () => {
                     );
                   })}
                   <br />
-                  {'MODA'.split('').map((letter, index) => {
+                  {t('hero.title2').split('').map((letter, index) => {
                     const totalLetters = 11;
                     const letterIndex = 7 + index;
                     const letterProgress = Math.max(0, Math.min(1, (scrollProgress * totalLetters) - letterIndex));
@@ -266,7 +268,7 @@ const Hero = () => {
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-sm sm:text-base text-neutral-300 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                  Sifatni his qiladiganlar uchun yaratilgan kolleksiya. Premium mato, aniq siluet va e’tibor tortadigan obrazlar. Siz oddiy ko‘rinish uchun emas, ajralib turish uchun yaralgansiz.
+                  {t('hero.description')}
                 </p>
 
                 <div className="mt-6 flex flex-wrap items-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
@@ -274,13 +276,13 @@ const Hero = () => {
                     to="/products"
                     className="inline-flex content-center items-center justify-center rounded-tr-[30px] rounded-bl-[30px] rounded-tl-none rounded-br-none border-2 border-black bg-white px-8 py-4 text-[14px] sm:text-[15px] font-semibold tracking-[0.08em] uppercase leading-none text-black hover:bg-neutral-100 transition-colors"
                   >
-                    Kolleksiyani ko'rish
+                    {t('hero.viewCollection')}
                   </Link>
                   <Link
                     to="/#home-lookbook"
                     className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-black/30 px-5 py-3 text-sm sm:text-base text-white hover:bg-black/45 transition-colors"
                   >
-                    Lookbook
+                    {t('hero.lookbook')}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -303,7 +305,7 @@ const Hero = () => {
         </div>
 
         {/* Bottom Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-[#06070d] via-[#06070d]/50 to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-[#060a14] via-[#060a14]/50 to-transparent pointer-events-none"></div>
 
         {/* Scroll Indicator */}
         {/* {isDesktop && (

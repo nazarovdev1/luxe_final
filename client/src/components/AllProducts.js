@@ -12,7 +12,7 @@ const AllProducts = () => {
     const displayProducts = products.slice(0, 8);
 
     return (
-        <section id="products" className="py-20 bg-[#0a0a0f]">
+        <section id="products" className="py-20 bg-transparent">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="text-center mb-16">

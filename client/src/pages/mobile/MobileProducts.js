@@ -14,6 +14,7 @@ import {
 import { useProducts } from '../../contexts/ProductContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 // Modern Luxury Color Palette
 const COLORS = {
@@ -41,9 +42,10 @@ const parsePrice = (value) => {
     return Number(value || 0);
 };
 
-const formatPrice = (value) => `${parsePrice(value).toLocaleString()} so'm`;
+const formatPrice = (value) => `${parsePrice(value).toLocaleString()}`;
 
 const MobileProducts = () => {
+    const { t } = useLanguage();
     const { products, isLoading, categories } = useProducts();
     const { isFavorite, toggleFavorite } = useFavorites();
     const { addToCart } = useCart();
@@ -230,7 +232,7 @@ const MobileProducts = () => {
                         </h2>
                         <div className="flex items-center justify-between">
                             <p className="text-lg font-medium text-white">
-                                {formatPrice(product.price)}
+                                {formatPrice(product.price)} {t('common.sum')}
                             </p>
                             <button className="flex h-10 w-10 items-center justify-center bg-white text-black active:scale-95 transition-transform">
                                 <ArrowUpRight className="h-5 w-5" />
@@ -271,7 +273,7 @@ const MobileProducts = () => {
                     </h3>
                     <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-white">
-                            {formatPrice(product.price)}
+                            {formatPrice(product.price)} {t('common.sum')}
                         </p>
                         <button
                             onClick={(e) => handleAddToCart(e, product)}

@@ -15,44 +15,47 @@ import {
   XCircle,
   ArrowUpRight,
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
-const CONTACT_METHODS = [
-  {
-    id: 'phone',
-    title: 'Telefon',
-    value: '+998 88 429 99 69',
-    href: 'tel:+998884299969',
-    icon: Phone,
-    tone: 'from-emerald-500/25 to-emerald-700/25 border-emerald-300/20 text-emerald-100',
-  },
-  {
-    id: 'telegram',
-    title: 'Telegram',
-    value: '@luxeecommercebot',
-    href: 'https://t.me/luxeecommercebot',
-    icon: Send,
-    tone: 'from-sky-500/25 to-blue-700/25 border-sky-300/20 text-sky-100',
-  },
-  {
-    id: 'email',
-    title: 'Email',
-    value: 'support@luxx.uz',
-    href: 'mailto:support@luxx.uz',
-    icon: Mail,
-    tone: 'from-amber-500/25 to-orange-700/25 border-amber-300/20 text-amber-100',
-  },
-];
-
-const TRUST_NOTES = [
-  { icon: Truck, text: 'Toshkent bo\'ylab tez yetkazish' },
-  { icon: Shield, text: 'Xavfsiz xarid va maxfiylik himoyasi' },
-  { icon: Clock, text: 'Har kuni: 09:00 - 22:00' },
-  { icon: Gem, text: 'Premium service support' },
-];
-
 const Contact = () => {
+  const { t } = useLanguage();
+
+  const CONTACT_METHODS = [
+    {
+      id: 'phone',
+      title: t('contact.phone'),
+      value: '+998 88 429 99 69',
+      href: 'tel:+998884299969',
+      icon: Phone,
+      tone: 'from-emerald-500/25 to-emerald-700/25 border-emerald-300/20 text-emerald-100',
+    },
+    {
+      id: 'telegram',
+      title: t('contact.telegram'),
+      value: '@luxeecommercebot',
+      href: 'https://t.me/luxeecommercebot',
+      icon: Send,
+      tone: 'from-sky-500/25 to-blue-700/25 border-sky-300/20 text-sky-100',
+    },
+    {
+      id: 'email',
+      title: t('contact.email'),
+      value: 'support@luxx.uz',
+      href: 'mailto:support@luxx.uz',
+      icon: Mail,
+      tone: 'from-amber-500/25 to-orange-700/25 border-amber-300/20 text-amber-100',
+    },
+  ];
+
+  const TRUST_NOTES = [
+    { icon: Truck, text: t('contact.fastDelivery') },
+    { icon: Shield, text: t('contact.secureShopping') },
+    { icon: Clock, text: t('contact.workingHours') },
+    { icon: Gem, text: t('contact.premiumSupport') },
+  ];
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -135,15 +138,14 @@ const Contact = () => {
             <div>
               <p className="inline-flex items-center gap-2 rounded-full border border-[#d6b47c]/40 bg-[#d6b47c]/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-[#f4deb5]">
                 <Gem className="h-3.5 w-3.5" />
-                Contact Atelier
+                {t('contact.badge')}
               </p>
               <h2 className="mt-4 text-3xl leading-tight text-[#f4f1eb] sm:text-5xl font-semibold">
-                Biz bilan bog'laning
+                {t('contact.title')}
                 <br />
               </h2>
               <p className="mt-4 max-w-2xl text-sm sm:text-base text-neutral-300 leading-relaxed">
-                Buyurtma, o'lcham, yetkazish yoki premium tavsiya bo'yicha savol bo'lsa,
-                jamoamiz qisqa vaqt ichida javob qaytaradi.
+                {t('contact.description')}
               </p>
             </div>
 
@@ -167,8 +169,8 @@ const Contact = () => {
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-black/25 p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-xl font-semibold text-[#f4f1eb]">Direct aloqalar</h3>
-                  <span className="text-xs uppercase tracking-[0.2em] text-neutral-400">24/7 online</span>
+                  <h3 className="text-xl font-semibold text-[#f4f1eb]">{t('contact.directContacts')}</h3>
+                  <span className="text-xs uppercase tracking-[0.2em] text-neutral-400">{t('contact.availability')}</span>
                 </div>
 
                 <div className="mt-5 space-y-3">
@@ -203,7 +205,7 @@ const Contact = () => {
               <div className="overflow-hidden rounded-3xl border border-white/10 bg-black/25">
                 <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3 text-sm text-neutral-200">
                   <MapPin className="h-4 w-4 text-[#d6b47c]" />
-                  Toshkent, O'zbekiston
+                  {t('contact.location')}
                 </div>
                 <iframe
                   title="Luxx.uz manzil"
@@ -216,12 +218,12 @@ const Contact = () => {
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-black/30 p-6 sm:p-7">
-              <h3 className="text-2xl font-semibold text-[#f4f1eb]">Xabar yuboring</h3>
-              <p className="mt-2 text-sm text-neutral-400">Formani to'ldiring, jamoamiz siz bilan bog'lanadi.</p>
+              <h3 className="text-2xl font-semibold text-[#f4f1eb]">{t('contact.formTitle')}</h3>
+              <p className="mt-2 text-sm text-neutral-400">{t('contact.formDesc')}</p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm text-neutral-300">Ismingiz</label>
+                  <label className="mb-2 block text-sm text-neutral-300">{t('contact.nameLabel')}</label>
                   <div className="relative">
                     <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
                     <input
@@ -229,7 +231,7 @@ const Contact = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="Ismingizni kiriting"
+                      placeholder={t('contact.namePlaceholder')}
                       className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.03] pl-11 pr-4 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d6b47c]/70"
                       required
                     />
@@ -237,7 +239,7 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm text-neutral-300">Telefon raqam</label>
+                  <label className="mb-2 block text-sm text-neutral-300">{t('contact.phoneLabel')}</label>
                   <div className="relative">
                     <Phone className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
                     <input
@@ -245,7 +247,7 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="+998 90 123 45 67"
+                      placeholder={t('contact.phonePlaceholder')}
                       className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.03] pl-11 pr-4 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d6b47c]/70"
                       required
                     />
@@ -253,7 +255,7 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm text-neutral-300">Xabaringiz</label>
+                  <label className="mb-2 block text-sm text-neutral-300">{t('contact.messageLabel')}</label>
                   <div className="relative">
                     <MessageSquare className="pointer-events-none absolute left-4 top-4 h-4 w-4 text-neutral-500" />
                     <textarea
@@ -261,7 +263,7 @@ const Contact = () => {
                       value={formData.message}
                       onChange={handleChange}
                       rows={5}
-                      placeholder="Savolingizni yozing..."
+                      placeholder={t('contact.messagePlaceholder')}
                       className="w-full resize-none rounded-xl border border-white/15 bg-white/[0.03] pl-11 pr-4 py-3 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-[#d6b47c]/70"
                       required
                     />
@@ -278,14 +280,14 @@ const Contact = () => {
                   ) : (
                     <>
                       <Send className="h-4 w-4" />
-                      Yuborish
+                      {t('contact.submit')}
                     </>
                   )}
                 </button>
 
                 <p className="flex items-center justify-center gap-2 text-xs text-neutral-500">
                   <Shield className="h-3.5 w-3.5" />
-                  Sizning ma'lumotlaringiz xavfsiz saqlanadi.
+                  {t('contact.privacyNote')}
                 </p>
               </form>
             </div>
@@ -297,8 +299,8 @@ const Contact = () => {
         <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-xl border border-emerald-300/30 bg-emerald-600 px-5 py-3 text-white shadow-2xl">
           <CheckCircle className="h-5 w-5" />
           <div>
-            <p className="text-sm font-semibold">Xabar yuborildi</p>
-            <p className="text-xs opacity-90">Tez orada siz bilan bog'lanamiz.</p>
+            <p className="text-sm font-semibold">{t('contact.successTitle')}</p>
+            <p className="text-xs opacity-90">{t('contact.successMessage')}</p>
           </div>
           <button onClick={() => setShowSuccessToast(false)}>
             <X className="h-4 w-4" />
@@ -310,8 +312,8 @@ const Contact = () => {
         <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-xl border border-rose-300/30 bg-rose-600 px-5 py-3 text-white shadow-2xl">
           <XCircle className="h-5 w-5" />
           <div>
-            <p className="text-sm font-semibold">Xatolik yuz berdi</p>
-            <p className="text-xs opacity-90">Iltimos formani to'g'ri to'ldiring.</p>
+            <p className="text-sm font-semibold">{t('contact.errorTitle')}</p>
+            <p className="text-xs opacity-90">{t('contact.errorMessage')}</p>
           </div>
           <button onClick={() => setShowErrorToast(false)}>
             <X className="h-4 w-4" />

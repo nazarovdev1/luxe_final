@@ -2,54 +2,56 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, FileText, ShoppingCart, Truck, RotateCcw, CreditCard, AlertTriangle, Phone, Mail, Calendar } from 'lucide-react';
 import SEO from '../../components/SEO';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const MobileTermsOfService = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     const sections = [
         {
             icon: <ShoppingCart className="w-5 h-5" />,
-            title: "Buyurtma berish tartibi",
+            title: t('terms.ordering'),
             content: [
-                "Mahsulotni tanlang va savatga qo'shing",
-                "Telefon raqamingiz va manzilni to'g'ri kiriting",
-                "Buyurtma tasdiqlanganidan so'ng operator bog'lanadi",
-                "Minimal buyurtma: 50,000 so'm"
+                t('terms.orderingStep1'),
+                t('terms.orderingStep2'),
+                t('terms.orderingStep3'),
+                `${t('terms.minOrder')}: 50,000 ${t('common.sum')}`
             ]
         },
         {
             icon: <CreditCard className="w-5 h-5" />,
-            title: "To'lov shartlari",
+            title: t('terms.payment'),
             content: [
-                "Naqd pul orqali qabul qilganda to'lash",
-                "Click yoki Payme orqali oldindan to'lash",
-                "Plastik karta orqali kuryerga to'lash"
+                t('terms.paymentCash'),
+                t('terms.paymentClick'),
+                t('terms.paymentCard')
             ]
         },
         {
             icon: <Truck className="w-5 h-5" />,
-            title: "Yetkazib berish",
+            title: t('terms.delivery'),
             content: [
-                "Toshkent: 2-3 soat ichida",
-                "Bepul yetkazib berish"
+                t('terms.deliveryTashkent'),
+                t('terms.deliveryFree')
             ]
         },
         {
             icon: <RotateCcw className="w-5 h-5" />,
-            title: "Qaytarish",
+            title: t('terms.returns'),
             content: [
-                "14 kun ichida qaytarish mumkin",
-                "Mahsulot asl ko'rinishida bo'lishi kerak",
-                "Teglar buzilmagan bo'lishi shart"
+                t('terms.returns14'),
+                t('terms.returnsOriginal'),
+                t('terms.returnsTags')
             ]
         },
         {
             icon: <AlertTriangle className="w-5 h-5" />,
-            title: "Muhim shartlar",
+            title: t('terms.important'),
             content: [
-                "Tasdiqlangandan keyin bekor qilish mumkin emas",
-                "Chegirmadagi mahsulotlar qaytarilmaydi",
-                "Narxlar o'zgarishi mumkin"
+                t('terms.importantCancel'),
+                t('terms.importantSale'),
+                t('terms.importantPrice')
             ]
         }
     ];
@@ -57,8 +59,8 @@ const MobileTermsOfService = () => {
     return (
         <div className="min-h-screen bg-[#0a0a0f] pb-24 animate-page-slide-right">
             <SEO
-                title="Foydalanish shartlari"
-                description="Luxx.uz foydalanish shartlari - Buyurtma, to'lov, yetkazib berish va qaytarish qoidalari."
+                title={t('terms.seoTitle')}
+                description={t('terms.seoDesc')}
             />
 
             {/* Header */}
@@ -69,7 +71,7 @@ const MobileTermsOfService = () => {
                         className="flex items-center text-gray-400"
                     >
                         <ArrowLeft className="w-5 h-5 mr-2" />
-                        <span>Orqaga</span>
+                        <span>{t('common.back')}</span>
                     </button>
                 </div>
             </div>
@@ -82,7 +84,7 @@ const MobileTermsOfService = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-white">
-                            Foydalanish shartlari
+                            {t('terms.title')}
                         </h1>
                         <p className="text-gray-400 text-sm">
                             Xarid qilishdan oldin o'qing

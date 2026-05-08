@@ -3,8 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Play, Heart, MessageCircle, Share2, ShoppingBag, X, Plus, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import ReelComments from '../../components/ReelComments';
+import { uploadVideoToAppwrite } from '../../utils/appwrite';
 
 // Detect iOS PWA standalone mode
 const isIOSPWA = () => {
@@ -21,6 +23,7 @@ const isPWAMode = () => {
 };
 
 const MobileReels = () => {
+  const { t } = useLanguage();
   const [reels, setReels] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -34,6 +37,7 @@ const MobileReels = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [videoFile, setVideoFile] = useState(null);
   const [newMuse, setNewMuse] = useState({
     title: '',
     videoUrl: '',
@@ -52,11 +56,32 @@ const MobileReels = () => {
 
   const handleCreateMuse = async (e) => {
     e.preventDefault();
-    if (!newMuse.title || !newMuse.videoUrl) return;
+    if (!newMuse.title || (!newMuse.videoUrl && !videoFile)) {
+      toast.error('Sarlavha va video kiritilishi shart');
+      return;
+    }
 
     try {
       setSubmitting(true);
-      const response = await axios.post('/api/reels', newMuse, {
+      let finalVideoUrl = newMuse.videoUrl;
+
+      // If a file is selected, upload it to Appwrite first
+      if (videoFile) {
+        toast.loading('Video Appwrite\'ga yuklanmoqda...', { id: 'upload-toast' });
+        try {
+          finalVideoUrl = await uploadVideoToAppwrite(videoFile);
+          toast.success('Video yuklandi!', { id: 'upload-toast' });
+        } catch (uploadError) {
+          toast.error('Video yuklashda xatolik: ' + uploadError.message, { id: 'upload-toast' });
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      const response = await axios.post('/api/reels', {
+        ...newMuse,
+        videoUrl: finalVideoUrl
+      }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -64,6 +89,7 @@ const MobileReels = () => {
         toast.success('Yangi Muse muvaffaqiyatli qo\'shildi!');
         setCreateModalOpen(false);
         setNewMuse({ title: '', videoUrl: '', description: '' });
+        setVideoFile(null);
         fetchReels(); // Refresh the list
       }
     } catch (error) {
@@ -565,10 +591,29 @@ const MobileReels = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Video URL (ImageKit/MP4)</label>
+                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Video Yuklash (Appwrite)</label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all"
+                  onChange={(e) => setVideoFile(e.target.files[0])}
+                />
+                {videoFile && (
+                  <p className="text-[10px] text-amber-500 ml-1">Tanlandi: {videoFile.name}</p>
+                )}
+              </div>
+
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-white/5"></span>
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-bold text-gray-700 bg-[#1a1a1f] px-2">yoki</div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Video URL (ImageKit/YouTube)</label>
                 <input
                   type="url"
-                  required
                   placeholder="https://ik.imagekit.io/..."
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                   value={newMuse.videoUrl}
@@ -761,7 +806,7 @@ const MobileReels = () => {
                           <img src={product.images?.[0]?.url} alt="" className="w-6 h-6 rounded object-cover" />
                           <div className="text-left overflow-hidden">
                             <p className="text-white text-[9px] font-bold truncate">{product.name}</p>
-                            <p className="text-amber-400 text-[8px] font-black">{product.price?.toLocaleString()} so'm</p>
+                            <p className="text-amber-400 text-[8px] font-black">{product.price?.toLocaleString()} {t('common.sum')}</p>
                           </div>
                         </button>
                       ))}

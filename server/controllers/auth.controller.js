@@ -2,6 +2,8 @@ import User from '../models/user.model.js'
 import jwt from 'jsonwebtoken'
 import logger from '../utils/logger.js'
 import pointsService from '../services/points.service.js'
+import { verifyTelegramAuth } from '../utils/telegramAuth.js'
+import crypto from 'crypto'
 
 const generateToken = (id) => {
   if (!process.env.JWT_SECRET) {
@@ -110,6 +112,85 @@ export const loginUser = async (req, res) => {
       success: false,
       message: error.message
     })
+  }
+}
+
+export const telegramLogin = async (req, res) => {
+  try {
+    const authData = req.body;
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+
+    if (!botToken) {
+      logger.error('TELEGRAM_BOT_TOKEN is not defined');
+      return res.status(500).json({ success: false, message: 'Server configuration error' });
+    }
+
+    // 1. Verify hash
+    const isAuthentic = verifyTelegramAuth(authData, botToken);
+    if (!isAuthentic) {
+      return res.status(401).json({ success: false, message: 'Telegram authentication failed' });
+    }
+
+    // 2. Check for recent auth (within 24h)
+    const authDate = parseInt(authData.auth_date);
+    if (Math.floor(Date.now() / 1000) - authDate > 86400) {
+      return res.status(401).json({ success: false, message: 'Authentication expired' });
+    }
+
+    // 3. Find or create user
+    let user = await User.findOne({ telegramId: authData.id.toString() });
+
+    if (!user) {
+      const baseUsername = authData.username || `user_${authData.id}`;
+      let finalUsername = baseUsername;
+      
+      // Ensure unique username
+      let usernameExists = await User.findOne({ username: finalUsername });
+      let counter = 1;
+      while (usernameExists) {
+        finalUsername = `${baseUsername}_${counter}`;
+        usernameExists = await User.findOne({ username: finalUsername });
+        counter++;
+      }
+
+      user = await User.create({
+        username: finalUsername,
+        telegramId: authData.id.toString(),
+        telegramUsername: authData.username || null,
+        photoUrl: authData.photo_url || null,
+        phone: `tg_${authData.id}`, // Placeholder
+        password: crypto.randomBytes(16).toString('hex')
+      });
+
+      // Bonus points
+      await pointsService.addPoints(user._id, 30, {
+        source: 'admin',
+        description: 'Telegram orqali ro\'yxatdan o\'tganingiz uchun bonus!'
+      }).catch(err => logger.error('TG Signup points error:', err));
+      
+      logger.info(`New user via Telegram: ${user._id}`);
+    } else {
+      // Update info
+      user.telegramUsername = authData.username || user.telegramUsername;
+      user.photoUrl = authData.photo_url || user.photoUrl;
+      await user.save();
+    }
+
+    res.json({
+      success: true,
+      data: {
+        _id: user._id,
+        username: user.username,
+        phone: user.phone,
+        role: user.role,
+        isAdmin: user.isAdmin || user.role === 'admin' || user.role === 'manager',
+        cart: user.cart,
+        token: generateToken(user._id)
+      }
+    });
+  } catch (error) {
+    logger.error('Telegram login error:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 }
 

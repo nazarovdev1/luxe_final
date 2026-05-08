@@ -3,8 +3,10 @@ import axios from 'axios';
 import { Ticket, Plus, Trash2, Calendar, User, Percent, DollarSign, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const AdminCoupons = () => {
+  const { t } = useLanguage();
   const { token } = useAuth();
   const [coupons, setCoupons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -118,7 +120,7 @@ const AdminCoupons = () => {
               className="admin-input"
             >
               <option value="percentage">Foiz (%)</option>
-              <option value="fixed">Aniq summa (so'm)</option>
+              <option value="fixed">{t('admin.fixedAmount')} ({t('common.sum')})</option>
             </select>
           </div>
           <div>
@@ -195,7 +197,7 @@ const AdminCoupons = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Min. xarid:</span>
-                  <span className="text-white">{coupon.minPurchase?.toLocaleString()} so'm</span>
+                  <span className="text-white">{coupon.minPurchase?.toLocaleString()} {t('common.sum')}</span>
                 </div>
                 {coupon.expiryDate && (
                   <div className="flex justify-between text-sm">

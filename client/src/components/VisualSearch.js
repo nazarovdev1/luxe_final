@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react'
 import { Camera, Upload, X, Search, Loader2, Palette, Wand2, Image as ImageIcon } from 'lucide-react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const VisualSearch = ({ onClose }) => {
   const [image, setImage] = useState(null)
@@ -14,6 +15,7 @@ const VisualSearch = ({ onClose }) => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
   const navigate = useNavigate()
+  const { t } = useLanguage()
 
   const handleFileSelect = useCallback((e) => {
     const file = e.target.files?.[0]
@@ -119,13 +121,12 @@ const VisualSearch = ({ onClose }) => {
     >
       <div className="bg-[#0a0a0a] border border-[#2a2a2a] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#2a2a2a]">
           <div className="flex items-center gap-3">
             <Camera size={24} className="text-[#d6b47c]" />
             <div>
-              <h2 className="text-white font-medium text-lg">Visual Qidiruv</h2>
-              <p className="text-[#a0a0a0] text-sm">Rasm orqali qidirish</p>
+              <h2 className="text-white font-medium text-lg">{t('visualSearch.title')}</h2>
+              <p className="text-[#a0a0a0] text-sm">{t('visualSearch.subtitle')}</p>
             </div>
           </div>
           <button 
@@ -136,7 +137,6 @@ const VisualSearch = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {!preview && mode === 'upload' && (
             <div
@@ -148,8 +148,8 @@ const VisualSearch = ({ onClose }) => {
               <div className="flex flex-col items-center gap-6">
                 <ImageIcon size={48} className="text-[#d6b47c]" />
                 <div>
-                  <h3 className="text-white text-lg font-medium mb-1">Rasmni yuklang yoki bu yerga tashlang</h3>
-                  <p className="text-[#707070] text-sm">O'zingizga yoqqan kiyimni rasmga oling va biz uni topamiz</p>
+                  <h3 className="text-white text-lg font-medium mb-1">{t('visualSearch.upload')}</h3>
+                  <p className="text-[#707070] text-sm">{t('visualSearch.uploadDesc')}</p>
                 </div>
                 <div className="flex gap-4 mt-2">
                   <button
@@ -160,7 +160,7 @@ const VisualSearch = ({ onClose }) => {
                     className="flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                   >
                     <Upload size={16} />
-                    Fayl tanlash
+                    {t('visualSearch.selectFile')}
                   </button>
                   <button
                     onClick={(e) => {
@@ -170,11 +170,11 @@ const VisualSearch = ({ onClose }) => {
                     className="flex items-center gap-2 px-5 py-2.5 bg-transparent border border-[#404040] text-white rounded-lg text-sm font-medium hover:border-white transition-colors"
                   >
                     <Camera size={16} />
-                    Kamerani ochish
+                    {t('visualSearch.openCamera')}
                   </button>
                 </div>
                 <p className="text-[#505050] text-xs mt-2 font-mono">
-                  Ctrl+V bosib nusxalangan rasmni qo'yishingiz mumkin
+                  {t('visualSearch.pasteHint')}
                 </p>
               </div>
               <input
@@ -198,7 +198,7 @@ const VisualSearch = ({ onClose }) => {
                   }}
                   className="px-5 py-2.5 bg-transparent border border-[#404040] text-white rounded-lg text-sm font-medium hover:bg-[#2a2a2a] transition-colors"
                 >
-                  Bekor qilish
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={capturePhoto}
@@ -234,7 +234,7 @@ const VisualSearch = ({ onClose }) => {
                         className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d6b47c] text-black rounded-lg font-medium hover:bg-[#c4a36b] transition-colors"
                       >
                         <Search size={18} />
-                        Qidirishni boshlash
+                        {t('visualSearch.startSearch')}
                       </button>
                     </div>
                   )}
@@ -242,7 +242,7 @@ const VisualSearch = ({ onClose }) => {
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center gap-3">
                         <Loader2 size={20} className="animate-spin text-[#d6b47c]" />
-                        <span className="text-white font-medium">Tahlil qilinmoqda...</span>
+                        <span className="text-white font-medium">{t('visualSearch.analyzing')}</span>
                       </div>
                       <div className="w-full max-w-xs h-1 bg-[#2a2a2a] rounded-full overflow-hidden">
                         <div className="h-full bg-[#d6b47c] w-1/2 animate-[pulse_1s_ease-in-out_infinite]" />
@@ -254,7 +254,7 @@ const VisualSearch = ({ onClose }) => {
                     <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]">
                       <div className="flex items-center gap-2 mb-3">
                         <Palette size={16} className="text-[#d6b47c]" />
-                        <span className="text-white text-sm">Asosiy ranglar</span>
+                        <span className="text-white text-sm">{t('visualSearch.paletteTitle')}</span>
                       </div>
                       <div className="flex flex-wrap gap-3">
                         {palette.map((color, i) => (
@@ -277,7 +277,7 @@ const VisualSearch = ({ onClose }) => {
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="text-white font-medium text-lg flex items-center gap-2">
                       <Wand2 size={18} className="text-[#d6b47c]" />
-                      {results.length} ta o'xshash mahsulot
+                      {results.length} {t('visualSearch.resultsCount')}
                     </h3>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -298,7 +298,7 @@ const VisualSearch = ({ onClose }) => {
                           />
                           {product.similarity && (
                             <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-[#d6b47c] text-[10px] font-medium border border-[#2a2a2a]">
-                              {Math.round(product.similarity * 100)}% mos
+                              {Math.round(product.similarity * 100)}% {t('visualSearch.similarity')}
                             </div>
                           )}
                         </div>

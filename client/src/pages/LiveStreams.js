@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Radio, Clock, Users, PlayCircle, CalendarClock, Tv2, Plus, X, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 
 const extractYouTubeId = (url) => {
@@ -14,6 +15,7 @@ const extractYouTubeId = (url) => {
 
 const LiveStreams = () => {
   const { isAdmin, token } = useAuth();
+  const { t } = useLanguage();
   const [streams, setStreams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -24,7 +26,7 @@ const LiveStreams = () => {
       const res = await axios.get('/api/livestreams');
       if (res.data.success) setStreams(res.data.data);
     } catch {
-      toast.error('Efirlarni yuklashda xatolik');
+      toast.error(t('liveStreams.error'));
     } finally {
       setIsLoading(false);
     }
@@ -38,12 +40,12 @@ const LiveStreams = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
-        toast.success('Efir yaratildi!');
+        toast.success(t('liveStreams.streamCreated'));
         setIsCreateOpen(false);
         fetchStreams();
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Xatolik');
+      toast.error(err.response?.data?.message || t('liveStreams.error'));
     }
   };
 
@@ -55,23 +57,23 @@ const LiveStreams = () => {
       toast.success('Holat yangilandi');
       fetchStreams();
     } catch {
-      toast.error('Xatolik');
+      toast.error(t('liveStreams.error'));
     }
   };
 
   const handleDeleteStream = async (id) => {
-    if (!window.confirm('Haqiqatdan ham ushbu efirni o\'chirmoqchimisiz?')) return;
+    if (!window.confirm(t('liveStreams.confirmDelete'))) return;
     try {
       const response = await axios.delete(`/api/livestreams/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
-        toast.success('Efir o\'chirildi');
+        toast.success(t('liveStreams.streamDeleted'));
         fetchStreams();
       }
     } catch (err) {
       console.error('Delete Error:', err.response || err);
-      toast.error(err.response?.data?.message || 'O\'chirishda xatolik');
+      toast.error(err.response?.data?.message || t('liveStreams.error'));
     }
   };
 
@@ -93,13 +95,13 @@ const LiveStreams = () => {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-red-600/20 to-transparent border-l-2 border-red-600 px-4 py-2 mb-6">
               <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-              <span className="text-red-500 text-[10px] tracking-[0.3em] uppercase font-black">Jonli Arena</span>
+              <span className="text-red-500 text-[10px] tracking-[0.3em] uppercase font-black">{t('liveStreams.liveArena')}</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-brilliant text-white mb-6 leading-[0.9]">
-              Live <span className="text-red-600">Commerce</span>
+              Live <span className="text-red-600">{t('liveStreams.title')}</span>
             </h1>
             <p className="text-gray-400 text-lg md:text-xl font-light leading-relaxed pt-4">
-              Kiyimlarni jonli ko'rsatuv orqali ko'ring. Tanlagan mahsulotingizni efirdan chiqmasdan turib <span className="text-white font-medium italic underline decoration-red-600/40 underline-offset-4">to'g'ridan-to'g'ri xarid qiling</span>.
+              {t('liveStreams.subtitle')}
             </p>
           </div>
           
@@ -112,18 +114,18 @@ const LiveStreams = () => {
                 <div className="absolute inset-0 bg-red-600 opacity-10 group-hover:opacity-20 transition-opacity" />
                 <div className="absolute inset-0 border border-red-600/30 rounded-full" />
                 <span className="relative z-10 flex items-center gap-3 text-red-500 text-sm font-black tracking-widest uppercase">
-                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> Yangi efir
+                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> {t('liveStreams.newStream')}
                 </span>
               </button>
             )}
             <div className="flex items-center gap-8">
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Jonli tomoshabinlar</p>
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('liveStreams.liveViewers')}</p>
                 <p className="text-2xl font-brilliant text-red-500">{liveStreams.reduce((acc, s) => acc + (s.viewersCount || 0), 0)}</p>
               </div>
               <div className="w-px h-10 bg-white/10" />
               <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Kelgusi ko'rsatuvlar</p>
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('liveStreams.upcoming')}</p>
                 <p className="text-2xl font-brilliant text-white">{scheduledStreams.length}</p>
               </div>
             </div>
@@ -133,7 +135,7 @@ const LiveStreams = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-6">
             <div className="w-12 h-12 border-[3px] border-red-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-red-500 text-sm tracking-widest font-medium animate-pulse">Efir kanallari yuklanmoqda...</p>
+            <p className="text-red-500 text-sm tracking-widest font-medium animate-pulse">{t('liveStreams.loading')}</p>
           </div>
         ) : (
           <div className="space-y-24">
@@ -141,12 +143,12 @@ const LiveStreams = () => {
             {liveStreams.length > 0 && (
               <section>
                 <div className="flex items-center gap-4 mb-10">
-                  <h2 className="text-[10px] uppercase tracking-[0.3em] text-red-500 font-black">Hozir Efirda</h2>
+                  <h2 className="text-[10px] uppercase tracking-[0.3em] text-red-500 font-black">{t('liveStreams.liveNow')}</h2>
                   <div className="flex-1 h-px bg-gradient-to-r from-red-600/20 to-transparent" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {liveStreams.map(stream => (
-                    <StreamCard key={stream._id} stream={stream} isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDeleteStream} isLive />
+                    <StreamCard key={stream._id} stream={stream} isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDeleteStream} isLive t={t} />
                   ))}
                 </div>
               </section>
@@ -156,12 +158,12 @@ const LiveStreams = () => {
             {scheduledStreams.length > 0 && (
               <section>
                 <div className="flex items-center gap-4 mb-10">
-                  <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">Rejalashtirilgan</h2>
+                  <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">{t('liveStreams.scheduled')}</h2>
                   <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {scheduledStreams.map(stream => (
-                    <StreamCard key={stream._id} stream={stream} isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDeleteStream} />
+                    <StreamCard key={stream._id} stream={stream} isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDeleteStream} t={t} />
                   ))}
                 </div>
               </section>
@@ -171,12 +173,12 @@ const LiveStreams = () => {
             {endedStreams.length > 0 && (
               <section>
                 <div className="flex items-center gap-4 mb-10">
-                  <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-700 font-black">O'tgan Efirlar</h2>
+                  <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-700 font-black">{t('liveStreams.pastStreams')}</h2>
                   <div className="flex-1 h-px bg-gradient-to-r from-white/5 to-transparent" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {endedStreams.map(stream => (
-                    <StreamCard key={stream._id} stream={stream} isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDeleteStream} ended />
+                    <StreamCard key={stream._id} stream={stream} isAdmin={isAdmin} onStatusChange={handleStatusChange} onDelete={handleDeleteStream} ended t={t} />
                   ))}
                 </div>
               </section>
@@ -185,8 +187,8 @@ const LiveStreams = () => {
             {streams.length === 0 && (
               <div className="text-center py-32 border border-dashed border-white/5 rounded-[40px] bg-white/[0.02]">
                 <Tv2 className="w-20 h-20 text-gray-800 mx-auto mb-6 opacity-20" />
-                <h3 className="text-2xl text-gray-400 font-light">Hozircha efirlar mavjud emas</h3>
-                <p className="text-gray-600 mt-3 max-w-sm mx-auto">Luxx Live jamoasi tez orada yangi jonli savdo ko'rsatuvlarini boshlaydi. Bizni kuzatib boring!</p>
+                <h3 className="text-2xl text-gray-400 font-light">{t('liveStreams.noStreams')}</h3>
+                <p className="text-gray-600 mt-3 max-w-sm mx-auto">{t('liveStreams.noStreamsHint')}</p>
               </div>
             )}
           </div>
@@ -197,13 +199,14 @@ const LiveStreams = () => {
         <CreateLivestreamModal
           onClose={() => setIsCreateOpen(false)}
           onSubmit={handleCreateStream}
+          t={t}
         />
       )}
     </div>
   );
 };
 
-const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended }) => {
+const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, t }) => {
   const navigate = useNavigate();
   const ytId = extractYouTubeId(stream.videoUrl);
 
@@ -288,7 +291,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended }
               onClick={() => navigate(`/live/${stream._id}`)}
               className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${isLive ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-[#d6b47c] text-black hover:bg-[#e8c98a]'}`}
             >
-              {isLive ? '🔴 Efirga kirish' : 'Ko\'rish'}
+              {isLive ? t('liveStreams.enterStream') : t('liveStreams.watch')}
             </button>
           )}
           {isAdmin && (
@@ -297,7 +300,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended }
               onChange={e => onStatusChange(stream._id, e.target.value)}
               className="px-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-full text-xs text-gray-400 outline-none"
             >
-              <option value="scheduled">Rejalashtirilgan</option>
+              <option value="scheduled">{t('liveStreams.scheduled')}</option>
               <option value="live">Live</option>
               <option value="ended">Tugagan</option>
             </select>
@@ -308,7 +311,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended }
   );
 };
 
-const CreateLivestreamModal = ({ onClose, onSubmit }) => {
+const CreateLivestreamModal = ({ onClose, onSubmit, t }) => {
   const [form, setForm] = useState({
     title: '', description: '', videoUrl: '', scheduledStartTime: ''
   });
@@ -316,7 +319,7 @@ const CreateLivestreamModal = ({ onClose, onSubmit }) => {
 
   const handleSubmit = async () => {
     if (!form.title || !form.videoUrl || !form.scheduledStartTime) {
-      return toast.error('Barcha majburiy maydonlarni to\'ldiring');
+      return toast.error(t('liveStreams.fillRequired'));
     }
     setIsLoading(true);
     await onSubmit({
@@ -333,13 +336,13 @@ const CreateLivestreamModal = ({ onClose, onSubmit }) => {
       <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-[#111] border border-white/10 rounded-[28px] w-full max-w-lg p-8 shadow-2xl space-y-4">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-serif">Yangi efir yaratish</h2>
+          <h2 className="text-xl font-serif">{t('liveStreams.createStream')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full"><X className="w-5 h-5" /></button>
         </div>
         {[
-          { key: 'title', label: 'Efir nomi *', placeholder: 'Masalan: Kuzgi kolleksiya taqdimoti' },
+          { key: 'title', label: `${t('liveStreams.streamName')} *`, placeholder: 'Masalan: Kuzgi kolleksiya taqdimoti' },
           { key: 'videoUrl', label: 'YouTube URL *', placeholder: 'https://youtube.com/watch?v=...' },
-          { key: 'description', label: 'Tavsif', placeholder: 'Efir haqida qisqacha...' },
+          { key: 'description', label: t('liveStreams.description'), placeholder: 'Efir haqida qisqacha...' },
         ].map(f => (
           <div key={f.key}>
             <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{f.label}</label>
@@ -353,7 +356,7 @@ const CreateLivestreamModal = ({ onClose, onSubmit }) => {
           </div>
         ))}
         <div>
-          <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">Boshlanish vaqti *</label>
+          <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{t('liveStreams.startTime')} *</label>
           <input
             type="datetime-local"
             value={form.scheduledStartTime}
@@ -366,7 +369,7 @@ const CreateLivestreamModal = ({ onClose, onSubmit }) => {
           disabled={isLoading}
           className="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-full font-black text-sm uppercase tracking-widest transition-all disabled:opacity-50 mt-2"
         >
-          {isLoading ? 'Yaratilmoqda...' : 'Efir yaratish'}
+          {isLoading ? t('liveStreams.creating') : t('liveStreams.createButton')}
         </button>
       </div>
     </div>

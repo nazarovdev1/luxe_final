@@ -1,199 +1,245 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
-import { Search, X, Gem, TrendingUp, Package, ArrowUpRight } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { Search, X, Clock, TrendingUp, Package, ArrowRight } from 'lucide-react';
+
+const RECENT_KEY = 'luxx_recent_searches';
+const MAX_RECENT = 5;
 
 const SearchModal = ({ isOpen, onClose }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [recent, setRecent] = useState([]);
+  const [selected, setSelected] = useState(-1);
   const { products } = useProducts();
+  const { t } = useLanguage();
   const navigate = useNavigate();
+  const inputRef = useRef(null);
+  const listRef = useRef(null);
 
-  // Search logic
+  const TRENDING_TERMS = [t('search.trending1'), t('search.trending2'), t('search.trending3'), t('search.trending4'), t('search.trending5')];
+
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setSearchResults([]);
-      return;
-    }
+    try {
+      const saved = localStorage.getItem(RECENT_KEY);
+      if (saved) setRecent(JSON.parse(saved));
+    } catch {}
+  }, []);
 
-    const filtered = products.filter(product =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setSearchResults(filtered);
-  }, [searchQuery, products]);
+  const saveRecent = useCallback((term) => {
+    if (!term.trim()) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+      const updated = [term, ...saved.filter(t => t !== term)].slice(0, MAX_RECENT);
+      localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+      setRecent(updated);
+    } catch {}
+  }, []);
 
-  // Handle keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
+    if (!query.trim()) { setResults([]); return; }
+    const q = query.toLowerCase();
+    setResults(products.filter(p => p.name.toLowerCase().includes(q)));
+    setSelected(-1);
+  }, [query, products]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelected(i => results.length ? (i + 1) % results.length : -1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelected(i => results.length ? (i - 1 + results.length) % results.length : -1);
+      } else if (e.key === 'Enter' && selected >= 0 && results[selected]) {
+        e.preventDefault();
+        goProduct(results[selected].id);
       }
     };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose, results, selected]);
 
+  useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    } else {
+      setQuery('');
+      setSelected(-1);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
-  const handleProductClick = (productId) => {
-    navigate(`/product/${productId}`);
+  useEffect(() => {
+    if (selected >= 0 && listRef.current) {
+      const el = listRef.current.children[selected];
+      el?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [selected]);
+
+  const goProduct = (id) => {
+    saveRecent(query);
+    navigate(`/product/${id}`);
     onClose();
-    setSearchQuery('');
+    setQuery('');
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
-  // Use Portal to render outside root hierarchy to cover Navbar
-  if (typeof document === 'undefined') return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] bg-black/68 backdrop-blur-md animate-in fade-in duration-300"
-      onClick={handleOverlayClick}
+      className="fixed inset-0 z-[9999] flex items-start justify-center pt-[10vh] sm:pt-[14vh] bg-black/60 backdrop-blur-xl"
+      onClick={e => e.target === e.currentTarget && onClose()}
+      style={{ animation: 'searchFadeIn .15s ease-out' }}
     >
-      <div className="absolute top-[74px] right-4 md:right-6 lg:right-[420px] w-[92vw] max-w-[430px] max-h-[82vh] overflow-hidden rounded-[26px] bg-gradient-to-br from-[#0f1626]/96 via-[#111a2b]/97 to-[#0a111d]/95 shadow-[0_30px_70px_rgba(0,0,0,0.62)] animate-in fade-in zoom-in duration-300">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_10%,rgba(244,241,235,0.12),transparent_30%),radial-gradient(circle_at_90%_16%,rgba(141,155,184,0.18),transparent_36%),radial-gradient(circle_at_16%_96%,rgba(214,180,124,0.1),transparent_30%)]" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-[#f4f1eb]/35 to-transparent" />
-
-        <div className="relative p-4 sm:p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f4f1eb]/10">
-                <Search className="h-4 w-4 text-[#f4f1eb]" />
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.22em] text-[#9aa3b2]">Editorial Search</p>
-                <h2 className="text-lg font-semibold text-[#f4f1eb] leading-tight">Qidirish</h2>
-              </div>
-            </div>
+      <div
+        className="w-full max-w-2xl mx-4 rounded-2xl border border-white/[0.08] bg-[#0a0a0a]/98 backdrop-blur-2xl shadow-[0_30px_80px_rgba(0,0,0,0.7)] overflow-hidden"
+        style={{ animation: 'searchScaleIn .2s cubic-bezier(.16,1,.3,1)' }}
+      >
+        <div className="flex items-center gap-3 px-5 h-[60px] border-b border-white/[0.06]">
+          <Search className="w-[18px] h-[18px] text-[#d6b47c] shrink-0" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t('search.placeholder')}
+            className="flex-1 bg-transparent text-[#f4f1eb] text-[15px] placeholder:text-[#444] focus:outline-none"
+            autoFocus
+          />
+          {query && (
             <button
-              onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#171f31]/85 text-[#9aa3b2] hover:bg-[#1f2940] hover:text-[#f4f1eb] transition-colors"
-              aria-label="Qidiruvni yopish"
+              onClick={() => { setQuery(''); inputRef.current?.focus(); }}
+              className="p-1 rounded-md hover:bg-white/[0.06] text-[#555] hover:text-[#999] transition-colors"
             >
-              <X className="h-4 w-4" />
+              <X className="w-4 h-4" />
             </button>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c7ceda] w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Mahsulot nomini kiriting..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-[48px] pl-10 pr-3 rounded-xl bg-[#0a1221]/90 text-[#f4f1eb] text-sm placeholder:text-[#8f98a8] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] focus:outline-none focus:ring-2 focus:ring-[#f4f1eb]/50"
-              autoFocus
-            />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md bg-[#202a40] px-1.5 py-0.5 text-[10px] text-[#c7ceda]">
-              ESC
-            </kbd>
-          </div>
-
-          <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-[#9aa3b2]/35 to-transparent" />
+          )}
+          <kbd className="hidden sm:block px-2 py-1 rounded-lg bg-white/[0.05] text-[10px] text-[#555] font-mono tracking-wide">ESC</kbd>
         </div>
 
-        <div className="relative max-h-[45vh] overflow-y-auto px-4 pb-4 sm:px-5">
-          {searchQuery.trim() === '' ? (
-            <div className="rounded-2xl bg-gradient-to-br from-[#131c2e] to-[#0f1626] p-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f4f1eb]/10">
-                <Search className="h-7 w-7 text-[#f4f1eb]" />
-              </div>
-              <h3 className="text-[#f4f1eb] font-semibold text-base mb-1">Mavsumiy Topilmalar</h3>
-              <p className="text-[#9aa3b2] text-sm">Mahsulot topish uchun nomini yozing</p>
-
-              <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-                {['Ko\'ylak', 'Libos', 'Yubka'].map((term) => (
-                  <button
-                    key={term}
-                    onClick={() => setSearchQuery(term)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#202a40] px-4 py-2 text-sm text-[#c7ceda] hover:bg-[#283550] hover:text-[#f4f1eb] transition-colors"
-                  >
-                    <TrendingUp className="w-3 h-3" />
-                    {term}
-                  </button>
-                ))}
+        <div className="max-h-[50vh] overflow-y-auto overscroll-contain">
+          {!query.trim() ? (
+            <div className="p-5">
+              {recent.length > 0 && (
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#555] font-semibold">{t('search.recentTitle')}</span>
+                    <button
+                      onClick={() => { localStorage.removeItem(RECENT_KEY); setRecent([]); }}
+                      className="text-[10px] uppercase tracking-[0.15em] text-[#444] hover:text-[#d6b47c] transition-colors"
+                    >
+                      {t('search.recentClear')}
+                    </button>
+                  </div>
+                  <div className="space-y-0.5">
+                    {recent.map(term => (
+                      <button
+                        key={term}
+                        onClick={() => setQuery(term)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-[#888] hover:text-[#f4f1eb] hover:bg-white/[0.04] transition-colors"
+                      >
+                        <Clock className="w-[14px] h-[14px] text-[#3a3a3a]" />
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#858585] font-semibold">{t('search.trendingTitle')}</span>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {TRENDING_TERMS.map(term => (
+                    <button
+                      key={term}
+                      onClick={() => setQuery(term)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/[0.07] text-[13px] text-[#777] hover:text-[#d6b47c] hover:border-[#d6b47c]/25 hover:bg-[#d6b47c]/[0.04] transition-all duration-200"
+                    >
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      {term}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          ) : searchResults.length === 0 ? (
-            <div className="rounded-2xl bg-gradient-to-br from-[#141d2f] to-[#0f1626] p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-[#f4f1eb]/8 flex items-center justify-center">
-                <Package className="w-9 h-9 text-[#9aa3b2]" />
+          ) : results.length === 0 ? (
+            <div className="py-12 px-5 text-center">
+              <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-white/[0.03] flex items-center justify-center">
+                <Package className="w-6 h-6 text-[#333]" />
               </div>
-              <h3 className="text-[#f4f1eb] font-semibold text-lg mb-2">Natija topilmadi</h3>
-              <p className="text-[#9aa3b2]">"{searchQuery}" uchun mahsulot topilmadi</p>
+              <p className="text-sm text-[#555]">
+                <span className="text-[#888] font-medium">"{query}"</span> {t('search.noResults')}
+              </p>
             </div>
           ) : (
-            <div className="pt-1 pb-2">
-              <div className="mb-3 px-1 flex items-center gap-2">
-                <span className="text-sm text-[#c7ceda] font-medium">{searchResults.length} ta natija</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-[#9aa3b2]/35 to-transparent" />
-              </div>
-              <div className="space-y-2">
-                {searchResults.map((product) => (
-                  <div
+            <div className="p-2">
+              <p className="px-3 py-1.5 text-[11px] text-[#555] font-medium">{results.length} {t('search.resultsCount')}</p>
+              <div ref={listRef} className="space-y-0.5">
+                {results.map((product, i) => (
+                  <button
                     key={product.id}
-                    onClick={() => handleProductClick(product.id)}
-                    className="group flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-br from-[#141d2f] to-[#0f1626] cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] hover:from-[#19243a] hover:to-[#121b2c] transition-colors"
+                    onClick={() => goProduct(product.id)}
+                    className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all duration-150 ${selected === i
+                      ? 'bg-white/[0.07] ring-1 ring-[#d6b47c]/20'
+                      : 'hover:bg-white/[0.04]'
+                    }`}
                   >
-                    <div className="relative shrink-0">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-14 h-14 object-cover rounded-xl shadow-[0_8px_16px_rgba(2,6,16,0.45)]"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <div className="flex items-center gap-2 mb-0.5">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-11 h-11 object-cover rounded-lg shrink-0 bg-white/[0.03]"
+                    />
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="flex items-center gap-2">
                         {product.badge && (
-                          <span className={`shrink-0 text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold tracking-wider ${product.badge === 'NEW'
-                            ? 'bg-[#2d3442] text-[#f4f1eb]'
-                            : 'bg-[#f4f1eb] text-[#111827]'
-                            }`}>
+                          <span className={`shrink-0 text-[8px] px-1.5 py-px rounded uppercase font-bold tracking-wider ${product.badge === 'NEW'
+                            ? 'bg-white/[0.08] text-[#ccc]'
+                            : 'bg-[#d6b47c] text-[#0a0a0a]'
+                          }`}>
                             {product.badge}
                           </span>
                         )}
-                        <h3 className="text-[#f4f1eb] font-medium truncate">
-                          {product.name}
-                        </h3>
+                        <span className="text-sm text-[#f4f1eb] font-medium truncate">{product.name}</span>
                       </div>
-                      <p className="text-[#9aa3b2] text-xs">{product.category}</p>
+                      <span className="text-[11px] text-[#555]">{product.category}</span>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[#f4f1eb] font-semibold text-sm">{product.price}</div>
-                      <span className="inline-flex items-center gap-1 text-[11px] text-[#c7ceda] mt-0.5">
-                        Ko'rish <ArrowUpRight className="h-3 w-3" />
-                      </span>
+                      <div className="text-sm text-[#f4f1eb] font-semibold">{product.price}</div>
+                      <ArrowRight className="w-3 h-3 text-[#444] ml-auto" />
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        <div className="relative p-4 bg-[#0b111e]/80">
-          <div className="h-px w-full mb-3 bg-gradient-to-r from-transparent via-[#9aa3b2]/35 to-transparent" />
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-[#9aa3b2]">
-              <kbd className="px-2 py-1 bg-[#1c263b] rounded-lg text-[10px] text-[#c7ceda]">ESC</kbd>
-              <span>yopish</span>
-            </div>
-            <div className="flex items-center gap-2 text-[#9aa3b2]">
-              <kbd className="px-2 py-1 bg-[#1c263b] rounded-lg text-[10px] text-[#c7ceda]">ENTER</kbd>
-              <span>tanlash</span>
-            </div>
-          </div>
+        <div className="flex items-center gap-5 px-5 py-3 border-t border-white/[0.06]">
+          <span className="flex items-center gap-1.5 text-[10px] text-[#444]">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">↑</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">↓</kbd>
+            <span className='text-[#d1c9c9]'>harakatlanish</span>
+            
+          </span>
+          <span className="flex items-center gap-1.5 text-[10px] text-[#444]">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">↵</kbd>
+            <span className='text-[#d1c9c9]'>tanlash</span>
+            
+          </span>
+          <span className="flex items-center gap-1.5 text-[10px] text-[#444]">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">esc</kbd>
+            <span className='text-[#d1c9c9]'>yopish</span>
+            
+          </span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes searchFadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes searchScaleIn { from { opacity: 0; transform: scale(.97) translateY(-6px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+      `}</style>
     </div>,
     document.body
   );

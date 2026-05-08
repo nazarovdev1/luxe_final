@@ -5,6 +5,7 @@ import { Play, Heart, MessageCircle, Share2, ShoppingBag, ArrowUp, ArrowDown } f
 import SEO from '../components/SEO';
 import ReelComments from '../components/ReelComments';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 const Reels = () => {
@@ -15,17 +16,16 @@ const Reels = () => {
   const [selectedReel, setSelectedReel] = useState(null);
   const [likes, setLikes] = useState({});
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Fetch reels
   const fetchReels = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/reels?active=true&limit=50');
       if (response.data.success) {
         setReels(response.data.data);
-        // Initialize likes state
         const likesMap = {};
         response.data.data.forEach(reel => {
           likesMap[reel._id] = {
@@ -35,7 +35,6 @@ const Reels = () => {
         });
         setLikes(likesMap);
 
-        // Set initial index if ID is provided in URL
         if (id) {
           const index = response.data.data.findIndex(r => r._id === id);
           if (index !== -1) {
@@ -45,20 +44,19 @@ const Reels = () => {
       }
     } catch (error) {
       console.error('Error fetching reels:', error);
-      toast.error('Reellarni yuklashda xatolik');
+      toast.error(t('reels.loading'));
     } finally {
       setLoading(false);
     }
-  }, [user, id]);
+  }, [user, id, t]);
 
   useEffect(() => {
     fetchReels();
   }, [fetchReels]);
 
-  // Handle like
   const handleLike = async (reelId) => {
     if (!user) {
-      toast.error('Layk qilish uchun tizimga kiring');
+      toast.error(t('reels.loginToLike'));
       return;
     }
 
@@ -78,11 +76,10 @@ const Reels = () => {
       }
     } catch (error) {
       console.error('Error liking reel:', error);
-      toast.error('Xatolik yuz berdi');
+      toast.error(t('reels.loading'));
     }
   };
 
-  // Handle share
   const handleShare = async (reelId) => {
     try {
       const response = await axios.post(`/api/reels/${reelId}/share`);
@@ -94,7 +91,7 @@ const Reels = () => {
           });
         } else {
           navigator.clipboard.writeText(response.data.data.shareUrl);
-          toast.success('Link nusxalandi!');
+          toast.success(t('reels.linkCopied'));
         }
       }
     } catch (error) {
@@ -102,12 +99,10 @@ const Reels = () => {
     }
   };
 
-  // Handle product click
   const handleProductClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  // Navigate to next/previous reel
   const nextReel = () => {
     if (currentIndex < reels.length - 1) {
       setCurrentIndex(prev => prev + 1);
@@ -120,7 +115,6 @@ const Reels = () => {
     }
   };
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowUp') prevReel();
@@ -131,7 +125,6 @@ const Reels = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, reels.length]);
 
-  // Scroll navigation
   const handleWheel = (e) => {
     if (e.deltaY > 50) nextReel();
     if (e.deltaY < -50) prevReel();
@@ -139,7 +132,6 @@ const Reels = () => {
 
   const [isPlaying, setIsPlaying] = useState(true);
 
-  // Handle play/pause
   const togglePlay = () => {
     if (currentReel.videoType === 'youtube' || currentReel.videoType === 'vimeo') {
       const iframe = document.querySelector('iframe');
@@ -167,7 +159,7 @@ const Reels = () => {
       if (isPlaying) {
         video.pause();
       } else {
-        video.muted = false; // Unmute on play like YouTube logic does
+        video.muted = false;
         video.play().catch(e => console.log(e));
       }
     }
@@ -184,7 +176,7 @@ const Reels = () => {
             <Play size={32} className="text-amber-500 animate-pulse" />
           </div>
         </div>
-        <p className="mt-6 text-gray-400 font-medium tracking-widest uppercase text-sm animate-pulse">Yuklanmoqda</p>
+        <p className="mt-6 text-gray-400 font-medium tracking-widest uppercase text-sm animate-pulse">{t('reels.loading')}</p>
       </div>
     );
   }
@@ -197,15 +189,15 @@ const Reels = () => {
           <div className="w-24 h-24 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/5 shadow-2xl">
             <Play size={48} className="text-amber-500" />
           </div>
-          <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">Hozircha reellar yo'q</h2>
+          <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">{t('reels.noReels')}</h2>
           <p className="text-gray-400 mb-10 max-w-md mx-auto leading-relaxed text-lg">
-            Tez orada eng so'nggi trendlar va yangi kolleksiyalar haqida qiziqarli videolar qo'shiladi.
+            {t('reels.noReelsHint')}
           </p>
           <button
             onClick={() => navigate('/')}
             className="px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl shadow-amber-500/20"
           >
-            Bosh sahifaga qaytish
+            {t('reels.backToHome')}
           </button>
         </div>
       </div>
@@ -235,7 +227,7 @@ const Reels = () => {
           <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
             <Play size={16} className="text-black fill-current" />
           </div>
-          <h1 className="text-white text-lg font-black tracking-tighter uppercase">Muse</h1>
+          <h1 className="text-white text-lg font-black tracking-tighter uppercase">{t('reels.title')}</h1>
         </div>
         <div className="w-10"></div>
       </header>
@@ -244,7 +236,7 @@ const Reels = () => {
       <main 
         className="flex-1 relative flex items-center justify-center pt-16 pb-8 transition-all duration-500"
       >
-        {/* Navigation - Sides (Hidden when comments open to save space) */}
+        {/* Navigation - Sides */}
         {!commentsOpen && (
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-10 pointer-events-none z-30">
             <button
@@ -309,7 +301,7 @@ const Reels = () => {
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
 
-            {/* Actions (Only show if comments NOT open, or move them) */}
+            {/* Actions */}
             <div className="absolute right-4 bottom-20 flex flex-col gap-5 z-20 transition-opacity duration-300">
               <button
                 onClick={() => handleLike(currentReel._id)}
@@ -337,7 +329,7 @@ const Reels = () => {
                     className={`transition-colors ${commentsOpen ? 'text-amber-500' : 'text-white'}`} 
                   />
                 </div>
-                <span className="text-[10px] font-bold text-white shadow-sm">Izohlar</span>
+                <span className="text-[10px] font-bold text-white shadow-sm">{t('reels.comments')}</span>
               </button>
 
               <button
@@ -400,12 +392,10 @@ const Reels = () => {
   );
 };
 
-// Helper function to get embed URL
 const getEmbedUrl = (url, type) => {
   if (!url) return '';
 
   if (type === 'youtube') {
-    // Extract YouTube video ID (including Shorts)
     const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(youtubeRegex);
     if (match) {

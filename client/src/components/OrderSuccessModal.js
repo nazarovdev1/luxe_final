@@ -1,9 +1,11 @@
 import React from 'react';
 import { CheckCircle, ArrowRight, ShoppingBag, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const OrderSuccessModal = ({ isOpen, onClose, orderId, isMobile = false }) => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     if (!isOpen) return null;
 
@@ -25,8 +27,8 @@ const OrderSuccessModal = ({ isOpen, onClose, orderId, isMobile = false }) => {
                         <CheckCircle className="w-12 h-12 text-[#d6b47c]" />
                     </div>
 
-                    <h2 className="text-3xl font-brilliant text-white mb-4 tracking-tight">Rahmat!</h2>
-                    <p className="text-gray-400 text-sm mb-2 font-medium">Buyurtmangiz muvaffaqiyatli qabul qilindi</p>
+                    <h2 className="text-3xl font-brilliant text-white mb-4 tracking-tight">{t('checkoutPage.thankYou')}</h2>
+                    <p className="text-gray-400 text-sm mb-2 font-medium">{t('checkoutPage.orderSuccess')}</p>
                     {orderId && (
                         <p className="text-[10px] font-black text-[#d6b47c] uppercase tracking-[0.2em] mb-10">
                             ID: #{orderId.slice(-8).toUpperCase()}

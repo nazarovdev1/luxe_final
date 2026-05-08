@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart3, CheckCircle, Users, MessageCircle, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const DEMO_POLLS = [
   {
@@ -43,6 +44,7 @@ const DEMO_POLLS = [
 const StylePolls = () => {
   const [votedPolls, setVotedPolls] = useState({});
   const [showAll, setShowAll] = useState(false);
+  const { t } = useLanguage();
 
   const handleVote = (pollId, optionId) => {
     if (votedPolls[pollId]) return;
@@ -66,8 +68,8 @@ const StylePolls = () => {
             <BarChart3 className="w-5 h-5 text-[#d6b47c]" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-[#f4f1eb]">So'rovnomalar</h3>
-            <p className="text-[11px] text-[#9aa3b2]">Ovoz bering va natijani ko'ring</p>
+            <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('stylePolls.title')}</h3>
+            <p className="text-[11px] text-[#9aa3b2]">{t('stylePolls.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -168,7 +170,7 @@ const StylePolls = () => {
                               </div>
                             )}
                             {!hasVoted && (
-                              <span className="text-[10px] text-white/50">Bosib ovoz bering</span>
+                              <span className="text-[10px] text-white/50">{t('stylePolls.clickToVote')}</span>
                             )}
                           </div>
                         </div>
@@ -192,7 +194,7 @@ const StylePolls = () => {
                 </div>
                 {hasVoted && (
                   <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" /> Ovoz berildi
+                    <CheckCircle className="w-3 h-3" /> {t('stylePolls.voted')}
                   </span>
                 )}
               </div>

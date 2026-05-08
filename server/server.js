@@ -54,6 +54,8 @@ import couponRoutes from './routes/coupon.routes.js'
 import adminManagementRoutes from './routes/admin.routes.js'
 import reelRoutes from './routes/reel.route.js'
 import liveChatRoutes from './routes/liveChat.routes.js'
+import giftCardRoutes from './routes/giftCard.routes.js'
+import blogRoutes from './routes/blog.routes.js'
 
 import { initSocket } from './services/socket.service.js'
 
@@ -146,6 +148,8 @@ app.use('/api/coupons', couponRoutes)
 app.use('/api/admin-mgmt', adminManagementRoutes)
 app.use('/api/reels', reelRoutes)
 app.use('/api/live-chat', liveChatRoutes)
+app.use('/api/gift-cards', giftCardRoutes)
+app.use('/api/blogs', blogRoutes)
 import ReelComment from './models/reelComment.model.js'
 import { protect, admin } from './middleware/auth.middleware.js'
 app.delete('/api/delete-reel-comment/:id', protect, async (req, res) => {

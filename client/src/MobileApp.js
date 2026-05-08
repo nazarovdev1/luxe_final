@@ -23,6 +23,9 @@ import MobileLive from './pages/mobile/MobileLive';
 import MobileStyleFeed from './pages/mobile/MobileStyleFeed';
 import MobileChallenges from './pages/mobile/MobileChallenges';
 import MobileReels from './pages/mobile/MobileReels';
+import GiftCards from './pages/GiftCards';
+import Blog from './pages/Blog';
+import MobileBlogPost from './pages/mobile/MobileBlogPost';
 import LiveStreamView from './pages/LiveStreamView';
 import NotFound from './pages/NotFound';
 
@@ -56,6 +59,9 @@ const MobileApp = () => {
 <Route path="/challenges" element={<MobileChallenges />} />
 <Route path="/reels" element={<MobileReels />} />
 <Route path="/reels/:id" element={<MobileReels />} />
+<Route path="/gift-cards" element={<GiftCards />} />
+<Route path="/blog" element={<Blog />} />
+<Route path="/blog/:slug" element={<MobileBlogPost />} />
 <Route path="*" element={<NotFound />} />
             </Routes>
         </MobileLayout>

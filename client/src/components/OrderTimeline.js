@@ -1,14 +1,17 @@
 import React from 'react';
 import { Package, Clock, Truck, CheckCircle, MapPin, Phone } from 'lucide-react';
-
-const ORDER_STATUSES = [
-  { key: 'Kutilmoqda', label: 'Buyurtma qabul qilindi', icon: Clock, color: '#f59e0b' },
-  { key: 'Jarayonda', label: 'Tayyorlanmoqda', icon: Package, color: '#3b82f6' },
-  { key: 'Yetkazilmoqda', label: 'Yo\'lda', icon: Truck, color: '#8b5cf6' },
-  { key: 'Yetkazildi', label: 'Yetkazib berildi', icon: CheckCircle, color: '#22c55e' },
-];
+import { useLanguage } from '../contexts/LanguageContext';
 
 const OrderTimeline = ({ order }) => {
+  const { t } = useLanguage();
+
+  const ORDER_STATUSES = [
+    { key: 'Kutilmoqda', label: t('orderTimeline.order'), icon: Clock, color: '#f59e0b' },
+    { key: 'Jarayonda', label: t('common.processing'), icon: Package, color: '#3b82f6' },
+    { key: 'Yetkazilmoqda', label: t('common.onTheWay'), icon: Truck, color: '#8b5cf6' },
+    { key: 'Yetkazildi', label: t('common.delivered'), icon: CheckCircle, color: '#22c55e' },
+  ];
+
   const currentStatusIndex = ORDER_STATUSES.findIndex((s) => s.key === order.status);
   const isCancelled = order.status === 'Bekor qilindi';
 
@@ -27,12 +30,12 @@ const OrderTimeline = ({ order }) => {
       {/* Header */}
       <div className="flex items-center justify-between p-5 border-b border-white/5">
         <div>
-          <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">Buyurtma</p>
+          <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">{t('orderTimeline.order')}</p>
           <p className="text-lg font-semibold text-[#f4f1eb] mt-0.5">#{order._id?.slice(-8).toUpperCase()}</p>
         </div>
         <div className="text-right">
           <p className="text-xs text-[#9aa3b2]">{formatDate(order.createdAt)}</p>
-          <p className="text-sm font-bold text-[#f4f1eb] mt-0.5">{formatPrice(order.totals?.total)} so'm</p>
+          <p className="text-sm font-bold text-[#f4f1eb] mt-0.5">{formatPrice(order.totals?.total)} {t('common.sum')}</p>
         </div>
       </div>
 
@@ -40,8 +43,8 @@ const OrderTimeline = ({ order }) => {
       <div className="p-5">
         {isCancelled ? (
           <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-4 text-center">
-            <p className="text-sm font-semibold text-red-400">Buyurtma bekor qilindi</p>
-            <p className="text-xs text-[#9aa3b2] mt-1">Ma'lumot uchun biz bilan bog'laning</p>
+            <p className="text-sm font-semibold text-red-400">{t('orderTimeline.cancelled')}</p>
+            <p className="text-xs text-[#9aa3b2] mt-1">{t('orderTimeline.cancelledNote')}</p>
           </div>
         ) : (
           <div className="relative">
@@ -74,10 +77,10 @@ const OrderTimeline = ({ order }) => {
                         {status.label}
                       </p>
                       {isCurrent && (
-                        <p className="text-[11px] text-[#d6b47c] mt-0.5">Hozirgi holat</p>
+                        <p className="text-[11px] text-[#d6b47c] mt-0.5">{t('orderTimeline.currentStatus')}</p>
                       )}
                       {isActive && index < currentStatusIndex && (
-                        <p className="text-[11px] text-[#9aa3b2] mt-0.5">Bajarildi ✓</p>
+                        <p className="text-[11px] text-[#9aa3b2] mt-0.5">{t('orderTimeline.completed')}</p>
                       )}
                     </div>
                   </div>
@@ -101,7 +104,7 @@ const OrderTimeline = ({ order }) => {
 
         {/* Items */}
         <div className="mt-4 pt-4 border-t border-white/5">
-          <p className="text-xs uppercase tracking-[0.12em] text-[#9aa3b2] mb-2">Mahsulotlar</p>
+          <p className="text-xs uppercase tracking-[0.12em] text-[#9aa3b2] mb-2">{t('orderTimeline.products')}</p>
           <div className="space-y-2">
             {order.items?.map((item, i) => (
               <div key={i} className="flex items-center gap-3 rounded-xl bg-white/[0.02] p-2.5">
@@ -116,7 +119,7 @@ const OrderTimeline = ({ order }) => {
                     {item.selectedColor ? ` • ${item.selectedColor}` : ''}
                   </p>
                 </div>
-                <p className="text-xs font-semibold text-[#f4f1eb]">{formatPrice(item.price)} so'm</p>
+                <p className="text-xs font-semibold text-[#f4f1eb]">{formatPrice(item.price)} {t('common.sum')}</p>
               </div>
             ))}
           </div>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const toNumber = (value) => {
     if (typeof value === 'string') return Number((value.match(/\d+/g) || []).join('')) || 0;
@@ -12,6 +13,7 @@ const toNumber = (value) => {
 const formatPrice = (value) => toNumber(value).toLocaleString();
 
 const MobileCart = () => {
+    const { t } = useLanguage();
     const { items: cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
     const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
@@ -166,12 +168,12 @@ const MobileCart = () => {
                             <span className="text-xs font-bold text-white">{formatPrice(totalPrice)} UZS</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Yetkazib berish</span>
-                            <span className="text-xs font-bold text-[#4ade80]">BEPUL</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('checkoutPage.delivery')}</span>
+                            <span className="text-xs font-bold text-[#4ade80]">{t('checkoutPage.free')}</span>
                         </div>
                         <div className="h-px bg-white/5" />
                         <div className="flex items-center justify-between pt-1">
-                            <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d6b47c]">Jami</span>
+                            <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d6b47c]">{t('common.total')}</span>
                             <div className="text-right">
                                 <span className="text-2xl font-black text-white tracking-tight">{formatPrice(totalPrice)}</span>
                                 <span className="text-xs font-black text-[#d6b47c] ml-1 uppercase tracking-widest">uzs</span>

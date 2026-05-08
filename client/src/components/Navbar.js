@@ -17,6 +17,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
+const isMacOS = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
+
 const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -31,28 +33,29 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
   }, []);
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { totalItems } = useCart();
+  const { t } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const userMenuRef = useRef(null);
 
   const navItems = [
-    { name: 'Asosiy', sectionId: 'hero' },
-    { name: 'Kiyimlar', link: '/products' },
-    { name: 'Looklar', link: '/lookbooks' },
+    { name: t('nav.home'), sectionId: 'hero' },
+    { name: t('nav.clothes'), link: '/products' },
+    { name: t('nav.looks'), link: '/lookbooks' },
     {
-      name: 'EVENTLAR',
+      name: t('nav.events'),
       dropdown: [
-        { name: 'Reels', link: '/reels' },
-        { name: 'Community', link: '/style-feed' },
-        { name: 'Challenges', link: '/challenges' },
-        { name: 'Live', link: '/live' },
-        { name: 'VIP Club', link: '/vip-club' },
-        { name: 'Eco Impact', link: '/eco-impact' },
-        { name: '🎁 Sovg\'a Karta', link: '/gift-cards' },
-        { name: '📝 Blog', link: '/blog' },
+        { name: t('nav.reels'), link: '/reels' },
+        { name: t('nav.community'), link: '/style-feed' },
+        { name: t('nav.challenges'), link: '/challenges' },
+        { name: t('nav.live'), link: '/live' },
+        { name: t('nav.vipClub'), link: '/vip-club' },
+        { name: t('nav.ecoImpact'), link: '/eco-impact' },
+        { name: t('nav.giftCard'), link: '/gift-cards' },
+        { name: t('nav.blog'), link: '/blog' },
       ]
     },
-    { name: 'Biz haqimizda', sectionId: 'about' },
+    { name: t('nav.about'), sectionId: 'about' },
   ];
 
   const closeAllMenus = () => {
@@ -121,14 +124,14 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
         : 'bg-transparent border-b border-transparent'
         }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="w-full">
-          <div className="relative h-[76px] flex items-center justify-between gap-4">
-            <Link to="/" className="flex items-center min-w-0">
+            <div className="relative h-[76px] flex items-center justify-between">
+            <Link to="/" className="flex items-center shrink-0">
               <img src="/logonav.png" alt="Luxx logo" className="h-16 w-[90px] object-contain" />
             </Link>
 
-            <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+            <div className="hidden lg:flex flex-1 items-center justify-center gap-8 xl:gap-10 mx-8">
               {navItems.map(item => {
                 const active = isItemActive(item) || (item.dropdown && item.dropdown.some(sub => isItemActive(sub)));
                 const baseClass = `relative group py-1 text-[13px] font-medium tracking-[0.05em] uppercase whitespace-nowrap transition-all duration-300 ${active
@@ -179,10 +182,19 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
               })}
             </div>
 
-            <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 lg:gap-4 shrink-0">
               <button
                 onClick={handleSearchClick}
-                className="text-white hover:text-[#d6b47c] transition-colors duration-300"
+                className="hidden lg:flex items-center gap-2.5 h-9 pl-3.5 pr-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200 cursor-pointer group"
+                aria-label="Qidiruv"
+              >
+                <Search className="w-4 h-4 text-[#fff] group-hover:text-[#d6b47c] transition-colors" />
+                <span className="text-[13px] text-[#fff] group-hover:text-[#666] transition-colors">{t('nav.searchPlaceholder')}</span>
+                <kbd className="px-2 py-0.5 rounded-md bg-white/[0.06] text-[10px] text-[#fff] font-mono">{isMacOS ? '⌘K' : 'Ctrl K'}</kbd>
+              </button>
+              <button
+                onClick={handleSearchClick}
+                className="lg:hidden text-white hover:text-[#d6b47c] transition-colors duration-300"
                 aria-label="Qidiruv"
               >
                 <Search className="h-5 w-5" />
@@ -191,7 +203,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
               <button
                 onClick={onVisualSearch}
                 className="text-white hover:text-[#d6b47c] transition-colors duration-300"
-                aria-label="Visual qidiruv"
+                aria-label={t('nav.visualSearch')}
               >
                 <Camera className="h-5 w-5" />
               </button>
@@ -200,7 +212,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
               <button
                 onClick={handleCartClick}
                 className="relative text-white hover:text-[#d6b47c] transition-colors duration-300"
-                aria-label="Savat"
+                aria-label={t('nav.cart')}
               >
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
@@ -219,13 +231,13 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                     to="/login"
                     className="hidden lg:inline-flex px-3.5 py-2 text-sm text-neutral-300 hover:text-white transition-colors"
                   >
-                    Kirish
+                    {t('nav.login')}
                   </Link>
                   <Link
                     to="/register"
                     className="hidden sm:inline-flex items-center justify-center rounded-[14px] bg-[#f4f4f4] px-[17px] py-2.5 text-[12px] font-semibold tracking-[0.05em] uppercase text-[#1a1a1a] hover:bg-white transition-colors"
                   >
-                    Ro'yxatdan o'tish
+                    {t('nav.register')}
                   </Link>
                 </>
               )}
@@ -242,8 +254,8 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[#8ea6d6]/25 bg-[#111725]/95 backdrop-blur-xl p-2 shadow-2xl">
                       <div className="px-3 py-2 border-b border-[#8ea6d6]/20">
-                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Akkount</p>
-                        <p className="mt-1 text-sm font-medium text-neutral-200 truncate">Salom, {user?.username}</p>
+                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">{t('nav.account')}</p>
+                        <p className="mt-1 text-sm font-medium text-neutral-200 truncate">{t('nav.hello')}, {user?.username}</p>
                       </div>
 
                       {isAdmin && (
@@ -253,7 +265,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                           className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
                         >
                           <LayoutDashboard className="h-4 w-4" />
-                          Admin panel
+                          {t('nav.adminPanel')}
                         </Link>
                       )}
 
@@ -263,7 +275,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
                       >
                         <Package className="h-4 w-4" />
-                        Mening buyurtmalarim
+                        {t('nav.myOrders')}
                       </Link>
 
                       <button
@@ -274,7 +286,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                         className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
                       >
                         <LogOut className="h-4 w-4" />
-                        Chiqish
+                        {t('nav.logout')}
                       </button>
                     </div>
                   )}
@@ -353,7 +365,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                           className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          Admin panel
+                          {t('nav.adminPanel')}
                         </Link>
                       )}
                       <Link
@@ -361,7 +373,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                         className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Buyurtmalarim
+                        {t('nav.orders')}
                       </Link>
                       <button
                         onClick={() => {
@@ -370,7 +382,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                         }}
                         className="w-full text-left rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
                       >
-                        Chiqish
+                        {t('nav.logout')}
                       </button>
                     </>
                   ) : (
@@ -380,14 +392,14 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                         className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Kirish
+                        {t('nav.login')}
                       </Link>
                       <Link
                         to="/register"
                         className="mt-1 flex items-center justify-center rounded-xl bg-[#f5f5f5] px-3 py-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#1a1a1a]"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Ro'yxatdan o'tish
+                        {t('nav.register')}
                       </Link>
                     </>
                   )}
@@ -395,7 +407,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
 
                 <div className="rounded-xl border border-[#d6b47c]/30 bg-black/25 px-3 py-2 text-xs text-neutral-400 flex items-center gap-2 mt-1">
                   <Crown className="h-3.5 w-3.5 text-[#d6b47c]" />
-                  Luxx premium navigation
+                  {t('nav.premiumNav')}
                 </div>
               </div>
             </div>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, CheckCheck, Lock, Eye, EyeOff, Phone, UserPlus } from 'lucide-react';
+import { AlertCircle, ArrowRight, ArrowLeft, CheckCheck, Lock, Eye, EyeOff, Phone, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import SEO from './SEO';
+import TelegramLoginButton from './TelegramLoginButton';
 
-const BENEFITS = [
-  'Shaxsiy tavsiya asosidagi mahsulotlar',
-  "Lookbook va drop yangiliklari birinchi bo'lib",
-  "Buyurtmalar holatini bir joyda kuzatish",
+const BENEFITS = (t) => [
+  t('auth.benefit1'),
+  t('auth.benefit2'),
+  t('auth.benefit3'),
 ];
 
 /* ─── floating‑particle canvas ─────────────────────────────────── */
@@ -74,17 +76,15 @@ const DotLoader = () => (
 /* ─── input field component ────────────────────────────────────── */
 const FormInput = ({ icon: Icon, label, delay, mounted, ...inputProps }) => (
   <div className={`anim-fade-up ${delay} ${mounted ? '' : 'opacity-0'}`}>
-    <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7d8699]">
+    <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
       {label}
     </label>
-    <div className="input-glow group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c1424]/80 transition-all duration-300 hover:border-white/[0.1]">
-      <div className="flex items-center gap-3 px-4 py-3.5">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#d6b47c]/15 to-[#d6b47c]/5">
-          <Icon className="h-3.5 w-3.5 text-[#d6b47c]/70" />
-        </div>
+    <div className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.01] backdrop-blur-sm transition-all duration-500 focus-within:border-[#d6b47c]/40 focus-within:bg-[#d6b47c]/[0.02] focus-within:shadow-[0_0_20px_rgba(214,180,124,0.05)] hover:border-white/[0.1]">
+      <div className="flex items-center gap-4 px-4 py-4">
+        <Icon className="w-4 h-4 text-[#d6b47c]/50 shrink-0 transition-colors duration-500 group-focus-within:text-[#d6b47c]" />
         <input
           {...inputProps}
-          className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wide text-white/90 outline-none placeholder:text-[#3d4758]"
+          className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wider text-white/95 outline-none placeholder:text-[#4a5468]"
         />
       </div>
     </div>
@@ -106,6 +106,7 @@ const RegisterForm = () => {
   const [mounted, setMounted] = useState(false);
 
   const { register } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -123,12 +124,12 @@ const RegisterForm = () => {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Parollar mos kelmaydi');
+      setError(t('auth.passwordMismatch'));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Parol kamida 6 ta belgidan iborat bo'lishi kerak");
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
@@ -144,7 +145,7 @@ const RegisterForm = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#060a14]">
-      <SEO title="Ro'yxatdan o'tish" noIndex={true} />
+      <SEO title={t('auth.registerTitle')} noIndex={true} />
 
       {/* ── inline keyframes ─────────────────────────────────────── */}
       <style>{`
@@ -167,6 +168,13 @@ const RegisterForm = () => {
         .input-glow:focus-within {
           box-shadow: 0 0 0 1px rgba(214,180,124,.35), 0 0 20px rgba(214,180,124,.08);
         }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          transition: background-color 5000s ease-in-out 0s;
+          -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+        }
       `}</style>
 
       {/* ── ambient blurs ─────────────────────────────────────────── */}
@@ -182,6 +190,8 @@ const RegisterForm = () => {
           className={`w-full transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}
         >
           <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+
+
 
             {/* ─── LEFT  — editorial image ─────────────────────────── */}
             <section className="relative hidden lg:block">
@@ -202,25 +212,25 @@ const RegisterForm = () => {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d6b47c] opacity-50" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-[#d6b47c]" />
                   </span>
-                  <span className="text-[13px] font-medium uppercase tracking-[0.25em] text-[#e8d5b0]">Yangi akkaunt</span>
+                  <span className="text-[13px] font-medium uppercase tracking-[0.25em] text-[#e8d5b0]">{t('auth.registerNewAccount')}</span>
                 </div>
 
                 {/* bottom area */}
                 <div className={`max-w-lg ${mounted ? 'anim-fade-up delay-2' : 'opacity-0'}`}>
-                  <p className="text-[13px] font-medium uppercase tracking-[0.3em] text-[#8a94a8]">Atelier Membership</p>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.3em] text-[#8a94a8]">{t('auth.membership')}</p>
                   <h2 className="mt-4 text-[5rem] font-light leading-[1.05] tracking-tight text-white/95">
-                    New
+                    {t('auth.newWord')}
                     <span
                       className="font-brilliant ml-3 bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent"
                       style={{ animation: 'float 4s ease-in-out infinite' }}
                     >
-                      profile
+                      {t('auth.profileWord')}
                     </span>
                   </h2>
 
                   {/* benefits */}
                   <div className="mt-6 space-y-3">
-                    {BENEFITS.map((item, i) => (
+                    {BENEFITS(t).map((item, i) => (
                       <div
                         key={item}
                         className={`anim-fade-up flex items-center gap-3 rounded-xl border border-white/[0.04] bg-white/[0.03] px-4 py-3 backdrop-blur-sm`}
@@ -245,6 +255,17 @@ const RegisterForm = () => {
 
             {/* ─── RIGHT — register form ───────────────────────────── */}
             <section className="relative flex flex-col items-center justify-center px-5 py-8 sm:px-8 lg:px-14 xl:px-20">
+              
+              {/* ─── Back Button ──────────────────────────────── */}
+              <div className={`absolute left-4 top-4 lg:left-10 lg:top-10 z-[100] ${mounted ? 'anim-fade-up' : 'opacity-0'}`}>
+                <Link 
+                  to="/" 
+                  className="group flex items-center gap-3 rounded-full border border-white/10 bg-[#060a14]/40 px-4 py-2.5 backdrop-blur-md transition-all duration-500 hover:bg-white/5 hover:border-[#d6b47c]/50 hover:shadow-[0_0_20px_rgba(214,180,124,0.15)]"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[#d6b47c] transition-transform duration-500 group-hover:-translate-x-1" />
+                  <span className="hidden sm:block text-[11px] font-bold tracking-[0.2em] text-[#e8d5b0] transition-colors group-hover:text-white">{t('common.mainPage')}</span>
+                </Link>
+              </div>
               {/* subtle grid pattern */}
               <div className="pointer-events-none absolute inset-0 opacity-[0.025]"
                 style={{
@@ -253,43 +274,36 @@ const RegisterForm = () => {
                 }}
               />
 
-              {/* mobile hero banner */}
-              <div className={`relative mb-6 w-full overflow-hidden rounded-[1.8rem] lg:hidden ${mounted ? 'anim-fade-up' : 'opacity-0'}`}>
-                <div className="relative h-[28vh] min-h-[200px]">
-                  <img src="/mobile.jpg" alt="LUXE editorial" className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-[#060a14]/40 to-transparent" />
-                  <div className="absolute bottom-5 left-5 right-5">
-                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#d6b47c]/20 bg-black/40 px-3 py-1 backdrop-blur-md">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d6b47c] opacity-50" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#d6b47c]" />
-                      </span>
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-[#e8d5b0]">Yangi akkaunt</span>
-                    </div>
-                    <p className="text-3xl font-light text-white/95">
-                      New <span className="font-brilliant bg-gradient-to-r from-[#e8c87a] to-[#c49a5c] bg-clip-text text-transparent">profile</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* removed mobile hero banner as requested */}
 
               {/* form container */}
               <div className={`w-full max-w-[440px] ${mounted ? 'anim-fade-up delay-1' : 'opacity-0'}`}>
                 {/* header */}
-                <div className="text-center lg:text-left">
+                <div className="hidden lg:block text-left mb-8">
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/[0.08] px-4 py-1.5">
                     <div className="h-1 w-1 rounded-full bg-[#d6b47c]" />
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#d6b47c]">Ro'yxatdan o'tish</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#d6b47c]">{t('auth.registerTitle')}</span>
                   </div>
                   <h1 className="text-[1.8rem] font-light tracking-tight text-white/95 sm:text-[2.2rem]">
-                    Yangi{' '}
+                    {t('auth.newWord')}{' '}
                     <span className="font-brilliant bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent">
-                      akkaunt
+                      {t('auth.profileWord').toLowerCase()}
                     </span>
                   </h1>
                   <p className="mt-2 text-[13px] leading-relaxed text-[#6b7486]">
-                    Bir necha qadamda ro'yxatdan o'ting va LUXE platformasidagi premium imkoniyatlarni ishga tushiring.
+                    {t('auth.registerDescription')}
                   </p>
+                </div>
+
+                {/* mobile WOW header */}
+                <div className="lg:hidden text-center mb-10 mt-4 relative">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#d6b47c]/10 rounded-full blur-[40px] pointer-events-none"></div>
+                  <h1 className="relative text-3xl font-brilliant tracking-wide bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(214,180,124,0.25)]">
+                    {t('auth.registerTitle')}
+                  </h1>
+                  <div className="flex justify-center mt-3">
+                     <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#d6b47c]/40 to-transparent"></div>
+                  </div>
                 </div>
 
                 {/* form */}
@@ -297,7 +311,7 @@ const RegisterForm = () => {
                   {/* username */}
                   <FormInput
                     icon={UserPlus}
-                    label="Foydalanuvchi nomi"
+                    label={t('auth.usernameLabel')}
                     delay="delay-2"
                     mounted={mounted}
                     name="username"
@@ -311,7 +325,7 @@ const RegisterForm = () => {
                   {/* phone */}
                   <FormInput
                     icon={Phone}
-                    label="Telefon raqam"
+                    label={t('auth.phoneLabel')}
                     delay="delay-3"
                     mounted={mounted}
                     name="phone"
@@ -326,29 +340,27 @@ const RegisterForm = () => {
                   <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2`}>
                     {/* password */}
                     <div className={`anim-fade-up delay-4 ${mounted ? '' : 'opacity-0'}`}>
-                      <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7d8699]">
-                        Parol
-                      </label>
-                      <div className="input-glow group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c1424]/80 transition-all duration-300 hover:border-white/[0.1]">
-                        <div className="flex items-center gap-3 px-4 py-3.5">
-                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#d6b47c]/15 to-[#d6b47c]/5">
-                            <Lock className="h-3.5 w-3.5 text-[#d6b47c]/70" />
-                          </div>
+                       <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
+                         {t('auth.passwordLabel')}
+                       </label>
+                      <div className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.01] backdrop-blur-sm transition-all duration-500 focus-within:border-[#d6b47c]/40 focus-within:bg-[#d6b47c]/[0.02] focus-within:shadow-[0_0_20px_rgba(214,180,124,0.05)] hover:border-white/[0.1]">
+                        <div className="flex items-center gap-4 px-4 py-4">
+                          <Lock className="w-4 h-4 text-[#d6b47c]/50 shrink-0 transition-colors duration-500 group-focus-within:text-[#d6b47c]" />
                           <input
                             name="password"
                             type={showPassword ? 'text' : 'password'}
                             required
                             value={formData.password}
                             onChange={handleChange}
-                            className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wide text-white/90 outline-none placeholder:text-[#3d4758]"
-                            placeholder="Kamida 6 ta"
+                            className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wider text-white/95 outline-none placeholder:text-[#4a5468]"
+                            placeholder={t('auth.passwordMin')}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="rounded-lg p-1 text-[#5a6478] transition-colors hover:bg-white/5 hover:text-[#d6b47c]/70"
+                            className="p-1.5 text-[#4a5468] transition-colors hover:text-[#d6b47c] shrink-0 rounded-lg hover:bg-[#d6b47c]/10"
                           >
-                            {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                       </div>
@@ -356,29 +368,27 @@ const RegisterForm = () => {
 
                     {/* confirm */}
                     <div className={`anim-fade-up delay-5 ${mounted ? '' : 'opacity-0'}`}>
-                      <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7d8699]">
-                        Tasdiqlash
-                      </label>
-                      <div className="input-glow group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c1424]/80 transition-all duration-300 hover:border-white/[0.1]">
-                        <div className="flex items-center gap-3 px-4 py-3.5">
-                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#d6b47c]/15 to-[#d6b47c]/5">
-                            <Lock className="h-3.5 w-3.5 text-[#d6b47c]/70" />
-                          </div>
+                       <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
+                         {t('auth.confirmLabel')}
+                       </label>
+                      <div className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.01] backdrop-blur-sm transition-all duration-500 focus-within:border-[#d6b47c]/40 focus-within:bg-[#d6b47c]/[0.02] focus-within:shadow-[0_0_20px_rgba(214,180,124,0.05)] hover:border-white/[0.1]">
+                        <div className="flex items-center gap-4 px-4 py-4">
+                          <Lock className="w-4 h-4 text-[#d6b47c]/50 shrink-0 transition-colors duration-500 group-focus-within:text-[#d6b47c]" />
                           <input
                             name="confirmPassword"
                             type={showConfirm ? 'text' : 'password'}
                             required
                             value={formData.confirmPassword}
                             onChange={handleChange}
-                            className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wide text-white/90 outline-none placeholder:text-[#3d4758]"
-                            placeholder="Qayta kirit"
+                            className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wider text-white/95 outline-none placeholder:text-[#4a5468]"
+                            placeholder={t('auth.confirmPlaceholder')}
                           />
                           <button
                             type="button"
                             onClick={() => setShowConfirm(!showConfirm)}
-                            className="rounded-lg p-1 text-[#5a6478] transition-colors hover:bg-white/5 hover:text-[#d6b47c]/70"
+                            className="p-1.5 text-[#4a5468] transition-colors hover:text-[#d6b47c] shrink-0 rounded-lg hover:bg-[#d6b47c]/10"
                           >
-                            {showConfirm ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                       </div>
@@ -394,32 +404,31 @@ const RegisterForm = () => {
                   )}
 
                   {/* submit */}
-                  <div className={`anim-fade-up delay-6 mt-2 ${mounted ? '' : 'opacity-0'}`}>
+                  <div className={`anim-fade-up delay-6 mt-6 ${mounted ? '' : 'opacity-0'}`}>
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="group relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl py-4 text-[13px] font-semibold uppercase tracking-[0.15em] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_30px_rgba(214,180,124,.2)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl py-4 text-[12px] font-bold uppercase tracking-[0.25em] transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(214,180,124,0.25)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                       style={{
                         background: 'linear-gradient(135deg, #e8c87a 0%, #d6b47c 50%, #c49a5c 100%)',
                         color: '#0a0e1a',
                       }}
                     >
-                      {/* shimmer */}
                       <div
-                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
+                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                         style={{
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent)',
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
                           backgroundSize: '200% 100%',
                           animation: 'shimmer 2s infinite',
                         }}
                       />
-                      <span className="relative z-10 flex items-center gap-2.5">
+                      <span className="relative z-10 flex items-center gap-3 py-0.5">
                         {isLoading ? (
                           <DotLoader />
                         ) : (
                           <>
-                            Ro'yxatdan o'tish
-                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            {t('auth.register')}
+                            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
                           </>
                         )}
                       </span>
@@ -430,33 +439,28 @@ const RegisterForm = () => {
                 {/* divider */}
                 <div className={`anim-fade-up delay-7 mt-5 flex items-center gap-4 ${mounted ? '' : 'opacity-0'}`}>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d4758]">yoki</span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d4758]">{t('auth.or')}</span>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                </div>
+
+                {/* Social Login */}
+                <div className={`anim-fade-up delay-7 mt-6 flex justify-center ${mounted ? '' : 'opacity-0'}`}>
+                  <TelegramLoginButton botName="luxeecomercebot" />
                 </div>
 
                 {/* login link */}
                 <p className={`anim-fade-up delay-8 mt-5 text-center text-[14px] text-[#5a6478] ${mounted ? '' : 'opacity-0'}`}>
-                  Hisobingiz bormi?{' '}
+                  {t('auth.haveAccount')}{' '}
                   <Link
                     to={loginLink}
                     className="relative font-medium text-[#d6b47c] transition-colors hover:text-[#e8c87a]"
                   >
-                    Kirish
+                    {t('auth.goLogin')}
                     <span className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-[#d6b47c]/50 transition-transform hover:scale-x-100" />
                   </Link>
                 </p>
 
-                {/* mobile benefits */}
-                <div className={`anim-fade-up delay-8 mt-5 space-y-2.5 lg:hidden ${mounted ? '' : 'opacity-0'}`}>
-                  {BENEFITS.map((item) => (
-                    <div key={item} className="flex items-center gap-2.5 rounded-xl border border-white/[0.04] bg-white/[0.03] px-3.5 py-2.5">
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-lg bg-[#d6b47c]/10">
-                        <CheckCheck className="h-3 w-3 text-[#d6b47c]" />
-                      </span>
-                      <p className="text-[14px] text-[#b0b8c8]">{item}</p>
-                    </div>
-                  ))}
-                </div>
+                {/* removed mobile benefits as requested */}
               </div>
             </section>
           </div>

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { WifiOff, Wifi, RefreshCw } from 'lucide-react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const OfflineIndicator = ({ isOnline, updateAvailable, onUpdate }) => {
   const [showOffline, setShowOffline] = useState(false)
   const [wasOffline, setWasOffline] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     if (!isOnline) {
@@ -26,12 +28,12 @@ const OfflineIndicator = ({ isOnline, updateAvailable, onUpdate }) => {
             {isOnline ? (
               <>
                 <Wifi size={14} />
-                <span>Internet aloqa tiklandi</span>
+                <span>{t('offline.onlineRestored')}</span>
               </>
             ) : (
               <>
                 <WifiOff size={14} />
-                <span>Ofline rejim - ba'zi ma'lumotlar eski bo'lishi mumkin</span>
+                <span>{t('offline.offlineMode')}</span>
               </>
             )}
           </div>
@@ -45,7 +47,7 @@ const OfflineIndicator = ({ isOnline, updateAvailable, onUpdate }) => {
             className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-800 text-white px-4 py-2.5 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all text-sm font-medium"
           >
             <RefreshCw size={14} />
-            Yangilash mavjud
+            {t('offline.updateAvailable')}
           </button>
 
           <style>{`

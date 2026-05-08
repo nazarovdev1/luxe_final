@@ -7,12 +7,13 @@ import {
 } from 'lucide-react';
 import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 const formatPrice = (price) => {
     if (typeof price !== 'number') return '';
-    return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} so'm`;
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
 const getSizes = (product) =>
@@ -62,7 +63,7 @@ function ProductItem({ product, selection, error, onSelect }) {
                             </h4>
                         </div>
                         <p className="text-sm font-semibold text-[#d6b47c] whitespace-nowrap shrink-0">
-                            {formatPrice(product.price)}
+                            {formatPrice(product.price)} {t('common.sum')}
                         </p>
                     </div>
 
@@ -150,6 +151,7 @@ function ProductItem({ product, selection, error, onSelect }) {
 
 /* ─── Main Modal ──────────────────────────────────────────────── */
 const LookDetailModal = ({ lookId, onClose }) => {
+    const { t } = useLanguage();
     const { products } = useProducts();
     const { addToCart } = useCart();
     const navigate = useNavigate();
@@ -401,8 +403,8 @@ const LookDetailModal = ({ lookId, onClose }) => {
                         {/* Total price */}
                         {totalPrice > 0 && (
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-xs text-neutral-500 uppercase tracking-wider">Jami narx</span>
-                                <span className="text-sm font-semibold text-[#d6b47c]">{formatPrice(totalPrice)}</span>
+                                <span className="text-xs text-neutral-500 uppercase tracking-wider">{t('common.total')}</span>
+                                <span className="text-sm font-semibold text-[#d6b47c]">{formatPrice(totalPrice)} {t('common.sum')}</span>
                             </div>
                         )}
 

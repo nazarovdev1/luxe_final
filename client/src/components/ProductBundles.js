@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Tag, Check, ArrowRight, Percent } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 const formatPrice = (price) => {
@@ -37,7 +38,8 @@ const SAMPLE_BUNDLES = [
 ];
 
 const BundleCard = ({ bundle }) => {
-  const { addToCart } = useCart();
+   const { addToCart } = useCart();
+   const { t } = useLanguage();
   const [isAdding, setIsAdding] = useState(false);
 
   const originalTotal = bundle.items.reduce((sum, item) => sum + item.price, 0);
@@ -115,18 +117,18 @@ const BundleCard = ({ bundle }) => {
         <div className="mt-3 pt-3 border-t border-white/5 space-y-1.5">
           <div className="flex items-center justify-between text-xs text-[#9aa3b2]">
             <span>Jami alohida</span>
-            <span className="line-through">{formatPrice(originalTotal)} so'm</span>
+            <span className="line-through">{formatPrice(originalTotal)} {t('common.sum')}</span>
           </div>
           <div className="flex items-center justify-between text-xs text-[#d6b47c]">
             <span className="flex items-center gap-1">
               <Tag className="w-3 h-3" />
               To'plam chegirmasi
             </span>
-            <span>-{formatPrice(discountAmount)} so'm</span>
+            <span>-{formatPrice(discountAmount)} {t('common.sum')}</span>
           </div>
           <div className="flex items-center justify-between pt-1">
             <span className="text-sm font-semibold text-[#f4f1eb]">To'plam narxi</span>
-            <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(bundlePrice)} so'm</span>
+            <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(bundlePrice)} {t('common.sum')}</span>
           </div>
         </div>
 
@@ -151,8 +153,9 @@ const BundleCard = ({ bundle }) => {
 };
 
 const ProductBundles = () => {
+  const { t } = useLanguage();
   return (
-    <section className="py-16 bg-[#0a0a0f]">
+    <section className="py-16 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

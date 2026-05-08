@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Star, ShoppingCart, Plus, Minus, Heart, Ruler, Check, Loader2 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 const formatPrice = (value) => {
@@ -18,6 +19,7 @@ const getProductImage = (item) => {
 
 const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
   const { addToCart } = useCart();
+  const { t } = useLanguage();
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -50,6 +52,27 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
     setQuantity(1);
     setCurrentImageIndex(0);
   }, [product?.id]);
+
+  // Hide navbar when modal is open
+  useEffect(() => {
+    const navbar = document.querySelector('nav.fixed');
+    if (navbar && isOpen) {
+      navbar.style.opacity = '0';
+      navbar.style.pointerEvents = 'none';
+      navbar.style.transition = 'opacity 0.3s ease';
+    } else if (navbar) {
+      navbar.style.opacity = '';
+      navbar.style.pointerEvents = '';
+      navbar.style.transition = '';
+    }
+    return () => {
+      if (navbar) {
+        navbar.style.opacity = '';
+        navbar.style.pointerEvents = '';
+        navbar.style.transition = '';
+      }
+    };
+  }, [isOpen]);
 
   if (!isOpen || !product) return null;
 
@@ -163,7 +186,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
 
             {/* Price */}
             <div className="mt-3 flex items-end gap-2">
-              <span className="text-2xl font-bold text-[#f4f1eb]">{formatPrice(product.price)} so'm</span>
+              <span className="text-2xl font-bold text-[#f4f1eb]">{formatPrice(product.price)} {t('common.sum')}</span>
               {product.originalPrice && (
                 <span className="text-sm text-[#9aa3b2] line-through">{formatPrice(product.originalPrice)}</span>
               )}
@@ -180,7 +203,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
             {product.colors && product.colors.length > 0 && (
               <div className="mt-4">
                 <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9aa3b2] mb-2">
-                  Rang <span className="text-[#d6b47c]">*</span>
+                  {t('common.color')} <span className="text-[#d6b47c]">*</span>
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {product.colors.map((color, index) => {
@@ -222,7 +245,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9aa3b2]">
-                    O'lcham <span className="text-[#d6b47c]">*</span>
+                    {t('common.size')} <span className="text-[#d6b47c]">*</span>
                   </h4>
                   {onSizeGuideOpen && (
                     <button
@@ -233,7 +256,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
                       className="flex items-center gap-1 text-[10px] text-[#d6b47c] hover:text-[#e0c08e] transition-colors"
                     >
                       <Ruler className="h-3 w-3" />
-                      O'lcham jadvali
+                      {t('sizeGuide.title')}
                     </button>
                   )}
                 </div>
@@ -277,8 +300,8 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
 
             {/* Subtotal */}
             <div className="mt-4 rounded-xl bg-gradient-to-r from-[#19140f] to-[#131a2a] px-4 py-3">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-[#9aa3b2]">Jami</p>
-              <p className="text-lg font-bold text-[#f4f1eb]">{formatPrice(subtotal)} so'm</p>
+              <p className="text-[10px] uppercase tracking-[0.12em] text-[#9aa3b2]">{t('common.total')}</p>
+              <p className="text-lg font-bold text-[#f4f1eb]">{formatPrice(subtotal)} {t('common.sum')}</p>
             </div>
 
             {/* Actions */}
@@ -293,14 +316,14 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
                 ) : (
                   <ShoppingCart className="h-4 w-4" />
                 )}
-                {isAdding ? "Qo'shilmoqda..." : "Savatga qo'shish"}
+                {isAdding ? t('common.loading') : t('common.addToCart')}
               </button>
               <Link
                 to={`/product/${product.id}`}
                 onClick={onClose}
                 className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-[#f4f1eb] hover:bg-white/10 transition-all"
               >
-                Batafsil
+                {t('common.more')}
               </Link>
             </div>
 

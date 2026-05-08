@@ -1,110 +1,84 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Heart, Eye, ShoppingBag, Gem } from 'lucide-react';
+import { Star, Heart, Eye, Gem } from 'lucide-react';
+import { Badge } from './ui';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const ProductCard = ({ product }) => {
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-3 h-3 ${i < Math.floor(rating)
-          ? 'text-yellow-400 fill-current'
-          : 'text-gray-600'
-          }`}
-      />
-    ));
+const formatPrice = (price) => {
+  if (typeof price !== 'number') return '';
+  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
+const ProductCard = ({ product, onQuickView, onCompare, isCompareSelected }) => {
+  const { t } = useLanguage();
+  const getImage = (product) => {
+    return product?.image || product?.images?.[0] || '/placeholder.jpg';
   };
 
   return (
-    <div className="group relative overflow-hidden rounded-3xl bg-[#12121a] border border-white/[0.06] transition-all duration-500 hover:border-purple-500/40 hover:shadow-[0_0_40px_rgba(168,85,247,0.15)]">
-      {/* Image Container */}
-      <div className="relative overflow-hidden">
-        <Link to={`/product/${product.id}`} className="block aspect-[3/4]">
+    <article className="group relative z-0">
+      <Link to={`/product/${product.id}`} className="block relative z-0">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-[#141416] z-0">
           <img
-            src={product.image}
+            src={getImage(product)}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-        </Link>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b]/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Subtle Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#12121a] via-transparent to-transparent opacity-80 pointer-events-none"></div>
+          {product.badge && (
+            <div className="absolute top-3 left-3 z-10">
+              <Badge variant="accent" icon={Gem}>{product.badge}</Badge>
+            </div>
+          )}
 
-        {/* Badge */}
-        {product.badge && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full backdrop-blur-md ${product.badge === 'NEW'
-              ? 'bg-gradient-to-r from-fuchsia-600/90 to-purple-600/90 text-white'
-              : 'bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-black'
-              }`}>
-              <Gem className="w-3 h-3" />
-              {product.badge}
-            </span>
-          </div>
-        )}
-
-        {/* Floating Action Buttons */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-          <button className="p-2 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-purple-500/40 hover:border-purple-500/40 translate-x-3 group-hover:translate-x-0">
-            <Heart className="w-4 h-4 text-white" />
+          <button
+            onClick={(e) => { e.preventDefault(); onCompare?.(product); }}
+            className={`absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg backdrop-blur-md border transition-all duration-200 ${
+              isCompareSelected
+                ? 'bg-[#c9a96e]/30 border-[#c9a96e]/40 text-[#c9a96e]'
+                : 'bg-[#0a0a0b]/60 border-white/15 text-white opacity-0 group-hover:opacity-100'
+            }`}
+            title="Taqqoslash"
+          >
+            <Heart className="w-3.5 h-3.5" />
           </button>
-          <Link
-            to={`/product/${product.id}`}
-            className="p-2 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-purple-500/40 hover:border-purple-500/40 translate-x-3 group-hover:translate-x-0 delay-75"
+
+          <button
+            onClick={(e) => { e.preventDefault(); onQuickView?.(product); }}
+            className="absolute bottom-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a0a0b]/60 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-[#c9a96e]/30 hover:border-[#c9a96e]/40"
+            title="Tezkor ko'rish"
           >
-            <Eye className="w-4 h-4 text-white" />
-          </Link>
+            <Eye className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </Link>
+
+      <div className="mt-3">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <span className="text-[11px] uppercase tracking-wider text-[#6b6b6e] truncate">
+            {product.category}
+          </span>
+          <span className="flex items-center gap-1 text-xs text-[#c9a96e]">
+            <Star className="w-3 h-3 fill-current" />
+            {(product.rating || 0).toFixed(1)}
+          </span>
         </div>
 
-        {/* Quick View Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
-          <Link
-            to={`/product/${product.id}`}
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-black/50 backdrop-blur-xl rounded-xl border border-white/10 text-white text-sm font-medium opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-300 hover:bg-purple-600/60 hover:border-purple-500/50"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            Ko'rish
-          </Link>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4 pt-3">
-        {/* Category */}
-        <span className="inline-block px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-purple-400 bg-purple-500/10 rounded-md mb-2">
-          {product.category}
-        </span>
-
-        {/* Name */}
         <Link to={`/product/${product.id}`}>
-          <h3 className="text-white font-bold text-base mb-2 line-clamp-1 group-hover:text-purple-300 transition-colors">
+          <h3 className="text-sm font-medium text-[#f5f5f3] truncate group-hover:text-[#c9a96e] transition-colors">
             {product.name}
           </h3>
         </Link>
 
-        {/* Rating */}
-        <div className="flex items-center gap-1.5 mb-3">
-          <div className="flex gap-0.5">
-            {renderStars(product.rating || 0)}
-          </div>
-          <span className="text-[13px] text-gray-400">
-            ({product.rating || 0})
-          </span>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-2">
-          <span className="text-lg font-bold text-[#E879F9]">
-            {product.price?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} so'm
-          </span>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold text-[#f5f5f3]">{formatPrice(product.price)} {t('common.sum')}</p>
           {product.originalPrice && (
-            <span className="text-sm text-gray-500 line-through">
-              {product.originalPrice?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
-            </span>
+            <p className="text-xs line-through text-[#6b6b6e]">{formatPrice(product.originalPrice)} {t('common.sum')}</p>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

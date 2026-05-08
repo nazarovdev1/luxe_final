@@ -28,14 +28,6 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
 
     setIsSubmitting(true);
     try {
-      // In production, this would call the backend API
-      // await axios.post('/api/back-in-stock/subscribe', {
-      //   productId,
-      //   method: notifyMethod,
-      //   phone: notifyMethod === 'sms' ? phone : undefined,
-      // }, { headers: { Authorization: `Bearer ${token}` } });
-
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsSubscribed(true);
       toast.success('Mahsulot paydo bo\'lganda sizga xabar beramiz!');
@@ -50,95 +42,91 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
   return (
     <>
       {/* Out of Stock + Notify Button */}
-      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20">
-            <Bell className="h-4 w-4 text-amber-400" />
+      <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 animate-fade-in-up">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c9a96e]/10 border border-[#c9a96e]/20">
+            <Bell className="h-6 w-6 text-[#c9a96e]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-amber-300">Hozirda tugagan</p>
-            <p className="text-[11px] text-[#9aa3b2]">Bu mahsulot hozirda sotuvda yo'q</p>
+            <p className="text-sm font-black text-[#f5f5f3] uppercase tracking-wider">Hozirda mavjud emas</p>
+            <p className="text-[11px] text-[#8a8a8d] font-bold uppercase tracking-widest mt-1">Eksklyuziv obuna bo'ling</p>
           </div>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-2.5 text-sm font-medium text-amber-300 hover:bg-amber-500/20 transition-all"
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#c9a96e] px-6 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#0a0a0b] hover:bg-[#d4b87a] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_12px_24px_rgba(201,169,110,0.2)]"
         >
-          <BellRing className="w-4 h-4" />
-          Qachon paydo bo'lishini bilish
+          <BellRing className="w-4 h-4" strokeWidth={3} />
+          Xabar berish
         </button>
       </div>
 
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
-          <div className="relative w-full max-w-md rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] shadow-[0_32px_64px_rgba(0,0,0,0.6)] border border-white/10 p-6">
+          <div className="absolute inset-0 bg-[#0a0a0b]/90 backdrop-blur-xl animate-fade-in" onClick={() => setIsModalOpen(false)} />
+          <div className="relative w-full max-w-md rounded-[2.5rem] bg-[#0a0a0b] shadow-2xl border border-white/10 p-8 animate-scale-in">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-[#9aa3b2] hover:text-white transition-all"
+              className="absolute top-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-[#8a8a8d] hover:text-[#f5f5f3] transition-all"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <BellRing className="h-5 w-5 text-amber-400" />
+            <div className="flex items-center gap-4 mb-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c9a96e]/10 border border-[#c9a96e]/20">
+                <BellRing className="h-6 w-6 text-[#c9a96e]" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-[#f4f1eb]">Bildirishnoma olish</h3>
-                <p className="text-xs text-[#9aa3b2]">Mahsulot qayta paydo bo'lganda xabar beramiz</p>
+                <h3 className="text-xl font-bold text-[#f5f5f3] tracking-wide uppercase">Navbatga yozilish</h3>
+                <p className="text-[10px] font-bold text-[#8a8a8d] uppercase tracking-widest mt-1">Mahsulot qaytishi haqida xabar</p>
               </div>
             </div>
 
             {/* Product Name */}
-            <div className="rounded-xl bg-white/[0.03] p-3 mb-4">
-              <p className="text-xs text-[#9aa3b2]">Mahsulot</p>
-              <p className="text-sm font-medium text-[#f4f1eb] mt-0.5">{productName}</p>
+            <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-4 mb-8">
+              <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Mahsulot nomi</p>
+              <p className="text-sm font-bold text-[#f5f5f3]">{productName}</p>
             </div>
 
             {/* Notify Method */}
-            <div className="space-y-3 mb-4">
-              <p className="text-xs uppercase tracking-[0.12em] text-[#9aa3b2]">Xabar olish usuli</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setNotifyMethod('sms')}
-                  className={`rounded-xl p-3 text-center transition-all ${
-                    notifyMethod === 'sms'
-                      ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300'
-                      : 'bg-white/[0.03] border border-white/10 text-[#9aa3b2] hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <Phone className="w-4 h-4 mx-auto mb-1" />
-                  <p className="text-xs font-medium">SMS</p>
-                </button>
-                <button
-                  onClick={() => setNotifyMethod('push')}
-                  className={`rounded-xl p-3 text-center transition-all ${
-                    notifyMethod === 'push'
-                      ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300'
-                      : 'bg-white/[0.03] border border-white/10 text-[#9aa3b2] hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <Bell className="w-4 h-4 mx-auto mb-1" />
-                  <p className="text-xs font-medium">Push bildirishnoma</p>
-                </button>
+            <div className="space-y-4 mb-8">
+              <p className="text-[10px] font-black text-white uppercase tracking-[0.2em] px-2">Xabar olish usuli</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { id: 'sms', label: 'SMS', icon: Phone },
+                  { id: 'push', label: 'Push', icon: Bell },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setNotifyMethod(m.id)}
+                    className={`flex flex-col items-center gap-3 rounded-2xl p-5 border transition-all duration-300 ${
+                      notifyMethod === m.id
+                        ? 'bg-[#c9a96e]/5 border-[#c9a96e]/30 text-[#c9a96e]'
+                        : 'bg-white/[0.02] border-white/5 text-[#8a8a8d] hover:border-white/10'
+                    }`}
+                  >
+                    <m.icon className="w-5 h-5" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">{m.label}</p>
+                    {notifyMethod === m.id && <div className="w-1 h-1 rounded-full bg-[#c9a96e]" />}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Phone Input for SMS */}
             {notifyMethod === 'sms' && (
-              <div className="mb-4">
-                <label className="block">
-                  <span className="mb-1.5 block text-xs text-[#9aa3b2]">Telefon raqam</span>
-                  <input
+              <div className="mb-8 animate-fade-in">
+                <label className="block px-2 mb-3">
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Telefon raqamingiz</span>
+                </label>
+                <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+998 90 123 45 67"
-                    className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none focus:border-amber-500/50 transition-colors"
-                  />
-                </label>
+                    className="w-full rounded-2xl border border-white/5 bg-white/[0.02] px-5 py-4 text-sm text-[#f5f5f3] placeholder-[#3f4658] outline-none focus:border-[#c9a96e]/30 transition-all"
+                />
               </div>
             )}
 
@@ -146,19 +134,19 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
             <button
               onClick={handleSubscribe}
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-[#0f1014] transition-all hover:bg-amber-400 active:scale-[0.98] disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#c9a96e] py-5 text-[11px] font-black uppercase tracking-[0.2em] text-[#0a0a0b] hover:bg-[#d4b87a] active:scale-[0.98] transition-all shadow-[0_12px_24px_rgba(201,169,110,0.2)] disabled:opacity-50"
             >
               {isSubmitting ? (
-                <span>Yuborilmoqda...</span>
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <BellRing className="w-4 h-4" />
-                  Bildirishnoma olish
+                  <BellRing className="w-4 h-4" strokeWidth={3} />
+                  Navbatga yozilish
                 </>
               )}
             </button>
 
-            <p className="text-[10px] text-[#9aa3b2] text-center mt-3">
+            <p className="text-[9px] font-bold text-[#8a8a8d] text-center mt-6 uppercase tracking-widest leading-relaxed">
               Mahsulot qayta sotuvga chiqqanda faqat bir marta xabar yuboramiz.
             </p>
           </div>

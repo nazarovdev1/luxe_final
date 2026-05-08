@@ -458,6 +458,49 @@ const useProductService = () => {
 		}
 	};
 
+	const validateGiftCard = async (code) => {
+		try {
+			const response = await fetch(`${API_BASE}/gift-cards/validate`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ code })
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Validate gift card error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const getMyGiftCards = async (token) => {
+		try {
+			const response = await fetch(`${API_BASE}/gift-cards/my`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Get my gift cards error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const transferGiftCard = async (id, recipientPhone, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/gift-cards/${id}/transfer`, {
+				method: 'PUT',
+				headers: { 
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify({ recipientPhone })
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Transfer gift card error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 	const validateCoupon = async (code, totalAmount, token) => {
 		try {
 			const response = await fetch(`${API_BASE}/coupons/validate`, {
@@ -557,6 +600,9 @@ const useProductService = () => {
 		createLook,
 		deleteLook,
 		validatePromo,
+		validateGiftCard,
+		getMyGiftCards,
+		transferGiftCard,
 		validateCoupon,
 		getPromos,
 		createPromo,

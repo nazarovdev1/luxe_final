@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { AlertCircle, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import toast from 'react-hot-toast';
+import { useLanguage } from '../contexts/LanguageContext';
 import SEO from './SEO';
+import TelegramLoginButton from './TelegramLoginButton';
 
 /* ─── floating‑particle canvas ─────────────────────────────────── */
 const ParticleCanvas = () => {
@@ -74,6 +75,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { login } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -101,7 +103,7 @@ const LoginForm = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#060a14]">
-      <SEO title="Kirish" noIndex={true} />
+      <SEO title={t('auth.loginTitle')} noIndex={true} />
 
       {/* ── inline keyframes ─────────────────────────────────────── */}
       <style>{`
@@ -123,6 +125,13 @@ const LoginForm = () => {
         .input-glow:focus-within {
           box-shadow: 0 0 0 1px rgba(214,180,124,.35), 0 0 20px rgba(214,180,124,.08);
         }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          transition: background-color 5000s ease-in-out 0s;
+          -webkit-text-fill-color: rgba(255, 255, 255, 0.9) !important;
+        }
       `}</style>
 
       {/* ── ambient blurs ─────────────────────────────────────────── */}
@@ -138,6 +147,8 @@ const LoginForm = () => {
           className={`w-full transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}
         >
           <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+
+
 
             {/* ─── LEFT  — editorial image ─────────────────────────── */}
             <section className="relative hidden lg:block">
@@ -158,23 +169,23 @@ const LoginForm = () => {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d6b47c] opacity-50" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-[#d6b47c]" />
                   </span>
-                  <span className="text-[13px] font-medium uppercase tracking-[0.25em] text-[#e8d5b0]">Atelier Access</span>
+                  <span className="text-[13px] font-medium uppercase tracking-[0.25em] text-[#e8d5b0]">{t('auth.atelierAccess')}</span>
                 </div>
 
                 {/* bottom text */}
                 <div className={`max-w-lg ${mounted ? 'anim-fade-up delay-2' : 'opacity-0'}`}>
-                  <p className="text-[13px] font-medium uppercase tracking-[0.3em] text-[#8a94a8]">Private Client Desk</p>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.3em] text-[#8a94a8]">{t('auth.privateClient')}</p>
                   <h2 className="mt-4 text-[5rem] font-light leading-[1.05] tracking-tight text-white/95">
-                    Premium
+                    {t('auth.premiumAccess')}
                     <span
                       className="font-brilliant ml-3 bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent"
                       style={{ animation: 'float 4s ease-in-out infinite' }}
                     >
-                      access
+                      {t('auth.accessWord')}
                     </span>
                   </h2>
                   <p className="mt-5 max-w-lg text-[18px] leading-relaxed text-[#7d8699]">
-                    Har kirish bilan sizga mos tavsiyalar, tez checkout va shaxsiy fashion tajribasi ochiladi.
+                    {t('auth.leftDescription')}
                   </p>
 
                   {/* decorative line */}
@@ -188,6 +199,17 @@ const LoginForm = () => {
 
             {/* ─── RIGHT — login form ──────────────────────────────── */}
             <section className="relative flex flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-16 xl:px-24">
+              
+              {/* ─── Back Button ──────────────────────────────── */}
+              <div className={`absolute left-4 top-4 lg:left-10 lg:top-10 z-[100] ${mounted ? 'anim-fade-up' : 'opacity-0'}`}>
+                <Link 
+                  to="/" 
+                  className="group flex items-center gap-3 rounded-full border border-white/10 bg-[#060a14]/40 px-4 py-2.5 backdrop-blur-md transition-all duration-500 hover:bg-white/5 hover:border-[#d6b47c]/50 hover:shadow-[0_0_20px_rgba(214,180,124,0.15)]"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[#d6b47c] transition-transform duration-500 group-hover:-translate-x-1" />
+                  <span className="hidden sm:block text-[11px] font-bold tracking-[0.2em] text-[#e8d5b0] transition-colors group-hover:text-white">{t('common.mainPage')}</span>
+                </Link>
+              </div>
               {/* subtle grid pattern */}
               <div className="pointer-events-none absolute inset-0 opacity-[0.025]"
                 style={{
@@ -196,64 +218,55 @@ const LoginForm = () => {
                 }}
               />
 
-              {/* mobile hero banner */}
-              <div className={`relative mb-8 w-full overflow-hidden rounded-[1.8rem] lg:hidden ${mounted ? 'anim-fade-up' : 'opacity-0'}`}>
-                <div className="relative h-[32vh] min-h-[220px]">
-                  <img src="/mobile.jpg" alt="LUXE editorial" className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-[#060a14]/40 to-transparent" />
-                  <div className="absolute bottom-5 left-5 right-5">
-                    <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#d6b47c]/20 bg-black/40 px-3 py-1 backdrop-blur-md">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d6b47c] opacity-50" />
-                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#d6b47c]" />
-                      </span>
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-[#e8d5b0]">Atelier Access</span>
-                    </div>
-                    <p className="text-3xl font-light text-white/95">
-                      Premium <span className="font-brilliant bg-gradient-to-r from-[#e8c87a] to-[#c49a5c] bg-clip-text text-transparent">access</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* removed mobile hero banner as requested */}
 
               {/* form container */}
               <div className={`w-full max-w-[420px] ${mounted ? 'anim-fade-up delay-1' : 'opacity-0'}`}>
                 {/* header */}
-                <div className="text-center lg:text-left">
+                <div className="hidden lg:block text-left mb-8">
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/[0.08] px-4 py-1.5">
                     <div className="h-1 w-1 rounded-full bg-[#d6b47c]" />
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#d6b47c]">Kirish</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#d6b47c]">{t('auth.loginTitle')}</span>
                   </div>
                   <h1 className="text-[2rem] font-light tracking-tight text-white/95 sm:text-[2.4rem]">
-                    Xush kelibsiz.{' '}
+                    {t('auth.loginWelcome')}{' '}
                     <span className="font-brilliant bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent">
                       LUXX.UZ
                     </span>
                   </h1>
                   <p className="mt-2.5 text-[14px] leading-relaxed text-[#6b7486]">
-                    Kabinetingizga kirib buyurtmalarni boshqaring va premium kolleksiya yangiliklarini birinchi bo'lib ko'ring.
+                    {t('auth.loginDescription')}
                   </p>
+                </div>
+
+                {/* mobile WOW header */}
+                <div className="lg:hidden text-center mb-10 mt-4 relative">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#d6b47c]/10 rounded-full blur-[40px] pointer-events-none"></div>
+                  <h1 className="relative text-4xl font-brilliant tracking-wide bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(214,180,124,0.25)]">
+                    {t('auth.loginTitle')}
+                  </h1>
+                  <div className="flex justify-center mt-3">
+                     <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-[#d6b47c]/40 to-transparent"></div>
+                  </div>
                 </div>
 
                 {/* form */}
                 <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
                   {/* identifier */}
                   <div className={`anim-fade-up delay-2 ${mounted ? '' : 'opacity-0'}`}>
-                    <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7d8699]">
-                      Telefon yoki username
+                    <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
+                      {t('auth.identifierLabel')}
                     </label>
-                    <div className="input-glow group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c1424]/80 transition-all duration-300 hover:border-white/[0.1]">
-                      <div className="flex items-center gap-3 px-4 py-3.5">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#d6b47c]/15 to-[#d6b47c]/5">
-                          <User className="h-3.5 w-3.5 text-[#d6b47c]/70" />
-                        </div>
+                    <div className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.01] backdrop-blur-sm transition-all duration-500 focus-within:border-[#d6b47c]/40 focus-within:bg-[#d6b47c]/[0.02] focus-within:shadow-[0_0_20px_rgba(214,180,124,0.05)] hover:border-white/[0.1]">
+                      <div className="flex items-center gap-4 px-4 py-4">
+                        <User className="w-4 h-4 text-[#d6b47c]/50 shrink-0 transition-colors duration-500 group-focus-within:text-[#d6b47c]" />
                         <input
                           name="identifier"
                           type="text"
                           required
                           value={credentials.identifier}
                           onChange={handleChange}
-                          className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wide text-white/90 outline-none placeholder:text-[#3d4758]"
+                          className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wider text-white/95 outline-none placeholder:text-[#4a5468]"
                           placeholder="+998 90 123 45 67"
                         />
                       </div>
@@ -262,29 +275,27 @@ const LoginForm = () => {
 
                   {/* password */}
                   <div className={`anim-fade-up delay-3 ${mounted ? '' : 'opacity-0'}`}>
-                    <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7d8699]">
-                      Parol
+                    <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
+                      {t('auth.passwordLabel')}
                     </label>
-                    <div className="input-glow group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c1424]/80 transition-all duration-300 hover:border-white/[0.1]">
-                      <div className="flex items-center gap-3 px-4 py-3.5">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#d6b47c]/15 to-[#d6b47c]/5">
-                          <Lock className="h-3.5 w-3.5 text-[#d6b47c]/70" />
-                        </div>
+                    <div className="group relative rounded-2xl border border-white/[0.05] bg-white/[0.01] backdrop-blur-sm transition-all duration-500 focus-within:border-[#d6b47c]/40 focus-within:bg-[#d6b47c]/[0.02] focus-within:shadow-[0_0_20px_rgba(214,180,124,0.05)] hover:border-white/[0.1]">
+                      <div className="flex items-center gap-4 px-4 py-4">
+                        <Lock className="w-4 h-4 text-[#d6b47c]/50 shrink-0 transition-colors duration-500 group-focus-within:text-[#d6b47c]" />
                         <input
                           name="password"
                           type={showPassword ? 'text' : 'password'}
                           required
                           value={credentials.password}
                           onChange={handleChange}
-                          className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wide text-white/90 outline-none placeholder:text-[#3d4758]"
+                          className="w-full bg-transparent text-[16px] lg:text-[14px] font-light tracking-wider text-white/95 outline-none placeholder:text-[#4a5468]"
                           placeholder="••••••••"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="rounded-lg p-1 text-[#5a6478] transition-colors hover:bg-white/5 hover:text-[#d6b47c]/70"
+                          className="p-1.5 text-[#4a5468] transition-colors hover:text-[#d6b47c] shrink-0 rounded-lg hover:bg-[#d6b47c]/10"
                         >
-                          {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
@@ -299,32 +310,31 @@ const LoginForm = () => {
                   )}
 
                   {/* submit */}
-                  <div className={`anim-fade-up delay-4 mt-2 ${mounted ? '' : 'opacity-0'}`}>
+                  <div className={`anim-fade-up delay-4 mt-6 ${mounted ? '' : 'opacity-0'}`}>
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="group relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl py-4 text-[13px] font-semibold uppercase tracking-[0.15em] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_30px_rgba(214,180,124,.2)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl py-4 text-[12px] font-bold uppercase tracking-[0.25em] transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(214,180,124,0.25)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                       style={{
                         background: 'linear-gradient(135deg, #e8c87a 0%, #d6b47c 50%, #c49a5c 100%)',
                         color: '#0a0e1a',
                       }}
                     >
-                      {/* shimmer effect */}
                       <div
-                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
+                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                         style={{
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent)',
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
                           backgroundSize: '200% 100%',
                           animation: 'shimmer 2s infinite',
                         }}
                       />
-                      <span className="relative z-10 flex items-center gap-2.5">
+                      <span className="relative z-10 flex items-center gap-3 py-0.5">
                         {isLoading ? (
                           <DotLoader />
                         ) : (
                           <>
-                            Kirish
-                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                            {t('auth.login')}
+                            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
                           </>
                         )}
                       </span>
@@ -335,87 +345,23 @@ const LoginForm = () => {
                 {/* divider */}
                 <div className={`anim-fade-up delay-5 mt-7 flex items-center gap-4 ${mounted ? '' : 'opacity-0'}`}>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d4758]">yoki</span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d4758]">{t('auth.or')}</span>
                   <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
                 </div>
 
-                {/* Social Login Buttons */}
-                <div className={`anim-fade-up delay-5 mt-5 flex flex-col gap-3 ${mounted ? '' : 'opacity-0'}`}>
-                  {/* Telegram Login */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Telegram OAuth flow
-                      const botUsername = 'luxx_uz_bot'; // Replace with actual bot username
-                      const redirectUrl = encodeURIComponent(window.location.origin + '/auth/telegram/callback');
-                      const telegramAuthUrl = `https://oauth.telegram.org/auth?bot_id=${botUsername}&origin=${redirectUrl}&request_access=write`;
-                      window.open(telegramAuthUrl, 'telegram_auth', 'width=450,height=550,scrollbars=no');
-                      // In production, listen for the callback message from the popup
-                    }}
-                    className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-[#2AABEE]/20 bg-[#2AABEE]/[0.06] py-3.5 text-[13px] font-medium tracking-wide text-white transition-all duration-300 hover:border-[#2AABEE]/40 hover:bg-[#2AABEE]/[0.12] hover:shadow-[0_4px_20px_rgba(42,171,238,.1)]"
-                  >
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                    </svg>
-                    Telegram orqali kirish
-                  </button>
-
-                  {/* Google Login */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Google OAuth flow
-                      const clientId = 'YOUR_GOOGLE_CLIENT_ID'; // Replace with actual client ID
-                      const redirectUri = encodeURIComponent(window.location.origin + '/auth/google/callback');
-                      const scope = encodeURIComponent('email profile');
-                      const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline`;
-                      window.location.href = googleAuthUrl;
-                    }}
-                    className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] py-3.5 text-[13px] font-medium tracking-wide text-white/80 transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06] hover:text-white"
-                  >
-                    <svg className="h-5 w-5" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Google orqali kirish
-                  </button>
-
-                  {/* Phone (SMS) Login */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // Navigate to phone verification flow
-                      // In production, this would initiate an SMS OTP flow
-                      const phone = prompt('Telefon raqamingizni kiriting:\n+998 XX XXX XX XX');
-                      if (phone) {
-                        toast.success('SMS kod yuborildi (demo)');
-                      }
-                    }}
-                    className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-[#d6b47c]/15 bg-[#d6b47c]/[0.04] py-3.5 text-[13px] font-medium tracking-wide text-[#d6b47c]/80 transition-all duration-300 hover:border-[#d6b47c]/30 hover:bg-[#d6b47c]/[0.08] hover:text-[#d6b47c]"
-                  >
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                    </svg>
-                    SMS kod bilan kirish
-                  </button>
-                </div>
-
-                {/* divider 2 */}
-                <div className={`anim-fade-up delay-5 mt-5 flex items-center gap-4 ${mounted ? '' : 'opacity-0'}`}>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                {/* Telegram Login */}
+                <div className={`anim-fade-up delay-5 mt-6 flex justify-center ${mounted ? '' : 'opacity-0'}`}>
+                  <TelegramLoginButton botName="luxeecomercebot" />
                 </div>
 
                 {/* register link */}
                 <p className={`anim-fade-up delay-6 mt-6 text-center text-[14px] text-[#5a6478] ${mounted ? '' : 'opacity-0'}`}>
-                  Hisobingiz yo'qmi?{' '}
+                  {t('auth.noAccount')}{' '}
                   <Link
                     to={registerLink}
                     className="relative font-medium text-[#d6b47c] transition-colors hover:text-[#e8c87a]"
                   >
-                    Ro'yxatdan o'ting
+                    {t('auth.goRegister')}
                     <span className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-[#d6b47c]/50 transition-transform hover:scale-x-100" />
                   </Link>
                 </p>

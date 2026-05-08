@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProducts } from '../../contexts/ProductContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import useProductService from '../../server/server';
 import {
   Package,
@@ -53,6 +54,7 @@ const getProductImage = (product) => {
 };
 
 const MobileAdmin = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const { isAuthenticated, user, token, logout } = useAuth();
@@ -358,7 +360,7 @@ const MobileAdmin = () => {
 
                         <div className="flex items-center justify-between pt-1">
                           <p className="text-sm text-amber-200 font-semibold">
-                            {Number(product.price || 0).toLocaleString('uz-UZ')} so'm
+                            {Number(product.price || 0).toLocaleString('uz-UZ')} {t('common.sum')}
                           </p>
 
                           {product.badge === 'NEW' ? (
@@ -448,7 +450,7 @@ const MobileAdmin = () => {
                     <div className="mobile-admin-card-soft p-2.5 flex items-center justify-between">
                       <span className="mobile-admin-muted text-xs">Jami summa</span>
                       <span className="text-amber-200 text-sm font-semibold">
-                        {Number(order.totals?.total || 0).toLocaleString('uz-UZ')} so'm
+                        {Number(order.totals?.total || 0).toLocaleString('uz-UZ')} {t('common.sum')}
                       </span>
                     </div>
 

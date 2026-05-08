@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Calculator, ChevronDown, ChevronUp, Info, Check } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const PROVIDERS = [
   {
@@ -41,6 +42,7 @@ const formatPrice = (value) => {
 };
 
 const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(initialOpen);
   const [selectedProvider, setSelectedProvider] = useState('uzum');
   const [selectedMonths, setSelectedMonths] = useState(3);
@@ -67,36 +69,34 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
   if (!price || price < 30000) return null;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0d1423]/80 overflow-hidden">
+    <div className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden transition-all duration-500">
       {/* Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between p-4 hover:bg-white/[0.02] transition-colors"
+        className="flex w-full items-center justify-between px-4 py-3 hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20">
-            <Calculator className="h-4 w-4 text-[#d6b47c]" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#c9a96e]/10 border border-[#c9a96e]/20">
+            <Calculator className="h-4 w-4 text-[#c9a96e]" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-[#f4f1eb]">Bo'lib to'lash</p>
-            <p className="text-[11px] text-[#9aa3b2]">
-              {formatPrice(Math.ceil(price / 3))} so'm dan boshlab / oyiga
+            <p className="text-xs font-bold text-[#f5f5f3] uppercase tracking-wider">Bo'lib to'lash</p>
+            <p className="text-[10px] text-[#8a8a8d] font-medium">
+              {formatPrice(Math.ceil(price / 3))} {t('common.sum')} / {t('installment.perMonth')}
             </p>
           </div>
         </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-[#9aa3b2]" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-[#9aa3b2]" />
-        )}
+        <div className={`transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`}>
+           <ChevronDown className="h-3.5 w-3.5 text-[#8a8a8d]" />
+        </div>
       </button>
 
       {/* Content */}
       {isOpen && (
-        <div className="px-4 pb-4 space-y-4 animate-fade-in">
+        <div className="px-5 pb-6 space-y-6 animate-fade-in">
           {/* Provider Selection */}
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.12em] text-[#9aa3b2]">Taqsimot turi</p>
+          <div className="space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a8a8d]">Hamkorlarimiz</p>
             <div className="grid grid-cols-1 gap-2">
               {PROVIDERS.map((p) => (
                 <button
@@ -105,21 +105,23 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
                     setSelectedProvider(p.id);
                     setSelectedMonths(p.months[0]);
                   }}
-                  className={`flex items-center gap-3 rounded-xl p-3 text-left transition-all ${
+                  className={`flex items-center gap-4 rounded-xl p-4 text-left transition-all duration-300 ${
                     selectedProvider === p.id
-                      ? 'border border-[#d6b47c]/30 bg-[#d6b47c]/5'
-                      : 'border border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
+                      ? 'border border-[#c9a96e]/30 bg-[#c9a96e]/5 ring-1 ring-[#c9a96e]/20'
+                      : 'border border-white/5 bg-white/[0.01] hover:bg-white/[0.03]'
                   }`}
                 >
-                  <span className="text-xl">{p.logo}</span>
+                  <span className="text-2xl grayscale brightness-125">{p.logo}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${selectedProvider === p.id ? 'text-[#f4f1eb]' : 'text-[#9aa3b2]'}`}>
+                    <p className={`text-sm font-bold tracking-wide ${selectedProvider === p.id ? 'text-[#f5f5f3]' : 'text-[#8a8a8d]'}`}>
                       {p.name}
                     </p>
-                    <p className="text-[10px] text-[#9aa3b2] truncate">{p.description}</p>
+                    <p className="text-[10px] text-[#8a8a8d] font-medium truncate">{p.description}</p>
                   </div>
                   {selectedProvider === p.id && (
-                    <Check className="h-4 w-4 text-[#d6b47c] flex-shrink-0" />
+                    <div className="h-5 w-5 rounded-full bg-[#c9a96e] flex items-center justify-center">
+                      <Check className="h-3 w-3 text-[#0a0a0b]" strokeWidth={3} />
+                    </div>
                   )}
                 </button>
               ))}
@@ -128,8 +130,8 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
 
           {/* Month Selection */}
           {provider && (
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.12em] text-[#9aa3b2]">Muddat</p>
+            <div className="space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a8a8d]">To'lov muddati</p>
               <div className="flex gap-2">
                 {provider.months.map((months) => {
                   const rate = provider.interestRates[months] || 0;
@@ -137,23 +139,23 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
                     <button
                       key={months}
                       onClick={() => setSelectedMonths(months)}
-                      className={`flex-1 rounded-xl p-3 text-center transition-all ${
+                      className={`flex-1 rounded-xl p-4 text-center transition-all duration-300 ${
                         selectedMonths === months
-                          ? 'border border-[#d6b47c]/30 bg-[#d6b47c]/5'
-                          : 'border border-white/10 bg-white/[0.02] hover:bg-white/[0.04]'
+                          ? 'border border-[#c9a96e]/30 bg-[#f5f5f3]'
+                          : 'border border-white/5 bg-white/[0.01] hover:bg-white/[0.03]'
                       }`}
                     >
-                      <p className={`text-lg font-bold ${selectedMonths === months ? 'text-[#f4f1eb]' : 'text-[#9aa3b2]'}`}>
+                      <p className={`text-lg font-black ${selectedMonths === months ? 'text-[#0a0a0b]' : 'text-[#f5f5f3]'}`}>
                         {months}
                       </p>
-                      <p className="text-[10px] text-[#9aa3b2]">oy</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest ${selectedMonths === months ? 'text-[#0a0a0b]/60' : 'text-[#8a8a8d]'}`}>oy</p>
                       {rate === 0 ? (
-                        <span className="inline-block mt-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-400">
-                          0% foiz
+                        <span className={`inline-block mt-2 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${selectedMonths === months ? 'bg-[#c9a96e]/20 text-[#c9a96e]' : 'bg-green-500/10 text-green-500'}`}>
+                          0% Komissiya
                         </span>
                       ) : (
-                        <span className="inline-block mt-1 text-[9px] text-[#9aa3b2]">
-                          {rate}% foiz
+                        <span className={`inline-block mt-2 text-[9px] font-bold ${selectedMonths === months ? 'text-[#0a0a0b]/40' : 'text-[#8a8a8d]'}`}>
+                          {rate}% ustama
                         </span>
                       )}
                     </button>
@@ -165,39 +167,42 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
 
           {/* Calculation Result */}
           {calculation && (
-            <div className="rounded-xl bg-gradient-to-r from-[#d6b47c]/10 to-transparent border border-[#d6b47c]/20 p-4">
+            <div className="rounded-2xl bg-[#c9a96e] p-6 shadow-[0_12px_24px_rgba(201,169,110,0.2)]">
               {!calculation.isEligible ? (
-                <p className="text-sm text-amber-400">
-                  ⚠️ Minimal summa: {formatPrice(provider.minAmount)} so'm
+                <p className="text-sm font-bold text-[#0a0a0b] flex items-center gap-2">
+                  <span>⚠️</span> {t('installment.minAmount')}: {formatPrice(provider.minAmount)} {t('common.sum')}
                 </p>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-[#f4f1eb]">
-                      {formatPrice(calculation.monthlyPayment)}
-                    </span>
-                    <span className="text-sm text-[#9aa3b2] pb-1">so'm / oyiga</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-white/[0.03] p-2.5">
-                      <p className="text-[10px] text-[#9aa3b2]">Umumiy summa</p>
-                      <p className="text-sm font-semibold text-[#f4f1eb]">
-                        {formatPrice(calculation.totalWithInterest)} so'm
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-white/[0.03] p-2.5">
-                      <p className="text-[10px] text-[#9aa3b2]">Foiz</p>
-                      <p className={`text-sm font-semibold ${calculation.totalInterest > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                        {calculation.totalInterest > 0 ? `+${formatPrice(calculation.totalInterest)}` : '0'} so'm
-                      </p>
+                <div className="space-y-4">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0b]/60 mb-1">Oylik to'lov</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-black text-[#0a0a0b] tracking-tight">
+                        {formatPrice(calculation.monthlyPayment)}
+                      </span>
+                      <span className="text-sm font-bold text-[#0a0a0b]/60 pb-1">{t('common.sum')}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2">
-                    <Info className="h-3.5 w-3.5 text-[#9aa3b2] mt-0.5 flex-shrink-0" />
-                    <p className="text-[10px] text-[#9aa3b2] leading-relaxed">
-                      Buyurtma berish sahifasida to'lov turini tanlashingiz mumkin. Haqiqiy shartlar to'lov tizimi tomonidan tasdiqlanadi.
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-xl bg-[#0a0a0b]/5 p-3 border border-[#0a0a0b]/5">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#0a0a0b]/50 mb-1">Jami summa</p>
+                      <p className="text-sm font-black text-[#0a0a0b]">
+                        {formatPrice(calculation.totalWithInterest)} {t('common.sum')}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-[#0a0a0b]/5 p-3 border border-[#0a0a0b]/5">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#0a0a0b]/50 mb-1">Xizmat haqi</p>
+                      <p className={`text-sm font-black ${calculation.totalInterest > 0 ? 'text-[#0a0a0b]' : 'text-[#0a0a0b]'}`}>
+                        {calculation.totalInterest > 0 ? `+${formatPrice(calculation.totalInterest)}` : '0'} {t('common.sum')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 pt-2">
+                    <Info className="h-4 w-4 text-[#0a0a0b]/40 mt-0.5 flex-shrink-0" />
+                    <p className="text-[10px] font-medium text-[#0a0a0b]/70 leading-relaxed">
+                      To'lov shartlari provayder tomonidan buyurtmani tasdiqlash vaqtida belgilanadi.
                     </p>
                   </div>
                 </div>

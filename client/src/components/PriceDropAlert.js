@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, BellRing, TrendingDown, X, CheckCircle, Phone } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const PriceDropAlert = ({ product }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,6 +9,7 @@ const PriceDropAlert = ({ product }) => {
   const [notifyMethod, setNotifyMethod] = useState('sms'); // sms | push | telegram
   const [submitted, setSubmitted] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const { t } = useLanguage();
 
   const currentPrice = Number(product.price || product.salePrice || 0);
   const suggestedTarget = Math.round(currentPrice * 0.85 / 1000) * 1000;
@@ -43,8 +45,8 @@ const PriceDropAlert = ({ product }) => {
       >
         <BellRing className="w-4 h-4 group-hover:hidden" />
         <Bell className="w-4 h-4 hidden group-hover:block" />
-        <span className="group-hover:hidden">Narx kuzatilmoqda</span>
-        <span className="hidden group-hover:inline">Bekor qilish</span>
+        <span className="group-hover:hidden">{t('priceDropAlert.tracking')}</span>
+        <span className="hidden group-hover:inline">{t('priceDropAlert.cancel')}</span>
       </button>
     );
   }
@@ -57,7 +59,7 @@ const PriceDropAlert = ({ product }) => {
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[#d6b47c] text-sm font-medium hover:bg-[#d6b47c]/20 hover:border-[#d6b47c]/30 transition-all"
       >
         <TrendingDown className="w-4 h-4" />
-        Narx tushsa xabar berish
+        {t('priceDropAlert.subtitle')}
       </button>
 
       {/* Modal */}
@@ -72,8 +74,8 @@ const PriceDropAlert = ({ product }) => {
                   <TrendingDown className="w-5 h-5 text-[#d6b47c]" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#f4f1eb]">Narx kuzatish</h3>
-                  <p className="text-[11px] text-[#9aa3b2]">Narx tushganda darhol xabar olamiz</p>
+                  <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('priceDropAlert.title')}</h3>
+                  <p className="text-[11px] text-[#9aa3b2]">{t('priceDropAlert.subtitle')}</p>
                 </div>
               </div>
               <button
@@ -90,16 +92,16 @@ const PriceDropAlert = ({ product }) => {
                 <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-emerald-400" />
                 </div>
-                <h4 className="text-xl font-semibold text-[#f4f1eb] mb-2">Faollashtirildi!</h4>
+                <h4 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('priceDropAlert.activated')}</h4>
                 <p className="text-sm text-[#9aa3b2] mb-4">
-                  Mahsulot narxi <span className="text-[#d6b47c] font-semibold">{(targetPrice ? Number(targetPrice) : suggestedTarget).toLocaleString()} so'm</span> ga tushganda sizga {notifyMethod === 'sms' ? 'SMS' : notifyMethod === 'telegram' ? 'Telegram' : 'push-bildirishnoma'} orqali xabar yuboramiz.
+                  {t('priceDrop.notifyWhen')} <span className="text-[#d6b47c] font-semibold">{(targetPrice ? Number(targetPrice) : suggestedTarget).toLocaleString()} {t('common.sum')}</span> {t('priceDrop.fallsTo')}
                 </p>
                 <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3 mb-5">
                   <div className="flex items-center gap-2 text-xs text-[#9aa3b2]">
                     <span className="text-lg">📊</span>
                     <div className="text-left">
                       <p className="text-[#f4f1eb] font-medium">{product.name?.slice(0, 40)}{product.name?.length > 40 ? '...' : ''}</p>
-                      <p className="mt-0.5">Hozirgi narx: {currentPrice.toLocaleString()} so'm</p>
+                      <p className="mt-0.5">{t('priceDropAlert.currentPrice')}: {currentPrice.toLocaleString()} {t('common.sum')}</p>
                     </div>
                   </div>
                 </div>
@@ -123,13 +125,13 @@ const PriceDropAlert = ({ product }) => {
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[#f4f1eb] truncate">{product.name}</p>
-                    <p className="text-xs text-[#9aa3b2]">Hozirgi narx: <span className="text-[#d6b47c] font-semibold">{currentPrice.toLocaleString()} so'm</span></p>
+                    <p className="text-xs text-[#9aa3b2]">{t('priceDropAlert.currentPrice')}: <span className="text-[#d6b47c] font-semibold">{currentPrice.toLocaleString()} {t('common.sum')}</span></p>
                   </div>
                 </div>
 
                 {/* Target Price */}
                 <div>
-                  <label className="text-xs text-[#9aa3b2] mb-2 block">Qaysi narxga tushsa xabar bersin?</label>
+                  <label className="text-xs text-[#9aa3b2] mb-2 block">{t('priceDropAlert.targetPrice')}</label>
                   <div className="relative">
                     <input
                       type="number"
@@ -138,7 +140,7 @@ const PriceDropAlert = ({ product }) => {
                       placeholder={suggestedTarget.toLocaleString()}
                       className="w-full p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-white text-sm placeholder:text-[#3f4658] focus:outline-none focus:border-[#d6b47c]/30 pr-16"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#9aa3b2]">so'm</span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[#9aa3b2]">{t('common.sum')}</span>
                   </div>
                   <div className="flex gap-2 mt-2">
                     {[0.9, 0.85, 0.8, 0.7].map((pct) => {
@@ -163,7 +165,7 @@ const PriceDropAlert = ({ product }) => {
 
                 {/* Notify Method */}
                 <div>
-                  <label className="text-xs text-[#9aa3b2] mb-2 block">Xabar olish usuli</label>
+                  <label className="text-xs text-[#9aa3b2] mb-2 block">{t('priceDropAlert.notifyMethod')}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { value: 'sms', label: 'SMS', icon: '📱' },
@@ -192,7 +194,7 @@ const PriceDropAlert = ({ product }) => {
                 {/* Phone (for SMS/Telegram) */}
                 {(notifyMethod === 'sms' || notifyMethod === 'telegram') && (
                   <div>
-                    <label className="text-xs text-[#9aa3b2] mb-2 block">Telefon raqamingiz</label>
+                    <label className="text-xs text-[#9aa3b2] mb-2 block">{t('priceDropAlert.phoneNumber')}</label>
                     <div className="relative">
                       <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3f4658]" />
                       <input
@@ -210,7 +212,7 @@ const PriceDropAlert = ({ product }) => {
                 {/* Info */}
                 <div className="rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/20 p-3">
                   <p className="text-[11px] text-[#9aa3b2]">
-                    💡 <strong className="text-[#d6b47c]">Maslahat:</strong> Narx kuzatish 30 kun davomida faol bo'llib, narx belgilangan darajaga tushganda darhol xabar yuboramiz.
+                    {t('priceDropAlert.tip')}
                   </p>
                 </div>
 

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import LookDetailModal from '../components/LookDetailModal';
 import SEO from '../components/SEO';
 import { useProducts } from '../contexts/ProductContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 /* ─── helpers ──────────────────────────────────────────────────── */
 const SEASONS = ['Spring/Summer', 'Fall/Winter', 'Resort', 'Pre-Fall', 'Capsule'];
@@ -16,6 +17,7 @@ function getSeason(index) {
 /* ─── sub-components ─────────────────────────────────────────── */
 
 function HeroSection() {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [scrollY, setScrollY] = useState(0);
     useEffect(() => {
@@ -68,7 +70,7 @@ function HeroSection() {
                 <div className="flex items-center gap-3 pb-10">
                     <div className="h-px w-12 bg-[#d6b47c]/50" />
                     <span className="text-[10px] uppercase tracking-[0.4em] text-[#d6b47c]/80 font-medium">
-                        Luxe Editorial — Lookbook
+                        {t('lookbooks.editorialLabel')}
                     </span>
                     <div className="h-px w-12 bg-[#d6b47c]/50" />
                 </div>
@@ -81,11 +83,11 @@ function HeroSection() {
                         opacity: Math.max(0, 1 - scrollY / 600)
                     }}
                 >
-                    <span className="block">THE ART</span>
+                    <span className="block">{t('lookbooks.heroTitle1')}</span>
                     <span className="block text-transparent" style={{
                         WebkitTextStroke: '1px rgba(245,240,232,0.4)',
                     }}>
-                        OF STYLE
+                        {t('lookbooks.heroTitle2')}
                     </span>
                 </h1>
 
@@ -96,8 +98,7 @@ function HeroSection() {
                         opacity: Math.max(0, 1 - scrollY / 500)
                     }}
                 >
-                    Professional editorial curations — premium kiyimlar, noyob stillar, va
-                    cheksiz ilhom manbai.
+                    {t('lookbooks.heroSubtitle')}
                 </p>
 
                 <div
@@ -109,12 +110,12 @@ function HeroSection() {
                 >
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#d6b47c] text-[#0a0c14] text-xs font-semibold tracking-wide cursor-pointer hover:bg-[#e8c98a] transition-colors"
                         onClick={() => document.getElementById('lookbook-grid')?.scrollIntoView({ behavior: 'smooth' })}>
-                        Kolleksiyani ko'rish
+                        {t('lookbooks.viewCollection')}
                         <ArrowRight className="w-3.5 h-3.5" />
                     </div>
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d6b47c]/30 text-[#d6b47c] text-xs font-semibold tracking-wide cursor-pointer hover:bg-[#d6b47c]/10 transition-colors"
                         onClick={() => navigate('/lookbook-builder')}>
-                        Shaxsiy obraz yaratish
+                        {t('lookbooks.createLook')}
                         <Plus className="w-3.5 h-3.5" />
                     </div>
                 </div>
@@ -146,6 +147,7 @@ function HeroSection() {
 }
 
 function FilterBar({ categories, activeFilter, setActiveFilter }) {
+    const { t } = useLanguage();
     const barRef = useRef(null);
 
     return (
@@ -173,14 +175,14 @@ function FilterBar({ categories, activeFilter, setActiveFilter }) {
                                 : 'text-neutral-400 border border-white/10 hover:text-white hover:border-white/20'
                                 }`}
                         >
-                            {cat === 'all' ? 'Barchasi' : cat}
+                            {cat === 'all' ? t('lookbooks.all') : cat}
                         </button>
                     ))}
                 </div>
 
                 <div className="hidden md:flex items-center gap-1.5 shrink-0">
                     <Eye className="w-3.5 h-3.5 text-neutral-500" />
-                    <span className="text-[10px] text-neutral-500 tracking-wide">Editorial</span>
+                    <span className="text-[10px] text-neutral-500 tracking-wide">{t('lookbooks.editorial')}</span>
                 </div>
             </div>
         </div>
@@ -189,6 +191,7 @@ function FilterBar({ categories, activeFilter, setActiveFilter }) {
 
 /* LookCard – Pinterest masonry card */
 function LookCard({ look, index, onOpen }) {
+    const { t } = useLanguage();
     const lookId = look._id || look.id;
     const season = getSeason(index);
 
@@ -261,10 +264,10 @@ function LookCard({ look, index, onOpen }) {
                 <div className="flex items-center justify-between opacity-80 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
                         <ShoppingBag className="w-3 h-3" />
-                        {look.products?.length || 0} mahsulot
+                        {look.products?.length || 0} {t('lookbooks.products')}
                     </div>
                     <span className="text-xs font-medium text-[#d6b47c] tracking-wide flex items-center gap-1.5 group-hover:text-white transition-colors duration-300">
-                        Ko'rish
+                        {t('lookbooks.view')}
                         <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                 </div>
@@ -275,6 +278,7 @@ function LookCard({ look, index, onOpen }) {
 
 /* ─── Loading skeleton ────────────────────────────────────────── */
 function LoadingState() {
+    const { t } = useLanguage();
     return (
         <div className="min-h-screen bg-[#060810] flex flex-col items-center justify-center gap-6">
             {/* Animated luxury spinner */}
@@ -286,8 +290,8 @@ function LoadingState() {
                 <Gem className="absolute inset-0 m-auto w-6 h-6 text-[#d6b47c] animate-pulse" />
             </div>
             <div className="text-center">
-                <p className="text-[11px] uppercase tracking-[0.4em] text-[#d6b47c]/70 mb-1">Yuklanmoqda</p>
-                <p className="text-xs text-neutral-600">Editorial kolleksiya tayyorlanmoqda...</p>
+                <p className="text-[11px] uppercase tracking-[0.4em] text-[#d6b47c]/70 mb-1">{t('lookbooks.loading')}</p>
+                <p className="text-xs text-neutral-600">{t('lookbooks.loadingHint')}</p>
             </div>
         </div>
     );
@@ -297,6 +301,7 @@ function LoadingState() {
 const Lookbooks = () => {
     const navigate = useNavigate();
     const { products } = useProducts();
+    const { t } = useLanguage();
 
     const [looks, setLooks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -398,7 +403,7 @@ const Lookbooks = () => {
                     <div className="flex items-center gap-2.5">
                         <Gem className="w-3.5 h-3.5 text-[#d6b47c]" />
                         <span className="text-[10px] uppercase tracking-[0.35em] text-[#d6b47c]">
-                            {activeFilter === 'all' ? 'Barcha looklar' : activeFilter}
+                            {activeFilter === 'all' ? t('lookbooks.allLooks') : activeFilter}
                         </span>
                     </div>
                     <div className="h-px flex-1 bg-gradient-to-l from-[#d6b47c]/30 to-transparent" />
@@ -409,12 +414,12 @@ const Lookbooks = () => {
                         <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center">
                             <Eye className="w-7 h-7 text-neutral-600" />
                         </div>
-                        <p className="text-neutral-500 text-sm">Bu kategoriya bo'yicha looklar topilmadi</p>
+                        <p className="text-neutral-500 text-sm">{t('lookbooks.noLooksFound')}</p>
                         <button
                             onClick={() => setActiveFilter('all')}
                             className="text-[#d6b47c] text-xs underline underline-offset-4"
                         >
-                            Barchasini ko'rish
+                            {t('lookbooks.viewAll')}
                         </button>
                     </div>
                 ) : (
@@ -441,11 +446,11 @@ const Lookbooks = () => {
                 <div className="relative z-10 py-16 px-8 text-center flex flex-col items-center gap-6">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="h-px w-10 bg-[#d6b47c]/40" />
-                        <span className="text-[10px] uppercase tracking-[0.4em] text-[#d6b47c]/70">Kolleksiya</span>
+                        <span className="text-[10px] uppercase tracking-[0.4em] text-[#d6b47c]/70">{t('lookbooks.home')}</span>
                         <div className="h-px w-10 bg-[#d6b47c]/40" />
                     </div>
                     <h2 className="font-brilliant text-3xl md:text-5xl text-[#f5f0e8]">
-                        Barcha mahsulotlarni ko'ring
+                        {t('lookbooks.viewAllProducts')}
                     </h2>
                     <p className="text-sm text-neutral-400 max-w-md">
                         Premium brend mahsulotlari va noyob editoriyallar bilan tanishing.
@@ -455,14 +460,14 @@ const Lookbooks = () => {
                             onClick={() => navigate('/products')}
                             className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#d6b47c] text-[#060810] text-sm font-semibold hover:bg-[#e8c98a] transition-all hover:shadow-xl hover:shadow-[#d6b47c]/20"
                         >
-                            Mahsulotlarga o'tish
+                            {t('lookbooks.goToProducts')}
                             <ArrowRight className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => navigate('/')}
                             className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-white/15 text-white/70 text-sm hover:bg-white/5 hover:text-white transition-all"
                         >
-                            Bosh sahifa
+                            {t('lookbooks.home')}
                         </button>
                     </div>
                 </div>

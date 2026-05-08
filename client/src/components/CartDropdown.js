@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 
 const CartDropdown = ({ isOpen, onClose }) => {
   const { items, updateQuantity, removeFromCart, getCartTotal } = useCart();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleQuantityChange = (itemId, newQuantity) => {
@@ -36,7 +38,6 @@ const CartDropdown = ({ isOpen, onClose }) => {
     }
   };
 
-  // Prevent scrolling on body when cart is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -49,28 +50,24 @@ const CartDropdown = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const total = getCartTotal();
-  const money = (value) => `${Number(value || 0).toLocaleString('en-US').replace(/,/g, ',')} so'm`;
+  const money = (value) => `${Number(value || 0).toLocaleString('en-US').replace(/,/g, ',')} ${t('common.sum')}`;
 
-  // Use Portal to render outside root hierarchy to cover Navbar
   if (typeof document === 'undefined') return null;
 
   return createPortal(
     <>
-      {/* Overlay for entire screen including navbar */}
       <div
         className={`fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         onClick={handleOverlayClick}
       />
 
-      {/* Cart sidebar - highest z-index */}
       <div
         className={`fixed top-0 right-0 z-[10000] h-screen w-full sm:w-[500px] bg-[#0c0c0c] transform transition-transform duration-300 ease-in-out flex flex-col items-stretch border-l border-white/5 ${isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-8 py-10 border-b border-white/5 shrink-0">
-          <h2 className="text-2xl font-normal text-[#d6b47c] tracking-wide">Savatcha</h2>
+          <h2 className="text-2xl font-normal text-[#d6b47c] tracking-wide">{t('cartDropdown.title')}</h2>
           <button
             onClick={onClose}
             className="flex items-center justify-center text-white/50 hover:text-white transition-colors"
@@ -80,7 +77,6 @@ const CartDropdown = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Cart Items Area */}
         <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
@@ -88,14 +84,14 @@ const CartDropdown = ({ isOpen, onClose }) => {
                 <span className="text-[#d6b47c] opacity-50"><X strokeWidth={1} size={32} /></span>
               </div>
               <div>
-                <h3 className="text-lg text-white mb-2">Savat bo'sh</h3>
-                <p className="text-[#a1a1aa] text-sm">Savatchangizga biror narsa qo'shing.</p>
+                <h3 className="text-lg text-white mb-2">{t('cartDropdown.empty')}</h3>
+                <p className="text-[#a1a1aa] text-sm">{t('cartDropdown.emptyDesc')}</p>
               </div>
               <button
                 onClick={() => { onClose(); navigate('/products'); }}
                 className="px-8 py-3 bg-white/5 text-white text-xs tracking-widest uppercase hover:bg-white/10 transition-colors border border-white/10"
               >
-                Katalogga o'tish
+                {t('cartDropdown.goToCatalog')}
               </button>
             </div>
           ) : (
@@ -122,10 +118,10 @@ const CartDropdown = ({ isOpen, onClose }) => {
                             {item.name}
                           </h3>
                           {item.selectedColor && (
-                            <p className="text-[12px] text-white/50">Rang: {item.selectedColor}</p>
+                            <p className="text-[12px] text-white/50">{t('common.color')}: {item.selectedColor}</p>
                           )}
                           {item.selectedSize && (
-                            <p className="text-[12px] text-white/50">O'lcham: {item.selectedSize}</p>
+                            <p className="text-[12px] text-white/50">{t('common.size')}: {item.selectedSize}</p>
                           )}
                         </div>
                       </div>
@@ -170,11 +166,10 @@ const CartDropdown = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Footer Area */}
         {items.length > 0 && (
           <div className="mt-auto px-8 py-8 shrink-0 border-t border-white/10 bg-[#1a1b1e]">
             <div className="flex items-center justify-between mb-6">
-              <span className="text-white text-sm">Jami:</span>
+              <span className="text-white text-sm">{t('cartDropdown.total')}</span>
               <span className="text-[#d6b47c] tracking-wide">
                 {money(total)}
               </span>
@@ -184,7 +179,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
               onClick={handleCheckout}
               className="w-full bg-[#d6b47c] hover:bg-[#c6a366] text-black py-4 text-xs font-bold tracking-[0.15em] uppercase transition-colors"
             >
-              Buyurtma berish
+              {t('cartDropdown.checkout')}
             </button>
           </div>
         )}
