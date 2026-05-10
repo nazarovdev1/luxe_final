@@ -121,7 +121,7 @@ const MobileReels = () => {
             video.pause();
             video.currentTime = 0;
           }
-        }).catch(() => {});
+        }).catch(() => { });
       }
     });
 
@@ -176,7 +176,7 @@ const MobileReels = () => {
                 console.log('[PWA] Resume play failed, will retry:', err.name);
                 // Retry once more after a short delay
                 setTimeout(() => {
-                  video.play().catch(() => {});
+                  video.play().catch(() => { });
                 }, 200);
               });
             }
@@ -191,7 +191,7 @@ const MobileReels = () => {
               } else if (reel.videoType === 'vimeo') {
                 iframe.contentWindow.postMessage('{"method":"play"}', '*');
               }
-            } catch (e) {}
+            } catch (e) { }
           }
         }
       } else {
@@ -250,14 +250,14 @@ const MobileReels = () => {
     const playCurrent = () => {
       const reel = reels[currentIndex];
       if (!reel) return;
-      
+
       const iframe = document.getElementById(`reel-iframe-${currentIndex}`);
       const video = document.getElementById(`reel-video-${currentIndex}`);
 
       try {
         if (reel.videoType === 'youtube' && iframe) {
           iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-          
+
           if (!isMuted) {
             iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
             iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[100]}', '*');
@@ -266,7 +266,7 @@ const MobileReels = () => {
           }
         } else if (reel.videoType === 'vimeo' && iframe) {
           iframe.contentWindow.postMessage('{"method":"play"}', '*');
-          
+
           if (!isMuted) {
             iframe.contentWindow.postMessage('{"method":"setVolume","value":1}', '*');
           } else {
@@ -277,7 +277,7 @@ const MobileReels = () => {
           // Ensure critical iOS attributes are set
           video.setAttribute('playsinline', '');
           video.setAttribute('webkit-playsinline', 'true');
-          
+
           // In PWA mode, if not yet unlocked, don't force play — wait for gesture
           if (isPWAMode() && !gestureUnlockedRef.current) {
             // Try anyway — it might work on some iOS versions
@@ -321,10 +321,10 @@ const MobileReels = () => {
             video.pause();
             video.currentTime = 0;
           }
-        } catch (err) {}
+        } catch (err) { }
       }
     });
-    
+
     prevIndexRef.current = currentIndex;
     return () => clearTimeout(timer);
   }, [currentIndex, isMuted, reels]);
@@ -426,10 +426,10 @@ const MobileReels = () => {
   const handleTouchEnd = (e) => {
     touchEndY.current = e.changedTouches[0].screenY;
     const diff = touchStartY.current - touchEndY.current;
-    
+
     if (Math.abs(diff) > 50) {
       const direction = diff > 0 ? 'UP' : 'DOWN';
-      
+
       let nextIndex = currentIndex;
       if (direction === 'UP' && currentIndex < reels.length - 1) {
         nextIndex = currentIndex + 1;
@@ -440,7 +440,7 @@ const MobileReels = () => {
       // 1. Force synchronous play execution inside touch event context for iOS native permission
       if (nextIndex !== currentIndex) {
         const nextReel = reels[nextIndex];
-        
+
         if (nextReel) {
           try {
             if (nextReel.videoType === 'youtube' || nextReel.videoType === 'vimeo') {
@@ -466,10 +466,10 @@ const MobileReels = () => {
                 nextVideo.play().catch(e => console.log(e));
               }
             }
-          } catch (err) {}
+          } catch (err) { }
         }
       }
-      
+
       // 2. Perform the actual index update (if not already handled by snap scroll)
       handleSwipe(direction);
     }
@@ -698,7 +698,7 @@ const MobileReels = () => {
             <div className="absolute inset-0 w-full h-full" onClick={toggleMute}>
               {/* Thumbnail Placeholder */}
               {reel.thumbnailUrl && (
-                <div 
+                <div
                   className={`absolute inset-0 z-0 transition-opacity duration-500 ${index === currentIndex ? 'opacity-0' : 'opacity-100'}`}
                   style={{
                     backgroundImage: `url(${reel.thumbnailUrl})`,
@@ -707,7 +707,7 @@ const MobileReels = () => {
                   }}
                 />
               )}
-              
+
               {Math.abs(index - currentIndex) <= 1 ? (
                 (reel.videoType === 'youtube' || reel.videoType === 'vimeo') ? (
                   <iframe
@@ -720,7 +720,7 @@ const MobileReels = () => {
                     title={reel.title}
                   />
                 ) : (
-                   <video
+                  <video
                     key={reel._id}
                     id={`reel-video-${index}`}
                     src={reel.videoUrl}
@@ -738,18 +738,18 @@ const MobileReels = () => {
                     onLoadedData={(e) => {
                       // In PWA mode, attempt play as soon as data is loaded
                       if (index === currentIndex && gestureUnlockedRef.current) {
-                        e.target.play().catch(() => {});
+                        e.target.play().catch(() => { });
                       }
                     }}
                   />
                 )
               ) : (
                 <div className="w-full h-full bg-[#0a0a0f] flex items-center justify-center">
-                   {reel.thumbnailUrl ? (
-                     <img src={reel.thumbnailUrl} alt="" className="w-full h-full object-cover opacity-30 blur-sm" />
-                   ) : (
-                     <Play size={48} className="text-white/10" />
-                   )}
+                  {reel.thumbnailUrl ? (
+                    <img src={reel.thumbnailUrl} alt="" className="w-full h-full object-cover opacity-30 blur-sm" />
+                  ) : (
+                    <Play size={48} className="text-white/10" />
+                  )}
                 </div>
               )}
 
@@ -909,11 +909,11 @@ const MobileReels = () => {
 // Helper function to get embed URL - Optimized for iOS Autoplay
 const getEmbedUrl = (url, type) => {
   if (!url) return '';
-  
+
   // Static autoplay parameter prevents iframe reloading and "zagruzka" lag
   const autoplayParam = 'autoplay=1';
   const muteParam = type === 'vimeo' ? 'muted=1' : 'mute=1';
-  
+
   const baseParams = `${autoplayParam}&${muteParam}&loop=1&playsinline=1&controls=0&rel=0&showinfo=0&modestbranding=1&enablejsapi=1`;
 
   if (type === 'youtube') {

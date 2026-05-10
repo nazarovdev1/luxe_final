@@ -26,6 +26,7 @@ const getSizes = (product) =>
 
 /* ─── Product Item Card ───────────────────────────────────────── */
 function ProductItem({ product, selection, error, onSelect }) {
+    const { t } = useLanguage();
     const sizeOptions = getSizes(product);
     const hasVariants = (product.colors?.length > 0) || sizeOptions.length > 0;
 
@@ -43,7 +44,7 @@ function ProductItem({ product, selection, error, onSelect }) {
                 {/* Product image */}
                 <div className="relative shrink-0 w-20 h-24 rounded-xl overflow-hidden bg-[#0d1019]">
                     <img
-                        src={product.image || product.images?.[0] || '/placeholder.jpg'}
+                        src={product.image || product.images?.[0]?.url || '/placeholder.jpg'}
                         alt={product.name}
                         onError={(e) => { e.target.src = '/placeholder.jpg'; }}
                         className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
@@ -153,7 +154,7 @@ function ProductItem({ product, selection, error, onSelect }) {
 const LookDetailModal = ({ lookId, onClose }) => {
     const { t } = useLanguage();
     const { products } = useProducts();
-    const { addToCart } = useCart();
+    const { addToCart, addLookToCart } = useCart();
     const navigate = useNavigate();
 
     const [look, setLook] = useState(null);
@@ -190,10 +191,10 @@ const LookDetailModal = ({ lookId, onClose }) => {
         if (look.products?.length > 0) {
             const first = look.products[0];
             if (typeof first === 'object' && (first.id || first._id)) {
-                return look.products.map((p) => {
-                    const found = products.find((cp) => cp.id === (p.id || p._id));
-                    return found || { ...p, id: p.id || p._id, image: p.image || p.images?.[0] || '/placeholder.jpg' };
-                });
+return look.products.map((p) => {
+                     const found = products.find((cp) => cp.id === (p.id || p._id));
+                     return found || { ...p, id: p.id || p._id, image: p.image || p.images?.[0]?.url || '/placeholder.jpg' };
+                 });
             }
             return products.filter((p) => look.products.includes(p.id || p._id));
         }
@@ -232,29 +233,61 @@ const LookDetailModal = ({ lookId, onClose }) => {
         }
     };
 
-    const handleAddAll = async () => {
+    const handleAddAll = () => {
         const newErrors = {};
         let hasError = false;
-        lookProducts.forEach((p) => {
+        const inStockProducts = lookProducts.filter((p) => {
+            const stock = p.stock !== undefined ? p.stock : (p.count !== undefined ? p.count : 999);
+            return stock > 0;
+        });
+
+        if (inStockProducts.length === 0) {
+            toast.error('Barcha mahsulotlar tugagan');
+            return;
+        }
+
+        inStockProducts.forEach((p) => {
             const sel = selections[p.id] || {};
             if (p.colors?.length > 0 && !sel.color) { newErrors[p.id] = 'Rang tanlang'; hasError = true; }
             const sizes = getSizes(p);
             if (sizes.length > 0 && !sel.size) {
-                newErrors[p.id] = newErrors[p.id] ? 'Rang va o\'lcham tanlang' : 'O\'lcham tanlang';
+                newErrors[p.id] = newErrors[p.id] ? "Rang va o'lcham tanlang" : "O'lcham tanlang";
                 hasError = true;
             }
         });
         if (hasError) { setErrors(newErrors); toast.error('Barcha variantlarni tanlang'); return; }
 
-        let ok = 0;
-        for (const p of lookProducts) {
-            const sel = selections[p.id];
-            try { await addToCart(p, sel?.color, sel?.size, 1); ok++; } catch (e) { console.error(e); }
+        const lookForCart = {
+            ...look,
+            id: look._id || look.id,
+            products: inStockProducts,
+        };
+
+        const result = addLookToCart(lookForCart, selections);
+        if (result) {
+            toast.success(`Look "${look.title}" savatga qo'shildi (${inStockProducts.length} mahsulot)`);
+            onClose();
         }
-        if (ok > 0) { toast.success(`Look savatga qo'shildi (${ok} mahsulot)`); onClose(); }
     };
 
     const totalPrice = lookProducts.reduce((sum, p) => sum + (typeof p.price === 'number' ? p.price : 0), 0);
+
+    const hasDiscount = look && look.discountValue > 0 && look.isActive !== false && !(look.expiresAt && new Date(look.expiresAt) < new Date());
+    let lookDiscountAmount = 0;
+    let discountedTotalPrice = totalPrice;
+    if (hasDiscount) {
+        if (look.discountType === 'percentage') {
+            lookDiscountAmount = totalPrice * (look.discountValue / 100);
+        } else {
+            lookDiscountAmount = Math.min(look.discountValue, totalPrice);
+        }
+        discountedTotalPrice = totalPrice - lookDiscountAmount;
+    }
+
+    const outOfStockProducts = lookProducts.filter((p) => {
+        const stock = p.stock !== undefined ? p.stock : (p.count !== undefined ? p.count : 999);
+        return stock === 0;
+    });
 
     return ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-end md:items-center justify-center">
@@ -373,6 +406,15 @@ const LookDetailModal = ({ lookId, onClose }) => {
                         </button>
                     </div>
 
+                    {outOfStockProducts.length > 0 && (
+                        <div className="mx-6 mt-3 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <p className="text-[11px] text-amber-300">
+                                {outOfStockProducts.length} ta mahsulot hozirda tugagan: {outOfStockProducts.map(p => p.name).join(', ')}
+                            </p>
+                        </div>
+                    )}
+
                     {/* Scrollable product list */}
                     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 custom-scrollbar">
                         {lookProducts.length === 0 ? (
@@ -402,9 +444,36 @@ const LookDetailModal = ({ lookId, onClose }) => {
 
                         {/* Total price */}
                         {totalPrice > 0 && (
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-xs text-neutral-500 uppercase tracking-wider">{t('common.total')}</span>
-                                <span className="text-sm font-semibold text-[#d6b47c]">{formatPrice(totalPrice)} {t('common.sum')}</span>
+                            <div className="mb-3 space-y-1.5">
+                                {hasDiscount && lookDiscountAmount > 0 ? (
+                                    <>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-neutral-500 uppercase tracking-wider">Original</span>
+                                            <span className="text-sm text-neutral-500 line-through">{formatPrice(totalPrice)} {t('common.sum')}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-neutral-500 uppercase tracking-wider">Chegirma</span>
+                                            <span className="inline-flex items-center gap-1.5">
+                                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                                                    {look.discountType === 'percentage' ? `-${look.discountValue}%` : 'Chegirma'}
+                                                </span>
+                                                <span className="text-sm text-emerald-400">-{formatPrice(lookDiscountAmount)} {t('common.sum')}</span>
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-[#d6b47c] uppercase tracking-wider font-medium">Yakuniy</span>
+                                            <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(discountedTotalPrice)} {t('common.sum')}</span>
+                                        </div>
+                                        <div className="flex items-center justify-center gap-1.5 py-1">
+                                            <span className="text-xs text-emerald-400 font-medium">{formatPrice(lookDiscountAmount)} so'm tejaysiz!</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-neutral-500 uppercase tracking-wider">{t('common.total')}</span>
+                                        <span className="text-sm font-semibold text-[#d6b47c]">{formatPrice(totalPrice)} {t('common.sum')}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -426,7 +495,10 @@ const LookDetailModal = ({ lookId, onClose }) => {
                             {/* Primary: add all to cart */}
                             <button
                                 onClick={handleAddAll}
-                                disabled={lookProducts.length === 0}
+                                disabled={lookProducts.length === 0 || lookProducts.every((p) => {
+                                    const stock = p.stock !== undefined ? p.stock : (p.count !== undefined ? p.count : 999);
+                                    return stock === 0;
+                                })}
                                 className="
                                     flex-1 bg-gradient-to-r from-[#d6b47c] to-[#c9a868]
                                     hover:from-[#e8c98a] hover:to-[#d6b47c]

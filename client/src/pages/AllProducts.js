@@ -27,7 +27,9 @@ const AllProducts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const categoryFromUrl = searchParams.get('category');
+  const filterFromUrl = searchParams.get('filter');
   const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || t('products.all'));
+  const [isNewOnly, setIsNewOnly] = useState(filterFromUrl === 'new');
   const [searchText, setSearchText] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
@@ -97,11 +99,12 @@ const AllProducts = () => {
     const q = searchText.trim().toLowerCase();
     return products.filter((product) => {
       const categoryMatch = selectedCategory === allLabel || product.category === selectedCategory;
+      const isNewMatch = !isNewOnly || product.isNewCollection === true;
       const searchMatch =
         q.length === 0 ||
         (product.name || '').toLowerCase().includes(q) ||
         (product.category || '').toLowerCase().includes(q);
-      return categoryMatch && searchMatch;
+      return categoryMatch && isNewMatch && searchMatch;
     });
   }, [products, selectedCategory, searchText, allLabel]);
 
@@ -375,7 +378,11 @@ const AllProducts = () => {
               <div className="flex -space-x-3">
                 {compareList.map((p) => (
                   <div key={p._id || p.id} className="w-12 h-12 rounded-full border-2 border-[#141416] overflow-hidden bg-[#0a0a0b]">
-                    <img src={p.image || p.images?.[0]} alt="" className="w-full h-full object-cover" />
+                    <img 
+                      src={p.image || (Array.isArray(p.images) ? (typeof p.images[0] === 'object' ? p.images[0].url : p.images[0]) : '') || '/placeholder.jpg'} 
+                      alt="" 
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
                 ))}
               </div>

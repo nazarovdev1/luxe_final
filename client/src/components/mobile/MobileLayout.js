@@ -5,7 +5,9 @@ import Loading from '../Loading';
 
 import { useLocation } from 'react-router-dom';
 
-const VisualSearch = lazy(() => import('../VisualSearch'));
+import { lazyWithRetry } from '../../utils/lazyWithRetry';
+
+const VisualSearch = lazyWithRetry(() => import('../VisualSearch'));
 
 const MobileLayout = ({ children }) => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -15,6 +17,7 @@ const MobileLayout = ({ children }) => {
         location.pathname === '/mobile/checkout' ||
         location.pathname.startsWith('/mobile/lookbooks/') ||
         location.pathname === '/mobile/reels' ||
+        location.pathname.startsWith('/mobile/bundle/') ||
         location.pathname.startsWith('/mobile/live/');
     const layoutPaddingClass = shouldHideBottomNav ? 'pb-0' : 'pb-20';
 
@@ -26,15 +29,15 @@ const MobileLayout = ({ children }) => {
 
             <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
-            {isVisualSearchOpen && (
+            {/* {isVisualSearchOpen && (
                 <Suspense fallback={<Loading />}>
                     <VisualSearch onClose={() => setIsVisualSearchOpen(false)} />
                 </Suspense>
-            )}
+            )} */}
 
 
             {!shouldHideBottomNav && (
-                <MobileNavbar onVisualSearch={() => setIsVisualSearchOpen(true)} />
+                <MobileNavbar /* onVisualSearch={() => setIsVisualSearchOpen(true)} */ />
             )}
         </div>
     );

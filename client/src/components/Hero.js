@@ -273,7 +273,7 @@ const Hero = () => {
 
                 <div className="mt-6 flex flex-wrap items-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                   <Link
-                    to="/products"
+                    to="/products?filter=new"
                     className="inline-flex content-center items-center justify-center rounded-tr-[30px] rounded-bl-[30px] rounded-tl-none rounded-br-none border-2 border-black bg-white px-8 py-4 text-[14px] sm:text-[15px] font-semibold tracking-[0.08em] uppercase leading-none text-black hover:bg-neutral-100 transition-colors"
                   >
                     {t('hero.viewCollection')}

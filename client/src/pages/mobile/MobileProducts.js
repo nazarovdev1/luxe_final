@@ -52,8 +52,10 @@ const MobileProducts = () => {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const categoryFromUrl = searchParams.get('category');
+    const filterFromUrl = searchParams.get('filter');
 
     const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || 'Barchasi');
+    const [isNewOnly, setIsNewOnly] = useState(filterFromUrl === 'new');
     const [sortBy, setSortBy] = useState('newest');
     const [showFilters, setShowFilters] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
@@ -116,10 +118,11 @@ const MobileProducts = () => {
 
     const filteredProducts = useMemo(() => {
         return products.filter((product) => {
-            if (selectedCategory === 'Barchasi') return true;
-            return product.category === selectedCategory;
+            const categoryMatch = selectedCategory === 'Barchasi' || product.category === selectedCategory;
+            const isNewMatch = !isNewOnly || product.isNewCollection === true;
+            return categoryMatch && isNewMatch;
         });
-    }, [products, selectedCategory]);
+    }, [products, selectedCategory, isNewOnly]);
 
     const sortedProducts = useMemo(() => {
         return [...filteredProducts].sort((a, b) => {

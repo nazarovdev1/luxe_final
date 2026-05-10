@@ -19,7 +19,16 @@ const PremiumProductCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const imageUrl = product?.image || product?.images?.[0] || '/placeholder.jpg';
+  const getImageUrl = (p) => {
+    if (!p) return '/placeholder.jpg';
+    if (p.image) return p.image;
+    if (Array.isArray(p.images) && p.images.length > 0) {
+      const first = p.images[0];
+      return typeof first === 'object' ? (first.url || '/placeholder.jpg') : first;
+    }
+    return '/placeholder.jpg';
+  };
+  const imageUrl = getImageUrl(product);
   const isNew = product.badge?.toUpperCase() === 'NEW';
   const isBestseller = product.badge?.toUpperCase() === 'BESTSELLER';
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;

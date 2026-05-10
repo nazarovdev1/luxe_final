@@ -200,13 +200,13 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                 <Search className="h-5 w-5" />
               </button>
 
-              <button
+              {/* <button
                 onClick={onVisualSearch}
                 className="text-white hover:text-[#d6b47c] transition-colors duration-300"
                 aria-label={t('nav.visualSearch')}
               >
                 <Camera className="h-5 w-5" />
-              </button>
+              </button> */}
 
 
               <button

@@ -120,8 +120,8 @@ const PriceDropAlert = ({ product }) => {
               <form onSubmit={handleSubmit} className="p-5 space-y-5">
                 {/* Product Info */}
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
-                  {product.images?.[0] && (
-                    <img src={product.images[0]} alt="" className="w-12 h-14 rounded-lg object-cover border border-white/5" />
+                  {product.images?.[0]?.url && (
+                    <img src={product.images[0].url} alt="" className="w-12 h-14 rounded-lg object-cover border border-white/5" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[#f4f1eb] truncate">{product.name}</p>

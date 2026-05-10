@@ -175,6 +175,7 @@ const PremiumHomeSections = () => {
 
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
+                    to="/products?filter=new"
                     className="inline-flex items-center gap-2 px-8 py-4 rounded-tr-[30px] rounded-bl-[30px] rounded-tl-none rounded-br-none border-2 border-black bg-white text-black font-semibold hover:bg-neutral-100 transition-colors"
                   >
                     {t('premiumHome.view')}

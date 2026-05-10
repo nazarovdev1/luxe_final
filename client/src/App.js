@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'r
 import { Toaster } from 'react-hot-toast';
 import Loading from './components/Loading';
 
+import { lazyWithRetry } from './utils/lazyWithRetry';
+
 // Lazy load components
 const Navbar = React.lazy(() => import('./components/Navbar'));
 const Home = React.lazy(() => import('./pages/Home'));
@@ -32,9 +34,10 @@ const Reels = React.lazy(() => import('./pages/Reels'));
 const GiftCards = React.lazy(() => import('./pages/GiftCards'));
 const Blog = React.lazy(() => import('./pages/Blog'));
 const BlogPost = React.lazy(() => import('./pages/BlogPost'));
-const MobileApp = React.lazy(() => import('./MobileApp'));
+const BundleDetail = React.lazy(() => import('./pages/BundleDetail'));
+const MobileApp = lazyWithRetry(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
-const VisualSearch = React.lazy(() => import('./components/VisualSearch'));
+const VisualSearch = lazyWithRetry(() => import('./components/VisualSearch'));
 import { ProductProvider } from './contexts/ProductContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -145,7 +148,7 @@ function MainContent() {
         {showDesktopChrome && (
           <>
             <AnnouncementBanner />
-            <Navbar onSearchClick={openSearch} onCartClick={openCart} onVisualSearch={() => setIsVisualSearchOpen(true)} />
+            <Navbar onSearchClick={openSearch} onCartClick={openCart} /* onVisualSearch={() => setIsVisualSearchOpen(true)} */ />
           </>
         )}
 
@@ -157,11 +160,11 @@ function MainContent() {
               <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
             </>
           )}
-          {isVisualSearchOpen && (
+          {/* {isVisualSearchOpen && (
             <React.Suspense fallback={<Loading />}>
               <VisualSearch onClose={() => setIsVisualSearchOpen(false)} />
             </React.Suspense>
-          )}
+          )} */}
           <Routes>
             {/* Mobile version - separate layout */}
             <Route path="/mobile/*" element={<MobileApp />} />
@@ -174,6 +177,7 @@ function MainContent() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/products" element={<AllProducts />} />
             <Route path="/product/:id" element={<ProductView />} />
+            <Route path="/bundle/:id" element={<React.Suspense fallback={<Loading />}><BundleDetail /></React.Suspense>} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/faq" element={<FAQPage />} />

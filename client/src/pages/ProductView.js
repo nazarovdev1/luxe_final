@@ -172,7 +172,7 @@ export default function ProductView() {
 
   // ── Derived Data ──────────────────────────────────────
   const images = product.images && product.images.length > 0
-    ? product.images
+    ? product.images.map(img => typeof img === 'object' ? img.url : img)
     : [product.image].filter(Boolean);
 
   const relatedProducts = (products || [])

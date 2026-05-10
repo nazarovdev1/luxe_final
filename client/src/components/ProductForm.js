@@ -63,8 +63,8 @@ const ProductForm = ({ product, onClose }) => {
     }
 
     const images = Array.isArray(product.images)
-      ? product.images
-      : [product.image].filter(Boolean);
+      ? product.images.map(img => typeof img === 'string' ? { url: img } : img)
+      : [product.image].filter(Boolean).map(img => typeof img === 'string' ? { url: img } : img);
 
     setFormData({
       name: product.name || '',
@@ -72,7 +72,7 @@ const ProductForm = ({ product, onClose }) => {
       price: product.price || '',
       originalPrice: product.originalPrice || '',
       images,
-      image: images[0] || '',
+      image: images[0]?.url || '',
       badge: product.badge || '',
       rating: product.rating || 0,
       colors: Array.isArray(product.colors)
@@ -144,11 +144,11 @@ const ProductForm = ({ product, onClose }) => {
       }
 
       setFormData((prev) => {
-        const nextImages = [...prev.images, ...uploadedUrls];
+        const nextImages = [...prev.images, ...uploadedUrls.map(url => ({ url }))];
         return {
           ...prev,
           images: nextImages,
-          image: nextImages[0] || '',
+          image: nextImages[0]?.url || '',
         };
       });
 
@@ -179,7 +179,7 @@ const ProductForm = ({ product, onClose }) => {
       return {
         ...prev,
         images: nextImages,
-        image: nextImages[0] || '',
+        image: nextImages[0]?.url || '',
       };
     });
   };
@@ -287,7 +287,7 @@ const ProductForm = ({ product, onClose }) => {
               .filter(Boolean)
           : [],
         rating: Number(formData.rating) || 0,
-        image: formData.images[0] || '',
+        image: formData.images[0]?.url || '',
       };
 
       const result = product
@@ -419,12 +419,12 @@ const ProductForm = ({ product, onClose }) => {
             {formData.images.map((image, index) => (
               <div key={`${image}-${index}`} className="relative group">
                 <img
-                  src={image}
+                  src={typeof image === 'object' ? image.url : image}
                   alt={`Preview ${index + 1}`}
                   className={`w-full h-28 object-cover rounded-xl border border-slate-600/60 ${
                     isPipetteActive ? 'cursor-crosshair ring-2 ring-amber-300/60' : ''
                   }`}
-                  onClick={(event) => handleImageColorPick(event, image)}
+                  onClick={(event) => handleImageColorPick(event, typeof image === 'object' ? image.url : image)}
                   crossOrigin="anonymous"
                 />
 

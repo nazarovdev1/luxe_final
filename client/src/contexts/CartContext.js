@@ -8,8 +8,10 @@ const cartReducer = (state, action) => {
     case 'LOAD_CART':
       return {
         ...state,
-        items: action.payload,
-        totalItems: action.payload.reduce((sum, item) => sum + item.quantity, 0)
+        items: action.payload.items || action.payload || [],
+        lookItems: action.payload.lookItems || [],
+        totalItems: (action.payload.items || action.payload || []).reduce((sum, item) => sum + item.quantity, 0)
+          + (action.payload.lookItems || []).reduce((sum, look) => sum + look.products.reduce((s, p) => s + p.quantity, 0), 0)
       };
     case 'ADD_TO_CART':
       const existingItemIndex = state.items.findIndex(
@@ -30,7 +32,26 @@ const cartReducer = (state, action) => {
         ...state,
         items: newItems,
         totalItems: newItems.reduce((sum, item) => sum + item.quantity, 0)
+          + state.lookItems.reduce((sum, look) => sum + look.products.reduce((s, p) => s + p.quantity, 0), 0)
       };
+    case 'ADD_LOOK_TO_CART': {
+      const newLookItems = [...state.lookItems, action.payload];
+      return {
+        ...state,
+        lookItems: newLookItems,
+        totalItems: state.items.reduce((sum, item) => sum + item.quantity, 0)
+          + newLookItems.reduce((sum, look) => sum + look.products.reduce((s, p) => s + p.quantity, 0), 0)
+      };
+    }
+    case 'REMOVE_LOOK_FROM_CART': {
+      const filteredLookItems = state.lookItems.filter(look => look.cartLookId !== action.payload);
+      return {
+        ...state,
+        lookItems: filteredLookItems,
+        totalItems: state.items.reduce((sum, item) => sum + item.quantity, 0)
+          + filteredLookItems.reduce((sum, look) => sum + look.products.reduce((s, p) => s + p.quantity, 0), 0)
+      };
+    }
     case 'UPDATE_QUANTITY':
       const updatedItems = state.items.map(item =>
         item.id === action.payload.id
@@ -41,6 +62,7 @@ const cartReducer = (state, action) => {
         ...state,
         items: updatedItems,
         totalItems: updatedItems.reduce((sum, item) => sum + item.quantity, 0)
+          + state.lookItems.reduce((sum, look) => sum + look.products.reduce((s, p) => s + p.quantity, 0), 0)
       };
     case 'REMOVE_FROM_CART':
       const filteredItems = state.items.filter(item => item.id !== action.payload);
@@ -48,11 +70,13 @@ const cartReducer = (state, action) => {
         ...state,
         items: filteredItems,
         totalItems: filteredItems.reduce((sum, item) => sum + item.quantity, 0)
+          + state.lookItems.reduce((sum, look) => sum + look.products.reduce((s, p) => s + p.quantity, 0), 0)
       };
     case 'CLEAR_CART':
       return {
         ...state,
         items: [],
+        lookItems: [],
         totalItems: 0
       };
     default:
@@ -64,6 +88,7 @@ const CartContext = createContext();
 
 const initialState = {
   items: [],
+  lookItems: [],
   totalItems: 0
 };
 
@@ -71,16 +96,22 @@ const initialState = {
 const getGuestCart = () => {
   try {
     const cart = localStorage.getItem('guestCart');
-    return cart ? JSON.parse(cart) : [];
+    if (cart) {
+      const parsed = JSON.parse(cart);
+      // Support both old format (array) and new format ({items, lookItems})
+      if (Array.isArray(parsed)) return { items: parsed, lookItems: [] };
+      return parsed;
+    }
+    return { items: [], lookItems: [] };
   } catch {
-    return [];
+    return { items: [], lookItems: [] };
   }
 };
 
 // Helper: Save cart to localStorage for guests
-const saveGuestCart = (items) => {
+const saveGuestCart = (items, lookItems) => {
   try {
-    localStorage.setItem('guestCart', JSON.stringify(items));
+    localStorage.setItem('guestCart', JSON.stringify({ items, lookItems }));
   } catch (e) {
     console.error('Failed to save guest cart:', e);
   }
@@ -95,64 +126,50 @@ export const CartProvider = ({ children }) => {
   // Load cart on mount or auth change
   useEffect(() => {
     if (isAuthenticated && user) {
-      // User is logged in - load from user.cart (database)
-      // User is logged in
       const userCart = user.cart || [];
       const guestCart = getGuestCart();
 
       if (userCart.length > 0) {
-        // User has items in DB - load them
         console.log('📥 Loading user cart from DB:', userCart);
-        dispatch({ type: 'LOAD_CART', payload: userCart });
-      } else if (guestCart.length > 0) {
-        // User DB is empty, but we have a guest cart to merge
+        dispatch({ type: 'LOAD_CART', payload: { items: userCart, lookItems: [] } });
+      } else if (guestCart.items.length > 0 || guestCart.lookItems.length > 0) {
         console.log('📥 Merging guest cart to user account');
         dispatch({ type: 'LOAD_CART', payload: guestCart });
-        // Sync guest cart to backend
         const token = localStorage.getItem('token');
         if (token) {
-          updateUserCart(guestCart, token);
+          updateUserCart(guestCart.items, token);
         }
-        // Clear guest cart after merge
         localStorage.removeItem('guestCart');
       } else {
-        // Both DB and guest cart are empty - ensure state is cleared
-        // This fixes the bug where stale localStorage data might persist or items reappear
         dispatch({ type: 'CLEAR_CART' });
       }
     } else {
-      // Guest user - load from localStorage
       const guestCart = getGuestCart();
       dispatch({ type: 'LOAD_CART', payload: guestCart });
     }
   }, [isAuthenticated, user]);
 
   // Auto-save cart whenever items change
-  // Use a ref to track if we've loaded the cart initially
   const hasLoadedRef = React.useRef(false);
 
   useEffect(() => {
-    // Skip only the very first render before loading from localStorage/database
     if (!hasLoadedRef.current) {
       hasLoadedRef.current = true;
       return;
     }
 
     if (isAuthenticated) {
-      // Authenticated user - sync to database
       const token = localStorage.getItem('token');
       if (token) {
-        // Optimistically update backend
         updateUserCart(state.items, token).then(() => {
           console.log('💾 Synced cart to database:', state.items);
         }).catch(err => console.error('Sync error:', err));
       }
     } else {
-      // Guest user - save to localStorage
-      saveGuestCart(state.items);
-      console.log('💾 Saved guest cart:', state.items);
+      saveGuestCart(state.items, state.lookItems);
+      console.log('💾 Saved guest cart:', state.items, state.lookItems);
     }
-  }, [state.items, isAuthenticated, updateUserCart]);
+  }, [state.items, state.lookItems, isAuthenticated, updateUserCart]);
 
   // Sync cart with backend database (for authenticated users)
   const syncWithBackend = useCallback(async (newItems) => {
@@ -162,12 +179,9 @@ export const CartProvider = ({ children }) => {
         await updateUserCart(newItems, token);
       }
     }
-    // Guest cart is now handled by useEffect above
   }, [isAuthenticated, updateUserCart]);
 
   const addToCart = (product, selectedColor, selectedSize, quantity = 1) => {
-    // ALLOW GUESTS TO ADD TO CART (removed auth check here)
-
     const cartItem = {
       id: Date.now().toString(),
       productId: product.id,
@@ -205,6 +219,59 @@ export const CartProvider = ({ children }) => {
     return true;
   };
 
+  // Add entire look to cart as a group
+  const addLookToCart = (look, selectedVariants) => {
+    const cartLookId = `look_${look._id || look.id}_${Date.now()}`;
+
+    const lookProducts = (look.products || []).map(p => {
+      const variant = selectedVariants?.[p.id || p._id] || {};
+      return {
+        productId: p.id || p._id,
+        name: p.name,
+        price: p.price,
+        image: p.image || p.images?.[0] || '/placeholder.jpg',
+        selectedColor: variant.color || null,
+        selectedSize: variant.size || null,
+        quantity: 1
+      };
+    });
+
+    const originalPrice = look.originalPrice || lookProducts.reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
+    let discountAmount = 0;
+    let discountedPrice = originalPrice;
+
+    if (look.discountType === 'percentage' && look.discountValue > 0) {
+      discountAmount = originalPrice * (look.discountValue / 100);
+      discountedPrice = originalPrice - discountAmount;
+    } else if (look.discountType === 'fixed' && look.discountValue > 0) {
+      discountAmount = look.discountValue;
+      discountedPrice = Math.max(0, originalPrice - look.discountValue);
+    }
+
+    const lookCartItem = {
+      cartLookId,
+      lookId: look._id || look.id,
+      title: look.title,
+      heroImage: look.heroImage,
+      products: lookProducts,
+      originalPrice,
+      discountAmount,
+      discountedPrice,
+      discountType: look.discountType,
+      discountValue: look.discountValue,
+      addedAt: new Date().toISOString()
+    };
+
+    console.log('👗 Adding look to cart:', lookCartItem);
+    dispatch({ type: 'ADD_LOOK_TO_CART', payload: lookCartItem });
+    return true;
+  };
+
+  // Remove entire look from cart
+  const removeLookFromCart = (cartLookId) => {
+    dispatch({ type: 'REMOVE_LOOK_FROM_CART', payload: cartLookId });
+  };
+
   const updateQuantity = (itemId, quantity) => {
     const newItems = state.items.map(item =>
       item.id === itemId
@@ -226,24 +293,59 @@ export const CartProvider = ({ children }) => {
     syncWithBackend([]);
   };
 
+  // Total for individual items only
   const getCartTotal = () => {
-    return state.items.reduce((total, item) => {
+    const itemsTotal = state.items.reduce((total, item) => {
       const price = typeof item.price === 'string'
         ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
         : parseFloat(item.price);
       return total + (price * item.quantity);
+    }, 0);
+
+    const looksTotal = state.lookItems.reduce((total, look) => {
+      return total + (look.discountedPrice || 0);
+    }, 0);
+
+    return itemsTotal + looksTotal;
+  };
+
+  // Original total (before look discounts)
+  const getCartOriginalTotal = () => {
+    const itemsTotal = state.items.reduce((total, item) => {
+      const price = typeof item.price === 'string'
+        ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
+        : parseFloat(item.price);
+      return total + (price * item.quantity);
+    }, 0);
+
+    const looksOriginalTotal = state.lookItems.reduce((total, look) => {
+      return total + (look.originalPrice || 0);
+    }, 0);
+
+    return itemsTotal + looksOriginalTotal;
+  };
+
+  // Total savings from look discounts
+  const getCartSavings = () => {
+    return state.lookItems.reduce((total, look) => {
+      return total + (look.discountAmount || 0);
     }, 0);
   };
 
   return (
     <CartContext.Provider value={{
       items: state.items,
+      lookItems: state.lookItems,
       totalItems: state.totalItems,
       addToCart,
+      addLookToCart,
+      removeLookFromCart,
       updateQuantity,
       removeFromCart,
       clearCart,
-      getCartTotal
+      getCartTotal,
+      getCartOriginalTotal,
+      getCartSavings
     }}>
       {children}
     </CartContext.Provider>

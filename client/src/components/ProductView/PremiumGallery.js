@@ -85,7 +85,7 @@ export default function PremiumGallery({ images = [], productName = '' }) {
 
     return createPortal(
       <div
-        className="fixed inset-0 z-[99999] bg-black/98 flex flex-col"
+        className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-xl flex flex-col animate-in fade-in duration-300"
         style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
         onClick={() => setIsLightboxOpen(false)}
       >

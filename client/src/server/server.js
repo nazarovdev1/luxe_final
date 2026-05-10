@@ -218,6 +218,14 @@ const useProductService = () => {
 
 	// TRANSFORM FUNCTION
 	const _transformProduct = product => {
+		let firstImage = '';
+		if (product.images && product.images.length > 0) {
+			const first = product.images[0];
+			firstImage = typeof first === 'object' ? first.url : first;
+		} else if (product.image) {
+			firstImage = product.image;
+		}
+
 		return {
 			id: product._id,
 			name: product.name,
@@ -225,7 +233,7 @@ const useProductService = () => {
 			originalPrice: product.originalPrice,
 			category: product.category,
 			images: product.images,
-			image: product.images?.[0] || product.image || '',
+			image: firstImage,
 			badge: product.badge,
 			rating: product.rating,
 			colors: product.colors,
@@ -443,6 +451,73 @@ const useProductService = () => {
 		}
 	};
 
+	const getLookById = async (id) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks/${id}`);
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Get look by ID error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const updateLook = async (id, lookData, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks/${id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify(lookData)
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Update look error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const toggleLookActive = async (id, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks/${id}/toggle`, {
+				method: 'PATCH',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Toggle look active error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const getLookPrice = async (id) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks/${id}/price`);
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Get look price error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const getLookStock = async (id) => {
+		try {
+			const response = await fetch(`${API_BASE}/looks/${id}/stock`);
+			const result = await response.json();
+			return result;
+		} catch (error) {
+			console.error('Get look stock error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 	// PROMO CODES API
 	const validatePromo = async (code) => {
 		try {
@@ -577,6 +652,64 @@ const useProductService = () => {
 		}
 	};
 
+	// BUNDLE API
+	const getAllBundles = async () => {
+		try {
+			const response = await fetch(`${API_BASE}/bundles`);
+			return await response.json();
+		} catch (error) {
+			console.error('Get bundles error:', error);
+			return { success: false, data: [] };
+		}
+	};
+
+	const createBundle = async (bundleData, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/bundles`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify(bundleData)
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Create bundle error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const updateBundle = async (id, bundleData, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/bundles/${id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`
+				},
+				body: JSON.stringify(bundleData)
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Update bundle error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
+	const deleteBundle = async (id, token) => {
+		try {
+			const response = await fetch(`${API_BASE}/bundles/${id}`, {
+				method: 'DELETE',
+				headers: { 'Authorization': `Bearer ${token}` }
+			});
+			return await response.json();
+		} catch (error) {
+			console.error('Delete bundle error:', error);
+			return { success: false, message: error.message };
+		}
+	};
+
 	return {
 		getAllProducts,
 		getDetailedProduct,
@@ -597,8 +730,13 @@ const useProductService = () => {
 		updateUserCart,
 		getImageKitAuth,
 		getAllLooks,
+		getLookById,
 		createLook,
+		updateLook,
 		deleteLook,
+		toggleLookActive,
+		getLookPrice,
+		getLookStock,
 		validatePromo,
 		validateGiftCard,
 		getMyGiftCards,
@@ -610,7 +748,11 @@ const useProductService = () => {
 		deletePromo,
 		getAllUserPoints,
 		adminAdjustPoints,
-		setChallengeWinner
+		setChallengeWinner,
+		getAllBundles,
+		createBundle,
+		updateBundle,
+		deleteBundle
 	}
 }
 

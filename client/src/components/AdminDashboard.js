@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+﻿import React, { useMemo, useState, useEffect } from 'react';
 import { useProducts } from '../contexts/ProductContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -16,12 +16,14 @@ import {
   Gem,
   Trophy,
   BookOpen,
+  PackagePlus,
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 import AdminOrders from './AdminOrders';
 import AdminUsers from './AdminUsers';
 import AdminAnnouncements from './AdminAnnouncements';
 import LookbookManager from './LookbookManager';
+import BundleManager from './BundleManager';
 import AdminPromos from './AdminPromos';
 import AdminCoupons from './AdminCoupons';
 import AdminChallenges from './AdminChallenges';
@@ -35,7 +37,7 @@ import './admin/adminTheme.css';
 
 const formatCurrency = (value) => {
   const numericValue = Number(value || 0);
-  return `${numericValue.toLocaleString('uz-UZ')} ${t('common.sum')}`;
+  return `${numericValue.toLocaleString('uz-UZ')} so'm`;
 };
 
 const getProductImage = (product) => {
@@ -92,8 +94,14 @@ const tabs = [
   {
     id: 'lookbook',
     label: 'Lookbook',
-    description: 'Editorial bo\u02BClim',
+    description: "Editorial rasmlar",
     icon: Layers,
+  },
+  {
+    id: 'bundles',
+    label: "To'plamlar",
+    description: "Mahsulot to'plamlari va chegirmalar",
+    icon: PackagePlus,
   },
   {
     id: 'blog',
@@ -575,6 +583,12 @@ const AdminDashboard = () => {
           {activeTab === 'reels' ? (
             <section className="admin-card p-5 sm:p-6">
               <AdminReels />
+            </section>
+          ) : null}
+
+          {activeTab === 'bundles' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <BundleManager />
             </section>
           ) : null}
 

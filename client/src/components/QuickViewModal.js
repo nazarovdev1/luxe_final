@@ -13,7 +13,10 @@ const formatPrice = (value) => {
 
 const getProductImage = (item) => {
   if (!item) return '';
-  if (Array.isArray(item.images) && item.images.length > 0) return item.images[0];
+  if (Array.isArray(item.images) && item.images.length > 0) {
+    const firstImage = item.images[0];
+    return typeof firstImage === 'object' ? firstImage.url : firstImage;
+  }
   return item.image || '';
 };
 
@@ -27,7 +30,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const images = product?.images && product.images.length > 0
-    ? product.images
+    ? product.images.map(img => typeof img === 'object' ? img.url : img)
     : product?.image
       ? [product.image]
       : [];

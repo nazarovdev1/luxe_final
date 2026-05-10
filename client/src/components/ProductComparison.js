@@ -159,8 +159,8 @@ const ProductComparison = ({ products = [], onClose }) => {
                 </button>
                 <div className="flex flex-col items-center text-center">
                   <div className="w-24 h-28 rounded-xl overflow-hidden border border-white/5 mb-3 bg-[#0d1423]">
-                    {product.images?.[0] ? (
-                      <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                    {product.images?.[0]?.url ? (
+                      <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[#3f4658]">
                         <BarChart3 className="w-6 h-6" />

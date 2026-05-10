@@ -8,7 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
 
 const CartDropdown = ({ isOpen, onClose }) => {
-  const { items, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const { items, lookItems, updateQuantity, removeFromCart, removeLookFromCart, getCartTotal, getCartOriginalTotal, getCartSavings } = useCart();
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -50,7 +50,10 @@ const CartDropdown = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const total = getCartTotal();
+  const originalTotal = getCartOriginalTotal();
+  const savings = getCartSavings();
   const money = (value) => `${Number(value || 0).toLocaleString('en-US').replace(/,/g, ',')} ${t('common.sum')}`;
+  const hasItems = items.length > 0 || lookItems.length > 0;
 
   if (typeof document === 'undefined') return null;
 
@@ -78,7 +81,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
-          {items.length === 0 ? (
+          {!hasItems ? (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
                 <span className="text-[#d6b47c] opacity-50"><X strokeWidth={1} size={32} /></span>
@@ -96,6 +99,83 @@ const CartDropdown = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <div className="space-y-8">
+              {lookItems.length > 0 && lookItems.map((look) => (
+                <div key={look.cartLookId} className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent p-5 transition-all hover:border-[#d6b47c]/30">
+                  <div className="flex gap-5">
+                    {/* Bundle Product Thumbnails Stack */}
+                    <div className="relative shrink-0 flex items-center h-[90px] w-[90px]">
+                      {look.products.slice(0, 3).map((product, idx) => (
+                        <div 
+                          key={product.id || idx}
+                          className="absolute h-16 w-16 rounded-xl border-2 border-[#0c0c0c] overflow-hidden shadow-2xl transition-transform hover:z-10 hover:scale-110"
+                          style={{ 
+                            left: `${idx * 12}px`, 
+                            zIndex: 3 - idx,
+                            top: `${idx * 8}px`
+                          }}
+                        >
+                          <img
+                            src={product.image || '/placeholder.png'}
+                            alt={product.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                      {look.products.length > 3 && (
+                        <div className="absolute right-0 bottom-0 bg-[#d6b47c] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
+                          +{look.products.length - 3}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[9px] font-bold uppercase tracking-widest text-[#d6b47c] mb-1.5">
+                            To'plam
+                          </div>
+                          <h3 className="text-[15px] text-white font-medium leading-tight truncate">{look.title}</h3>
+                          <p className="text-[11px] text-white/40 mt-1">
+                            {look.products.length} mahsulot
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => removeLookFromCart(look.cartLookId)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex flex-col">
+                          {look.discountAmount > 0 && (
+                            <span className="text-[10px] text-white/30 line-through mb-0.5">
+                              {money(look.originalPrice)}
+                            </span>
+                          )}
+                          <span className="text-[15px] text-[#d6b47c] font-semibold tracking-tight">
+                            {money(look.discountedPrice)}
+                          </span>
+                        </div>
+                        
+                        {look.discountAmount > 0 && (
+                          <div className="px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-[10px] text-emerald-400 font-bold">
+                              -{Math.round(look.discountAmount / look.originalPrice * 100)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Subtle Background Pattern */}
+                  <div className="absolute -right-4 -bottom-4 opacity-[0.03] pointer-events-none">
+                    <Plus size={80} strokeWidth={1} />
+                  </div>
+                </div>
+              ))}
               {items.map((item) => {
                 const price = typeof item.price === 'string'
                   ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
@@ -166,8 +246,14 @@ const CartDropdown = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {items.length > 0 && (
+        {hasItems && (
           <div className="mt-auto px-8 py-8 shrink-0 border-t border-white/10 bg-[#1a1b1e]">
+            {savings > 0 && (
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-emerald-400 text-xs">Tejash</span>
+                <span className="text-emerald-400 text-sm font-medium">-{money(savings)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-6">
               <span className="text-white text-sm">{t('cartDropdown.total')}</span>
               <span className="text-[#d6b47c] tracking-wide">

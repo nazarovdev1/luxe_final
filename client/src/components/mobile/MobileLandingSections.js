@@ -44,7 +44,7 @@ export const MobileHero = ({ product, onScrollToProducts }) => {
                 {/* Buttons */}
                 <div className="mt-8 flex items-center gap-3">
                     <Link
-                        to="/mobile/products"
+                        to="/mobile/products?filter=new"
                         className="flex h-12 items-center justify-center gap-2 rounded-tr-[30px] rounded-bl-[30px] rounded-tl-none rounded-br-none bg-white px-8 text-sm font-bold uppercase tracking-wider text-black transition-transform active:scale-95"
                     >
                         Ko'rish

@@ -12,7 +12,13 @@ const formatPrice = (price) => {
 const ProductCard = ({ product, onQuickView, onCompare, isCompareSelected }) => {
   const { t } = useLanguage();
   const getImage = (product) => {
-    return product?.image || product?.images?.[0] || '/placeholder.jpg';
+    if (!product) return '/placeholder.jpg';
+    if (product.image) return product.image;
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      const first = product.images[0];
+      return typeof first === 'object' ? (first.url || '/placeholder.jpg') : first;
+    }
+    return '/placeholder.jpg';
   };
 
   return (

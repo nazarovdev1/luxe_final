@@ -191,7 +191,7 @@ const LiveStreamView = () => {
                 {stream.featuredProducts.map(product => (
                   <div key={product._id} className="shrink-0 w-36 bg-[#111] border border-white/5 rounded-2xl overflow-hidden hover:border-[#d6b47c]/30 transition-all">
                     <div className="aspect-square bg-white p-2">
-                      <img src={product.images?.[0] || product.image} className="w-full h-full object-contain" alt={product.name} />
+                      <img src={product.images?.[0]?.url || product.image} className="w-full h-full object-contain" alt={product.name} />
                     </div>
                     <div className="p-3">
                       <p className="text-xs font-bold line-clamp-1 mb-1">{product.name}</p>

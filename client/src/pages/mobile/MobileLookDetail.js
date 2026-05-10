@@ -45,7 +45,7 @@ const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct })
     >
       <div className="flex gap-3">
         <img
-          src={product.image || product.images?.[0] || '/placeholder.jpg'}
+          src={product.image || product.images?.[0]?.url || '/placeholder.jpg'}
           alt={product.name}
           onError={(event) => {
             event.target.src = '/placeholder.jpg';

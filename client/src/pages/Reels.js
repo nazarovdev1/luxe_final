@@ -163,7 +163,7 @@ const Reels = () => {
         video.play().catch(e => console.log(e));
       }
     }
-    
+
     setIsPlaying(!isPlaying);
   };
 
@@ -233,7 +233,7 @@ const Reels = () => {
       </header>
 
       {/* Main Content Area */}
-      <main 
+      <main
         className="flex-1 relative flex items-center justify-center pt-16 pb-8 transition-all duration-500"
       >
         {/* Navigation - Sides */}
@@ -257,11 +257,10 @@ const Reels = () => {
         )}
 
         {/* Unified Video & Comments Container */}
-        <div className={`flex items-stretch transition-all duration-500 ease-in-out gap-0 shadow-[0_0_100px_rgba(0,0,0,0.5)] rounded-[32px] overflow-hidden border border-white/5 ${
-          commentsOpen ? 'scale-100' : 'scale-[1.02]'
-        }`}>
+        <div className={`flex items-stretch transition-all duration-500 ease-in-out gap-0 shadow-[0_0_100px_rgba(0,0,0,0.5)] rounded-[32px] overflow-hidden border border-white/5 ${commentsOpen ? 'scale-100' : 'scale-[1.02]'
+          }`}>
           {/* Reel Card */}
-          <div 
+          <div
             className="relative bg-black transition-all duration-500"
             style={{ width: '420px', height: '88vh' }}
           >
@@ -284,7 +283,7 @@ const Reels = () => {
                   muted
                 />
               )}
-              
+
               {/* Clickable Overlay */}
               <div className="absolute inset-0 cursor-pointer z-10" />
 
@@ -297,7 +296,7 @@ const Reels = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10" />
 
@@ -308,9 +307,9 @@ const Reels = () => {
                 className="flex flex-col items-center gap-1 group"
               >
                 <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center transition-all text-white hover:bg-white/20">
-                  <Heart 
-                    size={20} 
-                    className={`transition-colors ${likes[currentReel._id]?.liked ? 'text-red-500 fill-current' : 'text-white'}`} 
+                  <Heart
+                    size={20}
+                    className={`transition-colors ${likes[currentReel._id]?.liked ? 'text-red-500 fill-current' : 'text-white'}`}
                   />
                 </div>
                 <span className="text-[10px] font-bold text-white shadow-sm">{likes[currentReel._id]?.count || 0}</span>
@@ -324,9 +323,9 @@ const Reels = () => {
                 className="flex flex-col items-center gap-1"
               >
                 <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-all">
-                  <MessageCircle 
-                    size={20} 
-                    className={`transition-colors ${commentsOpen ? 'text-amber-500' : 'text-white'}`} 
+                  <MessageCircle
+                    size={20}
+                    className={`transition-colors ${commentsOpen ? 'text-amber-500' : 'text-white'}`}
                   />
                 </div>
                 <span className="text-[10px] font-bold text-white shadow-sm">{t('reels.comments')}</span>
@@ -379,7 +378,8 @@ const Reels = () => {
         </div>
       </main>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes slide-left {
           from { width: 0; opacity: 0; }
           to { width: 360px; opacity: 1; }

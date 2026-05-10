@@ -126,7 +126,7 @@ function LocationButton() {
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { items, getCartTotal, clearCart } = useCart();
+  const { items, lookItems, getCartTotal, clearCart } = useCart();
   const { user, isAuthenticated, loading, token } = useAuth();
   const { createOrder } = useProductService();
   const { t } = useLanguage();
@@ -208,9 +208,17 @@ const Checkout = () => {
     [items]
   );
 
+  const lookItemsTotal = useMemo(() => {
+    return lookItems.reduce((sum, look) => sum + (look.discountedPrice || 0), 0);
+  }, [lookItems]);
+
+  const lookDiscountsTotal = useMemo(() => {
+    return lookItems.reduce((sum, look) => sum + (look.discountAmount || 0), 0);
+  }, [lookItems]);
+
   const summaryTotal = useMemo(() => {
-    return cartItems.reduce((sum, item) => sum + item.parsedPrice * item.quantity, 0);
-  }, [cartItems]);
+    return cartItems.reduce((sum, item) => sum + item.parsedPrice * item.quantity, 0) + lookItemsTotal;
+  }, [cartItems, lookItemsTotal]);
 
   const tierDiscountAmount = useMemo(() => {
     if (!userTier) return 0;
@@ -341,7 +349,7 @@ const Checkout = () => {
   const handleSubmit = async (event) => {
     if (event) event.preventDefault();
 
-    if (items.length === 0) {
+    if (items.length === 0 && lookItems.length === 0) {
       toast.error("Savatingiz bo'sh");
       return;
     }
@@ -381,15 +389,38 @@ const Checkout = () => {
           location: formData.location,
           comments: formData.comments || '',
         },
-        items: cartItems.map((item) => ({
-          product: item.productId || item.id,
-          name: item.name,
-          image: item.image,
-          quantity: item.quantity,
-          price: item.parsedPrice,
-          selectedColor: item.selectedColor || null,
-          selectedSize: item.selectedSize || null,
+        items: [
+          ...cartItems.map((item) => ({
+            product: item.productId || item.id,
+            name: item.name,
+            image: item.image,
+            quantity: item.quantity,
+            price: item.parsedPrice,
+            selectedColor: item.selectedColor || null,
+            selectedSize: item.selectedSize || null,
+          })),
+          ...lookItems.flatMap((look) =>
+            look.products.map((p) => ({
+              product: p.productId,
+              name: p.name,
+              image: p.image,
+              quantity: p.quantity,
+              price: parseFloat(p.price) || 0,
+              selectedColor: p.selectedColor || null,
+              selectedSize: p.selectedSize || null,
+              lookId: look.lookId,
+              lookTitle: look.title,
+              lookDiscount: look.discountAmount > 0 ? look.discountAmount / look.products.length : 0,
+            }))
+          ),
+        ],
+        lookDiscounts: lookItems.map((look) => ({
+          lookId: look.lookId,
+          lookTitle: look.title,
+          originalPrice: look.originalPrice,
+          discountAmount: look.discountAmount,
         })),
+        totalLookDiscount: lookDiscountsTotal,
         paymentMethod: formData.paymentMethod || 'cash',
         totals: {
           subtotal: summaryTotal,
@@ -397,6 +428,7 @@ const Checkout = () => {
           giftWrap: giftWrap ? { type: giftWrapType, cost: giftWrapCost, message: giftMessage } : null,
           promoCode: appliedPromo ? appliedPromo.code : null,
           discountAmount: discountAmount || 0,
+          lookDiscountAmount: lookDiscountsTotal || 0,
           total: finalTotal,
         },
         userId: user ? user._id || user.id : null,
@@ -425,7 +457,7 @@ const Checkout = () => {
     }
   };
 
-  if (items.length === 0 && !showSuccessModal) {
+  if (items.length === 0 && lookItems.length === 0 && !showSuccessModal) {
     return (
       <div className="min-h-screen px-4" style={{ backgroundColor: THEME.bgBase }}>
         <div className="mx-auto flex min-h-screen w-full max-w-3xl items-center justify-center">
@@ -907,6 +939,27 @@ const Checkout = () => {
               <p className="mt-1 text-sm text-[#9aa3b2]">Tanlangan mahsulotlar va yakuniy to'lov.</p>
 
               <div className="mt-5 max-h-[340px] space-y-3 overflow-y-auto pr-1">
+                {lookItems.map((look) => (
+                  <div key={look.cartLookId} className="rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/15 p-3">
+                    <div className="flex gap-3">
+                      {look.heroImage && (
+                        <img src={look.heroImage} alt={look.title} className="h-14 w-14 rounded-lg object-cover" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-[#d6b47c]">{look.title}</p>
+                        <p className="mt-0.5 text-xs text-[#9aa3b2]">{look.products.length} mahsulot</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          {look.discountAmount > 0 && (
+                            <span className="text-[10px] text-[#9aa3b2] line-through">
+                              {formatMoney(look.originalPrice)} so'm
+                            </span>
+                          )}
+                          <span className="text-sm font-semibold text-[#c7ceda]">{formatMoney(look.discountedPrice)} so'm</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex gap-3 rounded-xl bg-[#1a202d]/70 p-3">
                     <img src={item.image} alt={item.name} className="h-14 w-14 rounded-lg object-cover" />
@@ -986,6 +1039,13 @@ const Checkout = () => {
                   <div className="flex items-center justify-between text-sm text-emerald-400">
                     <span>Promokod ({appliedPromo.code})</span>
                     <span>-{formatMoney(discountAmount - tierDiscountAmount)} so'm</span>
+                  </div>
+                )}
+
+                {lookDiscountsTotal > 0 && (
+                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                    <span>Look chegirmasi ({lookItems.length} look)</span>
+                    <span>-{formatMoney(lookDiscountsTotal)} so'm</span>
                   </div>
                 )}
 

@@ -44,27 +44,6 @@ const LookbookManager = () => {
     [allProducts, searchTerm]
   );
 
-  const fetchLooks = async () => {
-    setIsLoading(true);
-    const result = await getAllLooks();
-    if (result.success) {
-      setLooks(result.data || []);
-    }
-    setIsLoading(false);
-  };
-
-  const fetchProducts = async () => {
-    const result = await getAllProducts();
-    if (Array.isArray(result)) {
-      setAllProducts(result);
-    }
-  };
-
-  useEffect(() => {
-    fetchLooks();
-    fetchProducts();
-  }, []);
-
   const handleProductSelect = (productId) => {
     setFormData((prev) => {
       const exists = prev.products.includes(productId);
@@ -349,7 +328,7 @@ const LookbookManager = () => {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={product.image || product.images?.[0]}
+                        src={product.image || product.images?.[0]?.url || '/placeholder.jpg'}
                         alt={product.name}
                         className="w-12 h-12 object-cover rounded-lg border border-slate-600/60"
                       />

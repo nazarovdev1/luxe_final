@@ -74,7 +74,7 @@ const LookbookBuilder = () => {
         const newItem = {
             id: Date.now().toString(),
             product: product._id,
-            image: product.images?.[0] || product.image,
+            image: product.images?.[0]?.url || product.image,
             name: product.name,
             x: 50,
             y: 50,

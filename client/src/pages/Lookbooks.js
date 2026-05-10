@@ -195,6 +195,13 @@ function LookCard({ look, index, onOpen }) {
     const lookId = look._id || look.id;
     const season = getSeason(index);
 
+    const hasDiscount = look.discountValue > 0 && look.isActive !== false && !(look.expiresAt && new Date(look.expiresAt) < new Date());
+    const discountLabel = hasDiscount
+        ? look.discountType === 'percentage'
+            ? `-${look.discountValue}%`
+            : `-${Number(look.discountValue).toLocaleString('uz-UZ')}`
+        : null;
+
     const [isVisible, setIsVisible] = useState(false);
     const cardRef = useRef(null);
 
@@ -224,7 +231,6 @@ function LookCard({ look, index, onOpen }) {
             onClick={(e) => onOpen(e, lookId)}
             style={{ breakInside: 'avoid', pageBreakInside: 'avoid', transitionDelay: `${(index % 4) * 100}ms` }}
         >
-            {/* Image – natural height, no fixed ratio */}
             <div className="relative w-full overflow-hidden">
                 <img
                     src={look.heroImage}
@@ -232,28 +238,29 @@ function LookCard({ look, index, onOpen }) {
                     onError={(e) => { e.target.src = '/hero.jpg'; }}
                     className="w-full h-auto block object-cover transition-all duration-700 ease-out group-hover:scale-[1.07] group-hover:brightness-110"
                 />
-                {/* bottom gradient for text readability (only at the very bottom) */}
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#060810]/95 to-transparent pointer-events-none" />
 
-                {/* Season badge */}
                 <span className="absolute top-3 left-3 text-[9px] uppercase tracking-[0.3em] text-white/70 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/10">
                     {season}
                 </span>
 
-                {/* Expand button */}
+                {hasDiscount && discountLabel && (
+                    <span className="absolute top-3 right-12 px-2 py-1 rounded-full bg-emerald-500/90 text-white text-[10px] font-bold shadow-lg">
+                        {discountLabel}
+                    </span>
+                )}
+
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
                     <div className="w-9 h-9 rounded-full bg-[#d6b47c] flex items-center justify-center shadow-[0_0_20px_rgba(214,180,124,0.4)] transform group-hover:scale-110 transition-transform duration-300">
                         <ArrowRight className="w-4 h-4 text-[#060810]" />
                     </div>
                 </div>
 
-                {/* Look number */}
                 <span className="absolute bottom-3 right-3 font-brilliant text-3xl text-white/10 select-none leading-none">
                     {String(index + 1).padStart(2, '0')}
                 </span>
             </div>
 
-            {/* Card footer – compact, no wasted space */}
             <div className="px-5 pt-3 pb-5 absolute bottom-0 left-0 w-full flex flex-col justify-end transform transition-transform duration-500 group-hover:-translate-y-1">
                 <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] mb-1.5 font-semibold drop-shadow-md">
                     {look.items?.[0]?.category || 'Kolleksiya'}
@@ -262,9 +269,23 @@ function LookCard({ look, index, onOpen }) {
                     {look.title}
                 </h3>
                 <div className="flex items-center justify-between opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-                        <ShoppingBag className="w-3 h-3" />
-                        {look.products?.length || 0} {t('lookbooks.products')}
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                            <ShoppingBag className="w-3 h-3" />
+                            {look.products?.length || 0} {t('lookbooks.products')}
+                        </div>
+                        {look.originalPrice > 0 && (
+                            <div className="flex items-center gap-1.5">
+                                {hasDiscount && look.originalPrice !== look.discountedPrice && (
+                                    <span className="text-[10px] text-neutral-500 line-through">
+                                        {Number(look.originalPrice).toLocaleString('uz-UZ')}
+                                    </span>
+                                )}
+                                <span className="text-[11px] font-semibold text-[#d6b47c]">
+                                    {Number(look.discountedPrice || look.originalPrice).toLocaleString('uz-UZ')} so'm
+                                </span>
+                            </div>
+                        )}
                     </div>
                     <span className="text-xs font-medium text-[#d6b47c] tracking-wide flex items-center gap-1.5 group-hover:text-white transition-colors duration-300">
                         {t('lookbooks.view')}

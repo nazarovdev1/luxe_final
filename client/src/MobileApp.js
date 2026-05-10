@@ -28,6 +28,7 @@ import Blog from './pages/Blog';
 import MobileBlogPost from './pages/mobile/MobileBlogPost';
 import LiveStreamView from './pages/LiveStreamView';
 import NotFound from './pages/NotFound';
+import MobileBundleDetail from './pages/mobile/MobileBundleDetail';
 
 const MobileApp = () => {
     return (
@@ -55,14 +56,15 @@ const MobileApp = () => {
                 <Route path="/eco-impact" element={<MobileEcoImpact />} />
                 <Route path="/live" element={<MobileLive />} />
                 <Route path="/live/:id" element={<LiveStreamView />} />
-<Route path="/style-feed" element={<MobileStyleFeed />} />
-<Route path="/challenges" element={<MobileChallenges />} />
-<Route path="/reels" element={<MobileReels />} />
-<Route path="/reels/:id" element={<MobileReels />} />
-<Route path="/gift-cards" element={<GiftCards />} />
-<Route path="/blog" element={<Blog />} />
-<Route path="/blog/:slug" element={<MobileBlogPost />} />
-<Route path="*" element={<NotFound />} />
+                <Route path="/style-feed" element={<MobileStyleFeed />} />
+                <Route path="/challenges" element={<MobileChallenges />} />
+                <Route path="/reels" element={<MobileReels />} />
+                <Route path="/reels/:id" element={<MobileReels />} />
+                <Route path="/gift-cards" element={<GiftCards />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/bundle/:id" element={<MobileBundleDetail />} />
+                <Route path="/blog/:slug" element={<MobileBlogPost />} />
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </MobileLayout>
     );
