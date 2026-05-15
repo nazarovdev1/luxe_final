@@ -30,7 +30,7 @@ const pointTransactionSchema = new mongoose.Schema({
   },
   referenceModel: {
     type: String,
-    enum: ['Order', 'Review', 'Challenge']
+    enum: ['Order', 'Review', 'Challenge', 'Post']
   }
 }, {
   timestamps: true

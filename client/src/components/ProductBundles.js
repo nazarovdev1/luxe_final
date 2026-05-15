@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Tag, Check, Percent, Eye } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import useProductService from '../server/server';
-import toast from 'react-hot-toast';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -26,9 +24,7 @@ const getImage = (item) => {
 };
 
 const BundleCard = ({ look, resolvedProducts }) => {
-  const { addLookToCart } = useCart();
   const { t } = useLanguage();
-  const [isAdding, setIsAdding] = useState(false);
 
   const originalTotal = look.originalPrice || resolvedProducts.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
   const discountAmount = look.discountType === 'percentage'
@@ -40,25 +36,6 @@ const BundleCard = ({ look, resolvedProducts }) => {
     : originalTotal > 0
       ? Math.round((discountAmount / originalTotal) * 100)
       : 0;
-
-  const handleAddBundle = async () => {
-    setIsAdding(true);
-    try {
-      const lookForCart = {
-        ...look,
-        id: look._id || look.id,
-        products: resolvedProducts,
-      };
-      const result = addLookToCart(lookForCart, {});
-      if (result) {
-        toast.success(`"${look.title}" to'plami savatga qo'shildi!`);
-      }
-    } catch (error) {
-      toast.error('Xatolik yuz berdi');
-    } finally {
-      setIsAdding(false);
-    }
-  };
 
   return (
     <article className="group relative overflow-hidden rounded-[1.7rem] border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] transition-all duration-500 hover:border-[#d6b47c]/40 hover:shadow-[0_24px_60px_rgba(20,16,10,0.5)]">
@@ -143,20 +120,13 @@ const BundleCard = ({ look, resolvedProducts }) => {
           </Link>
 
           {/* Add to Cart */}
-          <button
-            onClick={handleAddBundle}
-            disabled={isAdding}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#d6b47c] px-4 py-2.5 text-sm font-semibold text-[#0f1014] transition-all hover:bg-[#e0c08e] active:scale-[0.98] disabled:opacity-60"
+          <Link
+            to={`/bundle/${look._id || look.id}`}
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#d6b47c] px-4 py-2.5 text-sm font-semibold text-[#0f1014] transition-all hover:bg-[#e0c08e] active:scale-[0.98]"
           >
-            {isAdding ? (
-              <span>Qo'shilmoqda...</span>
-            ) : (
-              <>
-                <ShoppingBag className="w-4 h-4" />
-                Savat
-              </>
-            )}
-          </button>
+            <ShoppingBag className="w-4 h-4" />
+            Tanlab savatga
+          </Link>
         </div>
       </div>
     </article>

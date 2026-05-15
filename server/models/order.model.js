@@ -22,7 +22,11 @@ const orderSchema = new mongoose.Schema({
         quantity: { type: Number, required: true },
         price: Number,
         selectedColor: String,
-        selectedSize: String
+        selectedSize: String,
+        // Look-related fields
+        lookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Look', default: null },
+        lookTitle: { type: String, default: null },
+        lookDiscount: { type: Number, default: 0 }
     }],
     totals: {
         subtotal: Number,
@@ -31,11 +35,38 @@ const orderSchema = new mongoose.Schema({
         discountAmount: { type: Number, default: 0 },
         total: Number
     },
+    // Look discount tracking
+    lookDiscounts: [{
+        lookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Look' },
+        lookTitle: String,
+        originalPrice: Number,
+        discountAmount: Number
+    }],
+    totalLookDiscount: {
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
         enum: ['Kutilmoqda', 'Jarayonda', 'Yetkazilmoqda', 'Yetkazildi', 'Bekor qilindi'],
         default: 'Kutilmoqda'
     },
+    statusHistory: [{
+        status: {
+            type: String,
+            enum: ['Kutilmoqda', 'Jarayonda', 'Yetkazilmoqda', 'Yetkazildi', 'Bekor qilindi'],
+            required: true
+        },
+        changedAt: {
+            type: Date,
+            default: Date.now
+        },
+        changedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        }
+    }],
     paymentMethod: {
         type: String,
         enum: ['cash', 'click', 'payme'],

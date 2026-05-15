@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -7,13 +8,15 @@ import toast from 'react-hot-toast';
 import {
     ArrowLeft, MapPin, Phone, User, CreditCard,
     Truck, CheckCircle, Navigation, ChevronRight,
-    Gem, ShieldCheck, Wallet, X
+    Gem, ShieldCheck, Wallet, X, LockKeyhole, Sparkles,
+    Gift, Calendar, Clock, MessageCircle as MessageCircleIconFallback
 } from 'lucide-react';
 import useProductService from '../../server/server';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import OrderSuccessModal from '../../components/OrderSuccessModal';
+import useCheckoutTotals, { DELIVERY_TIME_SLOTS, GIFT_WRAP_OPTIONS, getDeliveryDates } from '../../hooks/useCheckoutTotals';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -56,7 +59,7 @@ function LocationButton() {
             <div className="leaflet-control leaflet-bar !border-0 !shadow-none">
                 <button
                     onClick={handleLocate}
-                    className="flex items-center justify-center w-12 h-12 bg-[#1a1a1a] text-amber-500 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/10 active:scale-95 transition-transform"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d6b47c]/30 bg-[#0c1018]/90 text-[#d6b47c] shadow-[0_10px_28px_rgba(0,0,0,0.35)] active:scale-95 transition-transform"
                     title="Mening manzilim"
                 >
                     <Navigation className="w-5 h-5" />
@@ -69,14 +72,14 @@ function LocationButton() {
 // Premium Input Component
 const InputField = ({ label, icon: Icon, ...props }) => (
     <div className="group relative">
-        <div className="absolute left-4 top-3.5 text-gray-500 transition-colors group-focus-within:text-amber-500">
-            <Icon className="w-5 h-5" />
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777f8d] transition-colors group-focus-within:text-[#d6b47c]">
+            <Icon className="h-[18px] w-[18px]" />
         </div>
         <input
             {...props}
-            className="w-full bg-[#121212] border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 text-[16px] text-white placeholder:text-gray-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-all font-sans"
+            className="h-14 w-full rounded-2xl border border-white/10 bg-[#0e141f]/90 py-3.5 pl-12 pr-4 text-[16px] text-[#f6f1e8] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] placeholder:text-[#5f6877] focus:outline-none focus:border-[#d6b47c]/60 focus:ring-2 focus:ring-[#d6b47c]/10 transition-all font-sans"
         />
-        <label className="absolute -top-2 left-3 bg-[#0a0a0f] px-1 text-[10px] uppercase font-bold tracking-wider text-gray-500 group-focus-within:text-amber-500 transition-colors">
+        <label className="absolute -top-2 left-3 bg-[#070b12] px-2 text-[10px] uppercase font-bold tracking-[0.16em] text-[#7d8591] group-focus-within:text-[#d6b47c] transition-colors">
             {label}
         </label>
     </div>
@@ -86,15 +89,17 @@ const InputField = ({ label, icon: Icon, ...props }) => (
 const MobileCheckout = () => {
     const { t } = useLanguage();
     const navigate = useNavigate();
-    const { items, getCartTotal, clearCart } = useCart();
-    const { user, isAuthenticated, loading } = useAuth();
-    const { createOrder, validatePromo, validateGiftCard } = useProductService();
+    const { items, lookItems, clearCart } = useCart();
+    const { user, isAuthenticated, loading, token } = useAuth();
+    const { createOrder, validatePromo, validateGiftCard, validateCoupon } = useProductService();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentStep, setCurrentStep] = useState(1); // 1: Info, 2: Address, 3: Payment
     const [mounted, setMounted] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdOrderId, setCreatedOrderId] = useState(null);
+    const [agreeTerms, setAgreeTerms] = useState(false);
+    const [userTier, setUserTier] = useState(null);
 
     useEffect(() => {
         setMounted(true);
@@ -103,6 +108,21 @@ const MobileCheckout = () => {
             navigate('/mobile/login');
         }
     }, [isAuthenticated, loading, navigate]);
+
+    useEffect(() => {
+        const fetchUserTier = async () => {
+            if (!isAuthenticated || !token) return;
+            try {
+                const res = await axios.get('/api/points', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.data.success) setUserTier(res.data.points);
+            } catch (error) {
+                console.error('Error fetching tier:', error);
+            }
+        };
+        fetchUserTier();
+    }, [isAuthenticated, token]);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -120,20 +140,32 @@ const MobileCheckout = () => {
     const [promoCode, setPromoCode] = useState('');
     const [appliedPromo, setAppliedPromo] = useState(null);
     const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+    const [giftWrap, setGiftWrap] = useState(false);
+    const [giftWrapType, setGiftWrapType] = useState('classic');
+    const [giftMessage, setGiftMessage] = useState('');
+    const [scheduledDelivery, setScheduledDelivery] = useState(false);
+    const [deliveryDate, setDeliveryDate] = useState('');
+    const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('');
 
-    const total = getCartTotal();
-
-    const discountAmount = useMemo(() => {
-        if (appliedPromo) {
-            if (appliedPromo.type === 'giftcard') {
-                return appliedPromo.discountAmount || 0;
-            }
-            return (total * (appliedPromo.discountPercentage || 0)) / 100;
-        }
-        return 0;
-    }, [total, appliedPromo]);
-
-    const finalTotal = total - discountAmount;
+    const {
+        cartItems,
+        lookDiscountsTotal,
+        summaryTotal,
+        tierDiscountAmount,
+        promoDiscountAmount,
+        giftWrapCost,
+        expressDeliveryFee,
+        finalTotal
+    } = useCheckoutTotals({
+        items,
+        lookItems,
+        appliedPromo,
+        userTier,
+        giftWrap,
+        giftWrapType,
+        scheduledDelivery,
+        deliveryTimeSlot
+    });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -154,7 +186,8 @@ const MobileCheckout = () => {
                 setAppliedPromo({
                     code: result.code,
                     discountPercentage: result.discountPercentage,
-                    type: 'percentage'
+                    type: 'percentage',
+                    source: 'promo'
                 });
                 setPromoCode(result.code);
                 toast.success(`Promokod qo'llanildi: -${result.discountPercentage}% chegirma!`);
@@ -172,7 +205,8 @@ const MobileCheckout = () => {
                     code: giftCardResult.code,
                     discountAmount: giftCardResult.amount,
                     discountPercentage: 0,
-                    type: 'giftcard'
+                    type: 'giftcard',
+                    source: 'giftcard'
                 });
                 setPromoCode(giftCardResult.code);
                 toast.success(`${t('common.giftCardApplied')}! ${giftCardResult.amount.toLocaleString()} ${t('common.sum')}`);
@@ -182,9 +216,22 @@ const MobileCheckout = () => {
                 lastErrorMessage = giftCardResult.message;
             }
 
-            // 3. Fallback error
-            setAppliedPromo(null);
-            toast.error(lastErrorMessage);
+            // 3. Try authenticated user coupon
+            const couponResult = await validateCoupon(normalizedCode, summaryTotal, token);
+            if (couponResult.success) {
+                setAppliedPromo({
+                    code: couponResult.code,
+                    discountPercentage: couponResult.type === 'percentage' ? couponResult.value : (couponResult.discount / summaryTotal) * 100,
+                    discountAmount: couponResult.discount,
+                    type: couponResult.type,
+                    source: 'coupon'
+                });
+                setPromoCode(couponResult.code);
+                toast.success("Kupon qo'llanildi!");
+            } else {
+                setAppliedPromo(null);
+                toast.error(couponResult.message || lastErrorMessage);
+            }
         } catch (error) {
             toast.error('Tekshirishda xatolik yuz berdi');
         } finally {
@@ -198,13 +245,23 @@ const MobileCheckout = () => {
     };
 
     const handleSubmit = async () => {
-        if (items.length === 0) {
+        if (items.length === 0 && (!lookItems || lookItems.length === 0)) {
             toast.error("Savatingiz bo'sh!");
             return;
         }
 
         if (!formData.firstName || !formData.phone || !formData.region || !formData.street) {
             toast.error("Iltimos, barcha maydonlarni to'ldiring");
+            return;
+        }
+
+        if (scheduledDelivery && (!deliveryDate || !deliveryTimeSlot)) {
+            toast.error("Iltimos, yetkazib berish sanasi va vaqtini tanlang");
+            return;
+        }
+
+        if (!agreeTerms) {
+            toast.error(t('checkoutPage.agreeTerms'));
             return;
         }
 
@@ -236,6 +293,15 @@ const MobileCheckout = () => {
                         return;
                     }
                     verifiedDiscountAmount = giftCardValidation.amount;
+                } else if (appliedPromo.source === 'coupon') {
+                    const couponValidation = await validateCoupon(appliedPromo.code, summaryTotal, token);
+                    if (!couponValidation.success) {
+                        setAppliedPromo(null);
+                        toast.error("Kupon hozir yaroqsiz");
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    verifiedDiscountAmount = couponValidation.discount;
                 } else {
                     const promoValidation = await validatePromo(appliedPromo.code);
                     if (!promoValidation.success) {
@@ -244,12 +310,42 @@ const MobileCheckout = () => {
                         setIsSubmitting(false);
                         return;
                     }
-                    verifiedDiscountAmount = (total * promoValidation.discountPercentage) / 100;
+                    verifiedDiscountAmount = (summaryTotal * promoValidation.discountPercentage) / 100;
                 }
                 setAppliedPromo(verifiedPromo);
             }
 
-            const verifiedFinalTotal = Math.max(total - verifiedDiscountAmount, 0);
+            const verifiedFinalTotal = Math.max(summaryTotal - verifiedDiscountAmount - tierDiscountAmount + giftWrapCost + expressDeliveryFee, 0);
+
+            const lookOrderItems = (lookItems || []).flatMap((look) =>
+                (look.products || []).map((p) => ({
+                    product: p.productId,
+                    name: p.name,
+                    image: p.image,
+                    quantity: p.quantity,
+                    price: typeof p.price === 'string'
+                        ? parseFloat(p.price.replace(/[^0-9.]/g, ''))
+                        : (parseFloat(p.price) || 0),
+                    selectedColor: p.selectedColor || null,
+                    selectedSize: p.selectedSize || null,
+                    lookId: look.lookId || null,
+                    lookTitle: look.title || null,
+                    lookDiscount: (look.discountAmount > 0 && (look.products || []).length > 0)
+                        ? look.discountAmount / look.products.length
+                        : 0
+                }))
+            );
+
+            const lookDiscounts = (lookItems || []).length > 0
+                ? (lookItems || []).map((look) => ({
+                    lookId: look.lookId,
+                    lookTitle: look.title,
+                    originalPrice: look.originalPrice || 0,
+                    discountAmount: look.discountAmount || 0
+                }))
+                : null;
+
+            const totalLookDiscount = (lookItems || []).reduce((sum, look) => sum + (look.discountAmount || 0), 0);
 
             const orderData = {
                 customer: {
@@ -259,26 +355,36 @@ const MobileCheckout = () => {
                     location: formData.location,
                     comments: formData.comments
                 },
-                items: items.map(item => ({
-                    product: item.productId || item.id,
-                    name: item.name,
-                    image: item.image,
-                    quantity: item.quantity,
-                    price: typeof item.price === 'string'
-                        ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
-                        : parseFloat(item.price),
-                    selectedColor: item.selectedColor,
-                    selectedSize: item.selectedSize
-                })),
+                items: [
+                    ...cartItems.map(item => ({
+                        product: item.productId || item.id,
+                        name: item.name,
+                        image: item.image,
+                        quantity: item.quantity,
+                        price: item.parsedPrice,
+                        selectedColor: item.selectedColor || null,
+                        selectedSize: item.selectedSize || null
+                    })),
+                    ...lookOrderItems
+                ],
                 paymentMethod: formData.paymentMethod,
                 totals: {
-                    subtotal: total,
+                    subtotal: summaryTotal,
                     deliveryFee: 0,
+                    giftWrap: giftWrap ? { type: giftWrapType, cost: giftWrapCost, message: giftMessage } : null,
                     promoCode: verifiedPromo ? verifiedPromo.code : null,
-                    discountAmount: verifiedDiscountAmount,
+                    discountAmount: verifiedDiscountAmount + tierDiscountAmount,
+                    lookDiscountAmount: lookDiscountsTotal || 0,
                     total: verifiedFinalTotal
                 },
-                userId: user ? user._id || user.id : null
+                userId: user ? user._id || user.id : null,
+                lookDiscounts,
+                totalLookDiscount: totalLookDiscount || null,
+                scheduledDelivery: scheduledDelivery ? {
+                    date: deliveryDate,
+                    timeSlot: deliveryTimeSlot,
+                    isExpress: deliveryTimeSlot === 'express'
+                } : null
             };
 
             const result = await createOrder(orderData);
@@ -309,7 +415,31 @@ const MobileCheckout = () => {
         'Uchtepa', 'Yakkasaray', 'Yunusabad', 'Yangihayot'
     ];
 
-    if (items.length === 0 && !showSuccessModal) {
+    const orderPreviewItems = [
+        ...items,
+        ...(lookItems || []).flatMap((look) =>
+            (look.products || []).map((product) => ({
+                ...product,
+                id: `${look.cartLookId || look.lookId}-${product.productId}`,
+                name: product.name,
+                image: product.image,
+                price: product.price,
+                quantity: product.quantity || 1,
+                lookTitle: look.title
+            }))
+        )
+    ];
+
+    const stepMeta = [
+        { label: 'Contact', title: "Shaxsiy ma'lumotlar", icon: User },
+        { label: 'Delivery', title: 'Manzil va lokatsiya', icon: MapPin },
+        { label: 'Payment', title: "To'lov va tasdiqlash", icon: LockKeyhole }
+    ];
+
+    const activeStep = stepMeta[currentStep - 1];
+    const ActiveStepIcon = activeStep.icon;
+
+    if (items.length === 0 && (!lookItems || lookItems.length === 0) && !showSuccessModal) {
         return (
             <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center px-6">
                 <div className="relative mb-8">
@@ -336,290 +466,396 @@ const MobileCheckout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white pb-32 font-sans selection:bg-amber-500/30">
-            {/* Ambient Background */}
-            <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute -top-[20%] right-0 w-[500px] h-[500px] bg-purple-900/10 blur-[120px] rounded-full" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-900/10 blur-[120px] rounded-full" />
-                <div className="absolute inset-0 opacity-[0.03]"
-                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }}
-                />
-            </div>
+        <div className="min-h-screen bg-[#070b12] text-[#f6f1e8] pb-36 font-sans selection:bg-[#d6b47c]/30">
+            <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(214,180,124,0.10),transparent_34%),linear-gradient(180deg,#070b12_0%,#0b1018_42%,#05070b_100%)]" />
+            <div className="fixed inset-0 pointer-events-none opacity-[0.035]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
 
-            {/* Header */}
-            <div className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 px-5 py-4">
+            <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070b12]/90 px-5 pb-4 pt-3 backdrop-blur-2xl">
                 <div className="flex items-center justify-between">
-                    <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-gray-400 hover:text-white transition-colors">
+                    <button onClick={() => navigate(-1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-[#c9d0dc] active:scale-95 transition">
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <div className="flex flex-col items-center">
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-amber-500 font-bold">Checkout</span>
-                        <div className="flex gap-1.5 mt-1">
-                            {[1, 2, 3].map(step => (
-                                <div
-                                    key={step}
-                                    className={`w-8 h-1 rounded-full transition-all duration-500 ${step === currentStep ? 'bg-white shadow-[0_0_10px_white]' :
-                                        step < currentStep ? 'bg-amber-500' : 'bg-white/10'}`}
-                                />
-                            ))}
-                        </div>
+                    <div className="text-center">
+                        <p className="text-[10px] uppercase tracking-[0.24em] text-[#d6b47c]">Luxe Checkout</p>
+                        <p className="text-sm font-semibold text-[#f6f1e8]">{activeStep.title}</p>
                     </div>
-                    <div className="w-9" /> {/* Spacer */}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/10 text-[#d6b47c]">
+                        <ActiveStepIcon className="h-[18px] w-[18px]" />
+                    </div>
                 </div>
-            </div>
 
-            <div className={`transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                    {stepMeta.map((step, index) => {
+                        const stepNumber = index + 1;
+                        const isActive = stepNumber === currentStep;
+                        const isDone = stepNumber < currentStep;
+                        return (
+                            <button
+                                key={step.label}
+                                type="button"
+                                onClick={() => stepNumber < currentStep && setCurrentStep(stepNumber)}
+                                className={`h-9 rounded-xl border text-[10px] font-bold uppercase tracking-[0.12em] transition-all ${isActive
+                                    ? 'border-[#d6b47c]/50 bg-[#d6b47c]/15 text-[#f6f1e8]'
+                                    : isDone
+                                        ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
+                                        : 'border-white/10 bg-white/[0.03] text-[#6f7784]'
+                                    }`}
+                            >
+                                {step.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </header>
 
-                {/* Step 1: Identity */}
+            <main className={`relative z-10 transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+                <section className="px-5 pt-6">
+                    <div className="border-b border-white/10 pb-5">
+                        <div className="flex items-center gap-2 text-[#d6b47c]">
+                            <Sparkles className="h-4 w-4" />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.22em]">Concierge Order</span>
+                        </div>
+                        <h1 className="mt-2 text-3xl font-light leading-tight text-[#f6f1e8]">
+                            Premium xaridni yakunlash
+                        </h1>
+                        <p className="mt-2 text-sm leading-6 text-[#8e98a8]">
+                            Ma'lumotlaringiz tekshiriladi, lokatsiya aniqlanadi va buyurtma xavfsiz yuboriladi.
+                        </p>
+                    </div>
+                </section>
+
                 {currentStep === 1 && (
-                    <div className="px-5 py-8 space-y-8 animate-fade-in-up">
-                        <div className="text-center space-y-2">
-                            <h2 className="text-3xl font-light tracking-tight">
-                                <span className="font-serif italic text-amber-500 mr-2">Shaxsiy</span>
-                                ma'lumotlar
-                            </h2>
-                            <p className="text-gray-500 text-sm">{t('checkoutPage.step1')}</p>
+                    <section className="px-5 py-6 space-y-5 animate-fade-in-up">
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">Step 01</p>
+                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">Aloqa ma'lumotlari</h2>
+                            </div>
+                            <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#9ba4b4]">Secure</span>
                         </div>
 
-                        <div className="space-y-5">
-                            <InputField
-                                label="ISM"
-                                icon={User}
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                placeholder="Ismingiz"
-                            />
-                            <InputField
-                                label="FAMILIYA"
-                                icon={User}
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                placeholder="Familiyangiz"
-                            />
-                            <InputField
-                                label="TELEFON"
-                                icon={Phone}
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                placeholder="+998 90 123 45 67"
-                            />
-                        </div>
-                    </div>
+                        <InputField label="ISM" icon={User} name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Ismingiz" />
+                        {showErrors && !formData.firstName && <p className="text-xs font-medium text-red-300">Iltimos, ismingizni kiriting</p>}
+                        <InputField label="FAMILIYA" icon={User} name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Familiyangiz" />
+                        <InputField label="TELEFON" icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+998 90 123 45 67" />
+                        {showErrors && !formData.phone && <p className="text-xs font-medium text-red-300">Iltimos, telefon raqamingizni kiriting</p>}
+                    </section>
                 )}
 
-                {/* Step 2: Delivery */}
                 {currentStep === 2 && (
-                    <div className="px-5 py-8 space-y-6 animate-fade-in-up">
-                        <div className="text-center space-y-2">
-                            <h2 className="text-3xl font-light tracking-tight">
-                                <span className="font-serif italic text-amber-500 mr-2">{t('checkoutPage.delivery')}</span>
-                            </h2>
-                            <p className="text-gray-500 text-sm">Manzilingizni xaritadan aniq belgilang</p>
+                    <section className="px-5 py-6 space-y-5 animate-fade-in-up">
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">Step 02</p>
+                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">Yetkazib berish</h2>
+                            </div>
+                            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-emerald-300">Free</span>
                         </div>
 
-                        <div className="space-y-5">
-                            <div className="relative">
-                                <div className="absolute left-4 top-3.5 text-amber-500 z-10">
-                                    <MapPin className="w-5 h-5" />
-                                </div>
-                                <select
-                                    name="region"
-                                    value={formData.region}
-                                    onChange={handleChange}
-                                    className="w-full bg-[#121212] border border-white/10 rounded-2xl py-3.5 pl-12 pr-10 text-[16px] text-white appearance-none focus:outline-none focus:border-amber-500/50 transition-all font-sans"
-                                >
-                                    <option value="">Tuman tanlang</option>
-                                    {regions.map(r => <option key={r} value={r}>{r}</option>)}
-                                </select>
-                                <ChevronRight className="absolute right-4 top-4 w-4 h-4 text-gray-500 rotate-90" />
+                        <div className="relative">
+                            <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-[#d6b47c]">
+                                <MapPin className="h-[18px] w-[18px]" />
                             </div>
-                            {showErrors && !formData.region && (
-                                <p className="text-red-500 text-xs mt-1 ml-1 font-medium">Iltimos, tumanni tanlang</p>
-                            )}
-
-                            <InputField
-                                label="KO'CHA VA UY"
-                                icon={Navigation}
-                                name="street"
-                                value={formData.street}
+                            <select
+                                name="region"
+                                value={formData.region}
                                 onChange={handleChange}
-                                placeholder="Ko'cha, uy raqami"
-                            />
+                                className="h-14 w-full appearance-none rounded-2xl border border-white/10 bg-[#0e141f]/90 py-3.5 pl-12 pr-10 text-[16px] text-[#f6f1e8] focus:outline-none focus:border-[#d6b47c]/60 focus:ring-2 focus:ring-[#d6b47c]/10 transition-all font-sans"
+                            >
+                                <option value="">Tuman tanlang</option>
+                                {regions.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                            <ChevronRight className="absolute right-4 top-5 w-4 h-4 rotate-90 text-[#777f8d]" />
+                        </div>
+                        {showErrors && !formData.region && <p className="text-xs font-medium text-red-300">Iltimos, tumanni tanlang</p>}
 
-                            <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative h-[280px]">
-                                <MapContainer
-                                    center={[41.2995, 69.2401]}
-                                    zoom={12}
-                                    style={{ height: '100%', width: '100%', background: '#121212' }}
-                                    className="z-0"
-                                >
-                                    <TileLayer
-                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                    />
-                                    <LocationMarker
-                                        position={formData.location}
-                                        setPosition={(pos) => setFormData(prev => ({ ...prev, location: pos }))}
-                                    />
-                                    <LocationButton />
-                                </MapContainer>
-                                <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-[400]" />
-                                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-[400]" />
+                        <InputField label="KO'CHA VA UY" icon={Navigation} name="street" value={formData.street} onChange={handleChange} placeholder="Ko'cha, uy raqami" />
+                        {showErrors && !formData.street && <p className="text-xs font-medium text-red-300">Iltimos, ko'cha va uy raqamini kiriting</p>}
+
+                        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e141f] shadow-[0_18px_44px_rgba(0,0,0,0.32)] relative h-[300px]">
+                            <div className="absolute left-4 top-4 z-[401] rounded-full border border-white/10 bg-[#070b12]/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d6b47c] backdrop-blur-xl">
+                                Xaritadan belgilang
                             </div>
-                            {showErrors && !formData.location && (
-                                <p className="text-red-500 text-xs mt-2 text-center font-medium animate-pulse">Iltimos, xaritadan joylashuvni belgilang</p>
+                            <MapContainer
+                                center={[41.2995, 69.2401]}
+                                zoom={12}
+                                style={{ height: '100%', width: '100%', background: '#0e141f' }}
+                                className="z-0"
+                            >
+                                <TileLayer
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                />
+                                <LocationMarker position={formData.location} setPosition={(pos) => setFormData(prev => ({ ...prev, location: pos }))} />
+                                <LocationButton />
+                            </MapContainer>
+                            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
+                            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
+                        </div>
+                        {showErrors && !formData.location && <p className="text-center text-xs font-medium text-red-300">Iltimos, xaritadan joylashuvni belgilang</p>}
+
+                        <div className="rounded-2xl border border-white/10 bg-[#0e141f]/90 p-4">
+                            <button
+                                type="button"
+                                onClick={() => setScheduledDelivery((value) => !value)}
+                                className="flex w-full items-center justify-between text-left"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6b47c]/10 text-[#d6b47c]">
+                                        <Calendar className="h-4 w-4" />
+                                    </span>
+                                    <span>
+                                        <span className="block text-sm font-semibold text-[#f6f1e8]">Rejali yetkazib berish</span>
+                                        <span className="text-xs text-[#8e98a8]">Sana va vaqt oralig'ini tanlang</span>
+                                    </span>
+                                </span>
+                                <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${scheduledDelivery ? 'bg-[#d6b47c]' : 'bg-white/10'}`}>
+                                    <span className={`h-5 w-5 rounded-full bg-white transition-transform ${scheduledDelivery ? 'translate-x-5' : 'translate-x-0'}`} />
+                                </span>
+                            </button>
+
+                            {scheduledDelivery && (
+                                <div className="mt-4 space-y-4">
+                                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                                        {getDeliveryDates().map((date) => (
+                                            <button
+                                                key={date.value}
+                                                type="button"
+                                                onClick={() => setDeliveryDate(date.value)}
+                                                className={`min-w-[88px] rounded-2xl border px-3 py-2 text-left ${deliveryDate === date.value ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12 text-[#d6b47c]' : 'border-white/10 bg-white/[0.03] text-[#9ba4b4]'}`}
+                                            >
+                                                <span className="block text-[10px] uppercase tracking-[0.14em]">{date.day}</span>
+                                                <span className="mt-1 block text-sm font-semibold">{date.date}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {DELIVERY_TIME_SLOTS.map((slot) => (
+                                            <button
+                                                key={slot.value}
+                                                type="button"
+                                                onClick={() => setDeliveryTimeSlot(slot.value)}
+                                                className={`rounded-2xl border p-3 text-left ${deliveryTimeSlot === slot.value ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12 text-[#f6f1e8]' : 'border-white/10 bg-white/[0.03] text-[#9ba4b4]'}`}
+                                            >
+                                                <span className="flex items-center gap-1.5 text-xs font-bold">
+                                                    <Clock className="h-3.5 w-3.5" />
+                                                    {slot.label}
+                                                </span>
+                                                <span className="mt-1 block text-[10px] uppercase tracking-[0.12em] text-[#7d8591]">{slot.hint}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {/* Step 3: Payment & Confirm */}
                 {currentStep === 3 && (
-                    <div className="px-5 py-8 space-y-6 animate-fade-in-up">
-                        <div className="text-center space-y-2">
-                            <h2 className="text-3xl font-light tracking-tight">
-                                <span className="font-serif italic text-amber-500 mr-2">To'lov</span>
-                                usuli
-                            </h2>
-                            <p className="text-gray-500 text-sm">Xavfsiz va qulay to'lov turini tanlang</p>
+                    <section className="px-5 py-6 space-y-5 animate-fade-in-up">
+                        <div className="flex items-end justify-between">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">Step 03</p>
+                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">To'lov va receipt</h2>
+                            </div>
+                            <ShieldCheck className="h-5 w-5 text-[#d6b47c]" />
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid gap-3">
                             {[
-                                { value: 'cash', label: 'Naqd pul orqali', icon: Truck, color: 'text-amber-500' },
-                                { value: 'click', label: 'Click Evolution', icon: Wallet, color: 'text-blue-500', isComingSoon: true },
-                                { value: 'payme', label: 'Payme', icon: CreditCard, color: 'text-teal-500', isComingSoon: true }
+                                { value: 'cash', label: 'Naqd pul orqali', icon: Truck, hint: 'Yetkazilganda', color: 'text-[#d6b47c]' },
+                                { value: 'click', label: 'Click Evolution', icon: Wallet, hint: 'Tez orada', color: 'text-sky-300', isComingSoon: true },
+                                { value: 'payme', label: 'Payme', icon: CreditCard, hint: 'Tez orada', color: 'text-teal-300', isComingSoon: true }
                             ].map((method) => (
                                 <button
                                     key={method.value}
+                                    type="button"
                                     disabled={method.isComingSoon}
                                     onClick={() => setFormData(prev => ({ ...prev, paymentMethod: method.value }))}
-                                    className={`relative group overflow-hidden rounded-2xl p-5 border transition-all duration-300 ${method.isComingSoon
-                                        ? 'bg-[#121212] border-white/5 opacity-40 cursor-not-allowed'
+                                    className={`flex min-h-[72px] items-center gap-4 rounded-2xl border px-4 text-left transition-all ${method.isComingSoon
+                                        ? 'border-white/5 bg-white/[0.025] opacity-45'
                                         : formData.paymentMethod === method.value
-                                            ? 'bg-[#1a1a1a] border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.1)]'
-                                            : 'bg-[#121212] border-white/5 opacity-60 hover:opacity-100'
+                                            ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12 shadow-[0_14px_36px_rgba(214,180,124,0.10)]'
+                                            : 'border-white/10 bg-[#0e141f]/90 active:scale-[0.99]'
                                         }`}
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-xl bg-white/5 ${method.color}`}>
-                                            <method.icon className="w-6 h-6" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-semibold text-white">{method.label}</p>
-                                            <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-                                                {method.isComingSoon ? 'Tez orada' : (method.value === 'cash' ? 'Yetkazilganda' : 'Online')}
-                                            </p>
-                                        </div>
-                                        {formData.paymentMethod === method.value && !method.isComingSoon && (
-                                            <div className="ml-auto text-amber-500">
-                                                <CheckCircle className="w-6 h-6 fill-amber-500/20" />
-                                            </div>
-                                        )}
-                                    </div>
+                                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] ${method.color}`}>
+                                        <method.icon className="w-5 h-5" />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block text-sm font-semibold text-[#f6f1e8]">{method.label}</span>
+                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#7d8591]">{method.hint}</span>
+                                    </span>
+                                    {formData.paymentMethod === method.value && !method.isComingSoon && <CheckCircle className="h-5 w-5 text-[#d6b47c]" />}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Order Capsule */}
-                        <div className="mt-8 rounded-3xl bg-[#121212] border border-white/5 p-6 space-y-4">
+                        <InputField label="IZOH" icon={MessageCircleIconFallback} name="comments" value={formData.comments} onChange={handleChange} placeholder="Buyurtma bo'yicha izoh" />
 
-                            {/* Promo section */}
-                            <div className="mb-4 pb-4 border-b border-white/5">
+                        <div className="rounded-2xl border border-white/10 bg-[#0e141f]/95 p-4">
+                            <button
+                                type="button"
+                                onClick={() => setGiftWrap((value) => !value)}
+                                className="flex w-full items-center justify-between text-left"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6b47c]/10 text-[#d6b47c]">
+                                        <Gift className="h-4 w-4" />
+                                    </span>
+                                    <span>
+                                        <span className="block text-sm font-semibold text-[#f6f1e8]">Sovg'a qadoqlash</span>
+                                        <span className="text-xs text-[#8e98a8]">Premium quti, lenta va tabrik xati</span>
+                                    </span>
+                                </span>
+                                <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${giftWrap ? 'bg-[#d6b47c]' : 'bg-white/10'}`}>
+                                    <span className={`h-5 w-5 rounded-full bg-white transition-transform ${giftWrap ? 'translate-x-5' : 'translate-x-0'}`} />
+                                </span>
+                            </button>
+
+                            {giftWrap && (
+                                <div className="mt-4 space-y-3">
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.entries(GIFT_WRAP_OPTIONS).map(([key, option]) => (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => setGiftWrapType(key)}
+                                                className={`rounded-2xl border p-3 text-left ${giftWrapType === key ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12' : 'border-white/10 bg-white/[0.03]'}`}
+                                            >
+                                                <span className="block text-[11px] font-semibold text-[#f6f1e8]">{option.name}</span>
+                                                <span className="mt-1 block text-[10px] text-[#8e98a8]">{option.price.toLocaleString()} so'm</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <input
+                                        value={giftMessage}
+                                        onChange={(event) => setGiftMessage(event.target.value)}
+                                        maxLength={200}
+                                        placeholder="Tabrik xati (ixtiyoriy)"
+                                        className="h-12 w-full rounded-2xl border border-white/10 bg-[#070b12] px-4 text-sm text-[#f6f1e8] placeholder:text-[#606979] outline-none focus:border-[#d6b47c]/60"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                            <input
+                                type="checkbox"
+                                checked={agreeTerms}
+                                onChange={(event) => setAgreeTerms(event.target.checked)}
+                                className="mt-1 h-4 w-4 accent-[#d6b47c]"
+                            />
+                            <span className="text-sm leading-6 text-[#c8d0dc]">{t('checkoutPage.agreeTerms')}</span>
+                        </label>
+
+                        <div className="rounded-2xl border border-white/10 bg-[#0e141f]/95 p-5 shadow-[0_20px_52px_rgba(0,0,0,0.34)]">
+                            <div className="mb-4 flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8591]">Order Summary</p>
+                                    <h3 className="mt-1 text-lg font-semibold text-[#f6f1e8]">Sizning buyurtmangiz</h3>
+                                </div>
+                                <span className="rounded-full bg-[#d6b47c]/12 px-3 py-1 text-xs font-semibold text-[#d6b47c]">{orderPreviewItems.length} item</span>
+                            </div>
+
+                            <div className="mb-4 border-b border-white/10 pb-4">
                                 {appliedPromo ? (
-                                    <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4">
+                                    <div className="flex items-center justify-between rounded-2xl border border-[#d6b47c]/25 bg-[#d6b47c]/10 p-3">
                                         <div>
-                                            <p className="font-bold text-amber-500 uppercase tracking-widest text-xs flex items-center gap-1.5">
+                                            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#d6b47c]">
                                                 <ShieldCheck className="w-3.5 h-3.5" />
                                                 {appliedPromo.code}
                                             </p>
-                                            <p className="text-gray-400 text-xs mt-1">
+                                            <p className="mt-1 text-xs text-[#9ba4b4]">
                                                 {appliedPromo.type === 'giftcard'
-                                                    ? `-${appliedPromo.discountAmount.toLocaleString()} ${t('common.sum')} ${t('common.discount')}`
+                                                    ? `-${appliedPromo.discountAmount.toLocaleString()} ${t('common.sum')}`
                                                     : `-${appliedPromo.discountPercentage}% ${t('common.discount')}`}
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={handleRemovePromo}
-                                            className="text-gray-500 hover:text-white p-2"
-                                        >
+                                        <button onClick={handleRemovePromo} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-[#9ba4b4] active:scale-95">
                                             <X className="w-4 h-4" />
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="flex gap-2 relative">
+                                    <div className="relative">
                                         <input
                                             type="text"
                                             value={promoCode}
                                             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                                            placeholder="Promokodni kiriting"
-                                            className="w-full bg-black border border-white/10 rounded-2xl py-3 px-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50 uppercase"
+                                            placeholder="Promokod"
+                                            className="h-[52px] w-full rounded-2xl border border-white/10 bg-[#070b12] px-4 pr-24 text-sm uppercase text-[#f6f1e8] placeholder:text-[#606979] focus:outline-none focus:border-[#d6b47c]/60"
                                         />
                                         <button
                                             onClick={handleApplyPromo}
                                             disabled={isValidatingPromo || !promoCode.trim()}
-                                            className="absolute right-1 top-1 bottom-1 px-4 bg-white/5 hover:bg-white/10 text-amber-500 font-semibold text-xs rounded-xl tracking-wider uppercase transition-colors disabled:opacity-50"
+                                            className="absolute bottom-1.5 right-1.5 top-1.5 rounded-xl bg-[#d6b47c] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[#070b12] transition disabled:opacity-45"
                                         >
-                                            {isValidatingPromo ? '...' : 'Tasdiq'}
+                                            {isValidatingPromo ? '...' : 'Apply'}
                                         </button>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                                <div className="space-y-1 w-full relative">
-                                    <p className="text-gray-500 text-xs uppercase tracking-wider">{t('checkoutPage.total')}</p>
-
-                                    {appliedPromo && (
-                                        <div className="flex items-center justify-between text-sm py-1">
-                                            <span className="text-gray-400">{t('common.price')}</span>
-                                            <span className="text-gray-400 line-through">{total.toLocaleString()} {t('common.sum')}</span>
-                                        </div>
-                                    )}
-
-                                    {appliedPromo && (
-                                        <div className="flex items-center justify-between text-sm py-1">
-                                            <span className="text-amber-500">{t('common.discount')}</span>
-                                            <span className="text-amber-500">-{discountAmount.toLocaleString()} {t('common.sum')}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center justify-between pt-1">
-                                        <p className="text-2xl font-light text-white">{finalTotal.toLocaleString()} <span className="text-sm text-gray-400">{t('common.sum')}</span></p>
-                                        <ShieldCheck className="w-5 h-5 text-gray-700 absolute right-0 bottom-2" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="space-y-3">
-                                {items.slice(0, 2).map((item, idx) => (
-                                    <div key={idx} className="flex items-center gap-3">
-                                        <img src={item.image} alt={item.name} className="w-10 h-10 rounded-lg object-cover opacity-80" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-gray-300 line-clamp-2 break-words leading-tight">{item.name}</p>
-                                            <p className="text-xs text-gray-600 mt-1">{item.quantity} x {(parseFloat(String(item.price).replace(/[^0-9.]/g, ''))).toLocaleString()}</p>
+                            <div className="space-y-3 border-b border-white/10 pb-4">
+                                {orderPreviewItems.slice(0, 3).map((item, idx) => (
+                                    <div key={item.id || item.productId || idx} className="flex items-center gap-3">
+                                        <img src={item.image || '/placeholder.jpg'} alt={item.name} className="h-11 w-11 rounded-xl object-cover ring-1 ring-white/10" />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="line-clamp-1 text-sm font-medium text-[#e5ded1]">{item.name}</p>
+                                            <p className="mt-0.5 text-xs text-[#758092]">
+                                                {item.lookTitle ? `${item.lookTitle} · ` : ''}{item.quantity} x {(parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
-                                {items.length > 2 && <p className="text-xs text-gray-600 italic">+ yana {items.length - 2} ta mahsulot</p>}
+                                {orderPreviewItems.length > 3 && <p className="text-xs italic text-[#758092]">+ yana {orderPreviewItems.length - 3} ta mahsulot</p>}
+                            </div>
+
+                            <div className="space-y-2 pt-4">
+                                <div className="flex items-center justify-between text-sm text-[#9ba4b4]">
+                                    <span>{t('common.price')}</span>
+                                    <span>{summaryTotal.toLocaleString()} {t('common.sum')}</span>
+                                </div>
+                                {appliedPromo && (
+                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                        <span>{t('common.discount')}</span>
+                                        <span>-{promoDiscountAmount.toLocaleString()} {t('common.sum')}</span>
+                                    </div>
+                                )}
+                                {tierDiscountAmount > 0 && (
+                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                        <span>{userTier?.level} Member</span>
+                                        <span>-{tierDiscountAmount.toLocaleString()} {t('common.sum')}</span>
+                                    </div>
+                                )}
+                                {giftWrap && giftWrapCost > 0 && (
+                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                        <span>Sovg'a qadoqlash</span>
+                                        <span>{giftWrapCost.toLocaleString()} {t('common.sum')}</span>
+                                    </div>
+                                )}
+                                {expressDeliveryFee > 0 && (
+                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                        <span>Tezkor yetkazib berish</span>
+                                        <span>{expressDeliveryFee.toLocaleString()} {t('common.sum')}</span>
+                                    </div>
+                                )}
+                                <div className="flex items-end justify-between pt-2">
+                                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#7d8591]">{t('checkoutPage.total')}</span>
+                                    <span className="text-2xl font-semibold text-[#f6f1e8]">{Math.max(finalTotal, 0).toLocaleString()} <span className="text-sm font-normal text-[#9ba4b4]">{t('common.sum')}</span></span>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="h-5"></div>
-                    </div>
+                    </section>
                 )}
-            </div>
+            </main>
 
-            {/* Floating Action Bar */}
-            <div className="fixed bottom-6 left-5 right-5 z-[100]">
+            <div className="fixed bottom-0 left-0 right-0 z-[100] border-t border-white/10 bg-[#070b12]/92 px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 backdrop-blur-2xl">
                 <div className="flex gap-3">
                     {currentStep > 1 && (
                         <button
                             onClick={() => setCurrentStep(prev => prev - 1)}
-                            className="w-14 h-14 flex items-center justify-center rounded-full bg-[#1a1a1a] border border-white/10 text-white active:scale-95 transition-transform"
+                            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-[#f6f1e8] active:scale-95 transition-transform"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
@@ -650,7 +886,7 @@ const MobileCheckout = () => {
                             }
                         }}
                         disabled={isSubmitting}
-                        className={`flex-1 h-14 rounded-full font-bold uppercase tracking-widest text-xs shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${isSubmitting ? 'bg-gray-800 cursor-wait' : 'bg-white text-black hover:bg-gray-200'}`}
+                        className={`flex h-14 flex-1 items-center justify-center gap-3 rounded-full text-xs font-bold uppercase tracking-[0.16em] shadow-[0_18px_42px_rgba(0,0,0,0.35)] active:scale-[0.98] transition-all ${isSubmitting ? 'bg-[#1a2130] text-[#768092] cursor-wait' : 'bg-[#f6f1e8] text-[#070b12]'}`}
                     >
                         {isSubmitting ? (
                             <span className="animate-pulse">Bajarilmoqda...</span>

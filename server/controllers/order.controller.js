@@ -2,13 +2,14 @@ import Order from '../models/order.model.js'
 import Product from '../models/product.model.js'
 import User from '../models/user.model.js'
 import GiftCard from '../models/giftCard.model.js'
+import Look from '../models/look.model.js'
 import { sendOrderToTelegram } from '../services/telegram.service.js'
 import pointsService from '../services/points.service.js'
 import logger from '../utils/logger.js'
 
 export const createOrder = async (req, res) => {
   try {
-    const { customer, items, totals, paymentMethod, userId } = req.body
+    const { customer, items, totals, paymentMethod, userId, lookItems, lookDiscounts } = req.body
 
     if (!customer || !items || items.length === 0) {
       return res.status(400).json({
@@ -30,12 +31,60 @@ export const createOrder = async (req, res) => {
       total: 0
     }
 
+    // Process look discounts
+    let processedLookDiscounts = []
+    let totalLookDiscount = 0
+
+    if (lookItems && lookItems.length > 0) {
+      for (const lookItem of lookItems) {
+        try {
+          const look = await Look.findById(lookItem.lookId).populate('products')
+          if (look && look.hasActiveDiscount) {
+            const originalPrice = lookItem.originalPrice || look.originalPrice || 0
+            let discountAmount = 0
+
+            if (look.discountType === 'percentage') {
+              discountAmount = originalPrice * (look.discountValue / 100)
+            } else if (look.discountType === 'fixed') {
+              discountAmount = look.discountValue
+            }
+
+            processedLookDiscounts.push({
+              lookId: look._id,
+              lookTitle: look.title,
+              originalPrice,
+              discountAmount
+            })
+
+            totalLookDiscount += discountAmount
+          }
+        } catch (err) {
+          logger.error(`Error processing look ${lookItem.lookId}:`, err)
+        }
+      }
+    }
+
+    // Also accept pre-calculated lookDiscounts from frontend
+    if (lookDiscounts && lookDiscounts.length > 0 && processedLookDiscounts.length === 0) {
+      processedLookDiscounts = lookDiscounts
+      totalLookDiscount = lookDiscounts.reduce((sum, ld) => sum + (ld.discountAmount || 0), 0)
+    }
+
+    // Add look discount to totals
+    if (totalLookDiscount > 0) {
+      orderTotals.discountAmount = (orderTotals.discountAmount || 0) + totalLookDiscount
+      orderTotals.total = orderTotals.subtotal - orderTotals.discountAmount + (orderTotals.deliveryFee || 0)
+    }
+
     const newOrder = new Order({
       customer,
       items,
       totals: orderTotals,
       paymentMethod: paymentMethod || 'cash',
-      user: userId || null
+      user: userId || null,
+      statusHistory: [{ status: 'Kutilmoqda' }],
+      lookDiscounts: processedLookDiscounts,
+      totalLookDiscount
     })
 
     await newOrder.save()
@@ -58,12 +107,17 @@ export const createOrder = async (req, res) => {
       await User.findByIdAndUpdate(userId, { cart: [] })
     }
 
-    const telegramResult = await sendOrderToTelegram({
+    // Build telegram data with look info
+    const telegramData = {
       customer,
       items,
       totals: orderTotals,
-      orderId: newOrder._id
-    })
+      orderId: newOrder._id,
+      lookDiscounts: processedLookDiscounts,
+      totalLookDiscount
+    }
+
+    const telegramResult = await sendOrderToTelegram(telegramData)
 
     if (telegramResult.success) {
       res.status(201).json({
@@ -176,6 +230,12 @@ export const updateOrderStatus = async (req, res) => {
 
     const previousStatus = order.status
     order.status = status
+    order.statusHistory = order.statusHistory || []
+    order.statusHistory.push({
+      status,
+      changedAt: new Date(),
+      changedBy: req.user?._id || null
+    })
     await order.save()
 
     // Award points when order is delivered
@@ -252,6 +312,17 @@ export const getOrderById = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Buyurtma topilmadi'
+      })
+    }
+
+    const isStaff = req.user?.role === 'admin' || req.user?.role === 'manager'
+    const orderUserId = order.user?._id || order.user
+    const isOwner = orderUserId && orderUserId.toString() === req.user?._id?.toString()
+
+    if (!isStaff && !isOwner) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bu buyurtmani ko\'rishga ruxsat yo\'q'
       })
     }
 

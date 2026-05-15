@@ -37,6 +37,46 @@
   <meta name="country" content="UZ" />
   <meta name="language" content="uz" />
 
+  <script>
+    // Suppress ResizeObserver loop errors which are benign but trigger overlays in dev mode
+    (function() {
+      const isResizeObserverError = (err) => {
+        if (!err) return false;
+        const msg = typeof err === 'string' ? err : (err.message || (err.reason && err.reason.message) || '');
+        return (
+          msg.includes('ResizeObserver') && 
+          (msg.includes('loop') || msg.includes('limit') || msg.includes('undelivered notifications'))
+        );
+      };
+
+      const originalError = console.error;
+      console.error = function(...args) {
+        if (args[0] && isResizeObserverError(args[0])) return;
+        originalError.apply(console, args);
+      };
+
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && isResizeObserverError(args[0])) return;
+        originalWarn.apply(console, args);
+      };
+
+      window.addEventListener('error', function(e) {
+        if (isResizeObserverError(e.message) || isResizeObserverError(e.error)) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+
+      window.addEventListener('unhandledrejection', function(e) {
+        if (isResizeObserverError(e.reason)) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+    })();
+  </script>
+
   <!-- Google Tag Manager -->
   <script>(function (w, d, s, l, i) {
       w[l] = w[l] || []; w[l].push({

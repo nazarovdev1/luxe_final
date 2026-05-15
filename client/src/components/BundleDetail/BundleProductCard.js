@@ -24,7 +24,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
   })();
 
   const colors = Array.isArray(product.colors) ? product.colors : [];
-  const sizes = Array.isArray(product.sizes) ? product.sizes : SIZES;
+  const sizes = (Array.isArray(product.sizes) && product.sizes.length > 0) ? product.sizes : SIZES;
   const selectedColor = selectedVariant?.color || null;
   const selectedSize = selectedVariant?.size || null;
 

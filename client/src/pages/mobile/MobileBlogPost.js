@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Eye, ArrowLeft, Share2, ChevronRight, BookOpen, Tag, Send, Instagram } from 'lucide-react';
 import axios from 'axios';
+import { sanitizeHtml } from '../../utils/sanitizeHtml';
 
 const MobileBlogPost = () => {
   const { slug } = useParams();
@@ -191,7 +192,7 @@ const MobileBlogPost = () => {
             prose-code:text-[#d6b47c] prose-code:bg-[#11131e] prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
             prose-pre:bg-[#11131e] prose-pre:border prose-pre:border-white/5 prose-pre:rounded-xl
           "
-          dangerouslySetInnerHTML={{ __html: blog.content?.uz || blog.content?.en || blog.content?.ru || '' }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(blog.content?.uz || blog.content?.en || blog.content?.ru || '') }}
         />
 
         {/* Image Gallery */}

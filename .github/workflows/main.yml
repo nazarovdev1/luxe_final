@@ -1,27 +1,47 @@
-name: Luxe CI/CD
+name: Luxe CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-and-test:
+  build-and-check:
+    name: Build and check
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '22'
-        
-    - name: Install Frontend Dependencies
-      run: cd client && npm install
-      
-    - name: Build Frontend
-      run: cd client && npm run build
-      
-    - name: Install Backend Dependencies
-      run: cd server && npm install
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: client
+        run: npm ci --legacy-peer-deps
+
+      - name: Build frontend
+        working-directory: client
+        env:
+          CI: false
+        run: npm run build
+
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Check backend JavaScript syntax
+        shell: bash
+        run: |
+          find server -name '*.js' \
+            -not -path '*/node_modules/*' \
+            -not -path '*/public/*' \
+            -print0 | xargs -0 -n 1 node --check

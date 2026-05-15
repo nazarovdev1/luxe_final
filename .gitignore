@@ -8,6 +8,8 @@ node_modules/
 
 # Production
 /build
+client/build/
+server/public/
 /dist
 /out
 .next/
@@ -56,6 +58,10 @@ api_verification.js
 smoke_test.js
 test-server.js
 test_db.js
+server/create_bundle.js
+server/create_bundle.cjs
+server/test_find.js
+server/test_telegram.js
 check_*.js
 debug_*.js
 de_*.js
@@ -66,3 +72,7 @@ product_check_result.txt
 client/server.log
 server/server.log
 server/debug.log
+
+# Generated caches
+client/node_modules/.cache/
+node_modules/.cache/

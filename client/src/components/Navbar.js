@@ -9,13 +9,16 @@ import {
   LogOut,
   Menu,
   Package,
+  ReceiptText,
   Search,
   ShoppingCart,
+  User,
   X,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { eventNavItems, resolveNavLabel } from '../config/navigation';
 
 const isMacOS = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
 
@@ -44,16 +47,10 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
     { name: t('nav.looks'), link: '/lookbooks' },
     {
       name: t('nav.events'),
-      dropdown: [
-        { name: t('nav.reels'), link: '/reels' },
-        { name: t('nav.community'), link: '/style-feed' },
-        { name: t('nav.challenges'), link: '/challenges' },
-        { name: t('nav.live'), link: '/live' },
-        { name: t('nav.vipClub'), link: '/vip-club' },
-        { name: t('nav.ecoImpact'), link: '/eco-impact' },
-        { name: t('nav.giftCard'), link: '/gift-cards' },
-        { name: t('nav.blog'), link: '/blog' },
-      ]
+      dropdown: eventNavItems.map((item) => ({
+        name: resolveNavLabel(item, t),
+        link: item.path,
+      }))
     },
     { name: t('nav.about'), sectionId: 'about' },
   ];
@@ -101,6 +98,11 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
     if (item.sectionId === 'hero') return location.pathname === '/';
     return false;
   };
+
+  const accountItems = [
+    { label: t('nav.profile'), link: '/profile', icon: User },
+    { label: t('nav.myOrders'), link: '/orders', icon: Package },
+  ];
 
   useEffect(() => {
     closeAllMenus();
@@ -252,40 +254,65 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[#8ea6d6]/25 bg-[#111725]/95 backdrop-blur-xl p-2 shadow-2xl">
-                      <div className="px-3 py-2 border-b border-[#8ea6d6]/20">
-                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">{t('nav.account')}</p>
-                        <p className="mt-1 text-sm font-medium text-neutral-200 truncate">{t('nav.hello')}, {user?.username}</p>
+                    <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-[24px] bg-[#101624]/95 p-2.5 shadow-[0_24px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+                      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d6b47c]/60 to-transparent" />
+                      <div className="rounded-[20px] border border-white/5 bg-white/[0.03] p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#d6b47c]/25 bg-[#d6b47c]/10 text-base font-bold text-white shadow-inner">
+                            {user?.username?.[0]?.toUpperCase() || 'U'}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] uppercase tracking-[0.24em] text-[#8b93a7]">{t('nav.account')}</p>
+                            <p className="mt-1 truncate text-sm font-semibold text-white">{t('nav.hello')}, {user?.username}</p>
+                            <p className="mt-0.5 truncate text-xs text-neutral-500">{user?.phone?.startsWith('tg_') ? 'Telegram' : user?.phone}</p>
+                          </div>
+                        </div>
                       </div>
 
                       {isAdmin && (
                         <Link
                           to="/admin"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
+                          className={`mt-2 flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition-colors ${location.pathname === '/admin' ? 'bg-[#d6b47c]/10 text-[#d6b47c]' : 'text-neutral-300 hover:bg-white/[0.06] hover:text-white'}`}
                         >
                           <LayoutDashboard className="h-4 w-4" />
                           {t('nav.adminPanel')}
                         </Link>
                       )}
 
-                      <Link
-                        to="/profile"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
-                      >
-                        <Package className="h-4 w-4" />
-                        {t('nav.myOrders')}
-                      </Link>
+                      <div className="mt-2 space-y-1">
+                        {accountItems.map(item => {
+                          const Icon = item.icon;
+                          const active = location.pathname === item.link;
+                          return (
+                            <Link
+                              key={item.link}
+                              to={item.link}
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className={`group flex items-center justify-between rounded-2xl px-3 py-3 text-sm transition-colors ${active ? 'bg-[#d6b47c]/10 text-[#d6b47c]' : 'text-neutral-300 hover:bg-white/[0.06] hover:text-white'}`}
+                            >
+                              <span className="flex items-center gap-3">
+                                <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${active ? 'bg-[#d6b47c]/15' : 'bg-white/[0.04] group-hover:bg-white/[0.08]'}`}>
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                                {item.label}
+                              </span>
+                              <ChevronRight className="h-4 w-4 text-neutral-600 group-hover:text-neutral-300" />
+                            </Link>
+                          );
+                        })}
+                      </div>
 
                       <button
                         onClick={() => {
                           logout();
                           setIsUserMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-neutral-300 hover:bg-white/[0.06] hover:text-white transition-colors"
+                        className="mt-1 w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-neutral-300 hover:bg-red-500/10 hover:text-red-300 transition-colors"
                       >
-                        <LogOut className="h-4 w-4" />
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04]">
+                          <LogOut className="h-4 w-4" />
+                        </span>
                         {t('nav.logout')}
                       </button>
                     </div>
@@ -373,7 +400,16 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
                         className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        {t('nav.orders')}
+                        <User className="mr-2 h-4 w-4" />
+                        {t('nav.profile')}
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="flex items-center rounded-xl px-3 py-2.5 text-sm text-neutral-200 hover:bg-white/[0.06] transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <ReceiptText className="mr-2 h-4 w-4" />
+                        {t('nav.myOrders')}
                       </Link>
                       <button
                         onClick={() => {

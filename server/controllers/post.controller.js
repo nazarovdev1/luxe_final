@@ -2,6 +2,7 @@ import Post from '../models/post.model.js'
 import User from '../models/user.model.js'
 import pointsService from '../services/points.service.js'
 import logger from '../utils/logger.js'
+import mongoose from 'mongoose'
 
 // @desc    Create a post
 // @route   POST /api/posts
@@ -14,11 +15,15 @@ export const createPost = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Iltimos rasm yuklang' })
     }
 
+    const validTaggedProducts = Array.isArray(taggedProducts)
+      ? taggedProducts.filter((productId) => mongoose.Types.ObjectId.isValid(productId))
+      : []
+
     const post = new Post({
       user: req.user._id,
       images,
       caption,
-      taggedProducts
+      taggedProducts: validTaggedProducts
     })
 
     const createdPost = await post.save()
@@ -49,16 +54,28 @@ export const getPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 10
     const skip = (page - 1) * limit
+    const query = { isActive: true }
 
-    const posts = await Post.find({ isActive: true })
-      .populate('user', 'username profileImage')
+    if (req.query.product) {
+      if (!mongoose.Types.ObjectId.isValid(req.query.product)) {
+        return res.json({
+          success: true,
+          data: [],
+          pagination: { page, limit, total: 0, pages: 0 }
+        })
+      }
+      query.taggedProducts = new mongoose.Types.ObjectId(req.query.product)
+    }
+
+    const posts = await Post.find(query)
+      .populate('user', 'username profileImage photoUrl')
       .populate('taggedProducts', 'name price image images')
       .populate('commentCount')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
 
-    const total = await Post.countDocuments({ isActive: true })
+    const total = await Post.countDocuments(query)
 
     res.json({
       success: true,
@@ -113,8 +130,8 @@ export const deletePost = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Post topilmadi' })
     }
 
-    // Only owner or admin can delete
-    if (post.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    const isStaff = req.user?.role === 'admin' || req.user?.role === 'manager' || req.user?.isAdmin
+    if (post.user.toString() !== req.user._id.toString() && !isStaff) {
       return res.status(403).json({ success: false, message: 'Ruxsat etilmagan' })
     }
 

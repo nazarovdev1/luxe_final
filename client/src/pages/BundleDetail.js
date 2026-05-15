@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -81,8 +81,41 @@ export default function BundleDetail() {
     }));
   }, []);
 
+  const selectionIssues = useMemo(() => {
+    if (!products.length) return [];
+
+    const issues = [];
+    products.forEach((p) => {
+      const selected = selectedVariants?.[p.id] || {};
+
+      if (Array.isArray(p.colors) && p.colors.length > 0 && !selected.color) {
+        issues.push({ productName: p.name, missing: 'color' });
+      }
+
+      // BundleProductCard always renders sizes (falls back to default list),
+      // so require size selection for every product in the bundle.
+      if (!selected.size) {
+        issues.push({ productName: p.name, missing: 'size' });
+      }
+    });
+
+    return issues;
+  }, [products, selectedVariants]);
+
+  const canAddToCart = selectionIssues.length === 0;
+
   const handleAddToCart = useCallback(async () => {
     if (!bundle) return;
+
+    if (!canAddToCart) {
+      const first = selectionIssues[0];
+      const msg = first?.missing === 'color'
+        ? `Iltimos, \"${first.productName}\" uchun rang tanlang.`
+        : `Iltimos, \"${first.productName}\" uchun o'lcham tanlang.`;
+      toast.error(msg);
+      return;
+    }
+
     setIsAdding(true);
     try {
       const lookForCart = {
@@ -97,7 +130,7 @@ export default function BundleDetail() {
     } finally {
       setIsAdding(false);
     }
-  }, [bundle, products, selectedVariants, addLookToCart]);
+  }, [bundle, products, selectedVariants, addLookToCart, canAddToCart, selectionIssues]);
 
   // ── Loading ────────────────────────────────────────────
   if (loading) {
@@ -189,7 +222,7 @@ export default function BundleDetail() {
             </div>
             <div className="flex items-center gap-3 text-sm text-[#9aa3b2]">
               <span className="w-2 h-2 rounded-full bg-[#d6b47c]" />
-              Rang yoki o'lcham tanlash ixtiyoriy
+              Rang va o'lcham tanlash majburiy
             </div>
           </div>
 
@@ -242,7 +275,7 @@ export default function BundleDetail() {
 
             <button
               onClick={handleAddToCart}
-              disabled={isAdding}
+              disabled={isAdding || !canAddToCart}
               className="flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#d6b47c] to-[#c4985a] text-[#0a0a0b] font-bold text-base transition-all hover:shadow-2xl hover:shadow-[#d6b47c]/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
             >
               {isAdding ? (
@@ -270,6 +303,7 @@ export default function BundleDetail() {
         products={products}
         isAdding={isAdding}
         onAddToCart={handleAddToCart}
+        canAddToCart={canAddToCart}
         heroRef={heroRef}
       />
     </div>

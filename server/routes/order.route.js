@@ -10,9 +10,8 @@ router.post('/', validate('order'), createOrder)
 router.get('/my-orders', protect, getUserOrders)
 router.get('/all', protect, authorize('admin', 'manager'), getAllOrders)
 router.get('/user/:phone', protect, getOrdersByPhone)
-router.get('/:id', getOrderById)
 
-router.get('/test-telegram', async (req, res) => {
+router.get('/test-telegram', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
     const { sendOrderToTelegram } = await import('../services/telegram.service.js')
 
@@ -37,6 +36,7 @@ router.get('/test-telegram', async (req, res) => {
   }
 })
 
+router.get('/:id', protect, getOrderById)
 router.patch('/:id/status', protect, authorize('admin', 'manager'), updateOrderStatus)
 router.delete('/:id', protect, authorize('admin', 'manager'), deleteOrder)
 

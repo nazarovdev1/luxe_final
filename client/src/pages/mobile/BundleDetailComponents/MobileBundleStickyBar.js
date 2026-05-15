@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShoppingBag, Loader2 } from 'lucide-react';
 
-const MobileBundleStickyBar = ({ discountedPrice, originalPrice, savings, isAdding, onAdd }) => {
+const MobileBundleStickyBar = ({ discountedPrice, originalPrice, savings, isAdding, onAdd, canAdd = true }) => {
     const formatPrice = (price) => {
         return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
@@ -25,11 +25,13 @@ const MobileBundleStickyBar = ({ discountedPrice, originalPrice, savings, isAddi
                 {/* Add to Cart Button */}
                 <button
                     onClick={onAdd}
-                    disabled={isAdding}
+                    disabled={isAdding || !canAdd}
                     className="relative group overflow-hidden flex items-center gap-3 px-8 py-4 rounded-[1.8rem] bg-[#d6b47c] text-[#060a14] font-bold text-sm transition-all active:scale-95 disabled:opacity-50"
                 >
                     {isAdding ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : !canAdd ? (
+                        <span>Variant tanlang</span>
                     ) : (
                         <>
                             <ShoppingBag className="w-5 h-5" />

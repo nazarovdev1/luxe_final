@@ -18,6 +18,7 @@ const RegisterForm = React.lazy(() => import('./components/RegisterForm'));
 const Checkout = React.lazy(() => import('./pages/Checkout'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const Profile = React.lazy(() => import('./pages/Profile'));
+const Orders = React.lazy(() => import('./pages/Orders'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
@@ -180,6 +181,7 @@ function MainContent() {
             <Route path="/bundle/:id" element={<React.Suspense fallback={<Loading />}><BundleDetail /></React.Suspense>} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/orders" element={<Orders />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/lookbooks" element={<Lookbooks />} />

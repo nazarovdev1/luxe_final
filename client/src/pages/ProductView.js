@@ -303,7 +303,7 @@ export default function ProductView() {
               Sizning uslubingiz bizni ilhomlantiradi. O'z suratingizni ulashing va hamjamiyatimizning bir qismiga aylaning.
             </p>
           </div>
-          <CustomerPhotoReviews productName={product.name} />
+          <CustomerPhotoReviews productId={product._id || product.id || id} productName={product.name} product={product} />
         </section>
 
         {/* ── Related Products + AI Visual Similar ──────── */}

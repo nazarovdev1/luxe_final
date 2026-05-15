@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, ShoppingBag, Search, ShoppingCart, User, Gem, Play } from 'lucide-react';
+import { Home, ShoppingBag, ShoppingCart, User, Compass } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -14,7 +14,7 @@ const MobileNavbar = ({ onVisualSearch }) => {
     const navItems = [
         { icon: Home, label: t('nav.home'), path: '/mobile' },
         { icon: ShoppingBag, label: t('nav.shop'), path: '/mobile/products' },
-        { icon: Play, label: 'Reels', path: '/mobile/reels' },
+        { icon: Compass, label: 'Explore', path: '/mobile/events' },
         { icon: ShoppingCart, label: t('nav.cart'), path: '/mobile/cart', badge: totalItems },
         { icon: User, label: t('nav.profile'), path: isAuthenticated ? '/mobile/profile' : '/mobile/login' },
     ];

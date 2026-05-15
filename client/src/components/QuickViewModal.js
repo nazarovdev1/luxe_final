@@ -20,7 +20,7 @@ const getProductImage = (item) => {
   return item.image || '';
 };
 
-const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
+const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPathPrefix = '' }) => {
   const { addToCart } = useCart();
   const { t } = useLanguage();
   const [selectedColor, setSelectedColor] = useState('');
@@ -168,7 +168,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
             </span>
 
             {/* Name */}
-            <Link to={`/product/${product.id}`} className="group">
+            <Link to={`${productPathPrefix}/product/${product.id}`} className="group">
               <h2 className="text-xl sm:text-2xl font-semibold text-[#f4f1eb] group-hover:text-[#d6b47c] transition-colors leading-tight">
                 {product.name}
               </h2>
@@ -322,7 +322,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen }) => {
                 {isAdding ? t('common.loading') : t('common.addToCart')}
               </button>
               <Link
-                to={`/product/${product.id}`}
+                to={`${productPathPrefix}/product/${product.id}`}
                 onClick={onClose}
                 className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-[#f4f1eb] hover:bg-white/10 transition-all"
               >

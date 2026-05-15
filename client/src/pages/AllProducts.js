@@ -372,7 +372,8 @@ const AllProducts = () => {
       />
 
       {compareList.length > 0 && !showComparison && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 glass-premium px-6 py-4 rounded-2xl shadow-2xl animate-slide-up w-[90%] max-w-2xl">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 bg-[#141416] border border-white/10 px-8 py-5 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-slide-up w-[92%] max-w-2xl">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c9a96e]/30 to-transparent" />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex -space-x-3">

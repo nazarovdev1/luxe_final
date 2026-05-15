@@ -15,6 +15,7 @@ const BundleStickyBar = ({
   isAdding,
   onAddToCart,
   heroRef,
+  canAddToCart = true,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isScrolledDown, setIsScrolledDown] = useState(false);
@@ -85,7 +86,7 @@ const BundleStickyBar = ({
             {/* CTA Button */}
             <button
               onClick={onAddToCart}
-              disabled={isAdding}
+              disabled={isAdding || !canAddToCart}
               className="flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-[#d6b47c] to-[#c4985a] text-[#0a0a0b] font-bold text-sm transition-all hover:shadow-xl hover:shadow-[#d6b47c]/25 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none shrink-0"
             >
               {isAdding ? (
@@ -93,6 +94,8 @@ const BundleStickyBar = ({
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span className="hidden sm:block">Qo'shilmoqda...</span>
                 </>
+              ) : !canAddToCart ? (
+                <span>Rang/o'lcham tanlang</span>
               ) : (
                 <>
                   <ShoppingBag className="w-4 h-4" />

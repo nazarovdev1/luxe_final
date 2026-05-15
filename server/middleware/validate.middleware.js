@@ -73,18 +73,49 @@ export const schemas = {
       quantity: Joi.number().integer().min(1).required(),
       price: Joi.number().min(0).required(),
       selectedColor: Joi.string().allow('', null),
-      selectedSize: Joi.string().allow('', null)
+      selectedSize: Joi.string().allow('', null),
+
+      // Optional: look/bundle metadata (supported by Order model + telegram formatting)
+      lookId: Joi.string().pattern(objectIdPattern).allow(null),
+      lookTitle: Joi.string().max(200).allow('', null),
+      lookDiscount: Joi.number().min(0).allow(null)
     })).min(1).required(),
     totals: Joi.object({
       subtotal: Joi.number().min(0).required(),
       deliveryFee: Joi.number().min(0).required(),
+
+      // Optional: extra checkout metadata (frontend may include these)
+      giftWrap: Joi.object({
+        type: Joi.string().max(50).allow('', null),
+        cost: Joi.number().min(0).allow(null),
+        message: Joi.string().max(500).allow('', null)
+      }).allow(null),
+      lookDiscountAmount: Joi.number().min(0).allow(null),
+
       promoCode: Joi.string().allow('', null),
       discountAmount: Joi.number().min(0).default(0),
       total: Joi.number().min(0).required()
-    }).required(),
+    }).unknown(true).required(),
     paymentMethod: Joi.string().valid('cash', 'click', 'payme').default('cash'),
-    userId: Joi.string().pattern(objectIdPattern).allow(null)
-  }),
+    userId: Joi.string().pattern(objectIdPattern).allow(null),
+
+    // Optional: look/bundle discount tracking (supported by Order controller/model)
+    lookDiscounts: Joi.array().items(Joi.object({
+      lookId: Joi.string().pattern(objectIdPattern).required(),
+      lookTitle: Joi.string().max(200).required(),
+      originalPrice: Joi.number().min(0).required(),
+      discountAmount: Joi.number().min(0).required()
+    }).unknown(true)).allow(null),
+    totalLookDiscount: Joi.number().min(0).allow(null, 0),
+    lookItems: Joi.array().items(Joi.any()).allow(null),
+
+    // Optional: scheduled delivery metadata
+    scheduledDelivery: Joi.object({
+      date: Joi.string().max(50).required(),
+      timeSlot: Joi.string().max(50).required(),
+      isExpress: Joi.boolean().default(false)
+    }).allow(null)
+  }).unknown(true),
 
   promo: Joi.object({
     code: Joi.string().uppercase().min(4).max(20).required(),
@@ -129,7 +160,10 @@ export const validate = (schemaName) => {
       return res.status(500).json({ success: false, message: 'Validation schema not found' })
     }
 
-    const { error, value } = schema.validate(req.body, { abortEarly: false })
+    const { error, value } = schema.validate(req.body, { 
+      abortEarly: false,
+      allowUnknown: true // Allow unknown keys globally to prevent 'not allowed' errors
+    })
     
     if (error) {
       const errors = error.details.map(detail => ({

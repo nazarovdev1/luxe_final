@@ -76,7 +76,7 @@ class PointsService {
       if (decreaseTotal) {
         points.totalEarned = Math.max(0, points.totalEarned - amount);
         // Level might drop if totalEarned decreases due to cancellation/correction
-        const newLevel = this.calculateLevel(points.totalEarned);
+        const newLevel = this.calculateVIPLevel(points.totalEarned);
         points.level = newLevel;
       }
 

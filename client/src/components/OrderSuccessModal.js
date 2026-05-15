@@ -39,7 +39,7 @@ const OrderSuccessModal = ({ isOpen, onClose, orderId, isMobile = false }) => {
                         <button
                             onClick={() => {
                                 onClose();
-                                navigate(isMobile ? '/mobile/profile' : '/profile');
+                                navigate(isMobile ? '/mobile/orders' : '/orders');
                             }}
                             className="w-full py-4 bg-white text-black text-xs font-black tracking-[0.2em] rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
                         >

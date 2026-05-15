@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, Share2 } from 'lucide-react';
 import axios from 'axios';
@@ -71,8 +71,39 @@ const MobileBundleDetail = () => {
         }));
     }, []);
 
+    const selectionIssues = useMemo(() => {
+        if (!products.length) return [];
+
+        const issues = [];
+        products.forEach((p) => {
+            const selected = selectedVariants?.[p.id] || {};
+
+            if (Array.isArray(p.colors) && p.colors.length > 0 && !selected.color) {
+                issues.push({ productName: p.name, missing: 'color' });
+            }
+
+            if (Array.isArray(p.sizes) && p.sizes.length > 0 && !selected.size) {
+                issues.push({ productName: p.name, missing: 'size' });
+            }
+        });
+
+        return issues;
+    }, [products, selectedVariants]);
+
+    const canAddToCart = selectionIssues.length === 0;
+
     const handleAddToCart = async () => {
         if (!bundle) return;
+
+        if (!canAddToCart) {
+            const first = selectionIssues[0];
+            const msg = first?.missing === 'color'
+                ? `Iltimos, \"${first.productName}\" uchun rang tanlang.`
+                : `Iltimos, \"${first.productName}\" uchun o'lcham tanlang.`;
+            toast.error(msg);
+            return;
+        }
+
         setIsAdding(true);
         try {
             const lookForCart = {
@@ -195,6 +226,7 @@ const MobileBundleDetail = () => {
                 savings={savings}
                 isAdding={isAdding}
                 onAdd={handleAddToCart}
+                canAdd={canAddToCart}
             />
         </div>
     );

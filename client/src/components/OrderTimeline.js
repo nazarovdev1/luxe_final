@@ -14,6 +14,8 @@ const OrderTimeline = ({ order }) => {
 
   const currentStatusIndex = ORDER_STATUSES.findIndex((s) => s.key === order.status);
   const isCancelled = order.status === 'Bekor qilindi';
+  const statusHistory = Array.isArray(order.statusHistory) ? order.statusHistory : [];
+  const getStatusDate = (status) => statusHistory.find((entry) => entry.status === status)?.changedAt;
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -77,10 +79,14 @@ const OrderTimeline = ({ order }) => {
                         {status.label}
                       </p>
                       {isCurrent && (
-                        <p className="text-[11px] text-[#d6b47c] mt-0.5">{t('orderTimeline.currentStatus')}</p>
+                        <p className="text-[11px] text-[#d6b47c] mt-0.5">
+                          {t('orderTimeline.currentStatus')}{getStatusDate(status.key) ? ` - ${formatDate(getStatusDate(status.key))}` : ''}
+                        </p>
                       )}
                       {isActive && index < currentStatusIndex && (
-                        <p className="text-[11px] text-[#9aa3b2] mt-0.5">{t('orderTimeline.completed')}</p>
+                        <p className="text-[11px] text-[#9aa3b2] mt-0.5">
+                          {getStatusDate(status.key) ? formatDate(getStatusDate(status.key)) : t('orderTimeline.completed')}
+                        </p>
                       )}
                     </div>
                   </div>

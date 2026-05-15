@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Crown, Shield, Gem, Star, Truck, Leaf, Radio, Camera, Swords } from 'lucide-react';
+import { ArrowRight, Crown, Shield, Gem, Star, Truck, Leaf, Radio, Camera, Swords, Gift, MessageSquare, Play } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import MobileProductCard from './MobileProductCard';
@@ -8,6 +8,7 @@ import LookDetailModal from '../../components/LookDetailModal';
 import useProductService from '../../server/server';
 import { MobileHero, BrandJourney, Manifesto } from '../../components/mobile/MobileLandingSections';
 import ParticleCanvas from '../../components/ParticleCanvas';
+import { eventNavItems, resolveNavLabel } from '../../config/navigation';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '';
@@ -30,11 +31,23 @@ const uniqueById = (items) => {
   return Array.from(map.values());
 };
 
+const EVENT_ICONS = {
+  Camera,
+  Crown,
+  Gift,
+  Leaf,
+  MessageSquare,
+  Play,
+  Radio,
+  Swords,
+};
+
 const MobileHome = () => {
   const { t } = useLanguage();
   const { products, isLoading } = useProducts();
-  const { getAllLooks } = useProductService();
+  const { getAllLooks, getAllBundles } = useProductService();
   const [looks, setLooks] = useState([]);
+  const [featuredBundle, setFeaturedBundle] = useState(null);
 
   useEffect(() => {
     // Restore scroll position
@@ -49,7 +62,18 @@ const MobileHome = () => {
         setLooks(result.data);
       }
     };
+
+    const fetchBundles = async () => {
+      const result = await getAllBundles();
+      if (result && result.success && result.data && result.data.length > 0) {
+        // Select the newest or first active bundle
+        const activeBundle = result.data.find(b => b.isActive) || result.data[0];
+        setFeaturedBundle(activeBundle);
+      }
+    };
+
     fetchLooks();
+    fetchBundles();
 
     // Save scroll position on unmount
     return () => {
@@ -172,6 +196,31 @@ const MobileHome = () => {
 
         <BrandJourney />
 
+        {/* All Bundles Banner */}
+        {featuredBundle && (
+        <section className="px-4 py-4">
+          <Link to="/mobile/bundles" className="relative block w-full rounded-2xl overflow-hidden border border-[#d6b47c]/30 shadow-[0_0_20px_rgba(214,180,124,0.15)] group">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1a1410] via-[#060a14] to-[#1a1410] z-0" />
+            <div className="relative z-10 p-5 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Gem className="w-4 h-4 text-[#d6b47c]" />
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">Premium To'plamlar</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-1">Barcha to'plamlarni ko'rish</h3>
+                <p className="text-xs text-[#d6b47c]/80">Maxsus chegirmalar va premium to'plamlar faqat siz uchun</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#d6b47c]/20 flex items-center justify-center flex-shrink-0 backdrop-blur-md border border-[#d6b47c]/30 group-active:scale-90 transition-transform">
+                <ArrowRight className="w-5 h-5 text-[#d6b47c]" />
+              </div>
+            </div>
+            {/* Glow effects */}
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#d6b47c]/20 blur-[25px] rounded-full z-0 pointer-events-none" />
+            <div className="absolute bottom-0 left-10 w-32 h-10 bg-[#d6b47c]/10 blur-[20px] rounded-full z-0 pointer-events-none" />
+          </Link>
+        </section>
+        )}
+
         {/* Platform Features */}
         <section className="py-6">
           <div className="px-4 flex items-center justify-between mb-4">
@@ -179,26 +228,22 @@ const MobileHome = () => {
           </div>
           <div className="relative">
             <div className="flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide scroll-smooth">
-              {[
-                { label: 'VIP Club', icon: Crown, color: '#d6b47c', bg: 'rgba(214,180,124,0.1)', to: '/mobile/vip-club', sub: 'Darajangiz' },
-                { label: 'Jonli Efir', icon: Radio, color: '#ef4444', bg: 'rgba(239,68,68,0.1)', to: '/mobile/live', sub: 'Live Commerce' },
-                { label: 'Style Feed', icon: Camera, color: '#c9b8ff', bg: 'rgba(201,184,255,0.1)', to: '/mobile/style-feed', sub: 'Obrazlar' },
-                { label: 'Eco Impact', icon: Leaf, color: '#4ade80', bg: 'rgba(74,222,128,0.1)', to: '/mobile/eco-impact', sub: 'Tabiat' },
-                { label: 'Challenges', icon: Swords, color: '#a8d8ea', bg: 'rgba(168,216,234,0.1)', to: '/mobile/challenges', sub: 'Musobaqalar' },
-              ].map(item => (
+              {eventNavItems.map(item => {
+                const Icon = EVENT_ICONS[item.icon] || Gem;
+                return (
                 <Link
-                  key={item.label}
-                  to={item.to}
+                  key={item.id}
+                  to={item.mobilePath}
                   className="min-w-[115px] rounded-2xl border border-white/5 p-4 flex-shrink-0 flex flex-col items-center text-center gap-2 transition-all active:scale-95"
-                  style={{ background: item.bg, borderColor: `${item.color}20` }}
+                  style={{ background: `${item.color}18`, borderColor: `${item.color}20` }}
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${item.color}20` }}>
-                    <item.icon className="w-5 h-5" style={{ color: item.color }} />
+                    <Icon className="w-5 h-5" style={{ color: item.color }} />
                   </div>
-                  <p className="text-[13px] font-bold text-white">{item.label}</p>
-                  <p className="text-[10px] text-gray-500 font-medium">{item.sub}</p>
+                  <p className="text-[13px] font-bold text-white">{resolveNavLabel(item, t)}</p>
+                  <p className="text-[10px] text-gray-500 font-medium">{item.subtitle}</p>
                 </Link>
-              ))}
+              )})}
               {/* Extra spacing for scroll */}
               <div className="min-w-[1px] h-1 flex-shrink-0" />
             </div>

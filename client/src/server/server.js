@@ -396,7 +396,10 @@ const useProductService = () => {
 	// GET IMAGEKIT AUTH
 	const getImageKitAuth = async () => {
 		try {
-			const response = await fetch(`${API_BASE}/imagekit-auth`);
+			const token = localStorage.getItem('token');
+			const response = await fetch(`${API_BASE}/imagekit-auth`, {
+				headers: token ? { Authorization: `Bearer ${token}` } : {}
+			});
 			const result = await response.json();
 			return result;
 		} catch (error) {

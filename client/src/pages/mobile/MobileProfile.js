@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
@@ -14,8 +15,6 @@ import {
     Info,
     LogOut,
     ChevronRight,
-    Package,
-    Calendar,
     ArrowLeft,
     MessageCircle,
     Mail,
@@ -34,31 +33,29 @@ import {
     Radio,
     Camera,
     Swords,
+    Clock,
+    Play,
 } from 'lucide-react';
 import LoginForm from '../../components/LoginForm';
-
-const sectionShell = 'min-h-screen overflow-x-hidden bg-[#07090f] pb-24 px-4 pt-4';
-
-const getStatusClass = (status) => {
-    switch (status) {
-        case 'Yetkazildi':
-            return 'bg-[#173526] text-[#7ce0a4]';
-        case 'Jarayonda':
-            return 'bg-[#1d3144] text-[#8ac7ff]';
-        case 'Yetkazilmoqda':
-            return 'bg-[#2a3044] text-[#c7ceda]';
-        case 'Bekor qilindi':
-            return 'bg-[#3a2430] text-[#f4afc7]';
-        default:
-            return 'bg-[#2f2d26] text-[#e8cb95] border-none';
-    }
-};
+import MyGiftCards from '../../components/MyGiftCards';
+import { eventNavItems, resolveNavLabel } from '../../config/navigation';
 
 const formatMoney = (value) => {
     if (typeof value === 'string') {
         return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString();
     }
     return (Number(value || 0) || 0).toLocaleString();
+};
+
+const EVENT_ICONS = {
+    Camera,
+    Crown,
+    Gift,
+    Leaf,
+    MessageSquare,
+    Play,
+    Radio,
+    Swords,
 };
 
 const MobileProfile = () => {
@@ -72,8 +69,6 @@ const MobileProfile = () => {
 
     const [activeSection, setActiveSection] = useState(null);
     const [orders, setOrders] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState(null);
 
     const savedProducts = useMemo(
         () => products.filter((product) => favorites.includes(product.id)),
@@ -83,7 +78,6 @@ const MobileProfile = () => {
     const [points, setPoints] = useState(null);
 
     const fetchOrdersAndPoints = async () => {
-        setIsLoading(true);
         const token = localStorage.getItem('token');
         if (token) {
             try {
@@ -99,7 +93,6 @@ const MobileProfile = () => {
                 console.error(err);
             }
         }
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -140,19 +133,24 @@ const MobileProfile = () => {
         return <LoginForm />;
     }
 
+    const platformItems = eventNavItems.map((item) => ({
+        id: item.id,
+        label: resolveNavLabel(item, t),
+        icon: EVENT_ICONS[item.icon] || Gem,
+        subtitle: item.subtitle,
+        isLink: true,
+        linkTo: item.mobilePath,
+        color: item.color,
+    }));
+
     const menuItems = [
-        { id: 'orders', label: t('profile.myOrders'), icon: ShoppingBag, subtitle: t('profile.orderHistory') },
+        { id: 'orders', label: t('profile.myOrders'), icon: ShoppingBag, subtitle: t('profile.orderHistory'), isLink: true, linkTo: '/mobile/orders' },
         { id: 'saved', label: t('profile.saved'), icon: Heart, subtitle: 'Wishlist', count: favorites.length },
-        { id: 'vip', label: 'VIP Club', icon: Crown, subtitle: 'Ball va imtiyozlar', isLink: true, linkTo: '/mobile/vip-club', color: '#d6b47c' },
-        { id: 'eco', label: 'Eco Impact', icon: Leaf, subtitle: 'Tabiatga hissam', isLink: true, linkTo: '/mobile/eco-impact', color: '#4ade80' },
-        { id: 'live', label: 'Jonli Efirlar', icon: Radio, subtitle: 'Live Commerce', isLink: true, linkTo: '/mobile/live', color: '#ef4444' },
-        { id: 'style-feed', label: 'Style Feed', icon: Camera, subtitle: 'Obraz galereyasi', isLink: true, linkTo: '/mobile/style-feed', color: '#d6b47c' },
-        { id: 'challenges', label: 'Challenges', icon: Swords, subtitle: 'Musobaqalar', isLink: true, linkTo: '/mobile/challenges', color: '#c9b8ff' },
+        ...platformItems,
         { id: 'notifications', label: 'Xabarnomalar', icon: Bell, subtitle: 'Push status', isNotification: true },
         { id: 'contact', label: "Biz bilan bog'lanish", icon: Phone, subtitle: 'Support markazi' },
         { id: 'faq', label: "Ko'p beriladigan savollar", icon: HelpCircle, subtitle: 'Tez javoblar' },
-        { id: 'gift-cards', label: "Sovg'a kartalari", icon: Gift, subtitle: 'Mening kartalarim', color: '#fb923c' },
-        { id: 'blog', label: 'Fashion Blog', icon: MessageSquare, subtitle: 'Trendlar va stil', isLink: true, linkTo: '/mobile/blog', color: '#f472b6' },
+        { id: 'my-gift-cards', label: "Mening sovg'a kartalarim", icon: Gift, subtitle: 'Balans va transfer' },
         { id: 'about', label: 'Biz haqimizda', icon: Info, subtitle: 'Brand hikoyasi' },
         { id: 'privacy', label: 'Maxfiylik siyosati', icon: Shield, subtitle: 'Shaxsiy ma\'lumotlar', isLink: true, linkTo: '/mobile/privacy-policy' },
         { id: 'terms', label: 'Foydalanish shartlari', icon: FileText, subtitle: 'Qoidalar', isLink: true, linkTo: '/mobile/terms' },
@@ -301,194 +299,6 @@ const MobileProfile = () => {
         );
     }
 
-    if (activeSection === 'orders') {
-        return (
-            <div className={sectionShell}>
-                {/* Order Detail Modal */}
-                {selectedOrder && (
-                    <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col animate-in fade-in zoom-in duration-300">
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-                            <button onClick={() => setSelectedOrder(null)} className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center active:scale-90 transition-transform">
-                                <ArrowLeft className="w-5 h-5 text-gray-300" />
-                            </button>
-                            <div className="text-center">
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black">{t('profile.orderDetails')}</p>
-                                <p className="text-sm font-bold text-[#d6b47c]">#{selectedOrder._id.slice(-6).toUpperCase()}</p>
-                            </div>
-                            <div className="w-10" />
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6">
-                            <div className="flex items-center justify-between mb-8">
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">Status</p>
-                                    <div className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider inline-block ${getStatusClass(selectedOrder.status)}`}>
-                                        {selectedOrder.status}
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">Sana</p>
-                                    <p className="text-sm font-bold text-white">{new Date(selectedOrder.createdAt).toLocaleDateString('uz-UZ')}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 mb-10">
-                                <p className="text-[10px] uppercase tracking-widest text-[#d6b47c] font-black mb-4">Mahsulotlar</p>
-                                {selectedOrder.items.map((item, idx) => (
-                                    <div 
-                                        key={idx} 
-                                        onClick={() => { setSelectedOrder(null); navigate(`/mobile/product/${item.product}`); }}
-                                        className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-3xl p-3 active:scale-[0.98] transition-all"
-                                    >
-                                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white/5 shrink-0">
-                                            <img src={item.image} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1 flex flex-col justify-center">
-                                            <p className="text-sm font-bold text-white mb-1">{item.name}</p>
-                                            <div className="flex items-center gap-3">
-                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{item.quantity} dona</p>
-                                                {item.size && <p className="text-[10px] text-[#d6b47c] font-black uppercase tracking-widest">Size: {item.size}</p>}
-                                            </div>
-                                            <p className="text-sm font-black text-white mt-1">{formatMoney(item.price)} UZS</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-6 space-y-4">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Mahsulotlar summasi</span>
-                                    <span className="text-white font-bold">{formatMoney(selectedOrder.totals?.subtotal)} UZS</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">{t('checkoutPage.delivery')}</span>
-                                    <span className="text-[#4ade80] font-bold">{t('checkoutPage.free')}</span>
-                                </div>
-                                <div className="h-px bg-white/5" />
-                                <div className="flex justify-between">
-                                    <span className="text-sm font-black uppercase tracking-widest text-[#d6b47c]">{t('common.total')}</span>
-                                    <span className="text-xl font-black text-white">{formatMoney(selectedOrder.totals?.total)} UZS</span>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 space-y-4">
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">{t('checkoutPage.step2')}</p>
-                                    <p className="text-sm text-gray-300 italic leading-relaxed">"{selectedOrder.shippingAddress || 'Manzil ko\'rsatilmagan'}"</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">{t('checkoutPage.phone')}</p>
-                                    <p className="text-sm text-gray-300">{selectedOrder.phoneNumber || user?.phone || 'Mavjud emas'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#d6b47c]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-                
-                <BackButton />
-                
-                <div className="mt-6 mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/5 text-[#d6b47c] mb-4 backdrop-blur-md">
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Xaridlar Tarixi</span>
-                    </div>
-                    <h1 className="text-4xl font-brilliant text-white leading-none">
-                        {t('profile.myOrders')}
-                    </h1>
-                </div>
-
-                {isLoading ? (
-                    <div className="space-y-4">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="h-32 rounded-[32px] bg-white/[0.03] animate-pulse border border-white/5" />
-                        ))}
-                    </div>
-                ) : orders.length === 0 ? (
-                    <div className="text-center py-24 px-8 mt-10">
-                        <div className="w-20 h-20 bg-white/[0.02] border border-white/5 rounded-[32px] flex items-center justify-center mx-auto mb-6">
-                            <ShoppingBag className="w-10 h-10 text-gray-700" />
-                        </div>
-                        <h3 className="text-xl font-brilliant text-gray-400 mb-2">Hali buyurtmalar yo'q</h3>
-                        <p className="text-sm text-gray-500 mb-8 leading-relaxed">Sizning ilk xaridingiz bu yerda paydo bo'ladi.</p>
-                        <button
-                            onClick={() => navigate('/mobile/products')}
-                            className="px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-black shadow-xl shadow-[#d6b47c]/20 transition-all active:scale-95"
-                            style={{ background: '#d6b47c' }}
-                        >
-                            Xarid boshlash
-                        </button>
-                    </div>
-                ) : (
-                    <div className="space-y-4 pb-10">
-                        {orders.map((order) => (
-                            <div 
-                                key={order._id} 
-                                onClick={() => setSelectedOrder(order)}
-                                className="group relative rounded-[32px] bg-white/[0.03] border border-white/10 p-5 overflow-hidden active:scale-[0.98] transition-all cursor-pointer"
-                            >
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                                
-                                <div className="relative z-10 flex items-start justify-between mb-6">
-                                    <div className="flex flex-col gap-1">
-                                        <h3 className="text-sm font-black text-white tracking-widest">ID #{order._id.slice(-6).toUpperCase()}</h3>
-                                        <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                                            <Calendar className="h-3 w-3" />
-                                            {new Date(order.createdAt).toLocaleDateString('uz-UZ')}
-                                        </div>
-                                    </div>
-                                    <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider ${getStatusClass(order.status)}`}>
-                                        {order.status}
-                                    </div>
-                                </div>
-
-                                <div className="relative z-10 flex items-center gap-3 mb-6">
-                                    <div className="flex -space-x-3">
-                                        {order.items.slice(0, 4).map((item, idx) => (
-                                            <div 
-                                                key={idx} 
-                                                className="w-14 h-14 rounded-2xl border-2 border-[#07090f] bg-[#1a1a1a] overflow-hidden shadow-lg"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigate(`/mobile/product/${item.product}`);
-                                                }}
-                                            >
-                                                {item.image ? (
-                                                    <img src={item.image} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                                                        <Package className="h-6 w-6 text-gray-700" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {order.items.length > 4 && (
-                                        <div className="w-10 h-10 rounded-full bg-[#d6b47c]/10 flex items-center justify-center border border-[#d6b47c]/20">
-                                            <span className="text-[10px] font-black text-[#d6b47c]">+{order.items.length - 4}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="relative z-10 flex items-center justify-between pt-4 border-t border-white/5">
-                                    <div className="flex flex-col">
-                                        <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">{t('checkoutPage.total')}</p>
-                                        <p className="text-lg font-black text-white">
-                                            {formatMoney(order.totals?.total || 0)} <span className="text-xs text-[#d6b47c]">UZS</span>
-                                        </p>
-                                    </div>
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-gray-400">
-                                        <ChevronRight className="h-5 w-5" />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    }
-
     if (activeSection === 'saved') {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
@@ -592,7 +402,7 @@ const MobileProfile = () => {
         );
     }
 
-    if (activeSection === 'gift-cards') {
+    if (activeSection === 'my-gift-cards') {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
                 <BackButton />

@@ -1,36 +1,90 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Gem } from 'lucide-react';
 
 const MobileBundleHero = ({ bundle, products, discountPercent, originalPrice, discountedPrice }) => {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const scrollContainerRef = useRef(null);
+
+    const handleScroll = () => {
+        if (!scrollContainerRef.current) return;
+        const scrollLeft = scrollContainerRef.current.scrollLeft;
+        const width = scrollContainerRef.current.offsetWidth;
+        const newIndex = Math.round(scrollLeft / width);
+        if (newIndex !== activeIndex) {
+            setActiveIndex(newIndex);
+        }
+    };
+
     const formatPrice = (price) => {
         return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     };
 
-    const mainImage = bundle.heroImage || (products && products[0]?.image) || '/placeholder.jpg';
+    // Gather all images from products
+    let allImages = [];
+    if (products && products.length > 0) {
+        products.forEach(p => {
+            if (p.image) allImages.push(p.image);
+            else if (p.images && p.images.length > 0) {
+                const img = p.images[0];
+                allImages.push(typeof img === 'object' ? img.url : img);
+            }
+        });
+    }
+    
+    // Ensure we have at least one image
+    if (allImages.length === 0) {
+        allImages = [bundle.heroImage || '/placeholder.jpg'];
+    }
 
     return (
         <div className="relative h-[85vh] w-full overflow-hidden">
-            {/* Background Image */}
-            <div className="absolute inset-0">
-                <img 
-                    src={mainImage} 
-                    alt={bundle.title}
-                    className="w-full h-full object-cover object-center"
-                />
-                {/* Advanced Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#060a14]" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-transparent to-transparent opacity-80" />
+            {/* Scrollable Image Carousel */}
+            <div 
+                ref={scrollContainerRef}
+                onScroll={handleScroll}
+                className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                style={{ scrollBehavior: 'smooth' }}
+            >
+                {allImages.map((img, idx) => (
+                    <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
+                        <img 
+                            src={img} 
+                            alt={`${bundle.title} - ${idx + 1}`}
+                            className="w-full h-full object-cover object-center"
+                        />
+                    </div>
+                ))}
             </div>
 
+            {/* Advanced Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#060a14] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-transparent to-transparent opacity-80 pointer-events-none" />
+
             {/* Content Bottom */}
-            <div className="absolute inset-0 flex flex-col justify-end px-6 pb-12">
+            <div className="absolute inset-0 flex flex-col justify-end px-6 pb-12 pointer-events-none">
                 <div className="space-y-4">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/40 px-3 py-1.5 backdrop-blur-md">
-                        <Gem className="w-3 h-3 text-amber-300" />
-                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-300">
-                            %{discountPercent} CHEGIRMA
-                        </span>
+                    <div className="flex items-center justify-between">
+                        {/* Badge */}
+                        <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-black/40 px-3 py-1.5 backdrop-blur-md">
+                            <Gem className="w-3 h-3 text-amber-300" />
+                            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-300">
+                                %{discountPercent} CHEGIRMA
+                            </span>
+                        </div>
+
+                        {/* Pagination Dots */}
+                        {allImages.length > 1 && (
+                            <div className="flex gap-1.5 mr-2">
+                                {allImages.map((_, i) => (
+                                    <div 
+                                        key={i} 
+                                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                                            i === activeIndex ? 'w-5 bg-amber-300' : 'w-1.5 bg-white/30'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Title */}

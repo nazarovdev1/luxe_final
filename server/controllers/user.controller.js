@@ -1,5 +1,6 @@
 import Order from '../models/order.model.js'
 import User from '../models/user.model.js'
+import logger from '../utils/logger.js'
 
 // EN: Get orders by phone number
 // UZ: Telefon raqam orqali buyurtmalarni olish
@@ -20,7 +21,9 @@ export const getOrdersByPhone = async (req, res) => {
         const normalizedPhone = phone.replace(/\s+/g, '')
 
         // Security Check: Only Admin or Owner can see these orders
-        if (!req.user.isAdmin && req.user.phone !== normalizedPhone) {
+        const isStaff = req.user?.role === 'admin' || req.user?.role === 'manager'
+        const userPhone = String(req.user?.phone || '').replace(/\s+/g, '')
+        if (!isStaff && userPhone !== normalizedPhone) {
             return res.status(403).json({
                 success: false,
                 message: 'Ruxsat berilmadi. Faqat o\'z buyurtmalaringizni ko\'ra olasiz.'
@@ -39,7 +42,7 @@ export const getOrdersByPhone = async (req, res) => {
             data: orders
         })
     } catch (error) {
-        console.error('Error fetching user orders:', error)
+        logger.error('Error fetching user orders:', error)
         res.status(500).json({
             success: false,
             message: 'Server xatosi'

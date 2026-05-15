@@ -46,7 +46,7 @@ async function sendOrderToTelegram(orderData) {
 // EN: Format order data into a readable message
 // UZ: Zakas ma'lumotlarini o'qishga qulay xabarga aylantirish
 function formatOrderMessage(orderData) {
-	const { customer, items, totals } = orderData
+	const { customer, items, totals, lookDiscounts, totalLookDiscount } = orderData
 
 	let message = `🛍️ <b>Yangi buyurtma!</b>\n\n`
 
@@ -107,13 +107,38 @@ function formatOrderMessage(orderData) {
 		if (item.selectedSize) {
 			message += `   📏 O'lcham: ${item.selectedSize}\n`
 		}
+
+		// Look info
+		if (item.lookTitle) {
+			message += `   👗 Look: ${item.lookTitle}\n`
+		}
+		if (item.lookDiscount && item.lookDiscount > 0) {
+			message += `   🏷️ Look chegirmasi: -${item.lookDiscount.toLocaleString('uz-UZ')} so'm\n`
+		}
+
 		message += `\n`
 	})
+
+	// EN: Look discounts section
+	// UZ: Look chegirmalari
+	if (lookDiscounts && lookDiscounts.length > 0) {
+		message += `👗 <b>Look chegirmalari:</b>\n`
+		lookDiscounts.forEach((ld) => {
+			message += `   • ${ld.lookTitle}: ${ld.originalPrice?.toLocaleString('uz-UZ')} → -${ld.discountAmount?.toLocaleString('uz-UZ')} so'm\n`
+		})
+		message += `\n`
+	}
 
 	// EN: Order totals
 	// UZ: Zakas umumiy narxi
 	message += `💰 <b>To'lov ma'lumotlari:</b>\n`
 	message += `Mahsulotlar jami: $${(totals?.subtotal || 0).toFixed(2)}\n`
+	if (totalLookDiscount > 0) {
+		message += `Look chegirmalari: -${totalLookDiscount.toLocaleString('uz-UZ')} so'm\n`
+	}
+	if (totals?.discountAmount > 0) {
+		message += `Umumiy chegirma: -${totals.discountAmount.toLocaleString('uz-UZ')} so'm\n`
+	}
 	message += `Yetkazib berish: $${(totals?.deliveryFee || 0).toFixed(2)}\n`
 	message += `Umumiy: $${(totals?.total || 0).toFixed(2)}\n\n`
 

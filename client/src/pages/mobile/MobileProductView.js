@@ -31,6 +31,7 @@ import {
   Sparkles,
   Loader2,
   Share2,
+  Ruler,
 } from 'lucide-react';
 import ReviewForm from '../../components/ReviewForm';
 import ReviewList from '../../components/ReviewList';
@@ -40,6 +41,7 @@ import FlashSaleTimer from '../../components/FlashSaleTimer';
 import BackInStockButton from '../../components/BackInStockButton';
 import PriceDropAlert from '../../components/PriceDropAlert';
 import CustomerPhotoReviews from '../../components/CustomerPhotoReviews';
+import SizeGuideModal from '../../components/SizeGuideModal';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -98,6 +100,8 @@ const MobileProductView = () => {
   const [visualResults, setVisualResults] = useState([]);
   const [visualLoading, setVisualLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const reviewsRef = React.useRef(null);
 
   // Fetch reviews
   useEffect(() => {
@@ -350,15 +354,19 @@ const MobileProductView = () => {
             <h1 className="font-brilliant text-3xl sm:text-4xl text-[#f5f5f3] leading-[1.1] mb-5">{product.name}</h1>
 
             {/* Rating */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-1">{renderStars(product.rating || 0)}</div>
-              <span className="text-[#f5f5f3] text-sm font-bold">{(product.rating || 0).toFixed(1)}</span>
-              <div className="w-px h-4 bg-white/10" />
-              <div className="flex items-center gap-1.5 text-[#8a8a8d]">
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span className="text-xs font-bold">{reviews.length} sharh</span>
-              </div>
-            </div>
+              <button
+                type="button"
+                onClick={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="flex items-center gap-4 mb-6 text-left"
+              >
+                <div className="flex items-center gap-1">{renderStars(product.rating || 0)}</div>
+                <span className="text-[#f5f5f3] text-sm font-bold">{(product.rating || 0).toFixed(1)}</span>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-1.5 text-[#8a8a8d]">
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span className="text-xs font-bold">{reviews.length} sharh</span>
+                </div>
+              </button>
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
@@ -420,6 +428,14 @@ const MobileProductView = () => {
               <div className="mb-8">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-[10px] font-black text-[#f5f5f3] uppercase tracking-[0.2em]">{t('common.size')}</h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#c9a96e]"
+                  >
+                    <Ruler className="h-3.5 w-3.5" />
+                    {t('sizeGuide.title')}
+                  </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {(Array.isArray(product.sizes) ? [...new Set(product.sizes.flatMap((s) => typeof s === 'string' && s.includes(' ') ? s.split(' ') : [s]).map((s) => String(s).trim()).filter(Boolean))] : []).map((size, index) => (
@@ -508,7 +524,7 @@ const MobileProductView = () => {
                 <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">Hamjamiyat</span>
               </div>
               <h3 className="font-brilliant text-2xl text-[#f5f5f3] mb-6">Mijozlarimiz nigohida</h3>
-              <CustomerPhotoReviews productName={product.name} />
+              <CustomerPhotoReviews productId={product._id || product.id || id} productName={product.name} product={product} />
             </div>
 
             {/* ═══ Related Products ═════════════════════════ */}
@@ -577,7 +593,7 @@ const MobileProductView = () => {
             )}
 
             {/* ═══ Reviews ══════════════════════════════════ */}
-            <div className="mb-8">
+            <div ref={reviewsRef} className="mb-8 scroll-mt-24">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-px w-6 bg-[#c9a96e]" />
                 <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">Fikrlar</span>
@@ -687,6 +703,11 @@ const MobileProductView = () => {
             </div>
           </div>
         )}
+        <SizeGuideModal
+          isOpen={isSizeGuideOpen}
+          onClose={() => setIsSizeGuideOpen(false)}
+          productCategory={product?.category}
+        />
       </div>
     </>
   );
