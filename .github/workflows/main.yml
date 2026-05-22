@@ -58,13 +58,15 @@ jobs:
           mkdir -p server/tmp
           touch server/tmp/restart.txt
 
-      - name: Deploy to Plesk via FTP
+      - name: Deploy to Plesk via SFTP
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.PLESK_FTP_SERVER }}
           username: ${{ secrets.PLESK_FTP_USERNAME }}
           password: ${{ secrets.PLESK_FTP_PASSWORD }}
+          protocol: sftp
+          port: 22
           local-dir: ./server/
           server-dir: /httpdocs/
           exclude: |
