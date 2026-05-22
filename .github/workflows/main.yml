@@ -60,20 +60,14 @@ jobs:
 
       - name: Deploy to Plesk via SFTP
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
         with:
-          server: ${{ secrets.PLESK_FTP_SERVER }}
           username: ${{ secrets.PLESK_FTP_USERNAME }}
+          server: ${{ secrets.PLESK_FTP_SERVER }}
           password: ${{ secrets.PLESK_FTP_PASSWORD }}
-          protocol: sftp
           port: 22
-          local-dir: ./server/
-          server-dir: /httpdocs/
-          exclude: |
-            **/node_modules/**
-            **/.git*
-            **/.git*/**
-            **/.env*
-            **/*.log
-            **/product_check_result.txt
+          local_path: './server/*'
+          remote_path: '/server'
+          sftp_only: false
+          rsyncArgs: '--exclude=node_modules --exclude=.git --exclude=.env --exclude=*.log --exclude=product_check_result.txt'
 
