@@ -45,3 +45,33 @@ jobs:
             -not -path '*/node_modules/*' \
             -not -path '*/public/*' \
             -print0 | xargs -0 -n 1 node --check
+
+      - name: Copy frontend build to server public folder
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          mkdir -p server/public
+          cp -r client/build/* server/public/
+
+      - name: Create Passenger restart file
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          mkdir -p server/tmp
+          touch server/tmp/restart.txt
+
+      - name: Deploy to Plesk via FTP
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.PLESK_FTP_SERVER }}
+          username: ${{ secrets.PLESK_FTP_USERNAME }}
+          password: ${{ secrets.PLESK_FTP_PASSWORD }}
+          local-dir: ./server/
+          server-dir: /httpdocs/
+          exclude: |
+            **/node_modules/**
+            **/.git*
+            **/.git*/**
+            **/.env*
+            **/*.log
+            **/product_check_result.txt
+
