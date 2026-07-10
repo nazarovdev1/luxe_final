@@ -8,7 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import useProductService from '../server/server';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
-const IMAGEKIT_PUBLIC_KEY = 'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
+const IMAGEKIT_PUBLIC_KEY = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
 
 const getUserName = (post) => post?.user?.username || 'LUXX mijoz';
 const getUserAvatar = (post) => post?.user?.profileImage || post?.user?.photoUrl || '';
@@ -155,6 +155,9 @@ const CustomerPhotoReviews = ({ productId, productName }) => {
     const auth = await getImageKitAuth();
     if (!auth?.signature || !auth?.token || !auth?.expire) {
       throw new Error('ImageKit auth failed');
+    }
+    if (!IMAGEKIT_PUBLIC_KEY) {
+      throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
     }
 
     const formData = new FormData();

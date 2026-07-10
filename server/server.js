@@ -34,7 +34,7 @@ import logger from './utils/logger.js'
 import productRoutes from './routes/product.route.js'
 import orderRoutes from './routes/order.route.js'
 import authRoutes from './routes/auth.route.js'
-import { protect } from './middleware/auth.middleware.js'
+import { protect, authorize } from './middleware/auth.middleware.js'
 import reviewRoutes from './routes/review.route.js'
 import contactRoutes from './routes/contact.route.js'
 import announcementRoutes from './routes/announcement.route.js'
@@ -58,6 +58,8 @@ import liveChatRoutes from './routes/liveChat.routes.js'
 import giftCardRoutes from './routes/giftCard.routes.js'
 import blogRoutes from './routes/blog.routes.js'
 import bundleRoutes from './routes/bundle.route.js'
+import stylePollRoutes from './routes/stylePoll.routes.js'
+import { deleteReelComment as deleteReelCommentController } from './controllers/reel.controller.js'
 
 import { initSocket } from './services/socket.service.js'
 
@@ -151,32 +153,20 @@ app.use('/api/admin-mgmt', adminManagementRoutes)
 app.use('/api/reels', reelRoutes)
 app.use('/api/live-chat', liveChatRoutes)
 app.use('/api/gift-cards', giftCardRoutes)
-app.use('/api/blogs', blogRoutes);
-app.use('/api/bundles', bundleRoutes);
-import ReelComment from './models/reelComment.model.js'
-app.delete('/api/delete-reel-comment/:id', protect, async (req, res) => {
-  try {
-    const comment = await ReelComment.findById(req.params.id)
-    if (!comment) return res.status(404).json({ success: false, message: 'Not found' })
-    
-    const isStaff = req.user?.role === 'admin' || req.user?.role === 'manager'
-    if (comment.user.toString() !== req.user._id.toString() && !isStaff) {
-      return res.status(403).json({ success: false, message: 'Unauthorized' })
-    }
-
-    await ReelComment.findByIdAndDelete(req.params.id)
-    res.json({ success: true, message: 'Deleted' })
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
-  }
+app.use('/api/blogs', blogRoutes)
+app.use('/api/bundles', bundleRoutes)
+app.use('/api/style-polls', stylePollRoutes)
+app.delete('/api/delete-reel-comment/:id', protect, (req, res, next) => {
+  req.params.commentId = req.params.id
+  return deleteReelCommentController(req, res, next)
 })
 app.use('/', sitemapRoutes)
 
 import crypto from 'crypto'
-app.get('/api/imagekit-auth', protect, (req, res) => {
+app.get('/api/imagekit-auth', protect, authorize('admin', 'manager'), (req, res) => {
   try {
-    const token = req.query.token || crypto.randomUUID()
-    const expire = req.query.expire || Math.floor(Date.now() / 1000) + 2400
+    const token = crypto.randomUUID()
+    const expire = Math.floor(Date.now() / 1000) + 15 * 60
     const privateKey = process.env.IMAGEKIT_PRIVATE_KEY
 
     if (!privateKey) {
@@ -198,6 +188,10 @@ const publicPath = path.join(__dirname, 'public')
 const indexHtmlPath = path.join(publicPath, 'index.html')
 
 app.use(express.static(publicPath))
+
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, message: 'API endpoint topilmadi' })
+})
 
 app.get(/.*/, (req, res) => {
   if (fs.existsSync(indexHtmlPath)) {

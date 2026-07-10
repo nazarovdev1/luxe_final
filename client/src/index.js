@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './services/api';
 import './i18n';
 import './index.css';
 import App from './App';
@@ -51,5 +52,6 @@ root.render(
   </React.StrictMode>
 );
 
-// Performance monitoring
-reportWebVitals(console.log);
+if (process.env.NODE_ENV === 'development') {
+  reportWebVitals(console.log);
+}

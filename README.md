@@ -1,197 +1,107 @@
-# ✨ Luxe — Premium E-commerce & Social Commerce Ekotizimi
+# Luxe - Premium E-commerce & Social Commerce Platform
 
-<div align="center">
+Luxe is a React + Node.js e-commerce platform with social commerce, admin tooling, mobile-first pages, loyalty features, and integrations for AI styling, visual search, Telegram notifications, Firebase push notifications, and Plesk deployment.
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/nazarovdev1/luxe_final/main.yml?branch=main&style=for-the-badge&logo=github-actions&color=412991)](https://github.com/nazarovdev1/luxe_final/actions)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=20232A)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-22-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-5-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Plesk](https://img.shields.io/badge/Plesk-CI%2FCD-2D88FF?style=for-the-badge&logo=plesk&logoColor=white)](https://www.plesk.com/)
+## Tech Stack
 
-**Luxe** — bu ishlab chiqarish darajasidagi (production-grade), zamonaviy va mukammal elektron tijorat hamda ijtimoiy savdo platformasidir. Loyiha oddiy onlayn do'konlardan farqli o'laroq, **Sun'iy Intellekt, real vaqtdagi gamifikatsiya (sodiqlik dasturi), ijtimoiy video-tasmasi (Reels) hamda avtomatlashtirilgan Plesk CI/CD tizimlarini** o'z ichiga oladi.
+- Frontend: React 18, React Router, Tailwind CSS, Lucide icons, Socket.io client
+- Backend: Node.js 22, Express 5, MongoDB/Mongoose, Socket.io, Winston, Helmet, rate limiting
+- Integrations: OpenAI, ImageKit, Telegram Bot API, Firebase FCM, Prerender.io
+- Deployment: GitHub Actions build pipeline with Plesk/SFTP deployment support
 
-[Asosiy Modullar](#-asosiy-modullar-va-imkoniyatlar) • [Tizim Arxitekturasi](#-tizim-arxitekturasi) • [API Directory](#-api-sorovlar-katalogi) • [Mahalliy Sozlash](#-mahalliy-ishga-tushirish) • [CI/CD va Plesk Deploy](#-cicd-va-plesk-deploy-tizimi)
+## Main Features
 
-</div>
+- Product catalog with images, colors, sizes, badges, ratings, discounts, and early-access controls
+- Cart, checkout, order tracking, coupons, promo codes, and gift cards
+- Admin dashboard for products, orders, reels, blogs, announcements, coupons, badges, and challenges
+- Social commerce: reels, comments, style feed, lookbooks, livestream chat
+- Loyalty system: points, VIP levels, badges, challenges, leaderboard
+- AI stylist and visual search endpoints
+- Desktop and `/mobile/*` route trees with automatic device routing
+- PWA install prompt, offline indicator, and push notification support
 
----
+## Local Setup
 
-## 🌟 Asosiy Modullar va Imkoniyatlar
+Requirements:
 
-### 🎮 1. Real-time Gamifikatsiya va Sodiqlik Dasturi
-Mijozlarni jalb qilish va saqlab qolish uchun mo'ljallangan mukammal tizim:
-*   **Tranzaksiyaga asoslangan Ballar Tizimi**: Foydalanuvchilarning har bir harakati (xaridlar, sharhlar, ijtimoiy ulashishlar) uchun ballar hisob-kitobini xavfsiz yuritadi.
-*   **Yutuqlar va Nishonlar (Badges)**: Foydalanuvchilar ma'lum yutuqlarni bajarganda (masalan: "Doimiy Xaridor", "Top Sharhlovchi") ularga avtomatik ravishda maxsus nishonlar beriladi.
-*   **Gamifikatsiyalangan Qiyinchiliklar (Challenges)**: Foydalanuvchilarga ballar va chegirma kuponlari yutib olish imkonini beruvchi davriy vazifalar.
+- Node.js 22+
+- MongoDB connection string
 
-### 🎥 2. Ijtimoiy Savdo va Kontent (Social Commerce)
-Savdoni oshirish maqsadida zamonaviy ijtimoiy tarmoqlar funksiyalari integratsiya qilingan:
-*   **TikTok-Style Reels**: Mahsulotlarning qisqa video-tasmasi. Ikki marta bosish orqali like bosish, ulashish va real vaqtda nested (zanjirli) izoh qoldirish imkoniyati.
-*   **Socket.io orqali Live Chat xonalari**: Mijozlar va do'kon ma'murlari (adminlar) o'rtasida real vaqtda muloqot qilish uchun maxsus chat xonalari.
-*   **Interaktiv Lookbook-lar va Bloglar**: Kuraorlar tomonidan mahsulotlarni vizual mavzularga guruhlash (lookbook) va foydalanuvchilar ularni bir marta bosish orqali to'plam sifatida xarid qilishlari mumkin.
+Install dependencies:
 
-### 🤖 3. Sun'iy Intellekt (AI) va Aqlli Qidiruv
-Sun'iy intellekt yordamida foydalanuvchi tajribasini shaxsiylashtirish:
-*   **AI Shaxsiy Stilist**: OpenAI API (GPT modellari) asosida ishlaydigan aqlli chatbot. Mijozning tavsifiga, tana tuzilishiga yoki uslubiga qarab mahsulotlarni tavsiya qiladi.
-*   **Visual Search (Rasm orqali qidiruv)**: ImageKit API integratsiyasi yordamida foydalanuvchilar mahsulot rasmini yuklab, unga o'xshash mahsulotlarni vizual qidirishlari mumkin.
-
-### 💳 4. Premium Elektron Tijorat Imkoniyatlari
-*   **Kombinatsiyalangan To'plamlar (Bundles)**: Bir nechta mahsulotni bitta paket sifatida chegirmali narxda sotish tizimi.
-*   **Aqlli Kuponlar**: Ma'lum muddatga ega, foydalanish soni cheklangan yoki foydalanuvchi roliga qarab ishlaydigan chegirma kodlari.
-*   **Prerender.io SEO Integratsiyasi**: Search Engine (Google botlari) uchun sahifalarni production-da oldindan HTML formatga o'tkazib beradi (Lighthouse Core Web Vitals target > 80).
-
----
-
-## 📐 Tizim Arxitekturasi
-
-Quyida Luxe tizimining umumiy arxitekturasi va ma'lumotlar oqimi keltirilgan:
-
-```mermaid
-graph TD
-    %% Client & Server
-    Client[React 18 Frontend] -->|HTTP / Socket.io| Server[Express 5 Server]
-    
-    %% Databases and APIs
-    Server -->|Mongoose ODM| DB[(MongoDB Atlas)]
-    Server -->|Rasm Qidiruvi va Saqlash| ImageKit[ImageKit CDN]
-    Server -->|AI Shaxsiy Stilist| OpenAI[OpenAI API]
-    Server -->|Real-time Ogohlantirishlar| Telegram[Telegram Bot API]
-    Server -->|Push Xabarnomalar| Firebase[Firebase FCM]
-    Server -->|SEO Pre-rendering| Prerender[Prerender.io]
-
-    %% Pipeline
-    Github[GitHub Asosiy Repozitoriyasi] -->|Push Event| Actions[GitHub Actions Runner]
-    Actions -->|Kompilyatsiya| WebBuild[React Tayyor Fayllar]
-    WebBuild -->|SFTP Sync| Plesk[Plesk Production Server]
+```bash
+npm ci
+cd client && npm ci --legacy-peer-deps
+cd ../server && npm ci
 ```
 
----
+Use npm as the canonical package manager for this repository. Keep `package-lock.json` files committed and use `npm ci` for repeatable local, CI, and Docker installs.
 
-## 🛠️ Texnologiyalar (Tech Stack)
+Create `server/.env`:
 
-### Frontend (`/client`)
-*   **React 18**: Asosiy interfeys kutubxonasi
-*   **Tailwind CSS**: Tezkor va moslashuvchan styling tizimi
-*   **Lucide React**: Vectorli ikonkalarni boshqarish
-*   **Socket.io Client**: Real vaqtdagi ulanishlar uchun
-*   **React Leaflet**: Buyurtmalarni qabul qilish punktlari xaritasi uchun
+```env
+NODE_ENV=development
+PORT=3003
+MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/luxe
+JWT_SECRET=change-this-secret
 
-### Backend (`/server`)
-*   **Node.js 22 (ESM)**: Zamonaviy ES-modules muhiti
-*   **Express 5**: Yuqori tezlikdagi backend freymvorki
-*   **Mongoose 8**: MongoDB uchun ODM modeli
-*   **Winston**: Loglarni strukturaviy yuritish tizimi
-*   **Express Rate Limit & Helmet**: Xavfsizlik va so'rovlar yuklamasini cheklash
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
 
----
+IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
+IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/your_imagekit_id
 
-## 📂 API So'rovlar Katalogi
+PRERENDER_TOKEN=your_prerender_token
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_PRIVATE_KEY=your_firebase_private_key
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+OPENAI_API_KEY=your_openai_api_key
+```
 
-<details>
-<summary>🔑 Avtorizatsiya va Rollar (RBAC)</summary>
+Create `client/.env` when browser-side integrations are needed:
 
-*   `POST /api/auth/register` - Yangi foydalanuvchi ro'yxatdan o'tkazish
-*   `POST /api/auth/login` - Tizimga kirish va xavfsiz JWT olish
-*   `GET /api/auth/profile` - Joriy sessiya ma'lumotlarini yuklash
-*   `GET /api/auth/users` - Foydalanuvchilarni boshqarish *(Faqat Admin)*
+```env
+REACT_APP_API_URL=/api
+REACT_APP_IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+```
 
-</details>
+Run locally:
 
-<details>
-<summary>📦 Mahsulotlar va Buyurtmalar</summary>
+```bash
+# terminal 1
+cd server
+npm run dev
 
-*   `GET /api/products` - Mahsulotlarni filtrlar bilan olish
-*   `POST /api/products` - Yangi mahsulot yaratish *(Admin/Manager)*
-*   `GET /api/products/:id` - Mahsulot tafsilotlarini olish
-*   `POST /api/orders` - Buyurtma berish va Telegram Botga xabar yuborish
-*   `GET /api/orders/all` - Barcha savdo statistikasini ko'rish *(Admin/Manager)*
+# terminal 2
+cd client
+npm start
+```
 
-</details>
+## Useful Commands
 
-<details>
-<summary>🏆 Sodiqlik dasturi va Social Commerce</summary>
+```bash
+# Frontend production build
+cd client && npm run build
 
-*   `GET /api/points` - Ballar balansi va tranzaksiyalar tarixi
-*   `GET /api/badges` - Nishonlar ro'yxatini olish
-*   `GET /api/challenges` - Faol topshiriqlarni yuklash
-*   `GET /api/reels` - Qisqa videolar tasmasini (Reels) olish
-*   `POST /api/reels/:id/comments` - Videoga izoh qoldirish
+# Backend syntax check
+Get-ChildItem -Recurse -File server -Filter *.js |
+  Where-Object { $_.FullName -notmatch '\\node_modules\\|\\public\\' } |
+  ForEach-Object { node --check $_.FullName }
+```
 
-</details>
+## Deployment
 
-<details>
-<summary>🤖 Sun'iy Intellekt (AI)</summary>
+The GitHub Actions workflow builds the React app, copies `client/build` into `server/public`, creates `server/tmp/restart.txt` for Passenger/Plesk, and deploys the server folder via SFTP.
 
-*   `POST /api/ai-stylist` - OpenAI stilisti bilan suhbatlashish
-*   `POST /api/visual-search` - Rasm orqali o'xshash mahsulotlarni topish
+Deployment depends on npm lockfiles: CI, Docker, and production installs should use `npm ci` or `npm ci --omit=dev` instead of yarn, pnpm, or ad-hoc `npm install`. The Docker image expects `client/build` to exist before `docker build` and installs backend production dependencies from `server/package-lock.json`.
 
-</details>
+Production secrets must live outside git and Docker build contexts. Configure them in GitHub Actions secrets, Plesk environment variables, or `server/.env` on the host only. If a secret, database dump, Firebase service account, API key, or `.env` file was ever committed, rotate the credential before the next deploy and remove the exposed value from all deployment targets.
 
----
+Plesk settings:
 
-## 💻 Mahalliy Ishga Tushirish
-
-### Talablar
-*   Node.js 22+
-*   MongoDB bazasi (mahalliy yoki Atlas ulanishi)
-
-### O'rnatish
-1.  Repozitoriyani yuklab oling:
-    ```bash
-    git clone https://github.com/nazarovdev1/luxe_final.git
-    cd luxe_final
-    ```
-2.  Kutubxonalarni o'rnating:
-    ```bash
-    # Asosiy dependencylarni o'rnatish
-    npm install
-    
-    # Frontend dependencylarni o'rnatish
-    cd client && npm install --legacy-peer-deps
-    
-    # Backend dependencylarni o'rnatish
-    cd ../server && npm install
-    ```
-3.  Konfiguratsiyani sozlash:
-    `/server` papkasi ichida `.env` faylini yarating va quyidagi o'zgaruvchilarni yozing:
-    ```env
-    MONGO_URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/luxe
-    PORT=3003
-    NODE_ENV=development
-    IMAGEKIT_PRIVATE_KEY=sizning_imagekit_kalitingiz
-    OPENAI_API_KEY=sizning_openai_kalitingiz
-    TELEGRAM_BOT_TOKEN=sizning_bot_tokeningiz
-    TELEGRAM_CHAT_ID=sizning_chat_idingiz
-    ```
-4.  Loyihani ishga tushiring:
-    ```bash
-    # Serverni ishga tushirish (/server papkasidan)
-    npm run dev
-    
-    # Clientni ishga tushirish (/client papkasidan)
-    npm start
-    ```
-
----
-
-## 🚀 CI/CD va Plesk Deploy Tizimi
-
-Luxe loyihasi GitHub Actions orqali **Plesk Panel (Phusion Passenger muhiti)** bilan to'liq avtomatlashtirilgan.
-
-### Deploy Qadamlari
-Har safar `main` branchiga yangi kod yuborilganda (push bo'lganda), GitHub Actions:
-1.  **Kod tekshiruvi**: Backend fayllari sintaksisini tekshiradi.
-2.  **Frontend Build**: React loyihani production uchun kompilyatsiya qiladi.
-3.  **Fayllarni ko'chirish**: Hosil bo'lgan build fayllarini `server/public/` papkasiga ko'chiradi.
-4.  **Passenger Restart**: Loyihada `server/tmp/restart.txt` faylini yangilaydi (Plesk server buni ko'rib dasturni avtomatik restart qiladi).
-5.  **SFTP Sync**: `wlixcc/SFTP-Deploy-Action` yordamida barcha production fayllarni serverdagi `/server` papkasiga yuklaydi (`node_modules` yuklanmasdan tezkor rsync qilinadi).
-
-### Plesk Paneldagi Sozlamalar
-*   **Application Root**: `/server`
-*   **Document Root**: `/server/public`
-*   **Application Startup File**: `server.js`
-*   **NPM Dependency**: Loyiha birinchi marta yuklangandan so'ng Plesk-da Node.js bo'limiga kirib **"NPM Install"** tugmasini bosing.
-*   **Environment variables**: `/server/.env` fayliga production uchun mo'ljallangan kalitlarni kiriting.
+- Application Root: `/server`
+- Document Root: `/server/public`
+- Startup File: `server.js`
+- Environment variables: configure production secrets in `server/.env`
+- Dependencies: after deploying package changes, run Plesk's npm install action or `npm ci --omit=dev` in `/server` so Passenger starts with dependencies matching `server/package-lock.json`.

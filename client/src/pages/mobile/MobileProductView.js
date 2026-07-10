@@ -42,6 +42,7 @@ import BackInStockButton from '../../components/BackInStockButton';
 import PriceDropAlert from '../../components/PriceDropAlert';
 import CustomerPhotoReviews from '../../components/CustomerPhotoReviews';
 import SizeGuideModal from '../../components/SizeGuideModal';
+import { showCartToast } from '../../utils/toast';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -237,7 +238,10 @@ const MobileProductView = () => {
     setIsAddingToCart(true);
     try {
       await addToCart(product, selectedColor, selectedSize, quantity);
-      toast.success(`${product.name} savatga qo'shildi!`);
+      showCartToast({
+        itemName: product.name,
+        quantity,
+      });
     } catch (error) {
       toast.error('Xatolik yuz berdi');
     } finally {

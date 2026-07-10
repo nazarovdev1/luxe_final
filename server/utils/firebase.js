@@ -23,15 +23,15 @@ const initializeFirebase = () => {
                 credential: admin.credential.cert(serviceAccount)
             });
 
-            console.log('✅ Firebase Admin initialized successfully');
+            console.log('Firebase Admin initialized successfully');
             return firebaseApp;
         } else {
-            console.warn('⚠️ Firebase service account not found at:', serviceAccountPath);
+            console.warn('Firebase service account not found at:', serviceAccountPath);
             console.warn('Push notifications will not work until you add the service account JSON file.');
             return null;
         }
     } catch (error) {
-        console.error('❌ Firebase Admin initialization error:', error.message);
+        console.error('Firebase Admin initialization error:', error.message);
         return null;
     }
 };
@@ -83,10 +83,10 @@ export const sendPushNotification = async (fcmToken, title, body, data = {}) => 
         };
 
         const response = await admin.messaging().send(message);
-        console.log('✅ Push notification sent:', response);
+        console.log('Push notification sent:', response);
         return { success: true, messageId: response };
     } catch (error) {
-        console.error('❌ Push notification error:', error.message);
+        console.error('Push notification error:', error.message);
         return { success: false, error: error.message };
     }
 };
@@ -100,23 +100,23 @@ export const sendPushNotification = async (fcmToken, title, body, data = {}) => 
 export const sendOrderStatusNotification = async (fcmToken, orderId, status) => {
     const statusMessages = {
         'Kutilmoqda': {
-            title: '🛒 Buyurtma qabul qilindi',
+            title: 'Buyurtma qabul qilindi',
             body: `Buyurtmangiz #${orderId.slice(-6).toUpperCase()} qabul qilindi. Tez orada ko'rib chiqamiz.`
         },
         'Jarayonda': {
-            title: '📦 Buyurtma tayyorlanmoqda',
+            title: 'Buyurtma tayyorlanmoqda',
             body: `Buyurtmangiz #${orderId.slice(-6).toUpperCase()} tayyorlanmoqda.`
         },
         'Yetkazilmoqda': {
-            title: '🚚 Buyurtma yo\'lda!',
+            title: 'Buyurtma yo\'lda!',
             body: `Buyurtmangiz #${orderId.slice(-6).toUpperCase()} yetkazib berilmoqda. Tez orada yetib boradi!`
         },
         'Yetkazildi': {
-            title: '✅ Buyurtma yetkazildi',
+            title: 'Buyurtma yetkazildi',
             body: `Buyurtmangiz #${orderId.slice(-6).toUpperCase()} muvaffaqiyatli yetkazildi. Xaridingiz uchun rahmat!`
         },
         'Bekor qilindi': {
-            title: '❌ Buyurtma bekor qilindi',
+            title: 'Buyurtma bekor qilindi',
             body: `Buyurtmangiz #${orderId.slice(-6).toUpperCase()} bekor qilindi.`
         }
     };

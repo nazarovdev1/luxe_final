@@ -12,62 +12,10 @@ import {
     Gift, Calendar, Clock, MessageCircle as MessageCircleIconFallback
 } from 'lucide-react';
 import useProductService from '../../server/server';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import OrderSuccessModal from '../../components/OrderSuccessModal';
 import useCheckoutTotals, { DELIVERY_TIME_SLOTS, GIFT_WRAP_OPTIONS, getDeliveryDates } from '../../hooks/useCheckoutTotals';
 
-// Fix for default marker icon
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-    iconUrl: require('leaflet/dist/images/marker-icon.png'),
-    shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-});
-
-// Map click handler
-function LocationMarker({ position, setPosition }) {
-    const map = useMapEvents({
-        click(e) {
-            setPosition(e.latlng);
-            map.flyTo(e.latlng, map.getZoom());
-        },
-        locationfound(e) {
-            setPosition(e.latlng);
-            map.flyTo(e.latlng, map.getZoom());
-        },
-        locationerror(e) {
-            toast.error("Joylashuvni aniqlab bo'lmadi");
-        },
-    });
-
-    return position === null ? null : <Marker position={position} />;
-}
-
-// Locate user button
-function LocationButton() {
-    const map = useMap();
-
-    const handleLocate = (e) => {
-        e.preventDefault();
-        map.locate({ setView: true, maxZoom: 16 });
-    };
-
-    return (
-        <div className="leaflet-bottom leaflet-right">
-            <div className="leaflet-control leaflet-bar !border-0 !shadow-none">
-                <button
-                    onClick={handleLocate}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d6b47c]/30 bg-[#0c1018]/90 text-[#d6b47c] shadow-[0_10px_28px_rgba(0,0,0,0.35)] active:scale-95 transition-transform"
-                    title="Mening manzilim"
-                >
-                    <Navigation className="w-5 h-5" />
-                </button>
-            </div>
-        </div>
-    );
-}
+const CheckoutMap = React.lazy(() => import('../../components/CheckoutMap'));
 
 // Premium Input Component
 const InputField = ({ label, icon: Icon, ...props }) => (
@@ -576,19 +524,14 @@ const MobileCheckout = () => {
                             <div className="absolute left-4 top-4 z-[401] rounded-full border border-white/10 bg-[#070b12]/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d6b47c] backdrop-blur-xl">
                                 Xaritadan belgilang
                             </div>
-                            <MapContainer
-                                center={[41.2995, 69.2401]}
-                                zoom={12}
-                                style={{ height: '100%', width: '100%', background: '#0e141f' }}
-                                className="z-0"
-                            >
-                                <TileLayer
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            <React.Suspense fallback={<div className="h-full w-full bg-[#0e141f]" />}>
+                                <CheckoutMap
+                                    className="z-0 h-full w-full"
+                                    style={{ background: '#0e141f' }}
+                                    position={formData.location}
+                                    onPositionChange={(pos) => setFormData(prev => ({ ...prev, location: pos }))}
                                 />
-                                <LocationMarker position={formData.location} setPosition={(pos) => setFormData(prev => ({ ...prev, location: pos }))} />
-                                <LocationButton />
-                            </MapContainer>
+                            </React.Suspense>
                             <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
                             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
                         </div>

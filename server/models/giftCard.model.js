@@ -60,6 +60,8 @@ const giftCardSchema = new mongoose.Schema({
     timestamps: true
 });
 
+giftCardSchema.index({ code: 1, isUsed: 1, status: 1 });
+
 const GiftCard = mongoose.model('GiftCard', giftCardSchema);
 
 export default GiftCard;

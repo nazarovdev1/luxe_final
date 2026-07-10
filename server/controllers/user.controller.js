@@ -1,12 +1,14 @@
 import Order from '../models/order.model.js'
 import User from '../models/user.model.js'
 import logger from '../utils/logger.js'
+import { getPagination } from '../utils/pagination.js'
 
 // EN: Get orders by phone number
 // UZ: Telefon raqam orqali buyurtmalarni olish
 export const getOrdersByPhone = async (req, res) => {
     try {
         const { phone } = req.params
+        const { limit } = getPagination(req.query, { defaultLimit: 50, maxLimit: 100 })
 
         if (!phone) {
             return res.status(400).json({
@@ -35,7 +37,7 @@ export const getOrdersByPhone = async (req, res) => {
 
         const orders = await Order.find({
             'customer.phone': { $regex: escapedPhone, $options: 'i' }
-        }).sort({ createdAt: -1 })
+        }).sort({ createdAt: -1 }).limit(limit)
 
         res.status(200).json({
             success: true,

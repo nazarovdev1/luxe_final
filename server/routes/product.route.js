@@ -6,7 +6,7 @@ import {
   getSingleProduct,
   postProduct,
   putProduct
-} from '../controllers/prouduct.controller.js'
+} from '../controllers/product.controller.js'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
 

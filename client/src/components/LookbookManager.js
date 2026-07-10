@@ -67,11 +67,15 @@ const LookbookManager = () => {
       if (!auth || !auth.signature) {
         throw new Error('Auth signature failed');
       }
+      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+      if (!publicKey) {
+        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+      }
 
       const data = new FormData();
       data.append('file', file);
       data.append('fileName', file.name);
-      data.append('publicKey', 'public_mnemyo/d2OAPyIzzxUa3mXisNc0=');
+      data.append('publicKey', publicKey);
       data.append('signature', auth.signature);
       data.append('expire', auth.expire);
       data.append('token', auth.token);
@@ -91,7 +95,7 @@ const LookbookManager = () => {
       }
     } catch (error) {
       console.error('Upload Error:', error);
-      toast.error('Rasm yuklashda xatolik', { id: loadingToast });
+      toast.error(error.message || 'Rasm yuklashda xatolik', { id: loadingToast });
     }
   };
 

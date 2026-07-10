@@ -74,6 +74,7 @@ function MainContent() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
+  const [isChromeHiddenBySurface, setIsChromeHiddenBySurface] = useState(false);
 
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -87,6 +88,15 @@ function MainContent() {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const handleChromeVisibility = (event) => {
+      setIsChromeHiddenBySurface(Boolean(event.detail?.hidden));
+    };
+
+    window.addEventListener('luxx:chrome-visibility', handleChromeVisibility);
+    return () => window.removeEventListener('luxx:chrome-visibility', handleChromeVisibility);
   }, []);
 
   // Auto redirect based on device
@@ -146,7 +156,7 @@ function MainContent() {
     <div className="min-h-screen text-foreground relative">
       <React.Suspense fallback={<Loading />}>
         {/* Fixed Header Container (Banner + Navbar) */}
-        {showDesktopChrome && (
+        {showDesktopChrome && !isChromeHiddenBySurface && (
           <>
             <AnnouncementBanner />
             <Navbar onSearchClick={openSearch} onCartClick={openCart} /* onVisualSearch={() => setIsVisualSearchOpen(true)} */ />
@@ -155,7 +165,7 @@ function MainContent() {
 
         {/* Main Content Area */}
         <div className="relative z-10">
-          {showDesktopChrome && (
+          {showDesktopChrome && !isChromeHiddenBySurface && (
             <>
               <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
               <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
@@ -205,24 +215,34 @@ function MainContent() {
       </React.Suspense>
       <Toaster
         position="top-right"
+        gutter={12}
+        containerStyle={{
+          top: 18,
+          right: 18,
+        }}
         toastOptions={{
-          duration: 3000,
+          duration: 3500,
           style: {
-            background: '#1a1025',
-            color: '#fff',
-            border: '1px solid rgba(168, 85, 247, 0.3)',
-            borderRadius: '12px',
+            background: 'rgba(8, 11, 18, 0.96)',
+            color: '#f7f2e8',
+            border: '1px solid rgba(214, 180, 124, 0.24)',
+            borderRadius: '18px',
+            padding: '14px 16px',
+            boxShadow: '0 18px 45px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+            backdropFilter: 'blur(18px)',
+            fontSize: '14px',
+            lineHeight: '20px',
           },
           error: {
             iconTheme: {
               primary: '#ef4444',
-              secondary: '#fff',
+              secondary: '#f7f2e8',
             },
           },
           success: {
             iconTheme: {
-              primary: '#22c55e',
-              secondary: '#fff',
+              primary: '#d6b47c',
+              secondary: '#080b12',
             },
           },
         }}

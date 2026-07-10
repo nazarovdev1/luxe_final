@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import useProductService from '../server/server';
+
+const DEBUG_LOGS = process.env.NODE_ENV !== 'production';
 
 // Cart reducer for state management
 const cartReducer = (state, action) => {
@@ -130,10 +132,10 @@ export const CartProvider = ({ children }) => {
       const guestCart = getGuestCart();
 
       if (userCart.length > 0) {
-        console.log('📥 Loading user cart from DB:', userCart);
+        if (DEBUG_LOGS) console.log('Loading user cart from DB');
         dispatch({ type: 'LOAD_CART', payload: { items: userCart, lookItems: [] } });
       } else if (guestCart.items.length > 0 || guestCart.lookItems.length > 0) {
-        console.log('📥 Merging guest cart to user account');
+        if (DEBUG_LOGS) console.log('Merging guest cart to user account');
         dispatch({ type: 'LOAD_CART', payload: guestCart });
         const token = localStorage.getItem('token');
         if (token) {
@@ -162,12 +164,12 @@ export const CartProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         updateUserCart(state.items, token).then(() => {
-          console.log('💾 Synced cart to database:', state.items);
+          if (DEBUG_LOGS) console.log('Synced cart to database');
         }).catch(err => console.error('Sync error:', err));
       }
     } else {
       saveGuestCart(state.items, state.lookItems);
-      console.log('💾 Saved guest cart:', state.items, state.lookItems);
+      if (DEBUG_LOGS) console.log('Saved guest cart');
     }
   }, [state.items, state.lookItems, isAuthenticated, updateUserCart]);
 
@@ -181,7 +183,7 @@ export const CartProvider = ({ children }) => {
     }
   }, [isAuthenticated, updateUserCart]);
 
-  const addToCart = (product, selectedColor, selectedSize, quantity = 1) => {
+  const addToCart = useCallback((product, selectedColor, selectedSize, quantity = 1) => {
     const cartItem = {
       id: Date.now().toString(),
       productId: product.id,
@@ -194,7 +196,7 @@ export const CartProvider = ({ children }) => {
       addedAt: new Date().toISOString()
     };
 
-    console.log('🛍️ Adding to cart:', cartItem);
+    if (DEBUG_LOGS) console.log('Adding to cart');
 
     const currentItems = state.items;
     const existingItemIndex = currentItems.findIndex(
@@ -217,10 +219,10 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: 'ADD_TO_CART', payload: cartItem });
     syncWithBackend(newItems);
     return true;
-  };
+  }, [state.items, syncWithBackend]);
 
   // Add entire look to cart as a group
-  const addLookToCart = (look, selectedVariants) => {
+  const addLookToCart = useCallback((look, selectedVariants) => {
     const cartLookId = `look_${look._id || look.id}_${Date.now()}`;
 
     const lookProducts = (look.products || []).map(p => {
@@ -262,17 +264,17 @@ export const CartProvider = ({ children }) => {
       addedAt: new Date().toISOString()
     };
 
-    console.log('👗 Adding look to cart:', lookCartItem);
+    if (DEBUG_LOGS) console.log('Adding look to cart');
     dispatch({ type: 'ADD_LOOK_TO_CART', payload: lookCartItem });
     return true;
-  };
+  }, []);
 
   // Remove entire look from cart
-  const removeLookFromCart = (cartLookId) => {
+  const removeLookFromCart = useCallback((cartLookId) => {
     dispatch({ type: 'REMOVE_LOOK_FROM_CART', payload: cartLookId });
-  };
+  }, []);
 
-  const updateQuantity = (itemId, quantity) => {
+  const updateQuantity = useCallback((itemId, quantity) => {
     const newItems = state.items.map(item =>
       item.id === itemId
         ? { ...item, quantity: Math.max(1, quantity) }
@@ -280,21 +282,21 @@ export const CartProvider = ({ children }) => {
     );
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id: itemId, quantity } });
     syncWithBackend(newItems);
-  };
+  }, [state.items, syncWithBackend]);
 
-  const removeFromCart = (itemId) => {
+  const removeFromCart = useCallback((itemId) => {
     const newItems = state.items.filter(item => item.id !== itemId);
     dispatch({ type: 'REMOVE_FROM_CART', payload: itemId });
     syncWithBackend(newItems);
-  };
+  }, [state.items, syncWithBackend]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     dispatch({ type: 'CLEAR_CART' });
     syncWithBackend([]);
-  };
+  }, [syncWithBackend]);
 
   // Total for individual items only
-  const getCartTotal = () => {
+  const getCartTotal = useCallback(() => {
     const itemsTotal = state.items.reduce((total, item) => {
       const price = typeof item.price === 'string'
         ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
@@ -307,10 +309,10 @@ export const CartProvider = ({ children }) => {
     }, 0);
 
     return itemsTotal + looksTotal;
-  };
+  }, [state.items, state.lookItems]);
 
   // Original total (before look discounts)
-  const getCartOriginalTotal = () => {
+  const getCartOriginalTotal = useCallback(() => {
     const itemsTotal = state.items.reduce((total, item) => {
       const price = typeof item.price === 'string'
         ? parseFloat(item.price.replace(/[^0-9.]/g, ''))
@@ -323,30 +325,45 @@ export const CartProvider = ({ children }) => {
     }, 0);
 
     return itemsTotal + looksOriginalTotal;
-  };
+  }, [state.items, state.lookItems]);
 
   // Total savings from look discounts
-  const getCartSavings = () => {
+  const getCartSavings = useCallback(() => {
     return state.lookItems.reduce((total, look) => {
       return total + (look.discountAmount || 0);
     }, 0);
-  };
+  }, [state.lookItems]);
+
+  const value = useMemo(() => ({
+    items: state.items,
+    lookItems: state.lookItems,
+    totalItems: state.totalItems,
+    addToCart,
+    addLookToCart,
+    removeLookFromCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    getCartTotal,
+    getCartOriginalTotal,
+    getCartSavings
+  }), [
+    state.items,
+    state.lookItems,
+    state.totalItems,
+    addToCart,
+    addLookToCart,
+    removeLookFromCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    getCartTotal,
+    getCartOriginalTotal,
+    getCartSavings
+  ]);
 
   return (
-    <CartContext.Provider value={{
-      items: state.items,
-      lookItems: state.lookItems,
-      totalItems: state.totalItems,
-      addToCart,
-      addLookToCart,
-      removeLookFromCart,
-      updateQuantity,
-      removeFromCart,
-      clearCart,
-      getCartTotal,
-      getCartOriginalTotal,
-      getCartSavings
-    }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

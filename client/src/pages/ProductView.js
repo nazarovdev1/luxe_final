@@ -16,6 +16,7 @@ import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import useRecentlyViewed from '../hooks/useRecentlyViewed';
+import { showCartToast } from '../utils/toast';
 
 // Sub-components
 import PremiumGallery from '../components/ProductView/PremiumGallery';
@@ -102,7 +103,11 @@ export default function ProductView() {
     setIsAddingToCart(true);
     try {
       await addToCart(product, selectedColor, selectedSize, qty);
-      toast.success(`${product.name} savatga qo'shildi! (${qty} dona)`, { duration: 6000 });
+      showCartToast({
+        itemName: product.name,
+        quantity: qty,
+        duration: 6000,
+      });
     } catch (error) {
       console.error('Error adding to cart:', error);
       toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.", { duration: 6000 });

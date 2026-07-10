@@ -46,13 +46,18 @@ export const schemas = {
     name: Joi.string().max(100).required(),
     description: Joi.string().required(),
     price: Joi.number().min(0).required(),
-    originalPrice: Joi.number().min(0),
-    category: Joi.string().valid('Premium', 'Luxury', 'Corporate', 'Limited').required(),
+    originalPrice: Joi.number().min(0).allow(null),
+    category: Joi.string().trim().min(1).max(100).required(),
     images: Joi.array().items(Joi.object({ url: Joi.string().required() })).min(1).required(),
     stock: Joi.number().integer().min(0).default(1),
-    badge: Joi.string().valid('NEW', 'BESTSELLER', 'SALE', 'LIMITED'),
+    badge: Joi.string().valid('NEW', 'BESTSELLER', 'SALE', 'LIMITED', '').allow('', null),
+    rating: Joi.number().min(0).max(5).default(0),
     colors: Joi.array().items(Joi.string()),
-    sizes: Joi.array().items(Joi.string())
+    sizes: Joi.array().items(Joi.string()),
+    isLookbook: Joi.boolean(),
+    earlyAccessTier: Joi.string().valid('none', 'Gold', 'Diamond').default('none'),
+    earlyAccessUntil: Joi.date().allow('', null),
+    isNewCollection: Joi.boolean()
   }),
 
   order: Joi.object({

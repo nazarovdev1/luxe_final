@@ -74,7 +74,7 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
     if (!window.confirm('Haqiqatan ham ushbu izohni o\'chirmoqchimisiz?')) return;
 
     try {
-      const response = await axios.delete(`/api/delete-reel-comment/${commentId}`, {
+      const response = await axios.delete(`/api/reels/manage-comment/${commentId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 

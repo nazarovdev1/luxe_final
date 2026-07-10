@@ -56,6 +56,35 @@ export const protect = async (req, res, next) => {
   }
 }
 
+export const optionalProtect = async (req, res, next) => {
+  if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
+    return next()
+  }
+
+  try {
+    const token = req.headers.authorization.split(' ')[1]
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    req.user = await User.findById(decoded.id).select('-password')
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      })
+    }
+
+    return next()
+  } catch (error) {
+    logger.warn(`Optional auth failed: ${error.message}`)
+    return res.status(401).json({
+      success: false,
+      message: error.name === 'TokenExpiredError'
+        ? 'Session muddati tugagan. Iltimos, qayta kiring.'
+        : 'Not authorized, token failed'
+    })
+  }
+}
+
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {

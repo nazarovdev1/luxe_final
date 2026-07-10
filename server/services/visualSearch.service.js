@@ -215,8 +215,16 @@ class VisualSearchService {
       const queryColorVector = this.paletteToVector(queryPalette)
       const queryStructureVector = await this.extractStructureVector(imageBuffer)
 
-      const products = await Product.find({})
+      const products = await Product.find({
+        $or: [
+          { colorVector: { $exists: true, $ne: [] } },
+          { structureVector: { $exists: true, $ne: [] } },
+          { colorPalette: { $exists: true, $ne: [] } }
+        ]
+      })
         .select('name price originalPrice category badge rating images colors colorVector colorPalette structureVector description')
+        .sort({ createdAt: -1 })
+        .limit(500)
         .lean()
 
       const results = products
@@ -315,9 +323,16 @@ class VisualSearchService {
       }
 
       const products = await Product.find({
-        _id: { $ne: productId }
+        _id: { $ne: productId },
+        $or: [
+          { category: product.category },
+          { colorVector: { $exists: true, $ne: [] } },
+          { colorPalette: { $exists: true, $ne: [] } }
+        ]
       })
         .select('name price originalPrice category badge rating images colorVector colorPalette colors')
+        .sort({ category: -1, createdAt: -1 })
+        .limit(500)
         .lean()
 
       const results = products

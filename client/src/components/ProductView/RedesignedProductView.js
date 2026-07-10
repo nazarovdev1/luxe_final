@@ -28,6 +28,7 @@ import { Button, Badge, Card } from './ui';
 import { useProducts } from '../../contexts/ProductContext';
 import { useCart } from '../../contexts/CartContext';
 import useRecentlyViewed from '../../hooks/useRecentlyViewed';
+import { showCartToast } from '../../utils/toast';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -176,7 +177,11 @@ export default function ProductView() {
     setIsAddingToCart(true);
     try {
       await addToCart(product, selectedColor, selectedSize, quantity);
-      toast.success(`${product.name} savatga qo'shildi!`, { duration: 6000 });
+      showCartToast({
+        itemName: product.name,
+        quantity,
+        duration: 6000,
+      });
     } catch (error) {
       toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.", { duration: 6000 });
     } finally {

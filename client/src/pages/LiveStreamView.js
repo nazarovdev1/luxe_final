@@ -55,7 +55,9 @@ const LiveStreamView = () => {
       ? window.location.origin 
       : 'http://localhost:3003';
     
-    socket.current = io(socketUrl);
+    socket.current = io(socketUrl, {
+      auth: token ? { token } : undefined,
+    });
     socket.current.emit('join_stream', id);
 
     socket.current.on('receive_message', (msg) => {
@@ -69,7 +71,7 @@ const LiveStreamView = () => {
     return () => {
       if (socket.current) socket.current.disconnect();
     };
-  }, [id, navigate]);
+  }, [id, navigate, token]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

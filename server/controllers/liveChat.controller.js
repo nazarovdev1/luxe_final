@@ -1,4 +1,5 @@
 import LiveChatMessage from '../models/liveChat.model.js'
+import { getIO } from '../services/socket.service.js'
 
 // @desc    Get messages for a livestream
 // @route   GET /api/live-chat/:streamId
@@ -55,11 +56,18 @@ export const deleteMessage = async (req, res) => {
     }
 
     // Only admin can delete live chat messages for now, or the author
-    if (message.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    const isStaff = req.user.role === 'admin' || req.user.role === 'manager' || req.user.isAdmin
+    if (message.user.toString() !== req.user._id.toString() && !isStaff) {
       return res.status(403).json({ success: false, message: 'Ruxsat etilmagan' })
     }
 
     await message.deleteOne()
+
+    try {
+      getIO().to(String(message.streamId)).emit('message_deleted', String(message._id))
+    } catch {
+      // Socket.io may be unavailable in tests or one-off scripts.
+    }
 
     res.json({ success: true, message: 'Xabar o\'chirildi' })
   } catch (error) {

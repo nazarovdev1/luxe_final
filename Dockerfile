@@ -1,16 +1,16 @@
 FROM node:22-slim
 
+ENV NODE_ENV=production
+
 WORKDIR /app
 
-# Copy server files
-COPY server/package*.json ./server/
-RUN cd server && npm install --production
+COPY server/package.json server/package-lock.json ./server/
+RUN cd server && npm ci --omit=dev
 
-# Copy client build (assumes build is run before)
-COPY client/build ./server/public
-
-# Copy server source
 COPY server/ ./server/
+
+# Copy the prebuilt client last so it cannot be overwritten by stale server/public files.
+COPY client/build ./server/public
 
 EXPOSE 3003
 

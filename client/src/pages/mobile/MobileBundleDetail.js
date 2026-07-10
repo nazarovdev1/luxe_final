@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
+import { showCartToast } from '../../utils/toast';
 import SEO from '../../components/SEO';
 
 // Components
@@ -112,7 +113,11 @@ const MobileBundleDetail = () => {
                 products
             };
             addLookToCart(lookForCart, selectedVariants);
-            toast.success("To'plam savatga qo'shildi");
+            showCartToast({
+                title: "To'plam savatga qo'shildi",
+                itemName: bundle.title,
+                meta: `${products.length} ta mahsulot`,
+            });
         } catch (err) {
             toast.error("Xatolik yuz berdi");
         } finally {

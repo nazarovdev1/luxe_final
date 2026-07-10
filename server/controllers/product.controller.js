@@ -3,6 +3,7 @@ import Product from '../models/product.model.js'
 import Points from '../models/points.model.js'
 import logger from '../utils/logger.js'
 import jwt from 'jsonwebtoken'
+import { getPagination, getSort } from '../utils/pagination.js'
 
 let productsCache = null
 let cacheTimestamp = 0
@@ -13,12 +14,68 @@ const clearProductsCache = () => {
   cacheTimestamp = 0
 }
 
+const normalizeProductPayload = (payload = {}) => {
+  const product = { ...payload }
+
+  if (product.ratings !== undefined && product.rating === undefined) {
+    product.rating = product.ratings
+  }
+
+  if (product.badge === null) {
+    product.badge = ''
+  }
+
+  if (product.earlyAccessUntil === '') {
+    product.earlyAccessUntil = null
+  }
+
+  delete product.ratings
+  return product
+}
+
+const normalizeProductResponse = (product = {}) => {
+  if (!product) return product
+  const normalized = { ...product }
+  normalized.rating = normalized.rating ?? normalized.ratings ?? 0
+  delete normalized.ratings
+  return normalized
+}
+
+const getUserLevelFromAuth = async (authHeader) => {
+  if (!authHeader || !authHeader.startsWith('Bearer')) return 'Bronze'
+
+  try {
+    const token = authHeader.split(' ')[1]
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const pointsRecord = await Points.findOne({ user: decoded.id }).select('level').lean()
+    return pointsRecord?.level || 'Bronze'
+  } catch {
+    return 'Bronze'
+  }
+}
+
+const canSeeEarlyAccessProduct = (product, userLevel) => {
+  if (!product?.earlyAccessUntil) return true
+  if (new Date(product.earlyAccessUntil).getTime() <= Date.now()) return true
+  return ['Gold', 'Diamond'].includes(userLevel)
+}
+
 export const getProduct = async (req, res) => {
   try {
     const now = Date.now()
-    const { page = 1, limit = 50, category, badge, sort = '-createdAt', search } = req.query
+    const { category, badge, sort = '-createdAt', search } = req.query
+    const { page, limit, skip } = getPagination(req.query, { defaultLimit: 50, maxLimit: 100 })
+    const sortOption = getSort(sort, {
+      createdAt: 'createdAt',
+      price: 'price',
+      rating: 'rating',
+      name: 'name'
+    }, { createdAt: -1 })
 
-    if (productsCache && (now - cacheTimestamp) < CACHE_DURATION && page === 1 && !category && !badge && !search) {
+    const hasAuthHeader = Boolean(req.headers.authorization)
+    const canUsePublicCache = page === 1 && !category && !badge && !search && !hasAuthHeader
+
+    if (productsCache && (now - cacheTimestamp) < CACHE_DURATION && canUsePublicCache) {
       res.set('Cache-Control', 'public, max-age=60')
       return res.status(200).json({ success: true, data: productsCache, cached: true })
     }
@@ -31,18 +88,8 @@ export const getProduct = async (req, res) => {
     }
 
     // --- Tier-based Early Access Logic ---
-    let userLevel = 'Bronze';
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer')) {
-      try {
-        const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const pointsRecord = await Points.findOne({ user: decoded.id });
-        if (pointsRecord) userLevel = pointsRecord.level;
-      } catch (err) {
-        // Token invalid, treat as guest
-      }
-    }
+    const userLevel = await getUserLevelFromAuth(authHeader)
 
     const canSeeEarlyAccess = ['Gold', 'Diamond'].includes(userLevel);
     if (!canSeeEarlyAccess) {
@@ -53,9 +100,6 @@ export const getProduct = async (req, res) => {
     }
     // -------------------------------------
 
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const sortOption = sort.startsWith('-') ? { [sort.slice(1)]: -1 } : { [sort]: 1 }
-
     const [products, total] = await Promise.all([
       Product.find(query)
         .select({
@@ -65,6 +109,7 @@ export const getProduct = async (req, res) => {
           category: 1,
           badge: 1,
           rating: 1,
+          ratings: 1,
           numOfReviews: 1,
           colors: 1,
           sizes: 1,
@@ -78,27 +123,29 @@ export const getProduct = async (req, res) => {
         })
         .sort(sortOption)
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(limit)
         .lean(),
       Product.countDocuments(query)
     ])
 
-    if (page === 1 && !category && !badge && !search) {
-      productsCache = products
+    const normalizedProducts = products.map(normalizeProductResponse)
+
+    if (canUsePublicCache) {
+      productsCache = normalizedProducts
       cacheTimestamp = now
     }
 
-    res.set('Cache-Control', 'public, max-age=60')
+    res.set('Cache-Control', hasAuthHeader ? 'private, no-store' : 'public, max-age=60')
     res.status(200).json({
       success: true,
-      data: products,
+      data: normalizedProducts,
       pagination: {
         currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.ceil(total / limit),
         totalItems: total,
-        itemsPerPage: parseInt(limit),
-        hasNextPage: skip + products.length < total,
-        hasPrevPage: parseInt(page) > 1
+        itemsPerPage: limit,
+        hasNextPage: skip + normalizedProducts.length < total,
+        hasPrevPage: page > 1
       }
     })
   } catch (error) {
@@ -114,15 +161,20 @@ export const getSingleProduct = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid Product ID' })
   }
 
-  try {
+    try {
     const product = await Product.findById(id).lean()
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' })
     }
 
+    const userLevel = await getUserLevelFromAuth(req.headers.authorization)
+    if (!canSeeEarlyAccessProduct(product, userLevel)) {
+      return res.status(404).json({ success: false, message: 'Product not found' })
+    }
+
     res.set('Cache-Control', 'public, max-age=300')
-    res.status(200).json({ success: true, data: product })
+    res.status(200).json({ success: true, data: normalizeProductResponse(product) })
   } catch (error) {
     logger.error('Error fetching single product:', error)
     res.status(500).json({ success: false, message: 'Server Error' })
@@ -139,9 +191,21 @@ export const getRelatedProducts = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Mahsulot topilmadi' })
     }
 
+    const userLevel = await getUserLevelFromAuth(req.headers.authorization)
+    const canSeeEarlyAccess = ['Gold', 'Diamond'].includes(userLevel)
+    const visibilityQuery = canSeeEarlyAccess
+      ? {}
+      : {
+          $or: [
+            { earlyAccessUntil: null },
+            { earlyAccessUntil: { $lte: new Date() } }
+          ]
+        }
+
     const relatedProducts = await Product.find({
       category: product.category,
-      _id: { $ne: id }
+      _id: { $ne: id },
+      ...visibilityQuery
     })
       .select({
         name: 1,
@@ -150,13 +214,14 @@ export const getRelatedProducts = async (req, res) => {
         category: 1,
         badge: 1,
         rating: 1,
+        ratings: 1,
         images: { $slice: 1 }
       })
       .limit(10)
       .lean()
 
     res.set('Cache-Control', 'public, max-age=300')
-    res.status(200).json({ success: true, data: relatedProducts })
+    res.status(200).json({ success: true, data: relatedProducts.map(normalizeProductResponse) })
   } catch (error) {
     logger.error('Related product error:', error)
     res.status(500).json({ success: false, message: 'Server xatosi' })
@@ -164,7 +229,7 @@ export const getRelatedProducts = async (req, res) => {
 }
 
 export const postProduct = async (req, res) => {
-  const product = req.body
+  const product = normalizeProductPayload(req.validatedBody || req.body)
 
   if (!product.name || !product.price || !product.category || !product.images || product.images.length === 0) {
     return res.status(400).json({
@@ -181,7 +246,7 @@ export const postProduct = async (req, res) => {
 
     logger.info(`Product created: ${newProduct._id}`)
 
-    res.status(201).json({ success: true, data: newProduct })
+    res.status(201).json({ success: true, data: normalizeProductResponse(newProduct.toObject()) })
   } catch (error) {
     logger.error('Error creating product:', error)
     res.status(500).json({ success: false, message: "Server xatosi: " + error.message })
@@ -190,13 +255,14 @@ export const postProduct = async (req, res) => {
 
 export const putProduct = async (req, res) => {
   const { id } = req.params
+  const product = normalizeProductPayload(req.validatedBody || req.body)
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ success: false, message: 'Invalid Product ID' })
   }
 
   try {
-    const updated = await Product.findByIdAndUpdate(id, req.body, { new: true }).lean()
+    const updated = await Product.findByIdAndUpdate(id, product, { new: true, runValidators: true }).lean()
 
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Product not found' })
@@ -206,7 +272,7 @@ export const putProduct = async (req, res) => {
 
     logger.info(`Product updated: ${id}`)
 
-    res.status(200).json({ success: true, data: updated })
+    res.status(200).json({ success: true, data: normalizeProductResponse(updated) })
   } catch (error) {
     logger.error('Error updating product:', error)
     res.status(500).json({ success: false, message: 'Yangilashda xato' })

@@ -4,6 +4,7 @@ import { X, Star, ShoppingCart, Plus, Minus, Heart, Ruler, Check, Loader2 } from
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
+import { showCartToast } from '../utils/toast';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -92,7 +93,10 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
     setIsAdding(true);
     try {
       await addToCart(product, selectedColor, selectedSize, quantity);
-      toast.success(`${product.name} savatga qo'shildi!`);
+      showCartToast({
+        itemName: product.name,
+        quantity,
+      });
       onClose();
     } catch (error) {
       toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");

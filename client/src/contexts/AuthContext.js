@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import useProductService from '../server/server';
 
 const AuthContext = createContext();
@@ -24,7 +24,18 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => {
     return localStorage.getItem('token') || null;
   });
-  const { registerUser, loginUser, getUserProfile } = useProductService();
+  const authService = useProductService();
+  const authServiceRef = useRef(authService);
+  authServiceRef.current = authService;
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
+    setIsAuthenticated(false);
+    setUser(null);
+    setIsAdmin(false);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -33,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           // Fetch fresh user profile from DB (DATA FIRST)
-          const result = await getUserProfile(token);
+          const result = await authServiceRef.current.getUserProfile(token);
 
           if (result && result.success) {
             const userData = result.data;
@@ -58,8 +69,8 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const register = async (username, phone, password) => {
-    const result = await registerUser({ username, phone, password });
+  const register = useCallback(async (username, phone, password) => {
+    const result = await authServiceRef.current.registerUser({ username, phone, password });
 
     if (result.success) {
       const { token, ...userData } = result.data;
@@ -74,12 +85,12 @@ export const AuthProvider = ({ children }) => {
     }
 
     return { success: false, error: result.message };
-  };
+  }, []);
 
-  const login = async (identifier, password) => {
+  const login = useCallback(async (identifier, password) => {
 
 
-    const result = await loginUser({ identifier, password });
+    const result = await authServiceRef.current.loginUser({ identifier, password });
 
     if (result.success) {
       const { token, ...userData } = result.data;
@@ -94,18 +105,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     return { success: false, error: result.message };
-  };
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
-    setIsAuthenticated(false);
-    setUser(null);
-    setIsAdmin(false);
-  };
-
-  const setAuthData = (userData, authToken) => {
+  const setAuthData = useCallback((userData, authToken) => {
     const { token: _, ...userDataWithoutToken } = userData;
     localStorage.setItem('token', authToken);
     localStorage.setItem('user', JSON.stringify(userDataWithoutToken));
@@ -113,28 +115,30 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     setUser(userDataWithoutToken);
     setIsAdmin(userDataWithoutToken.isAdmin);
-  };
+  }, []);
 
-  const updateUser = (userData) => {
+  const updateUser = useCallback((userData) => {
     setUser(prev => ({ ...prev, ...userData }));
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     const newUser = { ...currentUser, ...userData };
     localStorage.setItem('user', JSON.stringify(newUser));
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    token,
+    isAuthenticated,
+    user,
+    isAdmin,
+    loading,
+    register,
+    login,
+    setAuthData,
+    logout,
+    updateUser
+  }), [token, isAuthenticated, user, isAdmin, loading, register, login, setAuthData, logout, updateUser]);
 
   return (
-    <AuthContext.Provider value={{
-      token,
-      isAuthenticated,
-      user,
-      isAdmin,
-      loading,
-      register,
-      login,
-      setAuthData,
-      logout,
-      updateUser
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

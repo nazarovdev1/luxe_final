@@ -1,6 +1,7 @@
 import User from '../models/user.model.js'
 import jwt from 'jsonwebtoken'
 import logger from '../utils/logger.js'
+import { getPagination } from '../utils/pagination.js'
 import pointsService from '../services/points.service.js'
 import { verifyTelegramAuth } from '../utils/telegramAuth.js'
 import crypto from 'crypto'
@@ -259,11 +260,10 @@ export const updateCart = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const { page, limit, skip } = getPagination(req.query, { defaultLimit: 20, maxLimit: 100 })
 
     const [users, total] = await Promise.all([
-      User.find({}).select('-password').sort({ createdAt: -1 }).skip(skip).limit(parseInt(limit)),
+      User.find({}).select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit),
       User.countDocuments()
     ])
 
@@ -274,7 +274,7 @@ export const getAllUsers = async (req, res) => {
       data: users,
       pagination: {
         currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.ceil(total / limit),
         totalItems: total
       }
     })

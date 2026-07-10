@@ -119,6 +119,11 @@ const MobileAdminEdit = () => {
 
     try {
       const uploadedUrls = [];
+      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+
+      if (!publicKey) {
+        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+      }
 
       for (const file of files) {
         const auth = await getImageKitAuth();
@@ -129,7 +134,7 @@ const MobileAdminEdit = () => {
         const data = new FormData();
         data.append('file', file);
         data.append('fileName', file.name);
-        data.append('publicKey', 'public_mnemyo/d2OAPyIzzxUa3mXisNc0=');
+        data.append('publicKey', publicKey);
         data.append('signature', auth.signature);
         data.append('expire', auth.expire);
         data.append('token', auth.token);
@@ -156,7 +161,7 @@ const MobileAdminEdit = () => {
       toast.success('Rasm yuklandi', { id: loadingToast });
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Rasm yuklashda xatolik', { id: loadingToast });
+      toast.error(error.message || 'Rasm yuklashda xatolik', { id: loadingToast });
     }
   };
 

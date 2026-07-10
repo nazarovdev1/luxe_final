@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
+const DEBUG_LOGS = process.env.NODE_ENV !== 'production';
+
 const firebaseConfig = {
     apiKey: "AIzaSyDWunJ1nkjfcI84ulgBHI2LYXHMlwAxgBU",
     authDomain: "luxe-store-ca6a2.firebaseapp.com",
@@ -19,7 +21,7 @@ let messaging = null;
 try {
     messaging = getMessaging(app);
 } catch (error) {
-    console.log('FCM not supported in this browser');
+    if (DEBUG_LOGS) console.log('FCM not supported in this browser');
 }
 
 const VAPID_KEY = 'BPS55YLCh7fEKt5HHx2che4WvpohHliOyA42UU_7O1Lf0K4h0oLs68eX12GT0o3ODrEFUg_NNXsUiJn7J98k9Ss';
@@ -28,7 +30,7 @@ const VAPID_KEY = 'BPS55YLCh7fEKt5HHx2che4WvpohHliOyA42UU_7O1Lf0K4h0oLs68eX12GT0
 export const requestNotificationPermission = async () => {
     try {
         if (!messaging) {
-            console.log('Messaging not available');
+            if (DEBUG_LOGS) console.log('Messaging not available');
             return null;
         }
 
@@ -36,10 +38,10 @@ export const requestNotificationPermission = async () => {
 
         if (permission === 'granted') {
             const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-            console.log('FCM Token:', token);
+            if (DEBUG_LOGS) console.log('FCM Token:', token);
             return token;
         } else {
-            console.log('Notification permission denied');
+            if (DEBUG_LOGS) console.log('Notification permission denied');
             return null;
         }
     } catch (error) {
@@ -57,7 +59,7 @@ export const onMessageListener = () => {
         }
 
         onMessage(messaging, (payload) => {
-            console.log('Foreground message received:', payload);
+            if (DEBUG_LOGS) console.log('Foreground message received:', payload);
             resolve(payload);
         });
     });

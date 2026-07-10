@@ -20,17 +20,23 @@ const Hero = () => {
   // Generate frame URL
   const getFrameUrl = useCallback((index) => {
     const paddedIndex = index.toString().padStart(3, '0');
-    return `/animatedimage/frame_${paddedIndex}.jpg`;
+    return `/animatedimagee/frame_${paddedIndex}.jpg`;
   }, []);
 
-  // Preload all images for desktop
+  // Preload animation frames only when a real canvas is mounted and the frame path works.
   useEffect(() => {
-    if (!isDesktop) return;
+    if (!isDesktop || !canvasRef.current) {
+      imagesRef.current = [];
+      setImagesLoaded(false);
+      return;
+    }
 
     const images = [];
     let loadedCount = 0;
+    let cancelled = false;
 
     const onImageLoad = () => {
+      if (cancelled) return;
       loadedCount++;
       if (loadedCount === frameCount) {
         imagesRef.current = images;
@@ -38,15 +44,43 @@ const Hero = () => {
       }
     };
 
-    for (let i = 0; i < frameCount; i++) {
-      const img = new Image();
-      img.onload = onImageLoad;
-      img.onerror = onImageLoad;
-      img.src = getFrameUrl(i);
-      images.push(img);
-    }
+    const preloadFrames = () => {
+      images[0] = firstFrame;
+      loadedCount = 1;
+
+      if (frameCount === loadedCount) {
+        imagesRef.current = images;
+        setImagesLoaded(true);
+        return;
+      }
+
+      for (let i = 1; i < frameCount; i++) {
+        const img = new Image();
+        img.onload = onImageLoad;
+        img.onerror = onImageLoad;
+        img.src = getFrameUrl(i);
+        images.push(img);
+      }
+    };
+
+    const firstFrame = new Image();
+    firstFrame.onload = () => {
+      if (!cancelled) {
+        preloadFrames();
+      }
+    };
+    firstFrame.onerror = () => {
+      if (!cancelled) {
+        imagesRef.current = [];
+        setImagesLoaded(false);
+      }
+    };
+    firstFrame.src = getFrameUrl(0);
 
     return () => {
+      cancelled = true;
+      firstFrame.onload = null;
+      firstFrame.onerror = null;
       images.forEach(img => {
         img.onload = null;
         img.onerror = null;

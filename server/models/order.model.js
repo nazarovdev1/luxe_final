@@ -77,6 +77,7 @@ const orderSchema = new mongoose.Schema({
 })
 
 orderSchema.index({ 'customer.phone': 1 })
+orderSchema.index({ user: 1, createdAt: -1 })
 orderSchema.index({ status: 1 })
 orderSchema.index({ createdAt: -1 })
 

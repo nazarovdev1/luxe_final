@@ -358,11 +358,16 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
     if (!file) return;
     setIsUploading(true);
     try {
+      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+      if (!publicKey) {
+        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+      }
+
       const auth = await getImageKitAuth();
       const fd = new FormData();
       fd.append('file', file);
       fd.append('fileName', file.name);
-      fd.append('publicKey', 'public_mnemyo/d2OAPyIzzxUa3mXisNc0=');
+      fd.append('publicKey', publicKey);
       fd.append('signature', auth.signature);
       fd.append('expire', auth.expire);
       fd.append('token', auth.token);
@@ -370,8 +375,8 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
       const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', { method: 'POST', body: fd });
       const result = await res.json();
       if (result.url) setImage(result.url);
-    } catch {
-      toast.error('Rasm yuklashda xatolik');
+    } catch (error) {
+      toast.error(error.message || 'Rasm yuklashda xatolik');
     } finally {
       setIsUploading(false);
     }

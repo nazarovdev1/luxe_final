@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Gift, Copy, Check, Send, Trash2, ExternalLink } from 'lucide-react';
+import { Gift, Copy, Send, ExternalLink } from 'lucide-react';
 import useProductService from '../server/server';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
-
-const CARD_DESIGNS = [
-  { id: 'classic', name: 'Klassik', gradient: 'from-[#d6b47c] to-[#a67c52]', textColor: 'text-[#0f1014]' },
-  { id: 'elegant', name: 'Zamonaviy', gradient: 'from-[#1a1040] to-[#0d0820]', textColor: 'text-[#d6b47c]' },
-  { id: 'minimal', name: 'Minimal', gradient: 'from-[#f4f1eb] to-[#e0ddd5]', textColor: 'text-[#0f1014]' },
-  { id: 'dark', name: 'Dark Luxury', gradient: 'from-[#0f1014] to-[#1a1a2e]', textColor: 'text-[#d6b47c]' },
-];
+import GiftCardSvg from './GiftCardSvg';
+import { getGiftCardDesign } from '../data/giftCardDesigns';
 
 const formatPrice = (value) => {
   return Number(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -104,35 +99,21 @@ const MyGiftCards = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {giftCards.map((card) => {
-        const design = CARD_DESIGNS.find(d => d.id === card.designId) || CARD_DESIGNS[0];
+        const design = getGiftCardDesign(card.designId);
         return (
           <div key={card._id} className="relative group">
             {/* Card Visual */}
-            <div className={`rounded-3xl bg-gradient-to-br ${design.gradient} p-6 aspect-[1.6/1] flex flex-col justify-between shadow-xl relative overflow-hidden transition-transform group-hover:scale-[1.02]`}>
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-white/5 blur-2xl" />
-              
-              <div className="flex justify-between items-start relative z-10">
-                <div>
-                  <p className={`text-[10px] uppercase tracking-[0.2em] ${design.textColor} opacity-60 font-black`}>Luxx.uz</p>
-                  <p className={`text-sm font-bold ${design.textColor}`}>Sovg'a kartasi</p>
-                </div>
-                <div className={`px-2 py-1 rounded-md bg-black/10 backdrop-blur-md border border-white/10`}>
-                  <p className={`text-[10px] font-bold ${design.textColor} uppercase`}>
-                    {card.isUsed ? 'Ishlatilgan' : 'Faol'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative z-10">
-                <p className={`text-3xl font-bold ${design.textColor}`}>
-                  {formatPrice(card.amount)} <span className="text-sm font-normal">{t('common.sum')}</span>
-                </p>
-                <div className="mt-4 flex items-center gap-2">
-                  <code className={`px-3 py-1.5 rounded-lg bg-black/10 backdrop-blur-md border border-white/10 text-sm font-mono font-bold ${design.textColor}`}>
-                    {card.code}
-                  </code>
-                </div>
-              </div>
+            <div className="relative transition-transform group-hover:scale-[1.02]">
+              <GiftCardSvg
+                design={design}
+                amount={card.amount}
+                recipientName={card.recipientName}
+                message={card.message}
+                code={card.code}
+                status={card.isUsed ? 'Ishlatilgan' : 'Faol'}
+                compact
+                className="h-auto w-full rounded-3xl shadow-xl ring-1 ring-white/10"
+              />
             </div>
 
             {/* Actions Overlay/Buttons */}

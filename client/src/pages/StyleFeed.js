@@ -56,6 +56,18 @@ const StyleFeed = () => {
         fetchPosts();
     }, []);
 
+    useEffect(() => {
+        window.dispatchEvent(new CustomEvent('luxx:chrome-visibility', {
+            detail: { hidden: Boolean(selectedPost) }
+        }));
+
+        return () => {
+            window.dispatchEvent(new CustomEvent('luxx:chrome-visibility', {
+                detail: { hidden: false }
+            }));
+        };
+    }, [selectedPost]);
+
     const handleLike = async (postId) => {
         if (!isAuthenticated) {
             toast.error(t('styleFeed.loginToLike'));
@@ -336,12 +348,17 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
 
         try {
             const uploadedUrls = [];
+            const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+            if (!publicKey) {
+                throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+            }
+
             for (const file of files) {
                 const auth = await getImageKitAuth();
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('fileName', file.name);
-                formData.append('publicKey', 'public_mnemyo/d2OAPyIzzxUa3mXisNc0=');
+                formData.append('publicKey', publicKey);
                 formData.append('signature', auth.signature);
                 formData.append('expire', auth.expire);
                 formData.append('token', auth.token);

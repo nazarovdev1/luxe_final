@@ -17,6 +17,7 @@ import {
   Trophy,
   BookOpen,
   PackagePlus,
+  Vote,
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 import AdminOrders from './AdminOrders';
@@ -29,6 +30,7 @@ import AdminCoupons from './AdminCoupons';
 import AdminChallenges from './AdminChallenges';
 import AdminBadges from './AdminBadges';
 import AdminReels from './AdminReels';
+import AdminStylePolls from './AdminStylePolls';
 import BlogManager from './admin/BlogManager';
 import axios from 'axios';
 import { BarChart3, TrendingUp, DollarSign, ShoppingCart, Loader2 } from 'lucide-react';
@@ -66,6 +68,12 @@ const tabs = [
     label: 'Mijozlar',
     description: 'Foydalanuvchi bazasi',
     icon: Users,
+  },
+  {
+    id: 'community',
+    label: 'Community',
+    description: "Style Feed so'rovnomalari",
+    icon: Vote,
   },
   {
     id: 'reels',
@@ -583,6 +591,12 @@ const AdminDashboard = () => {
           {activeTab === 'reels' ? (
             <section className="admin-card p-5 sm:p-6">
               <AdminReels />
+            </section>
+          ) : null}
+
+          {activeTab === 'community' ? (
+            <section className="admin-card p-5 sm:p-6">
+              <AdminStylePolls />
             </section>
           ) : null}
 

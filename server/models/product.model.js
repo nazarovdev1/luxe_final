@@ -17,13 +17,15 @@ const productSchema = new mongoose.Schema({
         maxlength: [10, 'Product price cannot exceed 10 characters'],
         default: 0.0
     },
+    originalPrice: {
+        type: Number,
+        default: null,
+        min: [0, 'Original price cannot be negative']
+    },
     category: {
         type: String,
         required: [true, 'Please select category for this product'],
-        enum: {
-            values: ['Premium', 'Luxury', 'Corporate', 'Limited'],
-            message: 'Please select correct category'
-        }
+        trim: true
     },
     images: [{
         url: {
@@ -36,10 +38,23 @@ const productSchema = new mongoose.Schema({
         required: [true, 'Please enter product stock'],
         default: 1
     },
-    ratings: {
+    rating: {
         type: Number,
         default: 0
     },
+    badge: {
+        type: String,
+        enum: ['NEW', 'BESTSELLER', 'SALE', 'LIMITED', ''],
+        default: ''
+    },
+    colors: [{
+        type: String,
+        trim: true
+    }],
+    sizes: [{
+        type: String,
+        trim: true
+    }],
     numOfReviews: {
         type: Number,
         default: 0
@@ -90,7 +105,20 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 })
 
+productSchema.virtual('ratings')
+    .get(function () {
+        return this.rating
+    })
+    .set(function (value) {
+        this.rating = value
+    })
+
 productSchema.index({ name: 'text', description: 'text', category: 1 })
+productSchema.index({ category: 1, createdAt: -1 })
+productSchema.index({ badge: 1, createdAt: -1 })
+productSchema.index({ earlyAccessUntil: 1, createdAt: -1 })
+productSchema.index({ price: 1 })
+productSchema.index({ rating: -1 })
 productSchema.index({ colorVector: 1 })
 
 const Product = mongoose.model('Product', productSchema)

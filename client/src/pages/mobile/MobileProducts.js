@@ -19,6 +19,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import useProductListing from '../../hooks/useProductListing';
+import { showCartToast } from '../../utils/toast';
 import QuickViewModal from '../../components/QuickViewModal';
 import MobileProductComparison from '../../components/MobileProductComparison';
 
@@ -151,7 +152,9 @@ const MobileProducts = () => {
 
     try {
       await addToCart(product, '', '', 1);
-      toast.success(`${product.name} savatga qo'shildi!`);
+      showCartToast({
+        itemName: product.name,
+      });
     } catch {
       toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
     }

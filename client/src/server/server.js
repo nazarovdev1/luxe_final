@@ -1,5 +1,20 @@
-// API base URL - uses environment variable for production
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3003/api';
+import { API_BASE_URL, apiFetch } from '../services/api';
+
+const API_BASE = API_BASE_URL;
+
+const fetch = async (path, options = {}) => {
+	const payload = await apiFetch(path, {
+		method: options.method || 'GET',
+		headers: options.headers,
+		body: options.body,
+	});
+
+	return {
+		ok: payload?.success !== false,
+		status: payload?.status || 200,
+		json: async () => payload,
+	};
+};
 
 const useProductService = () => {
 	const _apiBase = `${API_BASE}/products`
@@ -239,6 +254,10 @@ const useProductService = () => {
 			colors: product.colors,
 			sizes: product.sizes,
 			description: product.description,
+			stock: product.stock,
+			earlyAccessTier: product.earlyAccessTier,
+			earlyAccessUntil: product.earlyAccessUntil,
+			isNewCollection: product.isNewCollection,
 			createdAt: product.createdAt,
 		}
 	}

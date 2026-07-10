@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Loader2, ImagePlus, X, Type, FileText, Settings, Globe, Hash } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '../../services/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 
 const CATEGORIES = ['Trendlar', 'Maslahatlar', 'Kombinatsiyalar', 'Parvarish', 'Aksessuarlar'];
 const LANGUAGES = [
-  { code: 'uz', label: "O'zbek", flag: '🇺🇿' },
-  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'uz', label: "O'zbek", flag: 'UZ' },
+  { code: 'ru', label: 'Русский', flag: 'RU' },
+  { code: 'en', label: 'English', flag: 'EN' },
 ];
 
 const BlogForm = ({ blog, onClose }) => {
@@ -81,19 +81,24 @@ const BlogForm = ({ blog, onClose }) => {
     try {
       toast.loading('Rasm yuklanmoqda...', { id: 'img-upload' });
 
+      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+      if (!publicKey) {
+        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+      }
+
       // Get ImageKit auth params
-      const authRes = await axios.get('/api/imagekit-auth');
+      const authRes = await apiClient.get('/imagekit-auth');
       const { token: uploadToken, expire, signature } = authRes.data;
 
       const formData = new FormData();
       formData.append('file', file);
       formData.append('fileName', `blog-${Date.now()}-${file.name}`);
-      formData.append('publicKey', process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY || 'public_m6JkP8vnN9V0u9WFF/6YqN2D9YI=');
+      formData.append('publicKey', publicKey);
       formData.append('signature', signature);
       formData.append('expire', expire);
       formData.append('token', uploadToken);
 
-      const uploadRes = await axios.post('https://upload.imagekit.io/api/v1/files/upload', formData);
+      const uploadRes = await apiClient.post('https://upload.imagekit.io/api/v1/files/upload', formData);
 
       if (field === 'coverImage') {
         handleChange('coverImage', uploadRes.data.url);
@@ -103,7 +108,7 @@ const BlogForm = ({ blog, onClose }) => {
 
       toast.success('Rasm yuklandi', { id: 'img-upload' });
     } catch (err) {
-      toast.error('Rasm yuklashda xato', { id: 'img-upload' });
+      toast.error(err.message || 'Rasm yuklashda xato', { id: 'img-upload' });
     }
   };
 
@@ -129,17 +134,17 @@ const BlogForm = ({ blog, onClose }) => {
 
       if (blog) {
         // Update
-        await axios.put(`/api/blogs/${blog._id}`, form, config);
+        await apiClient.put(`/blogs/${blog._id}`, form, config);
         toast.success('Maqola yangilandi');
       } else {
         // Create
-        await axios.post('/api/blogs', form, config);
+        await apiClient.post('/blogs', form, config);
         toast.success('Maqola yaratildi');
       }
 
       onClose(true);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Saqlashda xato yuz berdi');
+      toast.error(err.message || err.response?.data?.message || 'Saqlashda xato yuz berdi');
     } finally {
       setSaving(false);
     }
@@ -156,16 +161,16 @@ const BlogForm = ({ blog, onClose }) => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       if (blog) {
         // Update existing blog as draft
-        await axios.put(`/api/blogs/${blog._id}`, draftData, config);
+        await apiClient.put(`/blogs/${blog._id}`, draftData, config);
         toast.success('Qoralama yangilandi');
       } else {
         // Create new blog as draft
-        await axios.post('/api/blogs', draftData, config);
+        await apiClient.post('/blogs', draftData, config);
         toast.success('Qoralama saqlandi');
       }
       onClose(true);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Saqlashda xato yuz berdi');
+      toast.error(err.message || err.response?.data?.message || 'Saqlashda xato yuz berdi');
     } finally {
       setSaving(false);
     }
@@ -282,10 +287,10 @@ const BlogForm = ({ blog, onClose }) => {
               <button type="button" onClick={() => insertFormatting('<p>', '</p>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">P</button>
               <button type="button" onClick={() => insertFormatting('<strong>', '</strong>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors font-bold">B</button>
               <button type="button" onClick={() => insertFormatting('<em>', '</em>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors italic">I</button>
-              <button type="button" onClick={() => insertFormatting('<blockquote>', '</blockquote>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">❝</button>
-              <button type="button" onClick={() => insertFormatting('<ul><li>', '</li></ul>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">• List</button>
-              <button type="button" onClick={() => insertFormatting('<a href="">', '</a>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">🔗</button>
-              <button type="button" onClick={() => insertFormatting('<img src="" alt="', '" />')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">🖼</button>
+              <button type="button" onClick={() => insertFormatting('<blockquote>', '</blockquote>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">Quote</button>
+              <button type="button" onClick={() => insertFormatting('<ul><li>', '</li></ul>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">List</button>
+              <button type="button" onClick={() => insertFormatting('<a href="">', '</a>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">Link</button>
+              <button type="button" onClick={() => insertFormatting('<img src="" alt="', '" />')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">Image</button>
             </div>
             <textarea
               id={`content-${activeLang}`}

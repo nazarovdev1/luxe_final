@@ -3,13 +3,130 @@ import Product from '../models/product.model.js'
 import User from '../models/user.model.js'
 import GiftCard from '../models/giftCard.model.js'
 import Look from '../models/look.model.js'
+import Promo from '../models/promo.model.js'
+import Coupon from '../models/coupon.model.js'
+import mongoose from 'mongoose'
 import { sendOrderToTelegram } from '../services/telegram.service.js'
 import pointsService from '../services/points.service.js'
 import logger from '../utils/logger.js'
+import { getPagination } from '../utils/pagination.js'
+
+const clampMoney = (value) => Math.max(0, Math.round((Number(value) || 0) * 100) / 100)
+
+const calculateCodeDiscount = async ({ code, subtotal, userId }) => {
+  const normalizedCode = String(code || '').trim().toUpperCase()
+  if (!normalizedCode || subtotal <= 0) {
+    return { discountAmount: 0, promoCode: null, giftCard: null }
+  }
+
+  const giftCard = await GiftCard.findOne({
+    code: normalizedCode,
+    isUsed: false,
+    status: { $in: ['Active', 'Sent'] }
+  }).lean()
+
+  if (giftCard) {
+    return {
+      discountAmount: Math.min(subtotal, clampMoney(giftCard.amount)),
+      promoCode: normalizedCode,
+      giftCard
+    }
+  }
+
+  const coupon = await Coupon.findOne({
+    code: normalizedCode,
+    isActive: true,
+    isUsed: false,
+    $or: [{ user: null }, ...(userId ? [{ user: userId }] : [])],
+    $and: [
+      {
+        $or: [
+          { expiryDate: null },
+          { expiryDate: { $exists: false } },
+          { expiryDate: { $gt: new Date() } }
+        ]
+      }
+    ]
+  }).lean()
+
+  if (coupon && subtotal >= (coupon.minPurchase || 0)) {
+    const discountAmount = coupon.discountType === 'fixed'
+      ? coupon.discountValue
+      : subtotal * (coupon.discountValue / 100)
+
+    return {
+      discountAmount: Math.min(subtotal, clampMoney(discountAmount)),
+      promoCode: normalizedCode,
+      giftCard: null
+    }
+  }
+
+  const promo = await Promo.findOne({ code: normalizedCode, isActive: true }).lean()
+  if (promo) {
+    return {
+      discountAmount: Math.min(subtotal, clampMoney(subtotal * (promo.discountPercentage / 100))),
+      promoCode: normalizedCode,
+      giftCard: null
+    }
+  }
+
+  return { discountAmount: 0, promoCode: null, giftCard: null }
+}
+
+const buildVerifiedItems = async (items = []) => {
+  const ids = [...new Set(items.map((item) => item.product).filter(Boolean).map(String))]
+  if (ids.length !== items.length || ids.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
+    const error = new Error('Buyurtmada noto\'g\'ri mahsulot ID mavjud')
+    error.status = 400
+    throw error
+  }
+
+  const products = await Product.find({ _id: { $in: ids } })
+    .select('name price images stock')
+    .lean()
+  const productMap = new Map(products.map((product) => [String(product._id), product]))
+
+  return items.map((item) => {
+    const productId = String(item.product || '')
+    const product = productMap.get(productId)
+    const quantity = Math.max(1, Number.parseInt(item.quantity, 10) || 1)
+
+    if (!product) {
+      const error = new Error(`Mahsulot topilmadi: ${productId}`)
+      error.status = 400
+      throw error
+    }
+
+    if (typeof product.stock === 'number' && product.stock < quantity) {
+      const error = new Error(`${product.name} uchun yetarli zaxira yo'q`)
+      error.status = 400
+      throw error
+    }
+
+    const firstImage = product.images?.[0]
+    const image = typeof firstImage === 'string' ? firstImage : firstImage?.url
+
+    return {
+      product: product._id,
+      name: product.name,
+      image: item.image || image || '',
+      quantity,
+      price: clampMoney(product.price),
+      selectedColor: item.selectedColor || '',
+      selectedSize: item.selectedSize || '',
+      lookId: item.lookId || null,
+      lookTitle: item.lookTitle || null,
+      lookDiscount: clampMoney(item.lookDiscount)
+    }
+  })
+}
 
 export const createOrder = async (req, res) => {
+  let claimedGiftCard = null
+  let orderSaved = false
   try {
-    const { customer, items, totals, paymentMethod, userId, lookItems, lookDiscounts } = req.body
+    const { customer, items, totals = {}, paymentMethod, lookItems, lookDiscounts } = req.body
+    const userId = req.user?._id || null
 
     if (!customer || !items || items.length === 0) {
       return res.status(400).json({
@@ -25,11 +142,9 @@ export const createOrder = async (req, res) => {
       })
     }
 
-    const orderTotals = totals || {
-      subtotal: 0,
-      deliveryFee: 0,
-      total: 0
-    }
+    const verifiedItems = await buildVerifiedItems(items)
+    const subtotal = clampMoney(verifiedItems.reduce((sum, item) => sum + item.price * item.quantity, 0))
+    const deliveryFee = clampMoney(totals.deliveryFee)
 
     // Process look discounts
     let processedLookDiscounts = []
@@ -70,15 +185,51 @@ export const createOrder = async (req, res) => {
       totalLookDiscount = lookDiscounts.reduce((sum, ld) => sum + (ld.discountAmount || 0), 0)
     }
 
-    // Add look discount to totals
-    if (totalLookDiscount > 0) {
-      orderTotals.discountAmount = (orderTotals.discountAmount || 0) + totalLookDiscount
-      orderTotals.total = orderTotals.subtotal - orderTotals.discountAmount + (orderTotals.deliveryFee || 0)
+    totalLookDiscount = Math.min(subtotal, clampMoney(totalLookDiscount))
+    const codeDiscount = await calculateCodeDiscount({
+      code: totals.promoCode,
+      subtotal: Math.max(0, subtotal - totalLookDiscount),
+      userId
+    })
+
+    if (codeDiscount.giftCard) {
+      claimedGiftCard = await GiftCard.findOneAndUpdate(
+        {
+          _id: codeDiscount.giftCard._id,
+          isUsed: false,
+          status: { $in: ['Active', 'Sent'] }
+        },
+        {
+          $set: {
+            isUsed: true,
+            status: 'Used',
+            usedAt: new Date(),
+            usedBy: userId
+          }
+        },
+        { new: true }
+      )
+
+      if (!claimedGiftCard) {
+        return res.status(409).json({
+          success: false,
+          message: 'Gift card allaqachon ishlatilgan'
+        })
+      }
+    }
+
+    const discountAmount = Math.min(subtotal, clampMoney(totalLookDiscount + codeDiscount.discountAmount))
+    const orderTotals = {
+      subtotal,
+      deliveryFee,
+      promoCode: codeDiscount.promoCode,
+      discountAmount,
+      total: clampMoney(subtotal - discountAmount + deliveryFee)
     }
 
     const newOrder = new Order({
       customer,
-      items,
+      items: verifiedItems,
       totals: orderTotals,
       paymentMethod: paymentMethod || 'cash',
       user: userId || null,
@@ -88,18 +239,7 @@ export const createOrder = async (req, res) => {
     })
 
     await newOrder.save()
-
-    // Handle Gift Card redemption
-    if (orderTotals.promoCode) {
-      const giftCard = await GiftCard.findOne({ code: orderTotals.promoCode.toUpperCase() })
-      if (giftCard && !giftCard.isUsed) {
-        giftCard.isUsed = true
-        giftCard.usedAt = new Date()
-        giftCard.usedBy = userId || null
-        await giftCard.save()
-        logger.info(`Gift card ${giftCard.code} marked as used for order ${newOrder._id}`)
-      }
-    }
+    orderSaved = true
 
     logger.info(`Order created: ${newOrder._id}`)
 
@@ -110,7 +250,7 @@ export const createOrder = async (req, res) => {
     // Build telegram data with look info
     const telegramData = {
       customer,
-      items,
+      items: verifiedItems,
       totals: orderTotals,
       orderId: newOrder._id,
       lookDiscounts: processedLookDiscounts,
@@ -133,24 +273,28 @@ export const createOrder = async (req, res) => {
       })
     }
   } catch (error) {
+    if (claimedGiftCard?._id && !orderSaved) {
+      await GiftCard.findByIdAndUpdate(claimedGiftCard._id, {
+        $set: { isUsed: false, status: 'Active', usedAt: null, usedBy: null }
+      }).catch((revertError) => logger.error('Gift card claim revert error:', revertError))
+    }
     logger.error('Order creation error:', error)
-    res.status(500).json({
+    res.status(error.status || 500).json({
       success: false,
-      message: 'Server xatosi. Qayta urining.'
+      message: error.status ? error.message : 'Server xatosi. Qayta urining.'
     })
   }
 }
 
 export const getUserOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const { page, limit, skip } = getPagination(req.query, { defaultLimit: 10, maxLimit: 50 })
 
     const [orders, total] = await Promise.all([
       Order.find({ user: req.user._id })
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(limit)
         .lean(),
       Order.countDocuments({ user: req.user._id })
     ])
@@ -160,7 +304,7 @@ export const getUserOrders = async (req, res) => {
       data: orders,
       pagination: {
         currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.ceil(total / limit),
         totalItems: total
       }
     })
@@ -172,8 +316,8 @@ export const getUserOrders = async (req, res) => {
 
 export const getAllOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 20, status, paymentMethod } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const { status, paymentMethod } = req.query
+    const { page, limit, skip } = getPagination(req.query, { defaultLimit: 20, maxLimit: 100 })
 
     const query = {}
     if (status) query.status = status
@@ -184,7 +328,7 @@ export const getAllOrders = async (req, res) => {
         .populate('user', 'username phone')
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(parseInt(limit))
+        .limit(limit)
         .lean(),
       Order.countDocuments(query)
     ])
@@ -196,7 +340,7 @@ export const getAllOrders = async (req, res) => {
       data: orders,
       pagination: {
         currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.ceil(total / limit),
         totalItems: total
       }
     })

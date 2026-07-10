@@ -342,8 +342,10 @@ export const deleteReelComment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Izoh topilmadi' })
     }
 
-    // Only owner or admin can delete
-    if (comment.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    const isStaff = req.user?.role === 'admin' || req.user?.role === 'manager' || req.user?.isAdmin
+
+    // Only owner or staff can delete
+    if (comment.user.toString() !== req.user._id.toString() && !isStaff) {
       return res.status(403).json({ success: false, message: 'Ruxsat etilmagan' })
     }
 

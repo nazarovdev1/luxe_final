@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import html2canvas from 'html2canvas';
 import { useNavigate, Navigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useAuth } from '../contexts/AuthContext';
@@ -149,6 +148,7 @@ const LookbookBuilder = () => {
         
         setTimeout(async () => {
             try {
+                const { default: html2canvas } = await import('html2canvas');
                 const canvas = await html2canvas(canvasRef.current, {
                     backgroundColor: '#0a0a0a',
                     useCORS: true,

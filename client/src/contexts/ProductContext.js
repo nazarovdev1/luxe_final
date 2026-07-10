@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useMemo, useRef } from 'react';
 import useProductService from '../server/server';
 
 const CACHE_KEY = 'luxe_products_cache';
@@ -12,14 +12,15 @@ const initialState = {
 
 const productReducer = (state, action) => {
   switch (action.type) {
-    case 'SET_PRODUCTS':
+    case 'SET_PRODUCTS': {
       // SMART MERGE LOGIC
       // When setting a new list of products (usually simplified with 1 image),
       // we check if we already have a simplified version of the product in our state
       // that has MORE images (meaning it was fully loaded).
       // If so, we preserve the existing images.
+      const existingProductsById = new Map(state.products.map(product => [product.id, product]));
       const newProducts = action.payload.map(newP => {
-        const existingP = state.products.find(p => p.id === newP.id);
+        const existingP = existingProductsById.get(newP.id);
 
         // If existing product has more images than the new one, keep the existing images
         if (existingP && existingP.images && newP.images && existingP.images.length > newP.images.length) {
@@ -33,6 +34,7 @@ const productReducer = (state, action) => {
         products: newProducts,
         isLoading: false,
       };
+    }
 
     case 'SET_LOADING':
       return {
@@ -76,6 +78,10 @@ const ProductContext = createContext();
 // Helper functions for localStorage caching
 const getCachedProducts = () => {
   try {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
     const expiry = localStorage.getItem(CACHE_EXPIRY_KEY);
     const now = Date.now();
 
@@ -96,6 +102,10 @@ const getCachedProducts = () => {
 
 const setCachedProducts = (products) => {
   try {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
     localStorage.setItem(CACHE_KEY, JSON.stringify(products));
     localStorage.setItem(CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION).toString());
   } catch (error) {
@@ -103,15 +113,22 @@ const setCachedProducts = (products) => {
   }
 };
 
-export const ProductProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(productReducer, {
+const initProductState = () => {
+  const cachedProducts = getCachedProducts();
+  return {
     ...initialState,
-    // Load cached products immediately for instant UI
-    products: getCachedProducts() || [],
-    isLoading: !getCachedProducts(), // Only show loading if no cache
-  });
+    products: cachedProducts || [],
+    isLoading: !cachedProducts,
+  };
+};
 
-  const { getAllProducts, postProduct, putProduct, deleteProduct, getDetailedProduct, getImageKitAuth } = useProductService();
+export const ProductProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(productReducer, undefined, initProductState);
+  const hasInitialProductsRef = useRef(state.products.length > 0);
+
+  const productService = useProductService();
+  const productServiceRef = useRef(productService);
+  productServiceRef.current = productService;
 
   // AUTO-CACHE EFFECT
   // Anytime state.products changes (add, update, delete, set), automatically update cache
@@ -127,18 +144,18 @@ export const ProductProvider = ({ children }) => {
       // Data is already loaded from cache in initialState.
       // Now fetch fresh data from API (background refresh)
       try {
-        const backendProducts = await getAllProducts();
+        const backendProducts = await productServiceRef.current.getAllProducts();
 
         if (backendProducts && backendProducts.length > 0) {
           // Send to reducer for smart merging
           dispatch({ type: 'SET_PRODUCTS', payload: backendProducts });
-        } else if (state.products.length === 0) {
+        } else if (!hasInitialProductsRef.current) {
           // Only stop loading if we have absolutely no data
           dispatch({ type: 'SET_LOADING', payload: false });
         }
       } catch (error) {
         console.error('Error fetching products:', error);
-        if (state.products.length === 0) {
+        if (!hasInitialProductsRef.current) {
           dispatch({ type: 'SET_LOADING', payload: false });
         }
       }
@@ -147,51 +164,51 @@ export const ProductProvider = ({ children }) => {
     loadProducts();
   }, []);
 
-  const getProducts = () => state.products;
+  const getProducts = useCallback(() => state.products, [state.products]);
 
-  const getNewCollectionProducts = () =>
+  const getNewCollectionProducts = useCallback(() =>
     state.products
       .filter(p => p.badge === 'NEW')
-      .slice(0, 4);
+      .slice(0, 4), [state.products]);
 
-  const getBestsellerProducts = () =>
+  const getBestsellerProducts = useCallback(() =>
     state.products
       .filter(p => p.badge === 'BESTSELLER')
-      .slice(0, 4);
+      .slice(0, 4), [state.products]);
 
-  const getProduct = (id) => state.products.find((p) => p.id === id);
+  const getProduct = useCallback((id) => state.products.find((p) => p.id === id), [state.products]);
 
-  const addProduct = async (productData) => {
+  const addProduct = useCallback(async (productData) => {
     const token = localStorage.getItem('token');
-    const newProduct = await postProduct(productData, token);
+    const newProduct = await productServiceRef.current.postProduct(productData, token);
     if (newProduct) {
       dispatch({ type: 'ADD_PRODUCT', payload: newProduct });
     }
     return newProduct;
-  };
+  }, []);
 
-  const updateProduct = async (id, productData) => {
+  const updateProduct = useCallback(async (id, productData) => {
     const token = localStorage.getItem('token');
-    const updated = await putProduct(id, productData, token);
+    const updated = await productServiceRef.current.putProduct(id, productData, token);
     if (updated) {
       dispatch({ type: 'UPDATE_PRODUCT', payload: updated });
     }
     return updated;
-  };
+  }, []);
 
-  const removeProduct = async (id) => {
+  const removeProduct = useCallback(async (id) => {
     const token = localStorage.getItem('token');
-    const success = await deleteProduct(id, token);
+    const success = await productServiceRef.current.deleteProduct(id, token);
     if (success) {
       dispatch({ type: 'DELETE_PRODUCT', payload: id });
     }
     return success;
-  };
+  }, []);
 
   // Fetch full product details (including all images)
-  const fetchProductDetails = async (id) => {
+  const fetchProductDetails = useCallback(async (id) => {
     try {
-      const detailedProduct = await getDetailedProduct(id);
+      const detailedProduct = await productServiceRef.current.getDetailedProduct(id);
       if (detailedProduct) {
         // Update local state with full details
         dispatch({ type: 'UPDATE_PRODUCT', payload: detailedProduct });
@@ -201,39 +218,62 @@ export const ProductProvider = ({ children }) => {
       console.error('Error fetching product details:', error);
     }
     return null;
-  };
+  }, []);
 
   // Force refresh products (clear cache and reload)
-  const refreshProducts = async () => {
+  const refreshProducts = useCallback(async () => {
     localStorage.removeItem(CACHE_KEY);
     localStorage.removeItem(CACHE_EXPIRY_KEY);
     dispatch({ type: 'SET_LOADING', payload: true });
 
-    const backendProducts = await getAllProducts();
+    const backendProducts = await productServiceRef.current.getAllProducts();
     if (backendProducts) {
       dispatch({ type: 'SET_PRODUCTS', payload: backendProducts });
     } else {
       dispatch({ type: 'SET_PRODUCTS', payload: [] });
     }
-  };
+  }, []);
+
+  const getImageKitAuth = useCallback(() => productServiceRef.current.getImageKitAuth(), []);
+
+  const categories = useMemo(
+    () => [...new Set(state.products.map(p => p.category).filter(Boolean))],
+    [state.products]
+  );
+
+  const providerValue = useMemo(() => ({
+    products: state.products,
+    isLoading: state.isLoading,
+    getProducts,
+    getNewCollectionProducts,
+    getBestsellerProducts,
+    getProduct,
+    addProduct,
+    updateProduct,
+    removeProduct,
+    refreshProducts,
+    fetchProductDetails,
+    getImageKitAuth,
+    categories,
+  }), [
+    state.products,
+    state.isLoading,
+    getProducts,
+    getNewCollectionProducts,
+    getBestsellerProducts,
+    getProduct,
+    addProduct,
+    updateProduct,
+    removeProduct,
+    refreshProducts,
+    fetchProductDetails,
+    getImageKitAuth,
+    categories,
+  ]);
 
   return (
     <ProductContext.Provider
-      value={{
-        products: state.products,
-        isLoading: state.isLoading,
-        getProducts,
-        getNewCollectionProducts,
-        getBestsellerProducts,
-        getProduct,
-        addProduct,
-        updateProduct,
-        removeProduct,
-        refreshProducts,
-        fetchProductDetails,
-        getImageKitAuth,
-        categories: [...new Set(state.products.map(p => p.category).filter(Boolean))],
-      }}
+      value={providerValue}
     >
       {children}
     </ProductContext.Provider>

@@ -4,6 +4,7 @@ import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
+import { showCartToast } from '../utils/toast';
 import BundleHero from '../components/BundleDetail/BundleHero';
 import BundleProductCard from '../components/BundleDetail/BundleProductCard';
 import BundleSavingsBreakdown from '../components/BundleDetail/BundleSavingsBreakdown';
@@ -124,7 +125,11 @@ export default function BundleDetail() {
         products,
       };
       addLookToCart(lookForCart, selectedVariants);
-      toast.success(`"${bundle.title}" to'plami savatga qo'shildi! 🛍️`, { duration: 4000 });
+      showCartToast({
+        title: "To'plam savatga qo'shildi",
+        itemName: bundle.title,
+        meta: `${products.length} ta mahsulot`,
+      });
     } catch {
       toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
     } finally {

@@ -52,8 +52,6 @@
   --transition-slow: 400ms ease;
 }
 
-@tailwind base;
-
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

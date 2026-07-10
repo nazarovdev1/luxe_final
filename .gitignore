@@ -16,18 +16,25 @@ server/public/
 
 # Environment Variables
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 *.env
+*.env.*
 client/.env*
 server/.env*
+!.env.example
+!.env.*.example
+!*.env.example
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 *.log
 server/*.log
 client/*.log
@@ -43,13 +50,33 @@ client/*.log
 # Sensitive Files
 firebase-service-account.json
 server/config/firebase-service-account.json
+*service-account*.json
+*serviceAccount*.json
+serviceAccountKey.json
+credentials.json
+secrets.json
+*.secret
 *.pem
 *.key
+*.p12
+*.pfx
 
 # Database
 server/luxe_database/
 *.bson
 *.metadata.json
+*.dump
+*.archive
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.backup
+dump/
+dumps/
+backup/
+backups/
 
 # Local/Temp Files
 perf_audit.js
@@ -72,7 +99,16 @@ product_check_result.txt
 client/server.log
 server/server.log
 server/debug.log
+server/tmp/
+tmp/
+temp/
 
 # Generated caches
 client/node_modules/.cache/
 node_modules/.cache/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.turbo/
+.vite/

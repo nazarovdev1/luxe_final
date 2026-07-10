@@ -24,8 +24,8 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification?.title || 'Luxe Store';
     const notificationOptions = {
         body: payload.notification?.body || 'Yangi xabar!',
-        icon: '/logo192.png',
-        badge: '/logo192.png',
+        icon: '/icon.svg',
+        badge: '/icon.svg',
         vibrate: [100, 50, 100],
         data: payload.data,
         actions: [

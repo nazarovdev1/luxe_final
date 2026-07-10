@@ -418,7 +418,7 @@ const translations = {
       top10: '🏆 Top 10 Luxe VIP',
       emptyLeaderboard: "Hali reytingda hech kim yo'q",
       howToEarn: "💰 Qanday ball ishlash mumkin?",
-      startEarning: "Hoziroq ball to'pay boshlash",
+      startEarning: "Hoziroq ball to'plang",
       purchase: 'Xarid qilish',
       register: "Ro'yxatdan o'tish",
       review: 'Izoh qoldirish',

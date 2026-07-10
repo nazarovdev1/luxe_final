@@ -1,12 +1,12 @@
 import express from 'express'
 import { createOrder, getUserOrders, getAllOrders, updateOrderStatus, deleteOrder, getOrderById } from '../controllers/order.controller.js'
-import { protect, authorize } from '../middleware/auth.middleware.js'
+import { protect, optionalProtect, authorize } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
 import { getOrdersByPhone } from '../controllers/user.controller.js'
 
 const router = express.Router()
 
-router.post('/', validate('order'), createOrder)
+router.post('/', optionalProtect, validate('order'), createOrder)
 router.get('/my-orders', protect, getUserOrders)
 router.get('/all', protect, authorize('admin', 'manager'), getAllOrders)
 router.get('/user/:phone', protect, getOrdersByPhone)
