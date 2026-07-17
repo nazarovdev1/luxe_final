@@ -14,12 +14,18 @@ export const DELIVERY_TIME_SLOTS = [
   { value: 'express', label: '2 soat ichida', hint: '+25 000 so\'m' },
 ];
 
+const getTashkentDate = (d = new Date()) => {
+  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const tzOffset = 5; // UTC+5
+  return new Date(utc + (3600000 * tzOffset));
+};
+
 export const getDeliveryDates = () => (
   Array.from({ length: 5 }, (_, index) => {
-    const date = new Date();
+    const date = getTashkentDate();
     date.setDate(date.getDate() + index);
     return {
-      value: date.toISOString().slice(0, 10),
+      value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
       day: date.toLocaleDateString('uz-UZ', { weekday: 'short' }),
       date: date.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short' }),
     };

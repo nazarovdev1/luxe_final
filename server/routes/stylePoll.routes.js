@@ -7,15 +7,15 @@ import {
   updateStylePoll,
   voteStylePoll
 } from '../controllers/stylePoll.controller.js'
-import { protect } from '../middleware/auth.middleware.js'
+import { protect, authorize } from '../middleware/auth.middleware.js'
 
 const router = express.Router()
 
 router.get('/', getActiveStylePolls)
-router.get('/admin', protect, getAdminStylePolls)
-router.post('/', protect, createStylePoll)
-router.put('/:id', protect, updateStylePoll)
-router.delete('/:id', protect, deleteStylePoll)
+router.get('/admin', protect, authorize('admin', 'manager'), getAdminStylePolls)
+router.post('/', protect, authorize('admin', 'manager'), createStylePoll)
+router.put('/:id', protect, authorize('admin', 'manager'), updateStylePoll)
+router.delete('/:id', protect, authorize('admin', 'manager'), deleteStylePoll)
 router.post('/:id/vote', voteStylePoll)
 
 export default router

@@ -4,6 +4,18 @@
 
 import axios from 'axios'
 
+const escapeHtml = (value) => String(value ?? '')
+	.replaceAll('&', '&amp;')
+	.replaceAll('<', '&lt;')
+	.replaceAll('>', '&gt;')
+	.replaceAll('"', '&quot;')
+
+const getTelegramConfig = () => {
+	const token = process.env.TELEGRAM_BOT_TOKEN
+	const chatId = process.env.TELEGRAM_CHAT_ID
+	return token && chatId ? { token, chatId } : null
+}
+
 // EN: Replace these with your actual bot token and chat ID
 // UZ: O'rniga o'z bot tokeningiz va chat IDni qo'ying
 // EN: Send order message to Telegram
@@ -11,8 +23,10 @@ import axios from 'axios'
 async function sendOrderToTelegram(orderData) {
 	try {
 		// moved inside to ensure env vars are loaded
-		const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8504200030:AAG...' // Context from log
-		const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1816138407' // Updated from log
+		const config = getTelegramConfig()
+		if (!config) return { success: false, error: 'Telegram is not configured' }
+		const TELEGRAM_BOT_TOKEN = config.token
+		const TELEGRAM_CHAT_ID = config.chatId
 		const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
 
 		// EN: Format the order message
@@ -46,18 +60,21 @@ async function sendOrderToTelegram(orderData) {
 // EN: Format order data into a readable message
 // UZ: Zakas ma'lumotlarini o'qishga qulay xabarga aylantirish
 function formatOrderMessage(orderData) {
-	const { customer, items, totals, lookDiscounts, totalLookDiscount } = orderData
+	const customer = orderData.customer || {}
+	const items = (orderData.items || []).map((item) => Object.fromEntries(Object.entries(item).map(([key, value]) => [key, typeof value === 'string' ? escapeHtml(value) : value])))
+	const lookDiscounts = (orderData.lookDiscounts || []).map((item) => Object.fromEntries(Object.entries(item).map(([key, value]) => [key, typeof value === 'string' ? escapeHtml(value) : value])))
+	const { totals, totalLookDiscount } = orderData
 
 	let message = `🛍️ <b>Yangi buyurtma!</b>\n\n`
 
 	// EN: Customer information
 	// UZ: Xaridor ma'lumotlari
 	message += `👤 <b>Xaridor:</b>\n`
-	message += `Ism: ${customer.name}\n`
-	message += `Telefon: ${customer.phone}\n`
-	message += `Manzil: ${customer.address}\n`
+	message += `Ism: ${escapeHtml(customer.name)}\n`
+	message += `Telefon: ${escapeHtml(customer.phone)}\n`
+	message += `Manzil: ${escapeHtml(customer.address)}\n`
 	if (customer.comments) {
-		message += `Izoh: ${customer.comments}\n`
+		message += `Izoh: ${escapeHtml(customer.comments)}\n`
 	}
 	message += `\n`
 
@@ -152,8 +169,13 @@ function formatOrderMessage(orderData) {
 
 async function sendContactMessage(name, phone, message) {
 	try {
-		const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8504200030:AAG...'
-		const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1816138407'
+		name = escapeHtml(name)
+		phone = escapeHtml(phone)
+		message = escapeHtml(message)
+		const config = getTelegramConfig()
+		if (!config) return { success: false, error: 'Telegram is not configured' }
+		const TELEGRAM_BOT_TOKEN = config.token
+		const TELEGRAM_CHAT_ID = config.chatId
 		const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
 
 		const timestamp = new Date().toLocaleString('uz-UZ', {

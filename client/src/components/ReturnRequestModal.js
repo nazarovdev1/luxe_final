@@ -64,12 +64,8 @@ const ReturnRequestModal = ({ order, onClose }) => {
   };
 
   const handleSubmit = () => {
-    const id = 'RET-' + Date.now().toString(36).toUpperCase();
-    setReturnId(id);
+    window.open('https://t.me/luxx_support', '_blank');
     setSubmitted(true);
-
-    // In production, this would call an API:
-    // await axios.post('/api/returns', { orderId: order._id, items: selectedItems, reason, returnType, comment, photos });
   };
 
   const canProceedStep1 = selectedItems.length > 0;
@@ -87,11 +83,39 @@ const ReturnRequestModal = ({ order, onClose }) => {
 
   const formatPrice = (val) => Number(val || 0).toLocaleString();
 
-  // Check if order is within return window (14 days)
-  const orderDate = new Date(order.createdAt);
-  const daysSinceOrder = Math.floor((Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24));
-  const isWithinReturnWindow = daysSinceOrder <= 14;
-  const daysRemaining = 14 - daysSinceOrder;
+  // Check if order is within return window (14 days from deliveredAt)
+  const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt) : null;
+  const isDelivered = order.status === 'Yetkazildi' && deliveredDate;
+  
+  const daysSinceDelivery = isDelivered 
+    ? Math.floor((Date.now() - deliveredDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+  
+  const isWithinReturnWindow = isDelivered && daysSinceDelivery <= 14;
+  const daysRemaining = 14 - daysSinceDelivery;
+
+  if (!isDelivered && !submitted) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#11131e] to-[#0d0f18] p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-amber-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">Buyurtma hali yetkazilmagan</h3>
+          <p className="text-sm text-[#9aa3b2] mb-6">
+            Qaytarish so'rovi faqat buyurtma "Yetkazildi" holatiga o'tgandan keyin va 14 kun ichida amalga oshirilishi mumkin.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm hover:bg-white/10 transition-colors"
+          >
+            Yopish
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!isWithinReturnWindow && !submitted) {
     return (
@@ -103,7 +127,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
           </div>
           <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('returnRequest.expiredTitle')}</h3>
           <p className="text-sm text-[#9aa3b2] mb-6">
-            Buyurtma qilinganiga {daysSinceOrder} kun o'tdi. Qaytarish oynasi 14 kun bilan cheklangan.
+            Buyurtma yetkazilganidan {daysSinceDelivery} kun o'tdi. Qaytarish oynasi 14 kun bilan cheklangan.
           </p>
           <button
             onClick={onClose}
@@ -121,32 +145,29 @@ const ReturnRequestModal = ({ order, onClose }) => {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
         <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#11131e] to-[#0d0f18] p-8 text-center">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-5">
-            <CheckCircle className="w-10 h-10 text-emerald-400" />
+          <div className="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-5">
+            <RotateCcw className="w-10 h-10 text-[#d6b47c]" />
           </div>
-          <h3 className="text-2xl font-semibold text-[#f4f1eb] mb-2">{t('returnRequest.submittedTitle')}</h3>
-          <p className="text-sm text-[#9aa3b2] mb-4">
-            Qaytarish so'rovingiz muvaffaqiyatli qabul qilindi
+          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">Qaytarish so'rovi</h3>
+          <p className="text-sm text-[#9aa3b2] mb-6">
+            Qaytarish so'rovingizni rasmiylashtirish uchun bizning mijozlarni qo'llab-quvvatlash guruhimiz bilan bog'laning. Support xodimimiz sizga tezda yordam beradi.
           </p>
-          <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4 mb-6">
-            <p className="text-xs text-[#9aa3b2] mb-1">{t('returnRequest.requestId')}</p>
-            <p className="text-lg font-bold text-[#d6b47c]">{returnId}</p>
+          <div className="flex flex-col gap-2">
+            <a
+              href="https://t.me/luxx_support"
+              target="_blank"
+              rel="noreferrer"
+              className="w-full py-3 rounded-xl bg-[#d6b47c] text-[#0f1014] text-sm font-semibold hover:bg-[#e0c08e] transition-colors inline-block"
+            >
+              Telegram Support orqali bog'lanish
+            </a>
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-[#9aa3b2] text-sm hover:bg-white/10 transition-colors"
+            >
+              Yopish
+            </button>
           </div>
-          <div className="space-y-2 text-left mb-6">
-            <p className="text-xs text-[#9aa3b2]">📌 Keyingi qadamlar:</p>
-            <ul className="text-xs text-[#9aa3b2] space-y-1.5 pl-4">
-              <li>• 24 soat ichida tasdiqlash SMS keladi</li>
-              <li>• Kur'er buyurtma manziliga kelib olib ketadi</li>
-              <li>• Tekshiruv 1-2 ish kunida amalga oshiriladi</li>
-              <li>• {returnType === 'refund' ? 'Pul 3-5 ish kunida qaytariladi' : returnType === 'exchange' ? "Yangi mahsulot 5-7 kunida yetkaziladi" : "Balans 1-2 kunida to'ldiriladi"}</li>
-            </ul>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-full py-3.5 rounded-xl bg-[#d6b47c] text-black font-semibold text-sm hover:bg-[#c9a46d] transition-colors"
-          >
-            Tushundim
-          </button>
         </div>
       </div>
     );

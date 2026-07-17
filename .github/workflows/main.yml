@@ -31,20 +31,20 @@ jobs:
       - name: Build frontend
         working-directory: client
         env:
-          CI: false
+          CI: true
         run: npm run build
 
       - name: Install backend dependencies
         working-directory: server
-        run: npm ci --omit=dev
+        run: npm ci
 
-      - name: Check backend JavaScript syntax
-        shell: bash
-        run: |
-          find server -name '*.js' \
-            -not -path '*/node_modules/*' \
-            -not -path '*/public/*' \
-            -print0 | xargs -0 -n 1 node --check
+      - name: Check backend JavaScript syntax and release invariants
+        working-directory: server
+        run: npm run verify
+
+      - name: Audit production dependencies
+        working-directory: server
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Copy frontend build to server public folder
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

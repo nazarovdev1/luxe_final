@@ -530,6 +530,7 @@ export default function ProductView() {
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
         productCategory={product?.category}
+        product={product}
       />
     </div>
   );

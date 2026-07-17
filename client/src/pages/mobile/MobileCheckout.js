@@ -6,14 +6,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import {
-    ArrowLeft, MapPin, Phone, User, CreditCard,
+    ArrowLeft, MapPin, Phone, User,
     Truck, CheckCircle, Navigation, ChevronRight,
-    Gem, ShieldCheck, Wallet, X, LockKeyhole, Sparkles,
+    Gem, ShieldCheck, X, LockKeyhole, Sparkles,
     Gift, Calendar, Clock, MessageCircle as MessageCircleIconFallback
 } from 'lucide-react';
 import useProductService from '../../server/server';
 import OrderSuccessModal from '../../components/OrderSuccessModal';
 import useCheckoutTotals, { DELIVERY_TIME_SLOTS, GIFT_WRAP_OPTIONS, getDeliveryDates } from '../../hooks/useCheckoutTotals';
+import { trackEvent } from '../../utils/analytics';
 
 const CheckoutMap = React.lazy(() => import('../../components/CheckoutMap'));
 
@@ -32,6 +33,23 @@ const InputField = ({ label, icon: Icon, ...props }) => (
         </label>
     </div>
 );
+
+
+const isUzbekPhone = (value) => {
+    const clean = String(value).replace(/[\s()-]/g, '');
+    return /^(?:\+998|998)?\d{9}$/.test(clean);
+};
+
+const validateField = (val, isRequired = true) => {
+    if (typeof val !== 'string') return false;
+    const trimmed = val.trim();
+    if (isRequired && trimmed.length === 0) return false;
+    if (trimmed.length > 0) {
+        if (trimmed.length < 2 || trimmed.length > 100) return false;
+        if (/[<>{}\[\]\\\/]/.test(trimmed)) return false;
+    }
+    return true;
+};
 
 
 const MobileCheckout = () => {
@@ -81,7 +99,7 @@ const MobileCheckout = () => {
         street: '',
         house: '',
         location: null,
-        paymentMethod: 'cash',
+        paymentMethod: 'cash_on_delivery',
         comments: ''
     });
 
@@ -114,6 +132,12 @@ const MobileCheckout = () => {
         scheduledDelivery,
         deliveryTimeSlot
     });
+
+    useEffect(() => {
+        if (cartItems.length || lookItems.length) {
+            trackEvent('begin_checkout', { ecommerce: { currency: 'UZS', value: finalTotal, items: cartItems.map((item) => ({ item_id: item.productId || item.id, item_name: item.name, price: item.parsedPrice, quantity: item.quantity })) } });
+        }
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -200,6 +224,10 @@ const MobileCheckout = () => {
 
         if (!formData.firstName || !formData.phone || !formData.region || !formData.street) {
             toast.error("Iltimos, barcha maydonlarni to'ldiring");
+            return;
+        }
+        if (!/^(?:\+998|998)?\d{9}$/.test(formData.phone.replace(/[\s()-]/g, ''))) {
+            toast.error("Telefon raqami +998 formatida bo'lishi kerak");
             return;
         }
 
@@ -312,6 +340,8 @@ const MobileCheckout = () => {
                         price: item.parsedPrice,
                         selectedColor: item.selectedColor || null,
                         selectedSize: item.selectedSize || null
+                        ,variantId: item.variantId || null
+                        ,sku: item.sku || null
                     })),
                     ...lookOrderItems
                 ],
@@ -336,20 +366,31 @@ const MobileCheckout = () => {
             };
 
             const result = await createOrder(orderData);
+            trackEvent('add_payment_info', { payment_type: 'cash_on_delivery', ecommerce: { currency: 'UZS', value: verifiedFinalTotal } });
 
             if (result && result.success) {
                 setCreatedOrderId(result.orderId);
                 setShowSuccessModal(true);
+                trackEvent('purchase', { ecommerce: { transaction_id: result.orderId, currency: 'UZS', value: result.total || verifiedFinalTotal } });
                 clearCart();
                 // We'll let the modal handle navigation
             } else {
-                const errorMsg = result.errors 
-                    ? result.errors.map(e => e.message).join(', ')
-                    : (result.message || 'Xatolik yuz berdi');
-                toast.error(errorMsg);
+                trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: result?.message || 'order_create_failed' });
+                if (result?.details) {
+                    const det = result.details;
+                    const colorText = det.color ? ` (${det.color} rang)` : '';
+                    const sizeText = det.size ? ` (${det.size} o'lcham)` : '';
+                    toast.error(`${det.name}${sizeText}${colorText} uchun zaxira yetarli emas. Omborda: ${det.availableStock} dona.`);
+                } else {
+                    const errorMsg = result.errors 
+                        ? result.errors.map(e => e.message).join(', ')
+                        : (result.message || 'Xatolik yuz berdi');
+                    toast.error(errorMsg);
+                }
                 console.error('Order creation failed:', result);
             }
         } catch (error) {
+            trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: error.message || 'network_error' });
             console.error('Checkout error:', error);
             toast.error('Tizimda xatolik: ' + error.message);
         } finally {
@@ -606,9 +647,7 @@ const MobileCheckout = () => {
 
                         <div className="grid gap-3">
                             {[
-                                { value: 'cash', label: 'Naqd pul orqali', icon: Truck, hint: 'Yetkazilganda', color: 'text-[#d6b47c]' },
-                                { value: 'click', label: 'Click Evolution', icon: Wallet, hint: 'Tez orada', color: 'text-sky-300', isComingSoon: true },
-                                { value: 'payme', label: 'Payme', icon: CreditCard, hint: 'Tez orada', color: 'text-teal-300', isComingSoon: true }
+                                { value: 'cash_on_delivery', label: 'Naqd pul orqali', icon: Truck, hint: 'Yetkazilganda', color: 'text-[#d6b47c]' }
                             ].map((method) => (
                                 <button
                                     key={method.value}
@@ -807,24 +846,29 @@ const MobileCheckout = () => {
                     <button
                         onClick={() => {
                             if (currentStep === 1) {
-                                if (!formData.firstName || !formData.phone) {
+                                if (!validateField(formData.firstName) || !isUzbekPhone(formData.phone)) {
                                     setShowErrors(true);
-                                    toast.error("Iltimos, ma'lumotlarni to'ldiring");
+                                    toast.error("Iltimos, ism va telefon raqamingizni to'g'ri kiriting");
                                     return;
                                 }
                                 setShowErrors(false);
                                 setCurrentStep(2);
                             } else if (currentStep === 2) {
-                                if (!formData.region || !formData.street || !formData.location) {
+                                if (!validateField(formData.region) || !validateField(formData.street) || !validateField(formData.house, false) || !formData.location) {
                                     setShowErrors(true);
-                                    if (!formData.region) toast.error("Iltimos, tumanni tanlang");
-                                    else if (!formData.street) toast.error("Iltimos, ko'cha va uy raqamini kiriting");
+                                    if (!validateField(formData.region)) toast.error("Iltimos, tumanni tanlang");
+                                    else if (!validateField(formData.street)) toast.error("Iltimos, ko'cha va uy raqamini to'g'ri kiriting");
+                                    else if (!validateField(formData.house, false)) toast.error("Iltimos, mo'ljalni to'g'ri kiriting");
                                     else if (!formData.location) toast.error("Iltimos, lokatsiyangizni belgilang");
                                     return;
                                 }
                                 setShowErrors(false);
                                 setCurrentStep(3);
                             } else {
+                                if (scheduledDelivery && (!deliveryDate || !deliveryTimeSlot)) {
+                                    toast.error("Iltimos, yetkazib berish sanasi va vaqtini tanlang");
+                                    return;
+                                }
                                 handleSubmit();
                             }
                         }}

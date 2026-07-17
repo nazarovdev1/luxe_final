@@ -23,6 +23,7 @@ const orderSchema = new mongoose.Schema({
         price: Number,
         selectedColor: String,
         selectedSize: String,
+        variantId: { type: mongoose.Schema.Types.ObjectId, default: null },
         // Look-related fields
         lookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Look', default: null },
         lookTitle: { type: String, default: null },
@@ -33,7 +34,12 @@ const orderSchema = new mongoose.Schema({
         deliveryFee: Number,
         promoCode: { type: String, default: null },
         discountAmount: { type: Number, default: 0 },
-        total: Number
+        total: Number,
+        giftWrap: {
+            type: { type: String, enum: ['classic', 'premium', 'minimal'] },
+            cost: { type: Number, default: 0 },
+            message: { type: String, default: '' }
+        }
     },
     // Look discount tracking
     lookDiscounts: [{
@@ -69,9 +75,26 @@ const orderSchema = new mongoose.Schema({
     }],
     paymentMethod: {
         type: String,
-        enum: ['cash', 'click', 'payme'],
-        default: 'cash'
-    }
+        enum: ['cash_on_delivery'],
+        default: 'cash_on_delivery'
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'failed', 'cancelled', 'refunded'],
+        default: 'pending'
+    },
+    payment: {
+        providerTransactionId: { type: String, default: null },
+        paidAt: { type: Date, default: null },
+        failureReason: { type: String, default: null }
+    },
+    scheduledDelivery: {
+        date: Date,
+        timeSlot: { type: String, enum: ['morning', 'afternoon', 'evening', 'late_evening', 'express'] },
+        isExpress: { type: Boolean, default: false }
+    },
+    deliveredAt: { type: Date, default: null },
+    idempotencyKey: { type: String, trim: true, default: null }
 }, {
     timestamps: true
 })
@@ -80,6 +103,7 @@ orderSchema.index({ 'customer.phone': 1 })
 orderSchema.index({ user: 1, createdAt: -1 })
 orderSchema.index({ status: 1 })
 orderSchema.index({ createdAt: -1 })
+orderSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true })
 
 const Order = mongoose.model('Order', orderSchema)
 

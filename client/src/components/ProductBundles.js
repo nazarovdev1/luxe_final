@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Tag, Check, Percent, Eye } from 'lucide-react';
 import { useProducts } from '../contexts/ProductContext';
@@ -139,6 +139,28 @@ const ProductBundles = () => {
   const { getAllBundles } = useProductService();
   const [looks, setLooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsVisible(true);
+      return;
+    }
+    const element = sectionRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchBundles = async () => {
@@ -203,9 +225,16 @@ const ProductBundles = () => {
   if (!isLoading && activeLooks.length === 0) return null;
 
   return (
-    <section className="py-16 bg-transparent">
+    <section ref={sectionRef} className="py-16 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
+        <div 
+          className="flex items-center justify-between mb-8"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(25px)',
+            transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#d6b47c] mb-3">
               <Percent className="w-3 h-3" />
@@ -221,12 +250,22 @@ const ProductBundles = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {activeLooks.map((look) => (
-            <BundleCard
+          {activeLooks.map((look, index) => (
+            <div
               key={look._id || look.id}
-              look={look}
-              resolvedProducts={resolveProducts(look)}
-            />
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(40px) rotateX(8deg)',
+                transition: 'opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
+                transitionDelay: `${index * 0.1}s`,
+                perspective: 1000
+              }}
+            >
+              <BundleCard
+                look={look}
+                resolvedProducts={resolveProducts(look)}
+              />
+            </div>
           ))}
         </div>
       </div>

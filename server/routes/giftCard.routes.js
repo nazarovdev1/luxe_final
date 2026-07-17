@@ -8,7 +8,7 @@ import {
     updateGiftCardStatus,
     deleteGiftCard
 } from '../controllers/giftCard.controller.js';
-import { protect, admin } from '../middleware/auth.middleware.js';
+import { protect, admin, authorize } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post('/validate', validateGiftCard);
 // User and Admin routes
 router.get('/my', protect, getMyGiftCards);
 router.put('/:id/transfer', protect, transferGiftCard);
-router.post('/', protect, createGiftCard);
+router.post('/', protect, authorize('admin', 'manager'), createGiftCard);
 
 // Admin only routes
 router.route('/')

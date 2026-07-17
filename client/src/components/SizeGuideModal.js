@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Ruler, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { trackEvent } from '../utils/analytics';
+import { getProductOptions } from '../utils/productVariants';
 
 const SIZE_CHARTS = {
   default: {
@@ -38,7 +40,7 @@ const SIZE_CHARTS = {
   },
 };
 
-const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
+const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
   const [activeTab, setActiveTab] = useState('chart');
   const [activeChart, setActiveChart] = useState('default');
   const [expandedChart, setExpandedChart] = useState(null);
@@ -52,6 +54,8 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
 
   useEffect(() => {
     if (!isOpen) return;
+
+    trackEvent('size_guide_open', { productId: product?.id || product?._id, productName: product?.name });
 
     document.body.style.overflow = 'hidden';
 
@@ -76,7 +80,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
       }
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, product]);
 
   if (!isOpen) return null;
 
@@ -91,36 +95,57 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
     }
 
     let size = '';
-    let confidence = '';
+    let confidence = 'Yuqori';
 
-    if (chestVal <= 84 && waistVal <= 64 && hipsVal <= 90) {
-      size = 'XS';
-      confidence = 'Yuqori';
-    } else if (chestVal <= 88 && waistVal <= 68 && hipsVal <= 94) {
-      size = 'S';
-      confidence = 'Yuqori';
-    } else if (chestVal <= 92 && waistVal <= 72 && hipsVal <= 98) {
-      size = 'M';
-      confidence = 'Yuqori';
-    } else if (chestVal <= 96 && waistVal <= 76 && hipsVal <= 102) {
-      size = 'L';
-      confidence = 'Yuqori';
-    } else if (chestVal <= 100 && waistVal <= 80 && hipsVal <= 106) {
-      size = 'XL';
-      confidence = 'Yuqori';
-    } else if (chestVal <= 104 && waistVal <= 84 && hipsVal <= 110) {
-      size = 'XXL';
-      confidence = 'Yuqori';
+    // If product has sizeGuide entries, use them first
+    if (product && Array.isArray(product.sizeGuide) && product.sizeGuide.length > 0) {
+      const sortedGuide = [...product.sizeGuide].sort((a, b) => (a.bust || 0) - (b.bust || 0));
+      const match = sortedGuide.find(g => 
+        (!g.bust || g.bust >= chestVal) && 
+        (!g.waist || g.waist >= waistVal) && 
+        (!g.hips || g.hips >= hipsVal)
+      );
+      if (match) {
+        size = match.size;
+      } else {
+        size = sortedGuide[sortedGuide.length - 1]?.size || '';
+        confidence = "Past";
+      }
     } else {
-      // Fallback: use average of measurements
-      const avg = (chestVal + waistVal + hipsVal) / 3;
-      if (avg <= 78) size = 'XS';
-      else if (avg <= 84) size = 'S';
-      else if (avg <= 90) size = 'M';
-      else if (avg <= 96) size = 'L';
-      else if (avg <= 102) size = 'XL';
-      else size = 'XXL';
-      confidence = "O'rtacha";
+      // Standard table comparison (fallback)
+      if (chestVal <= 84 && waistVal <= 64 && hipsVal <= 90) {
+        size = 'XS';
+      } else if (chestVal <= 88 && waistVal <= 68 && hipsVal <= 94) {
+        size = 'S';
+      } else if (chestVal <= 92 && waistVal <= 72 && hipsVal <= 98) {
+        size = 'M';
+      } else if (chestVal <= 96 && waistVal <= 76 && hipsVal <= 102) {
+        size = 'L';
+      } else if (chestVal <= 100 && waistVal <= 80 && hipsVal <= 106) {
+        size = 'XL';
+      } else if (chestVal <= 104 && waistVal <= 84 && hipsVal <= 110) {
+        size = 'XXL';
+      } else {
+        const avg = (chestVal + waistVal + hipsVal) / 3;
+        if (avg <= 78) size = 'XS';
+        else if (avg <= 84) size = 'S';
+        else if (avg <= 90) size = 'M';
+        else if (avg <= 96) size = 'L';
+        else if (avg <= 102) size = 'XL';
+        else size = 'XXL';
+        confidence = "O'rtacha";
+      }
+    }
+
+    const availableSizes = getProductOptions(product, 'size');
+    const isAvailable = availableSizes.length === 0 || availableSizes.includes(size);
+
+    if (confidence !== 'Yuqori' || !isAvailable) {
+      setRecommendedSize({
+        size: null,
+        message: "Kechirasiz, siz kiritgan o'lchamlar bo'yicha do'kondagi mavjud variantlar orasidan kafolatlangan o'lchamni tavsiya eta olmadik. Iltimos, o'zingiz tanlang yoki yordam uchun yordamchi guruhimiz bilan bog'laning."
+      });
+      return;
     }
 
     const heightVal = parseFloat(height);
@@ -130,7 +155,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
       else if (heightVal > 175) heightNote = "Bo'yingizga ko'ra, uzunroq model tanlashni tavsiya etamiz.";
     }
 
-    setRecommendedSize({ size, confidence, heightNote });
+    setRecommendedSize({ size, confidence, heightNote, isAvailable: true, availableSizes });
   };
 
   const resetCalculator = () => {
@@ -463,17 +488,21 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory }) => {
                   ) : (
                     <>
                       <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-2">Sizga mos o'lcham</p>
-                      <div className="flex items-center gap-4">
-                        <span className="text-5xl font-bold text-[#d6b47c]">{recommendedSize.size}</span>
-                        <div>
-                          <p className="text-sm text-[#f4f1eb]">
-                            Ishonchlilik: <span className="text-[#d6b47c] font-medium">{recommendedSize.confidence}</span>
-                          </p>
-                          {recommendedSize.heightNote && (
-                            <p className="text-xs text-[#9aa3b2] mt-1">{recommendedSize.heightNote}</p>
-                          )}
+                      {recommendedSize.size ? (
+                        <div className="flex items-center gap-4">
+                          <span className="text-5xl font-bold text-[#d6b47c]">{recommendedSize.size}</span>
+                          <div>
+                            <p className="text-sm text-[#f4f1eb]">
+                              Ishonchlilik: <span className="text-[#d6b47c] font-medium">{recommendedSize.confidence}</span>
+                            </p>
+                            {recommendedSize.heightNote && (
+                              <p className="text-xs text-[#9aa3b2] mt-1">{recommendedSize.heightNote}</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <p className="text-sm text-amber-300 font-medium leading-relaxed">{recommendedSize.message}</p>
+                      )}
                       <div className="mt-4 rounded-xl bg-white/[0.03] p-3">
                         <p className="text-xs text-[#9aa3b2]">
                           ⚠️ Bu faqat taxminiy tavsiya. Har bir model o'ziga xos kesilgan bo'lishi mumkin. Agar shubhangiz bo'lsa, kattaroq o'lchamni tanlang.

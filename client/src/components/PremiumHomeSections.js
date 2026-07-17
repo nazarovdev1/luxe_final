@@ -5,6 +5,8 @@ import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProductGridSkeleton } from './ProductCardSkeleton';
 import LookDetailModal from './LookDetailModal';
+import Masonry from './ui/Masonry';
+import BorderGlow from './ui/BorderGlow';
 import useProductService from '../server/server';
 
 const CUSTOMER_NAMES = ['Madina R.', 'Aziza K.', 'Sevinch T.'];
@@ -45,6 +47,22 @@ const PremiumHomeSections = () => {
     };
     fetchLooks();
   }, []);
+
+  const masonryItems = useMemo(() => {
+    return looks.map((look, idx) => {
+      const ratio = 0.66 + ((idx * 0.137) % 0.34);
+      return {
+        id: look._id || look.id,
+        img: look.heroImage,
+        url: '#',
+        width: 1,
+        height: 1 / ratio,
+        title: look.title,
+        category: look.items?.[0]?.category,
+        look,
+      };
+    });
+  }, [looks]);
 
   const newestProducts = useMemo(() => {
     return [...products].sort((a, b) => {
@@ -119,6 +137,51 @@ const PremiumHomeSections = () => {
   }, [bestsellerProducts, newestProducts, t]);
 
   const [activeLookId, setActiveLookId] = React.useState(null);
+
+  const categoriesRef = React.useRef(null);
+  const bestsellersRef = React.useRef(null);
+  const [isCategoriesInView, setIsCategoriesInView] = React.useState(false);
+  const [isBestsellersInView, setIsBestsellersInView] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsCategoriesInView(true);
+      return;
+    }
+    const element = categoriesRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsCategoriesInView(true);
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsBestsellersInView(true);
+      return;
+    }
+    const element = bestsellersRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsBestsellersInView(true);
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -217,15 +280,26 @@ const PremiumHomeSections = () => {
             </div>
           </div>
 
-          <section id="home-categories" className="space-y-6">
+          <section id="home-categories" ref={categoriesRef} className="space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
+              <div
+                style={{
+                  opacity: isCategoriesInView ? 1 : 0,
+                  transform: isCategoriesInView ? 'translateY(0)' : 'translateY(25px)',
+                  transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
                 <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Shop by style</p>
                 <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.categories')}</h3>
               </div>
               <Link
                 to="/products"
                 className="inline-flex items-center gap-2 text-sm text-[#f4f1eb] border border-white/20 rounded-full px-4 py-2 hover:bg-white/10 transition-colors"
+                style={{
+                  opacity: isCategoriesInView ? 1 : 0,
+                  transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transitionDelay: '0.15s'
+                }}
               >
                 {t('premiumHome.viewAllCategories')}
                 <ArrowRight className="w-4 h-4" />
@@ -233,11 +307,17 @@ const PremiumHomeSections = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categoryCards.map((category) => (
+              {categoryCards.map((category, index) => (
                 <Link
                   key={category.name}
                   to={`/products?category=${encodeURIComponent(category.name)}`}
                   className="group relative overflow-hidden rounded-3xl h-52 border border-white/10"
+                  style={{
+                    opacity: isCategoriesInView ? 1 : 0,
+                    transform: isCategoriesInView ? 'translate(0, 0)' : 'translate(-30px, 20px)',
+                    transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                    transitionDelay: `${index * 0.08}s`
+                  }}
                 >
                   <img
                     src={category.image || '/hero.jpg'}
@@ -259,8 +339,15 @@ const PremiumHomeSections = () => {
             </div>
           </section>
 
-          <section id="home-bestsellers" className="space-y-6">
-            <div className="max-w-3xl">
+          <section id="home-bestsellers" ref={bestsellersRef} className="space-y-6">
+            <div
+              className="max-w-3xl"
+              style={{
+                opacity: isBestsellersInView ? 1 : 0,
+                transform: isBestsellersInView ? 'translateX(0)' : 'translateX(-30px)',
+                transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+            >
               <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Top picks</p>
               <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.bestsellers')}</h3>
               <p className="text-neutral-300 mt-3 text-sm md:text-base">
@@ -272,10 +359,16 @@ const PremiumHomeSections = () => {
               <ProductGridSkeleton count={4} />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
-                {bestsellerProducts.map((product) => (
+                {bestsellerProducts.map((product, index) => (
                   <article
                     key={product.id}
                     className="group rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] overflow-hidden"
+                    style={{
+                      opacity: isBestsellersInView ? 1 : 0,
+                      transform: isBestsellersInView ? 'translateY(0) scale(1)' : 'translateY(35px) scale(0.96)',
+                      transition: 'opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
+                      transitionDelay: `${index * 0.1}s`
+                    }}
                   >
                     <Link to={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden">
                       <img
@@ -326,35 +419,47 @@ const PremiumHomeSections = () => {
               </p>
             </div>
 
-            <div className="columns-1 md:columns-3 gap-4 space-y-4">
-              {looks.map((look) => (
-                <div
-                  key={look._id || look.id}
-                  onClick={() => openLook(look._id || look.id)}
-                  className="group relative overflow-hidden rounded-3xl border border-white/10 cursor-pointer break-inside-avoid mb-4"
-                >
-                  <img
-                    src={look.heroImage}
-                    alt={look.title}
-                    onError={(e) => { e.target.src = '/hero.jpg' }}
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/10 to-transparent" />
-
-                  <div className="absolute top-4 right-4 z-10 translate-x-4 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-black shadow-lg">
-                      {t('premiumHome.shopLook')}
-                      <ShoppingBag className="w-3 h-3" />
-                    </span>
-                  </div>
-
-                  <div className="absolute inset-0 p-5 flex items-end">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-neutral-300">Look {look.title}</p>
-                    </div>
-                  </div>
+            <div className="relative">
+              {masonryItems.length === 0 ? (
+                <div className="py-16 text-center text-neutral-500 text-sm">
+                  {t('lookbooks.noLooksFound')}
                 </div>
-              ))}
+              ) : (
+                <Masonry
+                  items={masonryItems}
+                  columns={[3, 2, 1]}
+                  ease="power3.out"
+                  duration={0.6}
+                  stagger={0.05}
+                  animateFrom="bottom"
+                  scaleOnHover={true}
+                  hoverScale={0.97}
+                  blurToFocus={true}
+                  colorShiftOnHover={false}
+                  borderRadius="20px"
+                  gap={8}
+                  onItemClick={(item) => openLook(item.look._id || item.look.id)}
+                >
+                  {(item) => (
+                    <>
+                      <div className="flex items-center justify-end mb-2 translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-black shadow-lg">
+                          {t('premiumHome.shopLook')}
+                          <ShoppingBag className="w-3 h-3" />
+                        </span>
+                      </div>
+                      <p className="text-xs uppercase tracking-wide text-neutral-200 line-clamp-1">
+                        Look {item.title}
+                      </p>
+                      {item.category && (
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] mt-1 line-clamp-1">
+                          {item.category}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </Masonry>
+              )}
             </div>
 
             <div id="customer-voices" className="pt-2">
@@ -362,21 +467,32 @@ const PremiumHomeSections = () => {
                 <h4 className="text-2xl md:text-3xl font-semibold text-[#f4f1eb]">{t('premiumHome.customerVoices')}</h4>
                 <p className="text-sm text-neutral-400">{t('premiumHome.customerSubtitle')}</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {customerVoices.map((voice) => (
-                  <article key={voice.id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-base font-semibold text-[#f4f1eb]">{voice.name}</p>
-                        <p className="text-xs text-neutral-400">{voice.productName}</p>
+                  <BorderGlow
+                    key={voice.id}
+                    borderRadius={24}
+                    glowColor="37 51 66"
+                    backgroundColor="rgba(255, 255, 255, 0.03)"
+                    colors={['#d6b47c', '#c4985a', '#f5f0e8']}
+                    glowRadius={30}
+                    glowIntensity={0.8}
+                    edgeSensitivity={20}
+                  >
+                    <article className="p-5 w-full">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-base font-semibold text-[#f4f1eb]">{voice.name}</p>
+                          <p className="text-xs text-neutral-400">{voice.productName}</p>
+                        </div>
+                        <div className="inline-flex items-center gap-1 text-amber-300 text-sm">
+                          <Star className="w-4 h-4 fill-current" />
+                          {voice.rating}
+                        </div>
                       </div>
-                      <div className="inline-flex items-center gap-1 text-amber-300 text-sm">
-                        <Star className="w-4 h-4 fill-current" />
-                        {voice.rating}
-                      </div>
-                    </div>
-                    <p className="text-sm text-neutral-200 mt-4 leading-relaxed">{voice.quote}</p>
-                  </article>
+                      <p className="text-sm text-neutral-200 mt-4 leading-relaxed">{voice.quote}</p>
+                    </article>
+                  </BorderGlow>
                 ))}
               </div>
             </div>
@@ -392,10 +508,21 @@ const PremiumHomeSections = () => {
                   { title: `03. ${t('premiumHome.journeyCheckout')}`, desc: t('premiumHome.journeyCheckoutDesc') },
                   { title: `04. ${t('premiumHome.journeyDelivery')}`, desc: t('premiumHome.journeyDeliveryDesc') },
                 ].map((step) => (
-                  <div key={step.title} className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3.5">
-                    <p className="text-sm font-semibold text-[#f4f1eb]">{step.title}</p>
-                    <p className="text-sm text-neutral-300 mt-1">{step.desc}</p>
-                  </div>
+                  <BorderGlow
+                    key={step.title}
+                    borderRadius={16}
+                    glowColor="37 51 66"
+                    backgroundColor="rgba(0, 0, 0, 0.25)"
+                    colors={['#d6b47c', '#c4985a', '#f5f0e8']}
+                    glowRadius={25}
+                    glowIntensity={0.7}
+                    edgeSensitivity={20}
+                  >
+                    <div className="px-4 py-3.5 w-full">
+                      <p className="text-sm font-semibold text-[#f4f1eb]">{step.title}</p>
+                      <p className="text-sm text-neutral-300 mt-1">{step.desc}</p>
+                    </div>
+                  </BorderGlow>
                 ))}
               </div>
             </div>
@@ -403,23 +530,56 @@ const PremiumHomeSections = () => {
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-7">
               <h4 className="text-2xl font-semibold text-[#f4f1eb]">{t('premiumHome.whyLuxx')}</h4>
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <Shield className="w-5 h-5 text-emerald-300" />
-                  <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.qualityControl')}</p>
-                  <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.qualityControlDesc')}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <Truck className="w-5 h-5 text-sky-300" />
-                  <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.fastLogistics')}</p>
-                  <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.fastLogisticsDesc')}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/25 p-4 sm:col-span-2">
-                  <Crown className="w-5 h-5 text-amber-300" />
-                  <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.premiumLook')}</p>
-                  <p className="text-sm text-neutral-300 mt-1">
-                    {t('premiumHome.premiumLookDesc')}
-                  </p>
-                </div>
+                <BorderGlow
+                  borderRadius={16}
+                  glowColor="37 51 66"
+                  backgroundColor="rgba(0, 0, 0, 0.25)"
+                  colors={['#d6b47c', '#c4985a', '#f5f0e8']}
+                  glowRadius={25}
+                  glowIntensity={0.7}
+                  edgeSensitivity={20}
+                >
+                  <div className="p-4 w-full h-full">
+                    <Shield className="w-5 h-5 text-emerald-300" />
+                    <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.qualityControl')}</p>
+                    <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.qualityControlDesc')}</p>
+                  </div>
+                </BorderGlow>
+
+                <BorderGlow
+                  borderRadius={16}
+                  glowColor="37 51 66"
+                  backgroundColor="rgba(0, 0, 0, 0.25)"
+                  colors={['#d6b47c', '#c4985a', '#f5f0e8']}
+                  glowRadius={25}
+                  glowIntensity={0.7}
+                  edgeSensitivity={20}
+                >
+                  <div className="p-4 w-full h-full">
+                    <Truck className="w-5 h-5 text-sky-300" />
+                    <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.fastLogistics')}</p>
+                    <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.fastLogisticsDesc')}</p>
+                  </div>
+                </BorderGlow>
+
+                <BorderGlow
+                  className="sm:col-span-2"
+                  borderRadius={16}
+                  glowColor="37 51 66"
+                  backgroundColor="rgba(0, 0, 0, 0.25)"
+                  colors={['#d6b47c', '#c4985a', '#f5f0e8']}
+                  glowRadius={25}
+                  glowIntensity={0.7}
+                  edgeSensitivity={20}
+                >
+                  <div className="p-4 w-full h-full">
+                    <Crown className="w-5 h-5 text-amber-300" />
+                    <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.premiumLook')}</p>
+                    <p className="text-sm text-neutral-300 mt-1">
+                      {t('premiumHome.premiumLookDesc')}
+                    </p>
+                  </div>
+                </BorderGlow>
               </div>
             </div>
           </section>

@@ -12,6 +12,7 @@ import {
   Truck,
   Ban,
   Loader2,
+  Gift,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import useProductService from '../server/server';
@@ -334,6 +335,41 @@ const AdminOrders = () => {
                               </a>
                             )}
                           </div>
+
+                          {order.scheduledDelivery && (
+                            <div className="admin-card-soft p-3">
+                              <p className="admin-muted text-xs mb-1">Yetkazib berish vaqti</p>
+                              <div className="text-sm text-white font-medium inline-flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-amber-300" />
+                                <span>
+                                  {new Date(order.scheduledDelivery.date).toLocaleDateString('uz-UZ')} &bull; {
+                                    order.scheduledDelivery.timeSlot === 'morning' ? '09:00 - 12:00' :
+                                    order.scheduledDelivery.timeSlot === 'afternoon' ? '12:00 - 15:00' :
+                                    order.scheduledDelivery.timeSlot === 'evening' ? '15:00 - 18:00' :
+                                    order.scheduledDelivery.timeSlot === 'late_evening' ? '18:00 - 21:00' :
+                                    order.scheduledDelivery.timeSlot === 'express' ? 'Tezkor (2 soat)' : order.scheduledDelivery.timeSlot
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {order.totals?.giftWrap && (
+                            <div className="admin-card-soft p-3">
+                              <p className="admin-muted text-xs mb-1">Sovg'a paketi</p>
+                              <div className="text-sm text-white font-medium inline-flex items-center gap-2">
+                                <Gift className="w-4 h-4 text-amber-300" />
+                                <span>
+                                  {order.totals.giftWrap.type === 'classic' ? 'Klassik (+25k)' :
+                                   order.totals.giftWrap.type === 'premium' ? 'Premium (+45k)' :
+                                   order.totals.giftWrap.type === 'minimal' ? 'Minimal (+15k)' : order.totals.giftWrap.type}
+                                </span>
+                              </div>
+                              {order.totals.giftWrap.message && (
+                                <p className="text-xs text-amber-200/90 mt-1 italic">"{order.totals.giftWrap.message}"</p>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-2">

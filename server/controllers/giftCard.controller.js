@@ -1,25 +1,22 @@
 import GiftCard from '../models/giftCard.model.js';
 import User from '../models/user.model.js';
 import logger from '../utils/logger.js';
+import crypto from 'crypto';
 
 // @desc    Create a gift card (after purchase)
 // @route   POST /api/gift-cards
 // @access  Public (can be called by anyone who purchased)
 export const createGiftCard = async (req, res) => {
     try {
-        const { code, amount, recipientName, recipientPhone, senderName, message, designId } = req.body;
+        const { amount, recipientName, recipientPhone, senderName, message, designId } = req.body;
+        const code = `LUXE-${crypto.randomBytes(9).toString('base64url').toUpperCase()}`;
 
-        if (!code || !amount) {
-            return res.status(400).json({ success: false, message: 'Kod va summa majburiy' });
+        if (!amount) {
+            return res.status(400).json({ success: false, message: 'Summa majburiy' });
         }
 
         if (amount < 50000) {
             return res.status(400).json({ success: false, message: 'Minimal summa 50,000 so\'m' });
-        }
-
-        const giftCardExists = await GiftCard.findOne({ code: code.toUpperCase() });
-        if (giftCardExists) {
-            return res.status(400).json({ success: false, message: 'Bu kod allaqachon yaratilgan' });
         }
 
         const giftCard = await GiftCard.create({

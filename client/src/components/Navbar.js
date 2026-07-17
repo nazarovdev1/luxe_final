@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { eventNavItems, resolveNavLabel } from '../config/navigation';
+import SplitText from './ui/SplitText';
 
 const isMacOS = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
 
@@ -443,7 +444,21 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
 
                 <div className="rounded-xl border border-[#d6b47c]/30 bg-black/25 px-3 py-2 text-xs text-neutral-400 flex items-center gap-2 mt-1">
                   <Crown className="h-3.5 w-3.5 text-[#d6b47c]" />
-                  {t('nav.premiumNav')}
+                  <SplitText
+                    text={t('nav.premiumNav')}
+                    as="span"
+                    className="text-xs text-neutral-400"
+                    textAlign="left"
+                    from={{ opacity: 0, y: 20 }}
+                    to={{ opacity: 1, y: 0 }}
+                    delay={40}
+                    duration={0.7}
+                    ease="power3.out"
+                    splitType="chars"
+                    triggerOn="manual"
+                    play={isMenuOpen}
+                    replayKey={isMenuOpen ? 'open' : 'closed'}
+                  />
                 </div>
               </div>
             </div>

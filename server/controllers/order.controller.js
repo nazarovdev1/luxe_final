@@ -12,6 +12,74 @@ import logger from '../utils/logger.js'
 import { getPagination } from '../utils/pagination.js'
 
 const clampMoney = (value) => Math.max(0, Math.round((Number(value) || 0) * 100) / 100)
+const GIFT_WRAP_PRICES = Object.freeze({ classic: 25000, premium: 45000, minimal: 15000 })
+const DELIVERY_SLOTS = new Set(['morning', 'afternoon', 'evening', 'late_evening', 'express'])
+const EXPRESS_DELIVERY_FEE = 25000
+
+const normalizeIdempotencyKey = (req) => {
+  const value = req.get('Idempotency-Key') || req.body.idempotencyKey
+  return value ? String(value).trim() : null
+}
+
+const verifyDelivery = (scheduledDelivery, customer) => {
+  const lat = Number(customer?.location?.lat)
+  const lng = Number(customer?.location?.lng)
+  const hasTashkentCoordinates = Number.isFinite(lat) && Number.isFinite(lng) && lat >= 40.9 && lat <= 41.6 && lng >= 68.8 && lng <= 69.8
+  const addressMentionsTashkent = /toshkent|tashkent/i.test(String(customer?.address || ''))
+  
+  if (!hasTashkentCoordinates && !addressMentionsTashkent) {
+    const error = new Error('Yetkazib berish hozircha faqat Toshkent shahrida mavjud')
+    error.status = 400
+    throw error
+  }
+
+  if (!scheduledDelivery) return { value: null, fee: 0 }
+
+  const getTashkentDate = (d = new Date()) => {
+    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+    const tzOffset = 5; // UTC+5
+    return new Date(utc + (3600000 * tzOffset));
+  };
+
+  const dateParts = String(scheduledDelivery.date).split('T')[0].split('-');
+  if (dateParts.length !== 3) {
+    const error = new Error('Rejalashtirilgan yetkazib berish sanasi noto\'g\'ri')
+    error.status = 400
+    throw error
+  }
+  const date = new Date(Number(dateParts[0]), Number(dateParts[1]) - 1, Number(dateParts[2]), 0, 0, 0, 0)
+  
+  const nowTashkent = getTashkentDate()
+  const today = new Date(nowTashkent.getFullYear(), nowTashkent.getMonth(), nowTashkent.getDate(), 0, 0, 0, 0)
+  const maxDate = new Date(today)
+  maxDate.setDate(maxDate.getDate() + 5)
+
+  if (Number.isNaN(date.getTime()) || date < today || date > maxDate || !DELIVERY_SLOTS.has(scheduledDelivery.timeSlot)) {
+    const error = new Error('Yetkazib berish sanasi yoki vaqti noto\'g\'ri')
+    error.status = 400
+    throw error
+  }
+
+  const isExpress = scheduledDelivery.timeSlot === 'express'
+  if (isExpress && date.toDateString() !== today.toDateString()) {
+    const error = new Error('Tezkor yetkazib berish faqat bugun uchun mavjud')
+    error.status = 400
+    throw error
+  }
+
+  return { value: { date, timeSlot: scheduledDelivery.timeSlot, isExpress }, fee: isExpress ? EXPRESS_DELIVERY_FEE : 0 }
+}
+
+const verifyGiftWrap = (giftWrap) => {
+  if (!giftWrap) return null
+  const type = String(giftWrap.type || '')
+  if (!GIFT_WRAP_PRICES[type]) {
+    const error = new Error('Sovg\'a qadoqlash turi noto\'g\'ri')
+    error.status = 400
+    throw error
+  }
+  return { type, cost: GIFT_WRAP_PRICES[type], message: String(giftWrap.message || '').slice(0, 500) }
+}
 
 const calculateCodeDiscount = async ({ code, subtotal, userId }) => {
   const normalizedCode = String(code || '').trim().toUpperCase()
@@ -75,14 +143,14 @@ const calculateCodeDiscount = async ({ code, subtotal, userId }) => {
 
 const buildVerifiedItems = async (items = []) => {
   const ids = [...new Set(items.map((item) => item.product).filter(Boolean).map(String))]
-  if (ids.length !== items.length || ids.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
+  if (items.some((item) => !item.product) || ids.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
     const error = new Error('Buyurtmada noto\'g\'ri mahsulot ID mavjud')
     error.status = 400
     throw error
   }
 
   const products = await Product.find({ _id: { $in: ids } })
-    .select('name price images stock')
+    .select('name price images stock sizes colors variants')
     .lean()
   const productMap = new Map(products.map((product) => [String(product._id), product]))
 
@@ -97,9 +165,39 @@ const buildVerifiedItems = async (items = []) => {
       throw error
     }
 
-    if (typeof product.stock === 'number' && product.stock < quantity) {
+    const hasVariants = Array.isArray(product.variants) && product.variants.length > 0
+    const matchingVariant = hasVariants
+      ? product.variants.find((variant) =>
+          variant.isActive !== false &&
+          (!variant.size || variant.size === String(item.selectedSize || '')) &&
+          (!variant.color || variant.color === String(item.selectedColor || '')))
+      : null
+
+    if (hasVariants && !matchingVariant) {
+      const error = new Error(`${product.name} uchun tanlangan rang/o'lcham mavjud emas`)
+      error.status = 400
+      throw error
+    }
+    if (!hasVariants && item.selectedSize && product.sizes?.length && !product.sizes.includes(item.selectedSize)) {
+      const error = new Error(`${product.name} uchun tanlangan o'lcham mavjud emas`)
+      error.status = 400
+      throw error
+    }
+    if (!hasVariants && item.selectedColor && product.colors?.length && !product.colors.includes(item.selectedColor)) {
+      const error = new Error(`${product.name} uchun tanlangan rang mavjud emas`)
+      error.status = 400
+      throw error
+    }
+    const availableStock = matchingVariant ? matchingVariant.stock : product.stock
+    if (typeof availableStock === 'number' && availableStock < quantity) {
       const error = new Error(`${product.name} uchun yetarli zaxira yo'q`)
       error.status = 400
+      error.details = {
+        name: product.name,
+        size: item.selectedSize || '',
+        color: item.selectedColor || '',
+        availableStock
+      }
       throw error
     }
 
@@ -116,17 +214,64 @@ const buildVerifiedItems = async (items = []) => {
       selectedSize: item.selectedSize || '',
       lookId: item.lookId || null,
       lookTitle: item.lookTitle || null,
-      lookDiscount: clampMoney(item.lookDiscount)
+      lookDiscount: 0,
+      variantId: matchingVariant?._id || null
     }
   })
+}
+
+const reserveInventory = async (items) => {
+  const reservations = []
+  for (const item of items) {
+    const query = item.variantId
+      ? { _id: item.product, variants: { $elemMatch: { _id: item.variantId, isActive: { $ne: false }, stock: { $gte: item.quantity } } } }
+      : { _id: item.product, stock: { $gte: item.quantity }, 'variants.0': { $exists: false } }
+    const update = item.variantId
+      ? { $inc: { 'variants.$[variant].stock': -item.quantity, stock: -item.quantity } }
+      : { $inc: { stock: -item.quantity } }
+    const options = item.variantId ? { arrayFilters: [{ 'variant._id': item.variantId, 'variant.isActive': { $ne: false } }] } : {}
+    const reserved = await Product.findOneAndUpdate(query, update, options)
+    if (!reserved) {
+      await releaseInventory(reservations)
+      const error = new Error(`${item.name} zaxirasi o'zgardi. Savatni yangilang.`)
+      error.status = 409
+      error.details = {
+        name: item.name,
+        size: item.selectedSize || '',
+        color: item.selectedColor || '',
+        availableStock: 0
+      }
+      throw error
+    }
+    reservations.push({ product: item.product, variantId: item.variantId, quantity: item.quantity })
+  }
+  return reservations
+}
+
+const releaseInventory = async (reservations) => {
+  await Promise.all(reservations.map((item) => item.variantId
+    ? Product.updateOne(
+        { _id: item.product, 'variants._id': item.variantId },
+        { $inc: { 'variants.$[variant].stock': item.quantity, stock: item.quantity } },
+        { arrayFilters: [{ 'variant._id': item.variantId }] })
+    : Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } })))
 }
 
 export const createOrder = async (req, res) => {
   let claimedGiftCard = null
   let orderSaved = false
+  let reservations = []
   try {
     const { customer, items, totals = {}, paymentMethod, lookItems, lookDiscounts } = req.body
     const userId = req.user?._id || null
+    const idempotencyKey = normalizeIdempotencyKey(req)
+
+    if (idempotencyKey) {
+      const existingOrder = await Order.findOne({ idempotencyKey }).select('_id').lean()
+      if (existingOrder) {
+        return res.status(200).json({ success: true, duplicate: true, orderId: existingOrder._id })
+      }
+    }
 
     if (!customer || !items || items.length === 0) {
       return res.status(400).json({
@@ -144,18 +289,22 @@ export const createOrder = async (req, res) => {
 
     const verifiedItems = await buildVerifiedItems(items)
     const subtotal = clampMoney(verifiedItems.reduce((sum, item) => sum + item.price * item.quantity, 0))
-    const deliveryFee = clampMoney(totals.deliveryFee)
+    const delivery = verifyDelivery(req.body.scheduledDelivery, customer)
+    const giftWrap = verifyGiftWrap(totals.giftWrap)
+    const deliveryFee = delivery.fee
 
     // Process look discounts
     let processedLookDiscounts = []
     let totalLookDiscount = 0
+    const orderedProductIds = new Set(verifiedItems.map((item) => String(item.product)))
 
     if (lookItems && lookItems.length > 0) {
       for (const lookItem of lookItems) {
         try {
           const look = await Look.findById(lookItem.lookId).populate('products')
-          if (look && look.hasActiveDiscount) {
-            const originalPrice = lookItem.originalPrice || look.originalPrice || 0
+          const containsCompleteLook = look?.products?.length > 0 && look.products.every((product) => orderedProductIds.has(String(product._id)))
+          if (look && look.hasActiveDiscount && containsCompleteLook) {
+            const originalPrice = clampMoney(look.originalPrice || look.products.reduce((sum, product) => sum + (Number(product.price) || 0), 0))
             let discountAmount = 0
 
             if (look.discountType === 'percentage') {
@@ -177,12 +326,6 @@ export const createOrder = async (req, res) => {
           logger.error(`Error processing look ${lookItem.lookId}:`, err)
         }
       }
-    }
-
-    // Also accept pre-calculated lookDiscounts from frontend
-    if (lookDiscounts && lookDiscounts.length > 0 && processedLookDiscounts.length === 0) {
-      processedLookDiscounts = lookDiscounts
-      totalLookDiscount = lookDiscounts.reduce((sum, ld) => sum + (ld.discountAmount || 0), 0)
     }
 
     totalLookDiscount = Math.min(subtotal, clampMoney(totalLookDiscount))
@@ -224,14 +367,20 @@ export const createOrder = async (req, res) => {
       deliveryFee,
       promoCode: codeDiscount.promoCode,
       discountAmount,
-      total: clampMoney(subtotal - discountAmount + deliveryFee)
+      total: clampMoney(subtotal - discountAmount + deliveryFee + (giftWrap?.cost || 0)),
+      giftWrap
     }
+
+    reservations = await reserveInventory(verifiedItems)
 
     const newOrder = new Order({
       customer,
       items: verifiedItems,
       totals: orderTotals,
-      paymentMethod: paymentMethod || 'cash',
+      paymentMethod: 'cash_on_delivery',
+      paymentStatus: 'pending',
+      scheduledDelivery: delivery.value,
+      idempotencyKey,
       user: userId || null,
       statusHistory: [{ status: 'Kutilmoqda' }],
       lookDiscounts: processedLookDiscounts,
@@ -263,16 +412,21 @@ export const createOrder = async (req, res) => {
       res.status(201).json({
         success: true,
         message: 'Buyurtma muvaffaqiyatli yuborildi!',
-        orderId: newOrder._id
+        orderId: newOrder._id,
+        total: newOrder.totals.total
       })
     } else {
       res.status(201).json({
         success: true,
         message: `Buyurtma qabul qilindi! (Telegram: ${telegramResult.error})`,
-        orderId: newOrder._id
+        orderId: newOrder._id,
+        total: newOrder.totals.total
       })
     }
   } catch (error) {
+    if (reservations.length > 0 && !orderSaved) {
+      await releaseInventory(reservations).catch((revertError) => logger.error('Inventory revert error:', revertError))
+    }
     if (claimedGiftCard?._id && !orderSaved) {
       await GiftCard.findByIdAndUpdate(claimedGiftCard._id, {
         $set: { isUsed: false, status: 'Active', usedAt: null, usedBy: null }
@@ -281,7 +435,8 @@ export const createOrder = async (req, res) => {
     logger.error('Order creation error:', error)
     res.status(error.status || 500).json({
       success: false,
-      message: error.status ? error.message : 'Server xatosi. Qayta urining.'
+      message: error.status ? error.message : 'Server xatosi. Qayta urining.',
+      details: error.details || null
     })
   }
 }
@@ -380,6 +535,7 @@ export const updateOrderStatus = async (req, res) => {
       changedAt: new Date(),
       changedBy: req.user?._id || null
     })
+    if (status === 'Yetkazildi' && previousStatus !== 'Yetkazildi') order.deliveredAt = new Date()
     await order.save()
 
     // Award points when order is delivered

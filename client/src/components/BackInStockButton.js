@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, BellRing, Phone, X } from 'lucide-react';
+import { Bell, BellRing, Phone, X, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import axios from 'axios';

@@ -183,7 +183,7 @@ export const CartProvider = ({ children }) => {
     }
   }, [isAuthenticated, updateUserCart]);
 
-  const addToCart = useCallback((product, selectedColor, selectedSize, quantity = 1) => {
+  const addToCart = useCallback((product, selectedColor, selectedSize, quantity = 1, selectedVariant = null) => {
     const cartItem = {
       id: Date.now().toString(),
       productId: product.id,
@@ -192,6 +192,8 @@ export const CartProvider = ({ children }) => {
       image: product.image,
       selectedColor,
       selectedSize,
+      variantId: selectedVariant?._id || selectedVariant?.id || null,
+      sku: selectedVariant?.sku || product.sku || null,
       quantity,
       addedAt: new Date().toISOString()
     };
@@ -202,7 +204,8 @@ export const CartProvider = ({ children }) => {
     const existingItemIndex = currentItems.findIndex(
       item => item.productId === cartItem.productId &&
         item.selectedColor === cartItem.selectedColor &&
-        item.selectedSize === cartItem.selectedSize
+        item.selectedSize === cartItem.selectedSize &&
+        (item.variantId || null) === (cartItem.variantId || null)
     );
 
     let newItems;

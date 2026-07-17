@@ -17,6 +17,7 @@ const TimeBlock = ({ value, label }) => (
 );
 
 const FlashSaleTimerFull = ({ endTime, originalPrice, salePrice, totalStock, soldCount }) => {
+  const { t } = useLanguage();
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isExpired, setIsExpired] = useState(false);
 

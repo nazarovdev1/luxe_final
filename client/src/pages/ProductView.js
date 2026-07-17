@@ -17,6 +17,8 @@ import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import useRecentlyViewed from '../hooks/useRecentlyViewed';
 import { showCartToast } from '../utils/toast';
+import { trackEvent, productAnalyticsPayload } from '../utils/analytics';
+import { findVariant, getProductOptions } from '../utils/productVariants';
 
 // Sub-components
 import PremiumGallery from '../components/ProductView/PremiumGallery';
@@ -78,6 +80,7 @@ export default function ProductView() {
   useEffect(() => {
     if (product && !isLoading) {
       addToRecentlyViewed(product);
+      trackEvent('view_item', productAnalyticsPayload(product));
     }
   }, [product?.id, isLoading]);
 
@@ -102,7 +105,12 @@ export default function ProductView() {
   const handleAddToCart = useCallback(async (selectedColor, selectedSize, qty) => {
     setIsAddingToCart(true);
     try {
-      await addToCart(product, selectedColor, selectedSize, qty);
+      const variant = findVariant(product, selectedColor, selectedSize);
+      await addToCart(product, selectedColor, selectedSize, qty, variant);
+      trackEvent('add_to_cart', productAnalyticsPayload(product, {
+        item_variant: variant?.sku || [selectedColor, selectedSize].filter(Boolean).join(' / '),
+        quantity: qty,
+      }));
       showCartToast({
         itemName: product.name,
         quantity: qty,
@@ -120,6 +128,7 @@ export default function ProductView() {
   const handleToggleWishlist = useCallback(() => {
     if (product?.id) {
       toggleFavorite(product.id);
+      trackEvent('add_to_wishlist', productAnalyticsPayload(product));
     }
   }, [product, toggleFavorite]);
 
@@ -209,9 +218,9 @@ export default function ProductView() {
             '@context': 'https://schema.org',
             '@type': 'Product',
             name: product.name,
-            image: product.images && product.images.length > 0 ? product.images : [product.image],
+            image: images,
             description: product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari`,
-            sku: product._id,
+            sku: product.sku || product._id,
             category: product.category,
             brand: { '@type': 'Brand', name: 'Luxx.uz' },
             offers: {
@@ -219,7 +228,7 @@ export default function ProductView() {
               url: `https://luxx.uz/product/${id}`,
               priceCurrency: 'UZS',
               price: product.price,
-              availability: 'https://schema.org/InStock',
+              availability: Number(product.stock) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             },
             ...(product.rating && {
               aggregateRating: {
@@ -338,7 +347,14 @@ export default function ProductView() {
         product={product}
         quantity={quantity}
         onQuantityChange={setQuantity}
-        onAddToCart={() => handleAddToCart('', '', quantity)}
+        onAddToCart={() => {
+          if (getProductOptions(product, 'size').length || getProductOptions(product, 'color').length) {
+            mainCtaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            toast.error("Rang va o'lchamni tanlang");
+            return;
+          }
+          handleAddToCart('', '', quantity);
+        }}
         isAddingToCart={isAddingToCart}
         isFavorite={isProductFavorite}
         onToggleWishlist={handleToggleWishlist}
@@ -349,6 +365,7 @@ export default function ProductView() {
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
         productCategory={product?.category}
+        product={product}
       />
     </div>
   );

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import useProductService from '../server/server';
 import OrderSuccessModal from '../components/OrderSuccessModal';
+import { trackEvent } from '../utils/analytics';
 
 const CheckoutMap = React.lazy(() => import('../components/CheckoutMap'));
 
@@ -64,6 +65,35 @@ const formatMoney = (value) => {
   return number.toLocaleString('en-US');
 };
 
+const getTashkentDate = (d = new Date()) => {
+  const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+  const tzOffset = 5; // UTC+5
+  return new Date(utc + (3600000 * tzOffset));
+};
+
+const toLocalDateValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const isUzbekPhone = (value) => {
+  const clean = String(value).replace(/[\s()-]/g, '');
+  return /^(?:\+998|998)?\d{9}$/.test(clean);
+};
+
+const validateField = (val, isRequired = true) => {
+  if (typeof val !== 'string') return false;
+  const trimmed = val.trim();
+  if (isRequired && trimmed.length === 0) return false;
+  if (trimmed.length > 0) {
+    if (trimmed.length < 2 || trimmed.length > 100) return false;
+    if (/[<>{}\[\]\\\/]/.test(trimmed)) return false;
+  }
+  return true;
+};
+
 const DotLoader = ({ colorClass = 'bg-[#111319]' }) => {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -93,7 +123,7 @@ const Checkout = () => {
     street: '',
     house: '',
     location: null,
-    paymentMethod: 'cash',
+    paymentMethod: 'cash_on_delivery',
     comments: '',
   });
 
@@ -199,9 +229,15 @@ const Checkout = () => {
   const deliveryFee = 0; // Free delivery for all
   const finalTotal = summaryTotal - discountAmount + deliveryFee + giftWrapCost + expressDeliveryFee;
 
-  const isStep1Valid = formData.firstName.trim() && formData.phone.trim();
-  const isStep2Valid = formData.region.trim() && formData.street.trim();
+  const isStep1Valid = validateField(formData.firstName) && isUzbekPhone(formData.phone);
+  const isStep2Valid = validateField(formData.region) && validateField(formData.street) && validateField(formData.house, false);
   const canSubmit = isStep1Valid && isStep2Valid && agreeTerms && !isSubmitting;
+
+  useEffect(() => {
+    if (cartItems.length || lookItems.length) {
+      trackEvent('begin_checkout', { ecommerce: { currency: 'UZS', value: finalTotal, items: cartItems.map((item) => ({ item_id: item.productId || item.id, item_name: item.name, price: item.parsedPrice, quantity: item.quantity })) } });
+    }
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -213,7 +249,7 @@ const Checkout = () => {
 
   const nextFromStep1 = () => {
     if (!isStep1Valid) {
-      toast.error("Iltimos, ism va telefon raqamni to'ldiring");
+      toast.error("Iltimos, ism va telefon raqamni to'g'ri kiriting");
       return;
     }
     setCurrentStep(2);
@@ -221,7 +257,7 @@ const Checkout = () => {
 
   const nextFromStep2 = () => {
     if (!isStep2Valid) {
-      toast.error("Iltimos, tuman va manzilni to'ldiring");
+      toast.error("Iltimos, tuman va manzilni to'g'ri kiriting");
       return;
     }
     setCurrentStep(3);
@@ -304,13 +340,17 @@ const Checkout = () => {
       return;
     }
 
-    if (!isStep1Valid || !isStep2Valid) {
+    if (!isStep1Valid || !isStep2Valid || !isUzbekPhone(formData.phone)) {
       toast.error("Iltimos, barcha majburiy maydonlarni to'ldiring");
       return;
     }
 
     if (!agreeTerms) {
       toast.error(t('checkoutPage.agreeTerms'));
+      return;
+    }
+    if (scheduledDelivery && (!deliveryDate || !deliveryTimeSlot)) {
+      toast.error("Yetkazish sanasi va vaqtini tanlang");
       return;
     }
 
@@ -348,6 +388,8 @@ const Checkout = () => {
             price: item.parsedPrice,
             selectedColor: item.selectedColor || null,
             selectedSize: item.selectedSize || null,
+            variantId: item.variantId || null,
+            sku: item.sku || null,
           })),
           ...lookItems.flatMap((look) =>
             look.products.map((p) => ({
@@ -371,7 +413,7 @@ const Checkout = () => {
           discountAmount: look.discountAmount,
         })),
         totalLookDiscount: lookDiscountsTotal,
-        paymentMethod: formData.paymentMethod || 'cash',
+        paymentMethod: 'cash_on_delivery',
         totals: {
           subtotal: summaryTotal,
           deliveryFee: 0,
@@ -390,16 +432,27 @@ const Checkout = () => {
       };
 
       const result = await createOrder(orderData);
+      trackEvent('add_payment_info', { payment_type: 'cash_on_delivery', ecommerce: { currency: 'UZS', value: finalTotal } });
 
       if (result && result.success) {
         setCreatedOrderId(result.orderId);
         setShowSuccessModal(true);
+        trackEvent('purchase', { ecommerce: { transaction_id: result.orderId, currency: 'UZS', value: result.total || finalTotal } });
         clearCart();
         // Modal handles navigation
       } else {
-        toast.error("Xatolik yuz berdi. Qayta urinib ko'ring.");
+        trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: result?.message || 'order_create_failed' });
+        if (result?.details) {
+          const det = result.details;
+          const colorText = det.color ? ` (${det.color} rang)` : '';
+          const sizeText = det.size ? ` (${det.size} o'lcham)` : '';
+          toast.error(`${det.name}${sizeText}${colorText} uchun zaxira yetarli emas. Omborda: ${det.availableStock} dona.`);
+        } else {
+          toast.error(result?.message || "Xatolik yuz berdi. Qayta urinib ko'ring.");
+        }
       }
     } catch (error) {
+      trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: error.message || 'network_error' });
       console.error('Checkout error:', error);
       toast.error('Tizimda xatolik yuz berdi');
     } finally {
@@ -621,12 +674,12 @@ const Checkout = () => {
                           <span className="mb-1.5 block text-xs text-[#9aa3b2]">Sana tanlang</span>
                           <div className="grid grid-cols-4 gap-2">
                             {[...Array(4)].map((_, i) => {
-                              const date = new Date();
+                              const date = getTashkentDate();
                               date.setDate(date.getDate() + i + 1);
                               const dayName = date.toLocaleDateString('uz-UZ', { weekday: 'short' });
                               const dayNum = date.getDate();
                               const monthName = date.toLocaleDateString('uz-UZ', { month: 'short' });
-                              const dateValue = date.toISOString().split('T')[0];
+                              const dateValue = toLocalDateValue(date);
                               const isToday = i === 0;
                               return (
                                 <button
@@ -730,13 +783,13 @@ const Checkout = () => {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="cash"
-                        checked={formData.paymentMethod === 'cash'}
+                        value="cash_on_delivery"
+                        checked={formData.paymentMethod === 'cash_on_delivery'}
                         onChange={handleChange}
                         className="sr-only"
                       />
                       <div
-                        className={`rounded-xl p-4 text-center transition-all ${formData.paymentMethod === 'cash'
+                        className={`rounded-xl p-4 text-center transition-all ${formData.paymentMethod === 'cash_on_delivery'
                           ? 'bg-[#f4f1eb] text-[#111319] shadow-[0_10px_22px_rgba(244,241,235,0.24)]'
                           : 'bg-[#1a202d] text-[#c7ceda]'
                           }`}

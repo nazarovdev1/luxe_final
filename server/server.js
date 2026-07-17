@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import dns from 'dns'
+import crypto from 'crypto'
 
 // Fix for Node.js 17+ DNS resolution issues on some Windows environments
 if (dns.setDefaultResultOrder) {
@@ -27,7 +28,7 @@ const __dirname = path.dirname(__filename)
 // Load .env from the server directory explicitly
 dotenv.config({ path: path.join(__dirname, '.env') })
 
-import { connectDB } from './config/db.js'
+import { connectDB, isDBConnected } from './config/db.js'
 import prerender from 'prerender-node'
 import logger from './utils/logger.js'
 
@@ -67,11 +68,22 @@ const app = express()
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3003
 
+const validateEnvironment = () => {
+  const required = ['MONGO_URL', 'JWT_SECRET']
+  const missing = required.filter((key) => !process.env[key])
+  if (missing.length) throw new Error(`Missing required environment variables: ${missing.join(', ')}`)
+  if (process.env.NODE_ENV === 'production' && String(process.env.JWT_SECRET).length < 32) {
+    throw new Error('JWT_SECRET must contain at least 32 characters in production')
+  }
+}
+
 // Initialize Socket.io
 initSocket(server)
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString()
+  req.id = String(req.get('X-Request-ID') || crypto.randomUUID()).slice(0, 128)
+  res.set('X-Request-ID', req.id)
   next()
 })
 
@@ -130,6 +142,17 @@ app.get('/api/test', (req, res) => {
   res.json({ success: true, message: 'Server is running', timestamp: req.requestTime })
 })
 
+app.get('/api/health', (req, res) => {
+  const ready = isDBConnected()
+  res.status(ready ? 200 : 503).json({
+    success: ready,
+    status: ready ? 'ready' : 'not_ready',
+    database: ready ? 'connected' : 'disconnected',
+    requestId: req.id,
+    timestamp: req.requestTime
+  })
+})
+
 app.use('/api/products', productRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/auth', authRoutes)
@@ -162,7 +185,6 @@ app.delete('/api/delete-reel-comment/:id', protect, (req, res, next) => {
 })
 app.use('/', sitemapRoutes)
 
-import crypto from 'crypto'
 app.get('/api/imagekit-auth', protect, authorize('admin', 'manager'), (req, res) => {
   try {
     const token = crypto.randomUUID()
@@ -231,6 +253,7 @@ process.on('uncaughtException', (error) => {
 
 const startServer = async () => {
   try {
+    validateEnvironment()
     const dbConnected = await connectDB()
 
     if (!dbConnected) {

@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   TicketPercent,
   BadgePercent,
+  Gift,
 } from 'lucide-react';
 import LoginForm from '../../components/LoginForm';
 import LookbookManager from '../../components/LookbookManager';
@@ -445,6 +446,35 @@ const MobileAdmin = () => {
                         <MapPin className="w-3.5 h-3.5 mt-0.5 text-amber-200" />
                         <span className="text-slate-100 line-clamp-2">{order.customer?.address || 'Manzil yo\'q'}</span>
                       </p>
+                      {order.scheduledDelivery && (
+                        <p className="mobile-admin-muted text-xs inline-flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-amber-200" />
+                          <span className="text-slate-100">
+                            {new Date(order.scheduledDelivery.date).toLocaleDateString('uz-UZ')} &bull; {
+                              order.scheduledDelivery.timeSlot === 'morning' ? '09:00 - 12:00' :
+                              order.scheduledDelivery.timeSlot === 'afternoon' ? '12:00 - 15:00' :
+                              order.scheduledDelivery.timeSlot === 'evening' ? '15:00 - 18:00' :
+                              order.scheduledDelivery.timeSlot === 'late_evening' ? '18:00 - 21:00' :
+                              order.scheduledDelivery.timeSlot === 'express' ? 'Tezkor (2 soat)' : order.scheduledDelivery.timeSlot
+                            }
+                          </span>
+                        </p>
+                      )}
+                      {order.totals?.giftWrap && (
+                        <div className="pl-5 pt-0.5 space-y-1">
+                          <p className="mobile-admin-muted text-xs inline-flex items-center gap-1.5 -ml-5">
+                            <Gift className="w-3.5 h-3.5 text-amber-200" />
+                            <span className="text-slate-100 font-medium">
+                              {order.totals.giftWrap.type === 'classic' ? 'Klassik paket (+25k)' :
+                               order.totals.giftWrap.type === 'premium' ? 'Premium paket (+45k)' :
+                               order.totals.giftWrap.type === 'minimal' ? 'Minimal paket (+15k)' : order.totals.giftWrap.type}
+                            </span>
+                          </p>
+                          {order.totals.giftWrap.message && (
+                            <p className="text-[11px] text-amber-200/90 italic">"{order.totals.giftWrap.message}"</p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mobile-admin-card-soft p-2.5 flex items-center justify-between">

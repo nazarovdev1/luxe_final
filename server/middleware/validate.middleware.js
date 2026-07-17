@@ -54,6 +54,43 @@ export const schemas = {
     rating: Joi.number().min(0).max(5).default(0),
     colors: Joi.array().items(Joi.string()),
     sizes: Joi.array().items(Joi.string()),
+    variants: Joi.array().items(Joi.object({
+      _id: Joi.string().pattern(objectIdPattern),
+      sku: Joi.string().trim().max(100).allow('', null),
+      size: Joi.string().trim().max(30).allow('', null),
+      color: Joi.string().trim().max(100).allow('', null),
+      stock: Joi.number().integer().min(0).required(),
+      isActive: Joi.boolean().default(true)
+    })),
+    measurements: Joi.object({
+      unit: Joi.string().valid('cm', 'in').default('cm'),
+      bust: Joi.number().min(0).allow(null, ''), waist: Joi.number().min(0).allow(null, ''), hips: Joi.number().min(0).allow(null, ''),
+      length: Joi.number().min(0).allow(null, ''), sleeve: Joi.number().min(0).allow(null, '')
+    }).allow(null),
+    garmentMeasurements: Joi.object({
+      unit: Joi.string().valid('cm', 'in').default('cm'),
+      bust: Joi.number().min(0).allow(null, ''), waist: Joi.number().min(0).allow(null, ''), hips: Joi.number().min(0).allow(null, ''),
+      length: Joi.number().min(0).allow(null, ''), sleeve: Joi.number().min(0).allow(null, '')
+    }).allow(null),
+    sizeGuide: Joi.array().items(Joi.object({
+      size: Joi.string().trim().required(), bust: Joi.number().min(0), waist: Joi.number().min(0),
+      hips: Joi.number().min(0), length: Joi.number().min(0)
+    })),
+    modelInfo: Joi.object({
+      height: Joi.number().min(0).allow(null, ''), bust: Joi.number().min(0).allow(null, ''), waist: Joi.number().min(0).allow(null, ''),
+      hips: Joi.number().min(0).allow(null, ''), wearingSize: Joi.string().trim().allow('', null)
+    }).allow(null),
+    fit: Joi.object({
+      type: Joi.string().valid('small', 'true-to-size', 'large').default('true-to-size'),
+      note: Joi.string().max(500).allow('', null)
+    }).allow(null),
+    fitType: Joi.string().valid('small', 'true-to-size', 'large').default('true-to-size'),
+    sizeConversions: Joi.object({
+      US: Joi.string().allow('', null),
+      EU: Joi.string().allow('', null),
+      UK: Joi.string().allow('', null),
+      RU: Joi.string().allow('', null)
+    }).allow(null),
     isLookbook: Joi.boolean(),
     earlyAccessTier: Joi.string().valid('none', 'Gold', 'Diamond').default('none'),
     earlyAccessUntil: Joi.date().allow('', null),
@@ -101,7 +138,7 @@ export const schemas = {
       discountAmount: Joi.number().min(0).default(0),
       total: Joi.number().min(0).required()
     }).unknown(true).required(),
-    paymentMethod: Joi.string().valid('cash', 'click', 'payme').default('cash'),
+    paymentMethod: Joi.string().valid('cash_on_delivery').default('cash_on_delivery'),
     userId: Joi.string().pattern(objectIdPattern).allow(null),
 
     // Optional: look/bundle discount tracking (supported by Order controller/model)
@@ -116,10 +153,11 @@ export const schemas = {
 
     // Optional: scheduled delivery metadata
     scheduledDelivery: Joi.object({
-      date: Joi.string().max(50).required(),
-      timeSlot: Joi.string().max(50).required(),
+      date: Joi.date().iso().required(),
+      timeSlot: Joi.string().valid('morning', 'afternoon', 'evening', 'late_evening', 'express').required(),
       isExpress: Joi.boolean().default(false)
-    }).allow(null)
+    }).allow(null),
+    idempotencyKey: Joi.string().trim().min(8).max(128).allow(null)
   }).unknown(true),
 
   promo: Joi.object({

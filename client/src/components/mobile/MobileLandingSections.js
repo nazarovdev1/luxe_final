@@ -6,7 +6,7 @@ export const MobileHero = ({ product, onScrollToProducts }) => {
     const image = '/333-mobile.webp';
 
     return (
-        <section className="relative min-h-[85vh] overflow-hidden rounded-b-[2.5rem] bg-[#08090d]">
+        <section className="relative min-h-[85vh] overflow-hidden bg-[#060a14]">
             {/* Background Image */}
             <div className="absolute inset-0">
                 <img
@@ -17,8 +17,10 @@ export const MobileHero = ({ product, onScrollToProducts }) => {
                     height="1200"
                     className="h-full w-full object-cover object-top opacity-90"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-[#08090d]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-[#060a14]" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+                {/* Extra bottom gradient to fade fully to solid color */}
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#060a14] via-[#060a14]/70 to-transparent" />
             </div>
 
             {/* Content Container */}
@@ -88,50 +90,36 @@ export const MobileHero = ({ product, onScrollToProducts }) => {
 
 export const BrandJourney = () => {
     return (
-        <section className="px-5 py-12 bg-[#08090d]">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-amber-500/30 px-3 py-1">
-                <Crown className="h-3 w-3 text-amber-500" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-amber-500">Brend Tarixi</span>
+        <section className="relative h-[500px] w-full overflow-hidden bg-[#060a14]">
+            {/* Background Image */}
+            <div className="absolute inset-0">
+                <img
+                    src="/luxxjarayon-background.png"
+                    alt="Luxx Signature"
+                    className="h-full w-full object-cover object-[center_top] opacity-90"
+                />
+                {/* Top Fade overlay - solid at top edge to blend seamlessly with MobileHero */}
+                <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#060a14] via-[#060a14]/60 to-transparent z-10" />
+                {/* Bottom Fade overlay — strong, covers 60% of height */}
+                <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[#060a14] via-[#060a14]/90 to-transparent z-10" />
+                {/* Left Fade overlay for text readability */}
+                <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-[#060a14] via-[#060a14]/80 to-transparent z-10" />
             </div>
 
-           
-            <div className="font-brilliant text-5xl text-[#d6b47c] mb-6">Luxx Signature</div>
-
-            <p className="mb-10 text-sm leading-relaxed text-neutral-400">
-                2025-yilda kichik butik sifatida boshlangan yo'l, bugun premium digital atelier tajribasiga aylandi. Maqsadimiz oddiy: zamonaviy ayol uchun sifatli, nafis va esda qoladigan fashion kuratsiyasi.
-            </p>
-
-            {/* Timeline */}
-            <div className="relative border-l border-white/10 ml-1.5 space-y-10 pb-4">
-                {/* Item 1 */}
-                <div className="relative pl-8">
-                    <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-[#d6b47c] ring-4 ring-[#08090d]" />
-                    <span className="mb-1 block text-xs font-medium uppercase tracking-widest text-[#d6b47c] opacity-80">2025</span>
-                    <h3 className="mb-2 text-xl font-bold text-white">Boutique bosqichi</h3>
-                    <p className="text-sm text-neutral-400">
-                        Kichik capsule-drop bilan ish boshladik va premium quality standartini o'rnatdik.
-                    </p>
+            {/* Content Container */}
+            <div className="relative z-20 flex h-full flex-col justify-center px-6 pt-10">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="h-1.5 w-1.5 rounded-full bg-[#d6b47c]" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#d6b47c]">Hozir</span>
                 </div>
-
-                {/* Item 2 */}
-                <div className="relative pl-8">
-                    <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-[#d6b47c] ring-4 ring-[#08090d]" />
-                    <span className="mb-1 block text-xs font-medium uppercase tracking-widest text-[#d6b47c] opacity-80">2026</span>
-                    <h3 className="mb-2 text-xl font-bold text-white">Raqamli Atelye</h3>
-                    <p className="text-sm text-neutral-400">
-                        Online tajribani editorial formatga olib chiqdik: lookbook, premium card va tez checkout.
-                    </p>
-                </div>
-
-                {/* Item 3 */}
-                <div className="relative pl-8">
-                    <div className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-[#d6b47c] ring-4 ring-[#08090d]" />
-                    <span className="mb-1 block text-xs font-medium uppercase tracking-widest text-[#d6b47c] opacity-80">HOZIR</span>
-                    <h3 className="mb-2 text-xl font-bold text-white">Luxx Signature</h3>
-                    <p className="text-sm text-neutral-400">
-                        O'zbekiston ayollari uchun nozik, modern va original fasonlar kuratsiyasi.
-                    </p>
-                </div>
+                
+                <h2 className="font-brilliant text-[40px] leading-tight text-[#f4f1eb] mb-5">
+                    Luxx Signature
+                </h2>
+                
+                <p className="text-[13px] leading-relaxed text-neutral-300 max-w-[240px]">
+                    O'zbekiston ayollari uchun nozik, modern va original fasonlar kuratsiyasi.
+                </p>
             </div>
         </section>
     );

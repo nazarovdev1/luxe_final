@@ -20,6 +20,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import InstallmentCalculator from '../InstallmentCalculator';
 import FlashSaleTimer from '../FlashSaleTimer';
 import BackInStockButton from '../BackInStockButton';
+import { getProductOptions } from '../../utils/productVariants';
+import { trackEvent, productAnalyticsPayload } from '../../utils/analytics';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -41,20 +43,14 @@ export default function ProductInfoPanel({
   onReviewClick,
   onOpenSizeGuide,
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
 
-  const sizeOptions = Array.isArray(product.sizes)
-    ? [...new Set(
-        product.sizes
-          .flatMap((s) => (typeof s === 'string' && s.includes(' ') ? s.split(' ') : [s]))
-          .map((s) => String(s).trim())
-          .filter(Boolean)
-      )]
-    : [];
+  const sizeOptions = getProductOptions(product, 'size');
+  const colorOptions = getProductOptions(product, 'color');
 
   const subtotal = (Number(product.price) || 0) * quantity;
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
@@ -64,7 +60,7 @@ export default function ProductInfoPanel({
 
   // ── Handlers ────────────────────────────────────────────
   const handleAddToCart = async () => {
-    if (product.colors && product.colors.length > 0 && !selectedColor) {
+    if (colorOptions.length > 0 && !selectedColor) {
       const { default: toast } = await import('react-hot-toast');
       toast.error('Iltimos, rang tanlang!', { duration: 6000 });
       return;
@@ -183,7 +179,7 @@ export default function ProductInfoPanel({
       <div className="border-t border-white/5" />
 
       {/* ── Color Selector ──────────────────────────────── */}
-      {product.colors && product.colors.length > 0 && (
+      {colorOptions.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#f5f5f3]">
@@ -196,7 +192,7 @@ export default function ProductInfoPanel({
             )}
           </div>
           <div className="flex flex-wrap gap-3">
-            {product.colors.map((color, index) => {
+            {colorOptions.map((color, index) => {
               const isHex = typeof color === 'string' && color.startsWith('#');
               return isHex ? (
                 <button
@@ -251,7 +247,7 @@ export default function ProductInfoPanel({
             {sizeOptions.map((size, index) => (
               <button
                 key={index}
-                onClick={() => setSelectedSize(size)}
+                onClick={() => { setSelectedSize(size); trackEvent('select_size', productAnalyticsPayload(product, { item_variant: size })); }}
                 className={`h-12 min-w-[56px] px-4 rounded-xl text-xs font-bold tracking-widest transition-all duration-300 ${
                   selectedSize === size
                     ? 'bg-[#f5f5f3] text-[#0a0a0b] shadow-[0_4px_12px_rgba(245,245,243,0.15)]'
@@ -265,7 +261,15 @@ export default function ProductInfoPanel({
         </div>
       )}
 
-      {/* ── Quantity + Subtotal ─────────────────────────── */}
+      {(product.fit || product.modelInfo || product.measurements) && (
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 text-sm text-[#8a8a8d] space-y-2">
+          {product.fit && <p><span className="font-semibold text-[#f5f5f3]">Fit:</span> {typeof product.fit === 'string' ? product.fit : product.fit.label || product.fit.type}</p>}
+          {product.modelInfo && <p><span className="font-semibold text-[#f5f5f3]">Model:</span> {[product.modelInfo.height && `${product.modelInfo.height} sm`, product.modelInfo.wearingSize && `o'lcham ${product.modelInfo.wearingSize}`].filter(Boolean).join(' · ')}</p>}
+          {product.measurements && <p><span className="font-semibold text-[#f5f5f3]">Mahsulot o'lchovlari:</span> {Object.entries(product.measurements).filter(([key, value]) => key !== 'unit' && value != null).map(([key, value]) => `${key}: ${value} ${product.measurements.unit || 'cm'}`).join(' · ')}</p>}
+        </div>
+      )}
+
+      {/* Quantity + Subtotal */}
       <div className="flex items-center justify-between">
         <div className="flex items-center rounded-xl bg-[#141416] border border-white/5 p-1">
           <button
@@ -323,9 +327,9 @@ export default function ProductInfoPanel({
       {/* ── Trust Badges ────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: Truck, label: '3-6 soatda yetkazish' },
-          { icon: Shield, label: 'Original sifat' },
-          { icon: RotateCcw, label: '7 kun qaytarish' },
+          { icon: Truck, label: language === 'ru' ? 'Ташкент: 3–6 часов' : language === 'en' ? 'Tashkent: 3–6 hours' : 'Toshkent: 3–6 soat' },
+          { icon: Shield, label: language === 'ru' ? 'Гарантия качества' : language === 'en' ? 'Quality guaranteed' : 'Sifat kafolati' },
+          { icon: RotateCcw, label: language === 'ru' ? 'Возврат 14 дней' : language === 'en' ? '14-day returns' : '14 kun qaytarish' },
         ].map(({ icon: Icon, label }, i) => (
           <div
             key={i}

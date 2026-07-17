@@ -17,6 +17,21 @@ const clearProductsCache = () => {
 const normalizeProductPayload = (payload = {}) => {
   const product = { ...payload }
 
+  if (Array.isArray(product.variants) && product.variants.length > 0) {
+    product.variants = product.variants.map((variant) => ({
+      ...variant,
+      sku: String(variant.sku || '').trim(),
+      size: String(variant.size || '').trim(),
+      color: String(variant.color || '').trim(),
+      stock: Math.max(0, Number.parseInt(variant.stock, 10) || 0),
+      isActive: variant.isActive !== false
+    }))
+    const activeVariants = product.variants.filter((variant) => variant.isActive)
+    product.stock = activeVariants.reduce((sum, variant) => sum + variant.stock, 0)
+    product.sizes = [...new Set(activeVariants.map((variant) => variant.size).filter(Boolean))]
+    product.colors = [...new Set(activeVariants.map((variant) => variant.color).filter(Boolean))]
+  }
+
   if (product.ratings !== undefined && product.rating === undefined) {
     product.rating = product.ratings
   }
@@ -115,6 +130,12 @@ export const getProduct = async (req, res) => {
           sizes: 1,
           description: 1,
           stock: 1,
+          variants: 1,
+          fit: 1,
+          fitType: 1,
+          modelInfo: 1,
+          garmentMeasurements: 1,
+          sizeConversions: 1,
           createdAt: 1,
           earlyAccessTier: 1,
           earlyAccessUntil: 1,

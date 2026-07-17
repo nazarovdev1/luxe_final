@@ -4,6 +4,7 @@ import { ArrowRight, Eye, ShoppingBag, Gem, Play, ChevronDown, Plus } from 'luci
 import toast from 'react-hot-toast';
 import LookDetailModal from '../components/LookDetailModal';
 import SEO from '../components/SEO';
+import Masonry from '../components/ui/Masonry';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -367,8 +368,26 @@ const Lookbooks = () => {
         );
     }, [activeFilter, looks]);
 
+    const masonryItems = useMemo(() => {
+        return filteredLooks.map((look, idx) => {
+            const ratio = 0.66 + ((idx * 0.137) % 0.34);
+            return {
+                id: look._id || look.id,
+                img: look.heroImage,
+                url: '#',
+                width: 1,
+                height: 1 / ratio,
+                title: look.title,
+                category: look.items?.[0]?.category,
+                look,
+                index: idx,
+                season: getSeason(idx),
+            };
+        });
+    }, [filteredLooks]);
+
     const openLookModal = (event, lookId) => {
-        event.stopPropagation();
+        if (event && event.stopPropagation) event.stopPropagation();
         setSelectedLookId(lookId);
     };
 
@@ -444,17 +463,61 @@ const Lookbooks = () => {
                         </button>
                     </div>
                 ) : (
-                    /* True Pinterest masonry via CSS columns */
-                    <div className="masonry-grid">
-                        {filteredLooks.map((look, index) => (
-                            <LookCard
-                                key={look._id || look.id}
-                                look={look}
-                                index={index}
-                                onOpen={openLookModal}
-                            />
-                        ))}
-                    </div>
+                    <Masonry
+                        items={masonryItems}
+                        columns={[4, 3, 2]}
+                        ease="power3.out"
+                        duration={0.6}
+                        stagger={0.05}
+                        animateFrom="bottom"
+                        scaleOnHover={true}
+                        hoverScale={0.97}
+                        blurToFocus={true}
+                        colorShiftOnHover={false}
+                        borderRadius="16px"
+                        gap={8}
+                        onItemClick={(item) => openLookModal(null, item.look._id || item.look.id)}
+                    >
+                        {(item) => {
+                            const look = item.look;
+                            const hasDiscount = look.discountValue > 0 && look.isActive !== false && !(look.expiresAt && new Date(look.expiresAt) < new Date());
+                            const discountLabel = hasDiscount
+                                ? look.discountType === 'percentage'
+                                    ? `-${look.discountValue}%`
+                                    : `-${Number(look.discountValue).toLocaleString('uz-UZ')}`
+                                : null;
+                            return (
+                                <>
+                                    <div className="flex items-center justify-between gap-2 mb-2 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
+                                        <span className="text-[9px] uppercase tracking-[0.3em] text-white/80 bg-black/55 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/15">
+                                            {item.season}
+                                        </span>
+                                        {hasDiscount && discountLabel && (
+                                            <span className="px-2 py-1 rounded-full bg-emerald-500/90 text-white text-[10px] font-bold shadow-lg">
+                                                {discountLabel}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] mb-1 font-semibold">
+                                        {item.category || t('lookbooks.editorial')}
+                                    </p>
+                                    <h3 className="font-serif text-lg text-[#f5f0e8] leading-snug line-clamp-2 mb-2" style={{ letterSpacing: '0.02em' }}>
+                                        {look.title}
+                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5 text-[10px] text-neutral-300">
+                                            <ShoppingBag className="w-3 h-3" />
+                                            {look.products?.length || 0} {t('lookbooks.products')}
+                                        </div>
+                                        <span className="text-[10px] font-medium text-[#d6b47c] tracking-wide flex items-center gap-1">
+                                            {t('lookbooks.view')}
+                                            <ArrowRight className="w-3 h-3" />
+                                        </span>
+                                    </div>
+                                </>
+                            );
+                        }}
+                    </Masonry>
                 )}
             </section>
 

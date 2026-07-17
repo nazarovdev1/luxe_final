@@ -51,9 +51,9 @@ const LiveStreamView = () => {
     fetchChatHistory();
 
     // Socket setup
-    const socketUrl = process.env.NODE_ENV === 'production' 
+    const socketUrl = process.env.REACT_APP_SOCKET_URL || (process.env.NODE_ENV === 'production' 
       ? window.location.origin 
-      : 'http://localhost:3003';
+      : 'http://localhost:3003');
     
     socket.current = io(socketUrl, {
       auth: token ? { token } : undefined,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, X, Star, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -10,15 +10,44 @@ const formatPrice = (price) => {
 
 const RecentlyViewed = ({ items, onClear }) => {
   const { t } = useLanguage();
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsVisible(true);
+      return;
+    }
+    const element = sectionRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   if (!items || items.length === 0) return null;
 
   const displayItems = items.slice(0, 8);
 
   return (
-    <section className="py-16 bg-transparent">
+    <section ref={sectionRef} className="py-16 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
+        <div 
+          className="flex items-center justify-between mb-8"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(25px)',
+            transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20">
               <Clock className="h-5 w-5 text-[#d6b47c]" />
@@ -38,11 +67,17 @@ const RecentlyViewed = ({ items, onClear }) => {
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-5">
-          {displayItems.map((item) => (
+          {displayItems.map((item, index) => (
             <Link
               key={item.id}
               to={`/product/${item.id}`}
               className="group flex-shrink-0 w-[200px] sm:w-auto overflow-hidden rounded-2xl border border-white/[0.06] bg-[#12121a] transition-all duration-500 hover:border-[#d6b47c]/30 hover:shadow-[0_0_30px_rgba(214,180,124,0.1)]"
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? 'translateX(0)' : 'translateX(40px)',
+                transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                transitionDelay: `${index * 0.08}s`
+              }}
             >
               <div className="relative aspect-[3/4] overflow-hidden">
                 <img

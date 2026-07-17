@@ -6,6 +6,9 @@
 	"scripts": {
 		"dev": "nodemon server.js",
 		"start": "node server.js",
+		"check:syntax": "node scripts/check-syntax.js",
+		"test": "node --test tests/*.test.js",
+		"verify": "npm run check:syntax && npm test",
 		"create-admin": "node create_admin.js",
 		"debug-users": "node debug_users.js",
 		"check-telegram": "node check_telegram.js"

@@ -30,6 +30,12 @@ const EMPTY_FORM = {
   rating: 0,
   colors: [],
   sizes: '',
+  stock: 0,
+  variants: [],
+  fit: { type: 'true-to-size', note: '' },
+  modelInfo: { height: '', bust: '', waist: '', hips: '', wearingSize: '' },
+  measurements: { unit: 'cm', bust: '', waist: '', hips: '', length: '', sleeve: '' },
+  sizeGuide: [],
   description: '',
   isLookbook: false,
   earlyAccessTier: 'none',
@@ -81,6 +87,27 @@ const ProductForm = ({ product, onClose }) => {
           ? [product.colors]
           : [],
       sizes: Array.isArray(product.sizes) ? product.sizes.join(', ') : product.sizes || '',
+      stock: product.stock ?? 0,
+      variants: Array.isArray(product.variants) ? product.variants.map((variant) => ({
+        _id: variant._id,
+        sku: variant.sku || '', size: variant.size || '', color: variant.color || '',
+        stock: variant.stock ?? 0, isActive: variant.isActive !== false,
+      })) : [],
+      fit: { type: product.fit?.type || 'true-to-size', note: product.fit?.note || '' },
+      modelInfo: {
+        height: product.modelInfo?.height ?? '', bust: product.modelInfo?.bust ?? '',
+        waist: product.modelInfo?.waist ?? '', hips: product.modelInfo?.hips ?? '',
+        wearingSize: product.modelInfo?.wearingSize || '',
+      },
+      measurements: {
+        unit: product.measurements?.unit || 'cm', bust: product.measurements?.bust ?? '',
+        waist: product.measurements?.waist ?? '', hips: product.measurements?.hips ?? '',
+        length: product.measurements?.length ?? '', sleeve: product.measurements?.sleeve ?? '',
+      },
+      sizeGuide: Array.isArray(product.sizeGuide) ? product.sizeGuide.map((row) => ({
+        size: row.size || '', bust: row.bust ?? '', waist: row.waist ?? '',
+        hips: row.hips ?? '', length: row.length ?? '',
+      })) : [],
       description: product.description || '',
       isLookbook: Boolean(product.isLookbook),
       earlyAccessTier: product.earlyAccessTier || 'none',
@@ -254,6 +281,26 @@ const ProductForm = ({ product, onClose }) => {
     }));
   };
 
+  const updateNested = (group, field, value) => setFormData((prev) => ({
+    ...prev, [group]: { ...prev[group], [field]: value },
+  }));
+
+  const addVariant = () => setFormData((prev) => ({
+    ...prev, variants: [...prev.variants, { sku: '', size: '', color: '', stock: 0, isActive: true }],
+  }));
+  const updateVariant = (index, field, value) => setFormData((prev) => ({
+    ...prev, variants: prev.variants.map((variant, i) => i === index ? { ...variant, [field]: value } : variant),
+  }));
+  const removeVariant = (index) => setFormData((prev) => ({ ...prev, variants: prev.variants.filter((_, i) => i !== index) }));
+
+  const addSizeGuideRow = () => setFormData((prev) => ({
+    ...prev, sizeGuide: [...prev.sizeGuide, { size: '', bust: '', waist: '', hips: '', length: '' }],
+  }));
+  const updateSizeGuideRow = (index, field, value) => setFormData((prev) => ({
+    ...prev, sizeGuide: prev.sizeGuide.map((row, i) => i === index ? { ...row, [field]: value } : row),
+  }));
+  const removeSizeGuideRow = (index) => setFormData((prev) => ({ ...prev, sizeGuide: prev.sizeGuide.filter((_, i) => i !== index) }));
+
   const togglePipette = () => {
     if (isPipetteActive) {
       setIsPipetteActive(false);
@@ -292,6 +339,20 @@ const ProductForm = ({ product, onClose }) => {
               .filter(Boolean)
           : [],
         rating: Number(formData.rating) || 0,
+        stock: formData.variants.length
+          ? formData.variants.filter((variant) => variant.isActive !== false).reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0)
+          : Number(formData.stock) || 0,
+        variants: formData.variants.map(({ _id, ...variant }) => ({
+          ...(_id ? { _id } : {}), sku: variant.sku.trim(), size: variant.size.trim(), color: variant.color.trim(),
+          stock: Math.max(0, Number(variant.stock) || 0), isActive: variant.isActive !== false,
+        })),
+        fit: { type: formData.fit.type, note: formData.fit.note.trim() },
+        modelInfo: Object.fromEntries(Object.entries(formData.modelInfo).map(([key, value]) => [key, key === 'wearingSize' ? value.trim() : (value === '' ? null : Number(value))])),
+        measurements: Object.fromEntries(Object.entries(formData.measurements).map(([key, value]) => [key, key === 'unit' ? value : (value === '' ? null : Number(value))])),
+        sizeGuide: formData.sizeGuide.filter((row) => row.size.trim()).map((row) => ({
+          size: row.size.trim(), bust: row.bust === '' ? null : Number(row.bust), waist: row.waist === '' ? null : Number(row.waist),
+          hips: row.hips === '' ? null : Number(row.hips), length: row.length === '' ? null : Number(row.length),
+        })),
         image: formData.images[0]?.url || '',
       };
 
@@ -535,6 +596,43 @@ const ProductForm = ({ product, onClose }) => {
             placeholder="S, M, L, XL"
           />
         </div>
+
+        <section className="admin-card-soft p-4 space-y-4 lg:col-span-2">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="admin-section-title text-base">Variantlar</h3>
+              <p className="admin-muted text-xs mt-1">SKU, o'lcham, rang va variant qoldig'ini boshqaring.</p>
+            </div>
+            <button type="button" onClick={addVariant} className="admin-btn-secondary px-3 py-2 text-sm"><Plus className="w-4 h-4" /> Variant</button>
+          </div>
+          {formData.variants.length === 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div><label className="block text-xs text-slate-300 mb-1">Umumiy qoldiq</label><input type="number" min="0" name="stock" value={formData.stock} onChange={handleChange} className="admin-input" /></div>
+              <p className="admin-muted text-xs self-end pb-3">Legacy mahsulot uchun umumiy qoldiq ishlatiladi.</p>
+            </div>
+          ) : formData.variants.map((variant, index) => (
+            <div key={variant._id || index} className="grid grid-cols-2 md:grid-cols-[1.2fr_1fr_1fr_.7fr_auto_auto] gap-2 items-end border-t border-white/5 pt-3">
+              {['sku', 'size', 'color', 'stock'].map((field) => <label key={field} className="block"><span className="block text-xs text-slate-300 mb-1">{{ sku: 'SKU', size: "O'lcham", color: 'Rang', stock: 'Qoldiq' }[field]}</span><input type={field === 'stock' ? 'number' : 'text'} min={field === 'stock' ? '0' : undefined} value={variant[field]} onChange={(event) => updateVariant(index, field, event.target.value)} className="admin-input" /></label>)}
+              <label className="flex items-center gap-2 pb-3 text-xs text-slate-200"><input type="checkbox" checked={variant.isActive !== false} onChange={(event) => updateVariant(index, 'isActive', event.target.checked)} /> Faol</label>
+              <button type="button" onClick={() => removeVariant(index)} className="admin-btn-secondary p-3" aria-label="Variantni o'chirish"><X className="w-4 h-4" /></button>
+            </div>
+          ))}
+        </section>
+
+        <section className="admin-card-soft p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:col-span-2">
+          <div className="col-span-full"><h3 className="admin-section-title text-base">Fit va model ma'lumotlari</h3></div>
+          <label><span className="block text-xs text-slate-300 mb-1">Fit</span><select value={formData.fit.type} onChange={(event) => updateNested('fit', 'type', event.target.value)} className="admin-select"><option value="small">Kichik keladi</option><option value="true-to-size">Aynan mos</option><option value="large">Katta keladi</option></select></label>
+          <label className="sm:col-span-1 lg:col-span-2"><span className="block text-xs text-slate-300 mb-1">Fit izohi</span><input value={formData.fit.note} maxLength="500" onChange={(event) => updateNested('fit', 'note', event.target.value)} className="admin-input" /></label>
+          {[['height', "Bo'yi"], ['bust', "Ko'krak"], ['waist', 'Bel'], ['hips', 'Son']].map(([field, label]) => <label key={field}><span className="block text-xs text-slate-300 mb-1">Model: {label} (sm)</span><input type="number" min="0" value={formData.modelInfo[field]} onChange={(event) => updateNested('modelInfo', field, event.target.value)} className="admin-input" /></label>)}
+          <label><span className="block text-xs text-slate-300 mb-1">Model kiygan razmer</span><input value={formData.modelInfo.wearingSize} onChange={(event) => updateNested('modelInfo', 'wearingSize', event.target.value)} className="admin-input" /></label>
+        </section>
+
+        <section className="admin-card-soft p-4 space-y-4 lg:col-span-2">
+          <div className="flex items-center justify-between"><h3 className="admin-section-title text-base">Mahsulot o'lchovlari va konvertatsiya</h3><select value={formData.measurements.unit} onChange={(event) => updateNested('measurements', 'unit', event.target.value)} className="admin-select w-24"><option value="cm">cm</option><option value="in">inch</option></select></div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">{[['bust', "Ko'krak"], ['waist', 'Bel'], ['hips', 'Son'], ['length', 'Uzunlik'], ['sleeve', 'Yeng']].map(([field, label]) => <label key={field}><span className="block text-xs text-slate-300 mb-1">{label}</span><input type="number" min="0" value={formData.measurements[field]} onChange={(event) => updateNested('measurements', field, event.target.value)} className="admin-input" /></label>)}</div>
+          <div className="flex items-center justify-between border-t border-white/5 pt-3"><p className="text-sm text-slate-200">O'lcham jadvali (ixtiyoriy)</p><button type="button" onClick={addSizeGuideRow} className="admin-btn-secondary px-3 py-2 text-sm"><Plus className="w-4 h-4" /> Qator</button></div>
+          {formData.sizeGuide.map((row, index) => <div key={index} className="grid grid-cols-2 md:grid-cols-[.8fr_repeat(4,1fr)_auto] gap-2 items-end">{[['size', "O'lcham"], ['bust', "Ko'krak"], ['waist', 'Bel'], ['hips', 'Son'], ['length', 'Uzunlik']].map(([field, label]) => <label key={field}><span className="block text-xs text-slate-300 mb-1">{label}</span><input type={field === 'size' ? 'text' : 'number'} min={field === 'size' ? undefined : '0'} value={row[field]} onChange={(event) => updateSizeGuideRow(index, field, event.target.value)} className="admin-input" /></label>)}<button type="button" onClick={() => removeSizeGuideRow(index)} className="admin-btn-secondary p-3"><X className="w-4 h-4" /></button></div>)}
+        </section>
 
         <div className="flex items-center gap-6">
           <label className="inline-flex items-center gap-3 cursor-pointer select-none">

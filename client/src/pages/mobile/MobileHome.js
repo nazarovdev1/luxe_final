@@ -194,61 +194,97 @@ const MobileHome = () => {
         <div className="relative z-10">
           <MobileHero product={newestProducts[0]} />
 
-        <BrandJourney />
+        <div className="-mt-28 relative z-0">
+          <BrandJourney />
+        </div>
 
         {/* All Bundles Banner */}
         {featuredBundle && (
-        <section className="px-4 py-4">
-          <Link to="/mobile/bundles" className="relative block w-full rounded-2xl overflow-hidden border border-[#d6b47c]/30 shadow-[0_0_20px_rgba(214,180,124,0.15)] group">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1a1410] via-[#060a14] to-[#1a1410] z-0" />
-            <div className="relative z-10 p-5 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-1.5 mb-1">
+        <section className="px-4 py-2 -mt-32 relative z-20">
+          <Link to="/mobile/bundles" className="block w-full rounded-[2rem] overflow-hidden border border-white/[0.05] bg-[#121110] p-6 shadow-2xl">
+            {/* Header Row */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-9 h-9 rounded-full border border-[#d6b47c]/30 bg-[#d6b47c]/5 flex-shrink-0">
                   <Gem className="w-4 h-4 text-[#d6b47c]" />
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">Premium To'plamlar</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">Barcha to'plamlarni ko'rish</h3>
-                <p className="text-xs text-[#d6b47c]/80">Maxsus chegirmalar va premium to'plamlar faqat siz uchun</p>
+                <span className="text-[9px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">Premium To'plamlar</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-[#d6b47c]/20 flex items-center justify-center flex-shrink-0 backdrop-blur-md border border-[#d6b47c]/30 group-active:scale-90 transition-transform">
-                <ArrowRight className="w-5 h-5 text-[#d6b47c]" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.02] flex-shrink-0">
+                <ArrowRight className="w-4 h-4 text-neutral-400" />
               </div>
             </div>
-            {/* Glow effects */}
-            <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#d6b47c]/20 blur-[25px] rounded-full z-0 pointer-events-none" />
-            <div className="absolute bottom-0 left-10 w-32 h-10 bg-[#d6b47c]/10 blur-[20px] rounded-full z-0 pointer-events-none" />
+
+            {/* Content Area */}
+            <div className="mb-6">
+              <h3 className="font-brilliant text-[22px] leading-snug text-white mb-2">
+                Barcha to'plamlarni ko'rish
+              </h3>
+              <p className="text-[11px] text-neutral-400 leading-relaxed max-w-[280px]">
+                Maxsus chegirmalar va premium to'plamlar faqat siz uchun.
+              </p>
+            </div>
+
+            {/* Bottom Line */}
+            <div className="w-12 h-[1px] bg-white/15" />
           </Link>
         </section>
         )}
 
         {/* Platform Features */}
-        <section className="py-6">
-          <div className="px-4 flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-[#f4f1eb]">Platform</h2>
+        <section className="py-8">
+          <div className="px-4 flex items-center justify-between mb-5">
+            <h2 className="font-brilliant text-[26px] text-[#f4f1eb]">Platformalar</h2>
+            <Link to="/mobile/events" className="text-[11px] text-neutral-400 flex items-center gap-1">
+              Barchasini ko'rish <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
+          
           <div className="relative">
-            <div className="flex gap-3 overflow-x-auto pb-2 px-4 scrollbar-hide scroll-smooth">
-              {eventNavItems.map(item => {
+            <div className="flex gap-3 overflow-x-auto pb-4 px-4 scrollbar-hide scroll-smooth">
+              {eventNavItems.filter(item => item.id !== 'reels').map(item => {
                 const Icon = EVENT_ICONS[item.icon] || Gem;
+                
+                // Color-matched gradients
+                const gradientMap = {
+                  'vip-club': 'from-[#302717] to-[#0f0c07]',
+                  'style-feed': 'from-[#211a3b] to-[#0a0812]',
+                  'challenges': 'from-[#14262d] to-[#060b0d]',
+                  'live': 'from-[#3b1212] to-[#120505]',
+                  'eco-impact': 'from-[#11311b] to-[#050f08]',
+                  'gift-cards': 'from-[#3b200e] to-[#120a04]',
+                  'blog': 'from-[#3b1828] to-[#12070c]',
+                };
+                
+                const gradient = gradientMap[item.id] || 'from-[#1a1a1a] to-[#0d0d0d]';
+                
                 return (
-                <Link
-                  key={item.id}
-                  to={item.mobilePath}
-                  className="min-w-[115px] rounded-2xl border border-white/5 p-4 flex-shrink-0 flex flex-col items-center text-center gap-2 transition-all active:scale-95"
-                  style={{ background: `${item.color}18`, borderColor: `${item.color}20` }}
-                >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${item.color}20` }}>
-                    <Icon className="w-5 h-5" style={{ color: item.color }} />
-                  </div>
-                  <p className="text-[13px] font-bold text-white">{resolveNavLabel(item, t)}</p>
-                  <p className="text-[10px] text-gray-500 font-medium">{item.subtitle}</p>
-                </Link>
-              )})}
-              {/* Extra spacing for scroll */}
-              <div className="min-w-[1px] h-1 flex-shrink-0" />
+                  <Link
+                    key={item.id}
+                    to={item.mobilePath}
+                    className="min-w-[130px] w-[130px] rounded-[24px] overflow-hidden h-[220px] flex flex-col p-4 bg-gradient-to-b border border-white/5 relative flex-shrink-0 active:scale-95 transition-transform"
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-b ${gradient} z-0`} />
+                    
+                    <div className="flex-1 flex items-center justify-center relative z-10">
+                      <div className="w-10 h-10 rounded-full border flex items-center justify-center bg-black/20" style={{ borderColor: `${item.color}30` }}>
+                         <Icon className="w-4 h-4" style={{ color: item.color }} />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-auto relative z-10">
+                      <h3 className="text-white font-bold text-xs mb-0.5 leading-tight">{resolveNavLabel(item, t)}</h3>
+                      <p className="text-[9px] text-neutral-400 leading-tight mb-2 h-6 line-clamp-2">{item.subtitle}</p>
+                      <ArrowRight className="w-4 h-4" style={{ color: item.color }} />
+                    </div>
+                  </Link>
+                );
+              })}
+              {/* Padding spacer at the end of scroll */}
+              <div className="min-w-[4px] h-1 flex-shrink-0" />
             </div>
             {/* Right Fade Indicator */}
-            <div className="absolute top-0 right-0 bottom-2 w-16 bg-gradient-to-l from-[#060a14] via-[#060a14]/60 to-transparent pointer-events-none z-10" />
+            <div className="absolute top-0 right-0 bottom-4 w-16 bg-gradient-to-l from-[#060a14] via-[#060a14]/60 to-transparent pointer-events-none z-10" />
           </div>
         </section>
 

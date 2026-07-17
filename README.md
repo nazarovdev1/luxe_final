@@ -85,9 +85,10 @@ npm start
 cd client && npm run build
 
 # Backend syntax check
-Get-ChildItem -Recurse -File server -Filter *.js |
-  Where-Object { $_.FullName -notmatch '\\node_modules\\|\\public\\' } |
-  ForEach-Object { node --check $_.FullName }
+cd server && npm run verify
+
+# Backend production dependency audit
+cd server && npm audit --omit=dev --audit-level=high
 ```
 
 ## Deployment
@@ -97,6 +98,8 @@ The GitHub Actions workflow builds the React app, copies `client/build` into `se
 Deployment depends on npm lockfiles: CI, Docker, and production installs should use `npm ci` or `npm ci --omit=dev` instead of yarn, pnpm, or ad-hoc `npm install`. The Docker image expects `client/build` to exist before `docker build` and installs backend production dependencies from `server/package-lock.json`.
 
 Production secrets must live outside git and Docker build contexts. Configure them in GitHub Actions secrets, Plesk environment variables, or `server/.env` on the host only. If a secret, database dump, Firebase service account, API key, or `.env` file was ever committed, rotate the credential before the next deploy and remove the exposed value from all deployment targets.
+
+Before deploying, complete [the production release checklist](reports/production-release-checklist.md). Required server environment coverage includes `CLIENT_URL`, `CORS_ORIGINS`, `LOG_LEVEL`, SMS provider variables, and payment-provider credentials in addition to the base variables shown above. Keep optional integration variables unset when their feature is disabled; never use source-code fallback credentials.
 
 Plesk settings:
 

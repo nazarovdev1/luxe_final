@@ -43,6 +43,8 @@ import PriceDropAlert from '../../components/PriceDropAlert';
 import CustomerPhotoReviews from '../../components/CustomerPhotoReviews';
 import SizeGuideModal from '../../components/SizeGuideModal';
 import { showCartToast } from '../../utils/toast';
+import { findVariant, getProductOptions } from '../../utils/productVariants';
+import { trackEvent, productAnalyticsPayload } from '../../utils/analytics';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -88,6 +90,7 @@ const MobileProductView = () => {
   useEffect(() => {
     if (product && !isLoading) {
       addToRecentlyViewed(product);
+      trackEvent('view_item', productAnalyticsPayload(product));
     }
   }, [product?.id, isLoading]);
 
@@ -151,7 +154,7 @@ const MobileProductView = () => {
     onSwiping: (eventData) => { setIsSwiping(true); setSwipeDelta(eventData.deltaX); },
     onSwipedLeft: (eventData) => { setIsSwiping(false); setSwipeDelta(0); if (Math.abs(eventData.deltaX) > 50) nextImage(); },
     onSwipedRight: (eventData) => { setIsSwiping(false); setSwipeDelta(0); if (Math.abs(eventData.deltaX) > 50) prevImage(); },
-    onTap: () => { setIsSwiping(false); setSwipeDelta(0); },
+    onTap: () => { setIsSwiping(false); setSwipeDelta(0); setShowLightbox(true); },
     onTouchEndOrOnMouseUp: () => { setIsSwiping(false); setSwipeDelta(0); },
     trackMouse: true, trackTouch: true, delta: 10, preventDefaultTouchmoveEvent: false,
   };
@@ -228,16 +231,16 @@ const MobileProductView = () => {
       toast.error('Iltimos, rang tanlang!');
       return;
     }
-    const sizeOptions = Array.isArray(product.sizes)
-      ? [...new Set(product.sizes.flatMap((s) => (typeof s === 'string' && s.includes(' ') ? s.split(' ') : [s])).map((s) => String(s).trim()).filter(Boolean))]
-      : [];
+    const sizeOptions = getProductOptions(product, 'size');
     if (sizeOptions.length > 0 && !selectedSize) {
       toast.error("Iltimos, o'lcham tanlang!");
       return;
     }
     setIsAddingToCart(true);
     try {
-      await addToCart(product, selectedColor, selectedSize, quantity);
+      const variant = findVariant(product, selectedColor, selectedSize);
+      await addToCart(product, selectedColor, selectedSize, quantity, variant);
+      trackEvent('add_to_cart', productAnalyticsPayload(product, { item_variant: variant?.sku || [selectedColor, selectedSize].filter(Boolean).join(' / '), quantity }));
       showCartToast({
         itemName: product.name,
         quantity,
@@ -271,11 +274,11 @@ const MobileProductView = () => {
           {JSON.stringify({
             "@context": "https://schema.org", "@type": "Product",
             "name": product.name,
-            "image": product.images?.length > 0 ? product.images : [product.image],
+            "image": images,
             "description": product.description,
-            "sku": product._id,
+            "sku": product.sku || product._id,
             "brand": { "@type": "Brand", "name": "Luxx.uz" },
-            "offers": { "@type": "Offer", "priceCurrency": "UZS", "price": product.price, "availability": "https://schema.org/InStock" }
+            "offers": { "@type": "Offer", "priceCurrency": "UZS", "price": product.price, "availability": Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }
           })}
         </script>
       </Helmet>
@@ -316,7 +319,7 @@ const MobileProductView = () => {
         </div>
 
         {/* ═══ 2. Floating Header ═══════════════════════════ */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 safe-area-top">
+        <div className="fixed top-3 left-0 right-0 z-50 flex justify-between items-center p-4 safe-area-top">
           <button
             onClick={() => {
               if (location.state?.fromMobileList || window.history.length > 1) navigate(-1);
@@ -344,7 +347,7 @@ const MobileProductView = () => {
 
         {/* ═══ 3. Scrollable Content ════════════════════════ */}
         <div className="relative z-10 mt-[75vh]">
-          <div className="bg-[#0a0a0b]/95 backdrop-blur-3xl rounded-t-[2.5rem] border-t border-white/5 p-6 sm:p-8 pb-36 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+          <div className="bg-[#0a0a0b]/85 backdrop-blur-md sm:bg-[#0a0a0b]/95 sm:backdrop-blur-3xl rounded-t-[2.5rem] border-t border-white/5 p-6 sm:p-8 pb-36 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
 
             {/* Drag handle */}
             <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
@@ -679,7 +682,7 @@ const MobileProductView = () => {
         {/* ═══ Lightbox ════════════════════════════════════ */}
         {showLightbox && (
           <div
-            className="fixed inset-0 z-[100] bg-black animate-fade-in"
+            className="fixed inset-0 z-[10000] bg-black animate-fade-in"
             onClick={(e) => { if (e.target === e.currentTarget) setShowLightbox(false); }}
           >
             <div {...lightboxHandlers} className="w-full h-full flex flex-col justify-center relative">
@@ -710,6 +713,7 @@ const MobileProductView = () => {
         <SizeGuideModal
           isOpen={isSizeGuideOpen}
           onClose={() => setIsSizeGuideOpen(false)}
+          product={product}
           productCategory={product?.category}
         />
       </div>

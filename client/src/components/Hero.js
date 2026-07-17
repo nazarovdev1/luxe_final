@@ -223,7 +223,7 @@ const Hero = () => {
           className="absolute inset-0 bg-cover bg-top bg-no-repeat lg:hidden"
           style={{ backgroundImage: 'url("/heroimg.jpg")' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-[#0a0a0f]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-[#060a14]"></div>
         </div>
 
         {/* Animated Canvas Background - Desktop */}
@@ -233,10 +233,9 @@ const Hero = () => {
               className={`absolute inset-0 bg-no-repeat`}
               style={{ backgroundImage: 'url("/heroimg.jpg")', backgroundSize: 'cover', backgroundPosition: '68% 22% !important' }}
             />
-            {/* The canvas was removed/disabled temporarily or just rendered behind the primary static image */}
             {/* Overlays */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#05060b]/80 via-[#05060b]/45 to-[#05060b]/25"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#060a14] via-[#060a14]/45 to-transparent"></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_40%,rgba(214,180,124,0.15),transparent_35%)]"></div>
           </div>
         )}
@@ -256,8 +255,7 @@ const Hero = () => {
                 </p>
 
                 <h1
-                  className="mt-4 text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.88] tracking-tight uppercase animate-fade-in-up"
-                  style={{ animationDelay: '0.1s' }}
+                  className="mt-4 text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.88] tracking-tight uppercase"
                 >
                   {t('hero.title1').split('').map((letter, index) => {
                     const totalLetters = 11;
@@ -269,6 +267,10 @@ const Hero = () => {
                       <span
                         key={`p-${index}`}
                         style={{
+                          display: 'inline-block',
+                          opacity: 0,
+                          animation: 'charFadeIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                          animationDelay: `${index * 0.05}s`,
                           color: `rgb(${r}, ${g}, ${b})`,
                           textShadow: letterProgress > 0.35 ? `0 0 28px rgba(214, 180, 124, ${letterProgress * 0.45})` : 'none',
                           transition: 'color 0.18s ease-out, text-shadow 0.2s ease-out'
@@ -290,6 +292,10 @@ const Hero = () => {
                       <span
                         key={`m-${index}`}
                         style={{
+                          display: 'inline-block',
+                          opacity: 0,
+                          animation: 'charFadeIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                          animationDelay: `${letterIndex * 0.05}s`,
                           color: `rgb(${r}, ${g}, ${b})`,
                           textShadow: letterProgress > 0.35 ? `0 0 28px rgba(214, 180, 124, ${letterProgress * 0.45})` : 'none',
                           transition: 'color 0.18s ease-out, text-shadow 0.2s ease-out'
@@ -339,16 +345,8 @@ const Hero = () => {
         </div>
 
         {/* Bottom Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-44 bg-gradient-to-t from-[#060a14] via-[#060a14]/50 to-transparent pointer-events-none"></div>
+        <div className="absolute inset-x-0 bottom-0 h-[42vh] min-h-56 bg-gradient-to-t from-[#060a14] via-[#060a14]/85 to-transparent pointer-events-none"></div>
 
-        {/* Scroll Indicator */}
-        {/* {isDesktop && (
-          <div className="absolute bottom-8 right-10 z-20 hidden lg:block">
-            <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
-              <div className="w-1 h-3 bg-white/50 rounded-full animate-bounce"></div>
-            </div>
-          </div>
-        )} */}
       </div>
     </section >
   );
