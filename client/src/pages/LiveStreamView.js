@@ -6,6 +6,7 @@ import { ShoppingBag, Users, Send, ArrowLeft, Radio, Trash2 } from 'lucide-react
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { io } from 'socket.io-client';
+import SEO from '../components/SEO';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -136,6 +137,11 @@ const LiveStreamView = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
+      <SEO
+        title={stream?.title || 'Live Stream | Luxx.uz'}
+        description={stream?.description || `Luxx.uz live stream: ${stream?.title || ''}`}
+        canonicalPath={`/live/${id}`}
+      />
       {/* Top Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center gap-4">
         <button onClick={() => navigate('/live')} className="p-2 hover:bg-white/5 rounded-full">

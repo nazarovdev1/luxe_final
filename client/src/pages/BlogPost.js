@@ -4,6 +4,7 @@ import { Calendar, Clock, Eye, ArrowLeft, Share2, ChevronRight, BookOpen, Tag, S
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
+import SEO from '../components/SEO';
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -96,6 +97,37 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-[#07080c] pt-28 pb-16">
+      <SEO
+        title={blog?.title?.uz || blog?.title?.en || blog?.title?.ru || 'Blog post | Luxx.uz'}
+        description={blog?.excerpt?.uz || blog?.excerpt?.en || blog?.excerpt?.ru || `${blog?.title?.uz || ''} — Luxx.uz blogi`}
+        image={blog?.coverImage || ''}
+        canonicalPath={`/blog/${slug}`}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: blog?.title?.uz || blog?.title?.en || '',
+          description: blog?.excerpt?.uz || blog?.excerpt?.en || '',
+          image: blog?.coverImage || '',
+          datePublished: blog?.publishedAt || blog?.createdAt || '',
+          dateModified: blog?.updatedAt || blog?.publishedAt || blog?.createdAt || '',
+          author: {
+            '@type': 'Person',
+            name: blog?.author?.username || 'Luxx.uz Editorial',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'Luxx.uz',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://luxx.uz/logoweb2.png',
+            },
+          },
+          mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `https://luxx.uz/blog/${slug}`,
+          },
+        }}
+      />
       {/* Background effects */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl opacity-20" />

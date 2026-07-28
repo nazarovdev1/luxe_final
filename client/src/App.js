@@ -38,6 +38,7 @@ const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const BundleDetail = React.lazy(() => import('./pages/BundleDetail'));
 const MobileApp = lazyWithRetry(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
+const About = React.lazy(() => import('./components/About'));
 const VisualSearch = lazyWithRetry(() => import('./components/VisualSearch'));
 import { ProductProvider } from './contexts/ProductContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -154,6 +155,13 @@ function MainContent() {
 
   return (
     <div className="min-h-screen text-foreground relative">
+      {/* Skip to main content link - accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#c9a96e] focus:text-black focus:rounded-xl focus:text-sm focus:font-bold focus:outline-none"
+      >
+        Asosiy kontentga o'tish
+      </a>
       <React.Suspense fallback={<Loading />}>
         {/* Fixed Header Container (Banner + Navbar) */}
         {showDesktopChrome && !isChromeHiddenBySurface && (
@@ -164,7 +172,7 @@ function MainContent() {
         )}
 
         {/* Main Content Area */}
-        <div className="relative z-10">
+        <div id="main-content" className="relative z-10">
           {showDesktopChrome && !isChromeHiddenBySurface && (
             <>
               <CartDropdown isOpen={isCartOpen} onClose={closeCart} />
@@ -182,7 +190,15 @@ function MainContent() {
 
             {/* Desktop version */}
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<Navigate to="/#about" replace />} />
+            <Route path="/about" element={
+              <React.Suspense fallback={<Loading />}>
+                <div className="min-h-screen bg-[#0a0a0b] pt-20">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <About />
+                  </div>
+                </div>
+              </React.Suspense>
+            } />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/admin" element={<Admin />} />

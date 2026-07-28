@@ -2,6 +2,41 @@ import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
+export const FAQ_DATA = [
+    {
+        question: "Buyurtmani qanday berish mumkin?",
+        answer: "Buyurtma berish uchun mahsulotni tanlang, kerakli rang va o'lchamni belgilang va 'Savatga qo'shish' tugmasini bosing. Keyin savatga o'tib, 'Buyurtmani rasmiylashtirish' tugmasini bosing va kerakli ma'lumotlarni to'ldiring."
+    },
+    {
+        question: "Yetkazib berish qancha vaqt oladi?",
+        answer: "Toshkent shahri bo'ylab yetkazib berish 3-6 soat ichida amalga oshiriladi. Boshqa viloyatlarga yetkazib berish hozircha mavjud emas. Barcha buyurtmalar bepul yetkazib beriladi."
+    },
+    {
+        question: "To'lov usullari qanday?",
+        answer: "Naqd pul orqali, Click va Payme orqali to'lov tez orada amalga oshiriladi. Mahsulot yetkazib berilganda naqd to'lash imkoniyati mavjud."
+    },
+    {
+        question: "Mahsulotni qaytarish mumkinmi?",
+        answer: "Ha, agar mahsulot sizga mos kelmasa yoki nuqsoni bo'lsa, 14 kun ichida qaytarish mumkin. Mahsulot yangi holatda bo'lishi va etiketkalari saqlanishi kerak."
+    },
+    {
+        question: "Mahsulot sifati kafolatlanganmi?",
+        answer: "Albatta! Barcha mahsulotlarimiz yuqori sifatli materiallardan tayyorlangan va sifat nazoratidan o'tgan. Biz har bir mahsulot uchun 30 kunlik kafolat beramiz."
+    },
+    {
+        question: "O'lchamni qanday tanlash kerak?",
+        answer: "Har bir mahsulot sahifasida o'lchamlar jadvali mavjud. Agar o'lchamni tanlashda qiyinchilik bo'lsa, bizning qo'llab-quvvatlash xizmatimiz bilan bog'laning, sizga yordam beramiz."
+    },
+    {
+        question: "Chegirmalar va aksiyalar bormi?",
+        answer: "Ha, biz muntazam ravishda chegirmalar va aksiyalar o'tkazamiz. Yangiliklar va maxsus takliflardan xabardor bo'lish uchun bizning ijtimoiy tarmoqlarimizga obuna bo'ling."
+    },
+    {
+        question: "Buyurtmani qanday kuzatish mumkin?",
+        answer: "Buyurtma rasmiylashtirilgandan so'ng, siz telefon raqamingizga SMS orqali buyurtma holati haqida xabar olasiz. Shuningdek, bizning qo'llab-quvvatlash xizmatimizga qo'ng'iroq qilib buyurtma holatini bilib olishingiz mumkin."
+    }
+];
+
 const FAQ = () => {
     const { t } = useLanguage();
     const [openIndex, setOpenIndex] = useState(null);

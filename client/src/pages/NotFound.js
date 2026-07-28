@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import SEO from '../components/SEO';
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const NotFound = () => {
         backgroundSize: 'cover',
       }}
     >
+      <SEO title="Sahifa topilmadi | Luxx.uz" noIndex={true} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Combo&display=swap');
         

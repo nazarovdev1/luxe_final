@@ -186,6 +186,18 @@ export default function BundleDetail() {
         description={bundle.description || `${bundle.title} to'plami. ${discountPercent}% chegirma bilan ${formatPrice(discountedPrice)} so'm.`}
         keywords={`to'plam, ${bundle.title}, ${products.map(p => p.name).join(', ')}, chegirma`}
         canonicalPath={`/bundle/${id}`}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: bundle.title,
+          description: bundle.description || `${bundle.title} to'plami`,
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'UZS',
+            price: discountedPrice,
+            availability: 'https://schema.org/InStock',
+          },
+        }}
       />
 
       {/* Back button */}

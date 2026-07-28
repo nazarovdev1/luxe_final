@@ -175,6 +175,19 @@ const AllProducts = () => {
         keywords={seoData.keywords}
         breadcrumbSteps={seoData.breadcrumbs}
         canonicalPath="/products"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          name: selectedCategory === allLabel ? 'Barcha mahsulotlar' : `${selectedCategory} mahsulotlari`,
+          url: 'https://luxx.uz/products',
+          numberOfItems: sortedProducts.length,
+          itemListElement: displayedProducts.slice(0, 20).map((product, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            url: `https://luxx.uz/product/${product.id}`,
+            name: product.name,
+          })),
+        }}
       />
 
       <ProductHero

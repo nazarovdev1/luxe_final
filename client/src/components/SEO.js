@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const SITE_NAME = 'Luxx.uz';
 const SITE_URL = 'https://luxx.uz';
@@ -45,6 +46,12 @@ const CATEGORY_KEYWORDS = [
     'Stil obrazlar',
 ];
 
+const LOCALE_MAP = {
+  uz: 'uz_UZ',
+  ru: 'ru_RU',
+  en: 'en_US',
+};
+
 const SEO = ({
     title,
     description,
@@ -56,6 +63,8 @@ const SEO = ({
     structuredData,
     breadcrumbSteps = [], // New prop for breadcrumbs
 }) => {
+    const { language } = useLanguage();
+    const locale = LOCALE_MAP[language] || 'uz_UZ';
     const pageTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE;
     const pageDescription = description || DEFAULT_DESCRIPTION;
     const pageKeywords = keywords || DEFAULT_KEYWORDS;
@@ -159,7 +168,7 @@ const SEO = ({
             <meta property="og:title" content={pageTitle} />
             <meta property="og:description" content={pageDescription} />
             <meta property="og:image" content={pageImage} />
-            <meta property="og:locale" content="uz_UZ" />
+            <meta property="og:locale" content={locale} />
 
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:url" content={canonical} />

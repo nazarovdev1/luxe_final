@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight, Tag, BookOpen, TrendingUp, Heart, Search, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
+import SEO from '../components/SEO';
 
 const CATEGORIES_UZ = ['Barchasi', 'Trendlar', 'Maslahatlar', 'Kombinatsiyalar', 'Parvarish', 'Aksessuarlar'];
 
@@ -131,6 +132,12 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-[#07080c] pt-28 pb-16">
+      <SEO
+        title="Blog | Luxx.uz"
+        description="Eng so'nggi moda yangiliklari, uslub maslahatlari, trendlar va kombinatsiyalar. Luxx.uz blogi — premium fashion haqida hamma narsa."
+        keywords="moda blogi, fashion blog, uslub maslahatlari, trendlar, ayollar kiyimlari, luxx.uz blog"
+        canonicalPath="/blog"
+      />
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl opacity-20" />
