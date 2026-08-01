@@ -73,6 +73,7 @@ const translations = {
       corporate: 'Corporate',
       inStock: 'Mavjud',
       outOfStock: 'Tugagan',
+      quickView: "Tezkor ko'rish",
       comingSoon: 'Tez kunda',
       soldOut: 'Sotilgan',
       sum: "so'm",

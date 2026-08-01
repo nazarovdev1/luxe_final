@@ -133,7 +133,7 @@ const PremiumProductCard = ({
                 className="w-full py-2.5 px-4 rounded-xl bg-[#09090b]/85 hover:bg-[#d6b47c] text-[#f5f1ea] hover:text-black border border-[#d6b47c]/30 hover:border-[#d6b47c] backdrop-blur-xl font-medium text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl transition-all duration-300 group/btn"
               >
                 <Eye className="w-3.5 h-3.5 transition-transform group-hover/btn:scale-110" />
-                <span>{t('common.quickView') || "Tezkor Ko'rish"}</span>
+                <span>{t('product.quickView', "Tezkor ko'rish")}</span>
               </button>
             </div>
           )}

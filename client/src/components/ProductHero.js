@@ -70,9 +70,9 @@ const ProductHero = ({ title, subtitle, count, categoriesCount }) => {
           </div>
 
           <div className="text-center py-2 px-3 flex flex-col items-center justify-center">
-            <div className="flex items-center gap-1 text-[#e8c87a]">
-              <ShieldCheck className="w-4 h-4 text-[#d6b47c]" />
+            <div className="flex items-center gap-1 text-[#e8c87a] gap-3">
               <span className="font-brilliant text-2xl sm:text-3xl text-[#f7f1e8]">100%</span>
+              <ShieldCheck className="w-4 h-4 text-[#d6b47c]" />
             </div>
             <span className="text-[10px] uppercase tracking-[0.22em] text-[#d6b47c] font-medium mt-1 block">
               Luxury Sifat
