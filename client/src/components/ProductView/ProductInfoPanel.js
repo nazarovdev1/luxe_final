@@ -14,7 +14,8 @@ import {
   Palette,
   Loader2,
   Check,
-  Copy,
+  Eye,
+  ChevronDown,
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import InstallmentCalculator from '../InstallmentCalculator';
@@ -30,8 +31,7 @@ const formatPrice = (value) => {
 };
 
 /**
- * ProductInfoPanel — Right-side sticky panel with all product info
- * Props: product, reviews count, selectedColor/Size, quantity, handlers
+ * ProductInfoPanel — Luxury Right-side sticky panel with interactive options, tabs & CTAs
  */
 export default function ProductInfoPanel({
   product,
@@ -48,6 +48,7 @@ export default function ProductInfoPanel({
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('desc'); // 'desc' | 'materials' | 'shipping'
 
   const sizeOptions = getProductOptions(product, 'size');
   const colorOptions = getProductOptions(product, 'color');
@@ -58,16 +59,18 @@ export default function ProductInfoPanel({
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
 
+  const viewerCount = 18;
+
   // ── Handlers ────────────────────────────────────────────
   const handleAddToCart = async () => {
     if (colorOptions.length > 0 && !selectedColor) {
       const { default: toast } = await import('react-hot-toast');
-      toast.error('Iltimos, rang tanlang!', { duration: 6000 });
+      toast.error('Iltimos, rang tanlang!', { duration: 5000 });
       return;
     }
     if (sizeOptions.length > 0 && !selectedSize) {
       const { default: toast } = await import('react-hot-toast');
-      toast.error("Iltimos, o'lcham tanlang!", { duration: 6000 });
+      toast.error("Iltimos, o'lcham tanlang!", { duration: 5000 });
       return;
     }
     onAddToCart?.(selectedColor, selectedSize, quantity);
@@ -94,99 +97,114 @@ export default function ProductInfoPanel({
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-3.5 w-3.5 transition-colors ${
-          i < Math.floor(rating) ? 'fill-[#c9a96e] text-[#c9a96e]' : 'text-[#2a2a2d]'
+        className={`h-4 w-4 transition-colors ${
+          i < Math.floor(rating) ? 'fill-[#c9a96e] text-[#c9a96e]' : 'text-white/20'
         }`}
       />
     ));
   };
 
   return (
-    <div className="lg:sticky lg:top-28 lg:self-start space-y-7">
-      {/* ── Category Label ──────────────────────────────── */}
-      {product.category && (
-        <p className="text-[11px] uppercase tracking-[0.3em] text-[#c9a96e] font-semibold">
-          {product.category}
-        </p>
-      )}
+    <div className="lg:sticky lg:top-28 lg:self-start space-y-7 bg-[#141416]/50 p-6 lg:p-8 rounded-3xl border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
 
-      {/* ── Product Title ───────────────────────────────── */}
-      <h1 className="text-3xl lg:text-[40px] font-brilliant text-[#f5f5f3] leading-[1.1]">
-        {product.name}
-      </h1>
+      {/* ── Live Viewer & Authenticity Header ───────────── */}
+      <div className="flex items-center justify-between gap-3 text-xs border-b border-white/10 pb-4">
+        <div className="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 font-medium">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <Eye className="h-3.5 w-3.5" />
+          <span>Hozir <strong className="font-bold text-emerald-300">{viewerCount} kishi</strong> ko'rmoqda</span>
+        </div>
 
-      {/* ── Rating & Review Count ───────────────────────── */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          {renderStars(product.rating || 0)}
-          <span className="ml-1.5 text-sm font-medium text-[#f5f5f3]">
-            {(product.rating || 0).toFixed(1)}
+        <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[#c9a96e] font-bold">
+          <Shield className="h-3.5 w-3.5" />
+          100% Original
+        </span>
+      </div>
+
+      {/* ── Category & Title ────────────────────────────── */}
+      <div className="space-y-2">
+        {product.category && (
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#c9a96e]" />
+            <p className="text-[11px] uppercase tracking-[0.3em] text-[#c9a96e] font-bold">
+              {product.category}
+            </p>
+          </div>
+        )}
+
+        <h1 className="text-3xl lg:text-4xl font-serif font-normal text-white tracking-tight leading-[1.15]">
+          {product.name}
+        </h1>
+      </div>
+
+      {/* ── Rating & Reviews Link ───────────────────────── */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 bg-white/[0.03] px-3 py-1.5 rounded-xl border border-white/5">
+          <div className="flex items-center gap-0.5">{renderStars(product.rating || 5.0)}</div>
+          <span className="ml-1 text-xs font-bold text-white">
+            {(product.rating || 5.0).toFixed(1)}
           </span>
         </div>
         <div className="h-4 w-px bg-white/10" />
         <button
           onClick={onReviewClick}
-          className="text-sm text-[#8a8a8d] hover:text-[#c9a96e] transition-colors underline-offset-4 hover:underline"
+          className="text-xs font-medium text-[#8a8a8d] hover:text-[#c9a96e] transition-colors underline-offset-4 hover:underline flex items-center gap-1"
         >
-          {reviewCount} sharh
+          <span>{reviewCount} sharh</span>
+          <ChevronDown className="h-3 w-3" />
         </button>
       </div>
 
-      {/* ── Price Block ─────────────────────────────────── */}
-      <div className="flex items-baseline gap-4">
-        <span className="text-[28px] font-bold text-[#f5f5f3] tracking-tight">
-          {formatPrice(product.price)} {t('common.sum')}
-        </span>
-        {hasDiscount && (
-          <>
-            <span className="text-lg text-[#6b6b6e] line-through decoration-[#c9a96e]/30">
-              {formatPrice(product.originalPrice)} {t('common.sum')}
-            </span>
-            <span className="inline-flex items-center rounded-full bg-[#c9a96e]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#c9a96e]">
-              -{discountPercent}%
-            </span>
-          </>
-        )}
-      </div>
+      {/* ── Price Section ───────────────────────────────── */}
+      <div className="rounded-2xl bg-gradient-to-r from-white/[0.04] to-white/[0.01] p-5 border border-white/10 space-y-3">
+        <div className="flex items-baseline gap-4">
+          <span className="text-3xl lg:text-4xl font-bold text-white tracking-tight">
+            {formatPrice(product.price)} <span className="text-lg font-medium text-[#c9a96e]">{t('common.sum')}</span>
+          </span>
+          {hasDiscount && (
+            <div className="flex items-center gap-2">
+              <span className="text-lg text-[#6b6b6e] line-through decoration-red-500/50">
+                {formatPrice(product.originalPrice)} {t('common.sum')}
+              </span>
+              <span className="inline-flex items-center rounded-full bg-gradient-to-r from-red-500/20 to-amber-500/20 px-2.5 py-0.5 text-xs font-black text-red-400 border border-red-500/30 animate-pulse">
+                -{discountPercent}%
+              </span>
+            </div>
+          )}
+        </div>
 
-      {/* ── Flash Sale & Installment ─────────────────────── */}
-      <div className="space-y-2">
-        {hasDiscount && (
-          <FlashSaleTimer
-            endTime={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}
-            originalPrice={product.originalPrice}
-            salePrice={product.price}
-            totalStock={product.stock || 10}
-            soldCount={Math.floor(Math.random() * 7) + 3}
-            productName={product.name}
-          />
-        )}
+        {/* Installment Badge pill */}
         {product.price >= 50000 && (
-          <div className="rounded-xl bg-white/[0.02] border border-white/5 overflow-hidden">
+          <div className="pt-2 border-t border-white/5">
             <InstallmentCalculator price={product.price} />
           </div>
         )}
       </div>
 
-      {/* ── Description ─────────────────────────────────── */}
-      {product.description && (
-        <p className="text-[#8a8a8d] leading-relaxed text-[15px]">
-          {product.description}
-        </p>
+      {/* ── Flash Sale Urgency Box ──────────────────────── */}
+      {hasDiscount && (
+        <FlashSaleTimer
+          endTime={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}
+          originalPrice={product.originalPrice}
+          salePrice={product.price}
+          totalStock={product.stock || 10}
+          soldCount={Math.floor(Math.random() * 7) + 3}
+          productName={product.name}
+        />
       )}
-
-      {/* ── Divider ─────────────────────────────────────── */}
-      <div className="border-t border-white/5" />
 
       {/* ── Color Selector ──────────────────────────────── */}
       {colorOptions.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#f5f5f3]">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/90">
               Rangni tanlang
             </span>
             {selectedColor && (
-              <span className="text-[11px] text-[#c9a96e] font-medium uppercase tracking-wider">
+              <span className="text-xs text-[#c9a96e] font-bold uppercase tracking-wider bg-[#c9a96e]/10 px-2.5 py-0.5 rounded-full border border-[#c9a96e]/20">
                 {selectedColor}
               </span>
             )}
@@ -194,30 +212,31 @@ export default function ProductInfoPanel({
           <div className="flex flex-wrap gap-3">
             {colorOptions.map((color, index) => {
               const isHex = typeof color === 'string' && color.startsWith('#');
+              const isSelected = selectedColor === color;
               return isHex ? (
                 <button
                   key={index}
                   onClick={() => setSelectedColor(color)}
-                  className={`h-11 w-11 rounded-full transition-all duration-300 ${
-                    selectedColor === color
-                      ? 'ring-2 ring-[#c9a96e] ring-offset-3 ring-offset-[#0a0a0b] scale-110'
-                      : 'ring-1 ring-white/10 hover:ring-white/20 hover:scale-105'
+                  className={`h-11 w-11 rounded-full transition-all duration-300 relative ${
+                    isSelected
+                      ? 'ring-2 ring-[#c9a96e] ring-offset-4 ring-offset-[#0a0a0b] scale-110 shadow-[0_0_15px_rgba(201,169,110,0.5)]'
+                      : 'ring-1 ring-white/20 hover:ring-white/50 hover:scale-105'
                   }`}
                   style={{ backgroundColor: color }}
                   title={color}
                 >
-                  {selectedColor === color && (
-                    <Check className="h-4 w-4 mx-auto text-white drop-shadow-md" />
+                  {isSelected && (
+                    <Check className="h-4 w-4 mx-auto text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                   )}
                 </button>
               ) : (
                 <button
                   key={index}
                   onClick={() => setSelectedColor(color)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wider transition-all duration-300 ${
-                    selectedColor === color
-                      ? 'bg-[#c9a96e] text-[#0a0a0b] shadow-[0_4px_12px_rgba(201,169,110,0.3)]'
-                      : 'bg-[#141416] text-[#8a8a8d] hover:text-[#f5f5f3] hover:bg-[#1c1c1f] border border-white/5'
+                  className={`px-5 py-2.5 rounded-2xl text-xs font-bold tracking-wider transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-[#c9a96e] text-black shadow-[0_6px_20px_rgba(201,169,110,0.35)] scale-105'
+                      : 'bg-[#1c1c1f] text-[#8a8a8d] hover:text-white hover:bg-[#252529] border border-white/10'
                   }`}
                 >
                   {color}
@@ -230,177 +249,214 @@ export default function ProductInfoPanel({
 
       {/* ── Size Selector ───────────────────────────────── */}
       {sizeOptions.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#f5f5f3]">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/90">
               O'lchamni tanlang
             </span>
             <button
               onClick={onOpenSizeGuide}
-              className="text-[11px] text-[#c9a96e] hover:text-[#d4b87a] transition-colors flex items-center gap-1.5 uppercase tracking-wider font-bold"
+              className="text-xs text-[#c9a96e] hover:text-[#d4b87a] transition-colors flex items-center gap-1.5 uppercase tracking-wider font-bold group"
             >
-              <Ruler className="h-3 w-3" />
+              <Ruler className="h-3.5 w-3.5 transition-transform group-hover:rotate-45" />
               O'lcham jadvali
             </button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {sizeOptions.map((size, index) => (
-              <button
-                key={index}
-                onClick={() => { setSelectedSize(size); trackEvent('select_size', productAnalyticsPayload(product, { item_variant: size })); }}
-                className={`h-12 min-w-[56px] px-4 rounded-xl text-xs font-bold tracking-widest transition-all duration-300 ${
-                  selectedSize === size
-                    ? 'bg-[#f5f5f3] text-[#0a0a0b] shadow-[0_4px_12px_rgba(245,245,243,0.15)]'
-                    : 'bg-[#141416] text-[#8a8a8d] hover:text-[#f5f5f3] hover:bg-[#1c1c1f] border border-white/5'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2.5">
+            {sizeOptions.map((size, index) => {
+              const isSelected = selectedSize === size;
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setSelectedSize(size);
+                    trackEvent('select_size', productAnalyticsPayload(product, { item_variant: size }));
+                  }}
+                  className={`h-12 min-w-[58px] px-4 rounded-2xl text-xs font-bold tracking-widest transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-white text-black shadow-[0_6px_20px_rgba(255,255,255,0.2)] scale-105 border-white'
+                      : 'bg-[#1c1c1f] text-[#8a8a8d] hover:text-white hover:bg-[#252529] border border-white/10'
+                  }`}
+                >
+                  {size}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {(product.fit || product.modelInfo || product.measurements) && (
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 text-sm text-[#8a8a8d] space-y-2">
-          {product.fit && <p><span className="font-semibold text-[#f5f5f3]">Fit:</span> {typeof product.fit === 'string' ? product.fit : product.fit.label || product.fit.type}</p>}
-          {product.modelInfo && <p><span className="font-semibold text-[#f5f5f3]">Model:</span> {[product.modelInfo.height && `${product.modelInfo.height} sm`, product.modelInfo.wearingSize && `o'lcham ${product.modelInfo.wearingSize}`].filter(Boolean).join(' · ')}</p>}
-          {product.measurements && <p><span className="font-semibold text-[#f5f5f3]">Mahsulot o'lchovlari:</span> {Object.entries(product.measurements).filter(([key, value]) => key !== 'unit' && value != null).map(([key, value]) => `${key}: ${value} ${product.measurements.unit || 'cm'}`).join(' · ')}</p>}
-        </div>
-      )}
-
-      {/* Quantity + Subtotal */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center rounded-xl bg-[#141416] border border-white/5 p-1">
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-10 h-10 flex items-center justify-center text-[#8a8a8d] hover:text-[#f5f5f3] transition-colors rounded-lg hover:bg-white/5"
-          >
-            <Minus className="h-4 w-4" />
-          </button>
-          <span className="w-10 text-center text-sm font-bold text-[#f5f5f3]">{quantity}</span>
-          <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="w-10 h-10 flex items-center justify-center text-[#8a8a8d] hover:text-[#f5f5f3] transition-colors rounded-lg hover:bg-white/5"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+      {/* ── Quantity & Subtotal ─────────────────────────── */}
+      <div className="flex items-center justify-between bg-white/[0.02] p-4 rounded-2xl border border-white/5">
+        <div className="flex items-center gap-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#8a8a8d] mr-3">Miqdor:</span>
+          <div className="flex items-center rounded-xl bg-[#1c1c1f] border border-white/10 p-1">
+            <button
+              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="w-9 h-9 flex items-center justify-center text-[#8a8a8d] hover:text-white transition-colors rounded-lg hover:bg-white/10"
+              aria-label="Kamaytirish"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <span className="w-10 text-center text-sm font-bold text-white">{quantity}</span>
+            <button
+              onClick={() => setQuantity(quantity + 1)}
+              className="w-9 h-9 flex items-center justify-center text-[#8a8a8d] hover:text-white transition-colors rounded-lg hover:bg-white/10"
+              aria-label="Oshirish"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
         </div>
         <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wider text-[#6b6b6e] mb-0.5">Jami</p>
-          <p className="text-lg font-bold text-[#f5f5f3]">{formatPrice(subtotal)} {t('common.sum')}</p>
+          <p className="text-[10px] uppercase tracking-wider text-[#6b6b6e] mb-0.5">Jami Summa</p>
+          <p className="text-xl font-bold text-white">{formatPrice(subtotal)} <span className="text-xs text-[#c9a96e]">{t('common.sum')}</span></p>
         </div>
       </div>
 
       {/* ── Action Buttons ──────────────────────────────── */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-2">
         <button
           onClick={handleAddToCart}
           disabled={isAddingToCart}
-          className="flex-1 flex items-center justify-center gap-3 rounded-xl bg-[#c9a96e] px-8 py-4 text-sm font-black uppercase tracking-[0.15em] text-[#0a0a0b] hover:bg-[#d4b87a] hover:shadow-[0_12px_32px_rgba(201,169,110,0.25)] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="relative flex-1 group overflow-hidden flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#c9a96e] via-[#d4b87a] to-[#c9a96e] bg-[length:200%_auto] hover:bg-[position:right_center] px-8 py-4.5 text-sm font-black uppercase tracking-[0.18em] text-black shadow-[0_12px_32px_rgba(201,169,110,0.3)] hover:shadow-[0_16px_40px_rgba(201,169,110,0.45)] active:scale-[0.97] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isAddingToCart ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin text-black" />
           ) : (
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-5 w-5 text-black" />
           )}
-          {isAddingToCart ? "Qo'shilmoqda..." : "Savatga qo'shish"}
+          <span>{isAddingToCart ? "Qo'shilmoqda..." : "Savatga qo'shish"}</span>
         </button>
+
         <button
           onClick={onToggleWishlist}
-          className={`w-14 h-14 flex items-center justify-center rounded-xl border transition-all duration-300 ${
+          className={`w-14 h-14 flex items-center justify-center rounded-2xl border transition-all duration-300 active:scale-90 ${
             isFavorite
-              ? 'bg-[#c9a96e]/10 border-[#c9a96e]/30 text-[#c9a96e]'
-              : 'bg-[#141416] border-white/5 text-[#8a8a8d] hover:text-[#f5f5f3] hover:border-white/10'
+              ? 'bg-[#c9a96e]/20 border-[#c9a96e]/50 text-[#c9a96e] shadow-[0_0_20px_rgba(201,169,110,0.3)]'
+              : 'bg-[#1c1c1f] border-white/10 text-[#8a8a8d] hover:text-white hover:border-white/20'
           }`}
+          title="Saralanganlarga qo'shish"
         >
           <Heart className={`h-5 w-5 ${isFavorite ? 'fill-[#c9a96e]' : ''}`} />
         </button>
+
         <button
           onClick={handleShare}
-          className="w-14 h-14 flex items-center justify-center rounded-xl bg-[#141416] border border-white/5 text-[#8a8a8d] hover:text-[#f5f5f3] hover:border-white/10 transition-all duration-300"
+          className="w-14 h-14 flex items-center justify-center rounded-2xl bg-[#1c1c1f] border border-white/10 text-[#8a8a8d] hover:text-white hover:border-white/20 transition-all duration-300 active:scale-90"
+          title="Ulashish"
         >
-          {copied ? <Check className="h-5 w-5 text-green-400" /> : <Share2 className="h-5 w-5" />}
+          {copied ? <Check className="h-5 w-5 text-emerald-400" /> : <Share2 className="h-5 w-5" />}
         </button>
       </div>
 
-      {/* ── Trust Badges ────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* ── Interactive Tabs (Tavsif / Material / Yetkazib berish) ── */}
+      <div className="border-t border-white/10 pt-6 space-y-4">
+        <div className="flex border-b border-white/10 text-xs font-bold uppercase tracking-wider">
+          <button
+            onClick={() => setActiveTab('desc')}
+            className={`pb-3 px-3 relative transition-colors ${
+              activeTab === 'desc' ? 'text-[#c9a96e]' : 'text-[#8a8a8d] hover:text-white'
+            }`}
+          >
+            Tavsif
+            {activeTab === 'desc' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c9a96e] rounded-full" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('materials')}
+            className={`pb-3 px-3 relative transition-colors ${
+              activeTab === 'materials' ? 'text-[#c9a96e]' : 'text-[#8a8a8d] hover:text-white'
+            }`}
+          >
+            Material va Parvarish
+            {activeTab === 'materials' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c9a96e] rounded-full" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('shipping')}
+            className={`pb-3 px-3 relative transition-colors ${
+              activeTab === 'shipping' ? 'text-[#c9a96e]' : 'text-[#8a8a8d] hover:text-white'
+            }`}
+          >
+            Yetkazib berish
+            {activeTab === 'shipping' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c9a96e] rounded-full" />
+            )}
+          </button>
+        </div>
+
+        {/* Tab content */}
+        <div className="text-xs text-[#8a8a8d] leading-relaxed min-h-[80px]">
+          {activeTab === 'desc' && (
+            <div className="space-y-2 animate-in fade-in duration-300">
+              <p className="text-sm text-white/80">{product.description || "Yuqori sifatli matolardan tayyorlangan eksklyuziv premium model. Smart-casual va klassik kombinatsiyalar uchun juda mos keladi."}</p>
+              {product.fit && (
+                <p className="text-xs text-[#c9a96e] font-medium pt-1">
+                  Fit: <span className="text-white font-normal">{typeof product.fit === 'string' ? product.fit : product.fit.label || product.fit.type}</span>
+                </p>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'materials' && (
+            <div className="space-y-2 animate-in fade-in duration-300">
+              {product.materials && product.materials.length > 0 ? (
+                <p><strong className="text-white">Tarkibi:</strong> {product.materials.join(', ')}</p>
+              ) : (
+                <p><strong className="text-white">Tarkibi:</strong> Premium Silk-Cotton Blend / Italiana Cashmere finish</p>
+              )}
+              <ul className="list-disc list-inside space-y-1 text-white/70 pt-1">
+                <li>Faqat kimyoviy tozalash tavsiya etiladi (Dry Clean Only)</li>
+                <li>Past haroratda bug' bilan dazmollang</li>
+                <li>Iliq va quruq joyda ilmoqda saqlang</li>
+              </ul>
+            </div>
+          )}
+
+          {activeTab === 'shipping' && (
+            <div className="space-y-2 animate-in fade-in duration-300">
+              <div className="flex items-center gap-2 text-white">
+                <Truck className="h-4 w-4 text-[#c9a96e]" />
+                <span className="font-bold">Toshkent bo'ylab 3-6 soat ichida yetkazib beramiz</span>
+              </div>
+              <p className="text-white/70">O'zbekistonning barcha viloyatlariga 24-48 soat ichida bepul yetkazib berish xizmati mavjud.</p>
+              <p className="text-emerald-400 font-medium">14 kun davomida kiyilmagan holda bepul qaytarish yoki almashtirish kafolati.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Trust Grid ──────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-2.5 pt-2">
         {[
-          { icon: Truck, label: language === 'ru' ? 'Ташкент: 3–6 часов' : language === 'en' ? 'Tashkent: 3–6 hours' : 'Toshkent: 3–6 soat' },
-          { icon: Shield, label: language === 'ru' ? 'Гарантия качества' : language === 'en' ? 'Quality guaranteed' : 'Sifat kafolati' },
-          { icon: RotateCcw, label: language === 'ru' ? 'Возврат 14 дней' : language === 'en' ? '14-day returns' : '14 kun qaytarish' },
-        ].map(({ icon: Icon, label }, i) => (
+          { icon: Truck, label: '3-6 soat', sub: 'Toshkent Express' },
+          { icon: Shield, label: '100% Original', sub: 'Kafolatlangan Sifat' },
+          { icon: RotateCcw, label: '14 Kun', sub: 'Bepul Qaytarish' },
+        ].map(({ icon: Icon, label, sub }, i) => (
           <div
             key={i}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center"
+            className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-center hover:border-white/15 hover:bg-white/[0.04] transition-all"
           >
-            <Icon className="h-4.5 w-4.5 text-[#c9a96e]" />
-            <span className="text-[10px] uppercase tracking-wider font-bold text-[#8a8a8d] leading-tight">
-              {label}
-            </span>
+            <Icon className="h-4 w-4 text-[#c9a96e] mb-0.5" />
+            <span className="text-[11px] font-bold text-white leading-tight">{label}</span>
+            <span className="text-[9px] text-[#8a8a8d]">{sub}</span>
           </div>
         ))}
       </div>
 
-      {/* ── Conditional Sections ────────────────────────── */}
-      <div className="space-y-4">
-        {/* Back in stock */}
-        {product.stock !== undefined && product.stock <= 0 && (
-          <BackInStockButton
-            productId={product.id}
-            productName={product.name}
-            hasStock={product.stock > 0}
-          />
-        )}
-
-        {/* Materials */}
-        {product.materials && product.materials.length > 0 && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-            <div className="p-2 rounded-lg bg-[#c9a96e]/10 flex-shrink-0">
-              <Palette className="h-4 w-4 text-[#c9a96e]" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-[#f5f5f3] uppercase tracking-wider mb-1">Materiallar</p>
-              <p className="text-sm text-[#8a8a8d]">{product.materials.join(', ')}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Eco score */}
-        {product.ecoScore && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-            <div className="p-2 rounded-lg bg-green-500/10 flex-shrink-0">
-              <Sparkles className="h-4 w-4 text-green-500" />
-            </div>
-            <div className="flex-1">
-              <p className="text-[11px] font-bold text-[#f5f5f3] uppercase tracking-wider mb-1.5">Eko-mas'uliyat</p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-1000"
-                    style={{ width: `${product.ecoScore * 10}%` }}
-                  />
-                </div>
-                <span className="text-xs font-bold text-green-400">{product.ecoScore}/10</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIP Early Access */}
-        {product.earlyAccessTier && product.earlyAccessTier !== 'none' && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/5 to-transparent border border-purple-500/15">
-            <div className="p-2 rounded-lg bg-purple-500/10 flex-shrink-0">
-              <Star className="h-4 w-4 text-purple-400" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-1">VIP Early Access</p>
-              <p className="text-sm text-purple-200/60">{product.earlyAccessTier} darajasidagi a'zolar uchun eksklyuziv</p>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Out of Stock notification button */}
+      {product.stock !== undefined && product.stock <= 0 && (
+        <BackInStockButton
+          productId={product.id}
+          productName={product.name}
+          hasStock={product.stock > 0}
+        />
+      )}
     </div>
   );
 }

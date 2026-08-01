@@ -9,6 +9,9 @@ import {
   Loader2,
   Sparkles,
   Gem,
+  ChevronRight,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
 
 // Contexts
@@ -37,19 +40,19 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 // ── Loading Animation ──────────────────────────────────────
 const DotLoader = () => (
-  <span className="inline-flex items-center gap-1.5">
-    {[0, 1, 2].map((idx) => (
-      <span
-        key={idx}
-        className="h-2.5 w-2.5 bg-[#c9a96e] rounded-full animate-pulse"
-        style={{ animationDelay: `${idx * 140}ms` }}
-      />
-    ))}
-  </span>
+  <div className="flex flex-col items-center gap-4">
+    <div className="relative flex h-12 w-12 items-center justify-center">
+      <div className="absolute h-full w-full rounded-full border-2 border-[#c9a96e]/20 border-t-[#c9a96e] animate-spin" />
+      <Sparkles className="h-5 w-5 text-[#c9a96e] animate-pulse" />
+    </div>
+    <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#c9a96e]">
+      LUXX Collections
+    </span>
+  </div>
 );
 
 // ════════════════════════════════════════════════════════════
-// ProductView — Premium Luxury Product Detail Page
+// ProductView — Ultra Luxury Product Detail Page
 // ════════════════════════════════════════════════════════════
 export default function ProductView() {
   const { id } = useParams();
@@ -68,11 +71,11 @@ export default function ProductView() {
   const [visualResults, setVisualResults] = useState([]);
   const [visualLoading, setVisualLoading] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   // Refs for scroll targets and CTA observation
   const reviewsRef = useRef(null);
   const mainCtaRef = useRef(null);
-  const [quantity, setQuantity] = useState(1);
 
   // ── Data Fetching ─────────────────────────────────────
   useEffect(() => {
@@ -120,7 +123,7 @@ export default function ProductView() {
       });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error(t('productView.errorAddToCart'), { duration: 6000 });
+      toast.error(t('productView.errorAddToCart') || "Savatga qo'shishda xatolik ro'y berdi", { duration: 6000 });
     } finally {
       setIsAddingToCart(false);
     }
@@ -167,19 +170,19 @@ export default function ProductView() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0b]">
         <div className="max-w-sm text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#141416]">
-            <ShoppingCart className="h-6 w-6 text-[#c9a96e]" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#141416] border border-white/10 shadow-xl">
+            <ShoppingCart className="h-7 w-7 text-[#c9a96e]" />
           </div>
-          <h1 className="text-2xl font-semibold text-[#f5f5f3]">{t('productView.notFoundTitle')}</h1>
+          <h1 className="text-2xl font-serif text-white">{t('productView.notFoundTitle') || "Mahsulot topilmadi"}</h1>
           <p className="mt-2 text-sm text-[#8a8a8d]">
-            {t('productView.notFoundDesc')}
+            {t('productView.notFoundDesc') || "Siz qidirayotgan mahsulot mavjud emas yoki o'chirilgan bo'lishi mumkin."}
           </p>
           <Link
             to="/products"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#c9a96e] px-6 py-3 text-sm font-bold text-[#0a0a0b] hover:bg-[#d4b87a] transition-colors"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#c9a96e] px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-[#0a0a0b] hover:bg-[#d4b87a] transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-4 w-4" />
-            {t('productView.backToCatalog')}
+            {t('productView.backToCatalog') || "Katalogga qaytish"}
           </Link>
         </div>
       </div>
@@ -199,12 +202,16 @@ export default function ProductView() {
   // RENDER
   // ══════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-[#0a0a0b] pt-20 pb-16 animate-fade-in">
-      {/* ── SEO ────────────────────────────────────────── */}
+    <div className="min-h-screen bg-[#0a0a0b] text-[#f5f5f3] pt-24 pb-20 relative overflow-hidden selection:bg-[#c9a96e] selection:text-black">
+      {/* ── Ambient Luxury Glow Backdrops ──────────────── */}
+      <div className="pointer-events-none fixed top-0 left-1/4 h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,rgba(201,169,110,0.08)_0%,transparent_70%)] blur-3xl" />
+      <div className="pointer-events-none fixed top-1/3 right-10 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.04)_0%,transparent_70%)] blur-3xl" />
+
+      {/* ── SEO Metadata ──────────────────────────────── */}
       <SEO
         title={product.name}
         description={product.description || `${product.name} — Luxx.uz internet do'konidan xarid qiling.`}
-        keywords={`${product.name}, ${product.category || 'ayolar kiyimlari'}, luxury kiyimlar, premium kiyimlar, luxx.uz`}
+        keywords={`${product.name}, ${product.category || 'ayollar kiyimlari'}, luxury kiyimlar, premium kiyimlar, luxx.uz`}
         image={product.image}
         breadcrumbSteps={[
           { name: 'Kiyimlar', url: '/products' },
@@ -244,49 +251,49 @@ export default function ProductView() {
         </script>
       </Helmet>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* ── Breadcrumb Navigation ─────────────────────── */}
-        <nav className="mb-8 flex items-center gap-2 text-sm text-[#6b6b6e] animate-fade-in-up">
+        <nav className="mb-8 flex items-center flex-wrap gap-2 text-xs text-[#8a8a8d] animate-fade-in-up">
           <Link
             to="/products"
-            className="hover:text-[#c9a96e] transition-colors flex items-center gap-1.5"
+            className="hover:text-[#c9a96e] transition-colors flex items-center gap-1.5 font-medium group"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {t('productView.breadcrumbCatalog')}
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
+            {t('productView.breadcrumbCatalog') || "Katalog"}
           </Link>
           {product.category && (
             <>
-              <span className="text-[#3a3a3d]">/</span>
+              <ChevronRight className="h-3 w-3 text-white/20" />
               <Link
                 to={`/products?category=${product.category}`}
-                className="hover:text-[#c9a96e] transition-colors"
+                className="hover:text-[#c9a96e] transition-colors font-medium"
               >
                 {product.category}
               </Link>
             </>
           )}
-          <span className="text-[#3a3a3d]">/</span>
-          <span className="text-[#8a8a8d] truncate max-w-[200px]">{product.name}</span>
+          <ChevronRight className="h-3 w-3 text-white/20" />
+          <span className="text-white/90 font-bold truncate max-w-[240px]">{product.name}</span>
 
           {/* Badge */}
           {product.badge && (
-            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#c9a96e]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-[#c9a96e] border border-[#c9a96e]/20">
+            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#c9a96e]/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#c9a96e] border border-[#c9a96e]/30 shadow-sm backdrop-blur-md">
               <Gem className="h-3 w-3" />
               {product.badge}
             </span>
           )}
         </nav>
 
-        {/* ── Main Product Grid ─────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+        {/* ── Main Product Section ──────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
 
-          {/* Left: Premium Gallery */}
+          {/* Left Column: Gallery */}
           <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <PremiumGallery images={images} productName={product.name} />
+            <PremiumGallery images={images} productName={product.name} badge={product.badge} />
           </div>
 
-          {/* Right: Product Info Panel (sticky) */}
+          {/* Right Column: Sticky Product Info */}
           <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <div ref={mainCtaRef}>
               <ProductInfoPanel
@@ -303,27 +310,27 @@ export default function ProductView() {
           </div>
         </div>
 
-        {/* ── Customer Photo Reviews ────────────────────── */}
-        <section className="mt-24 border-t border-white/5 pt-16 animate-fade-in-up">
+        {/* ── Customer Photo Reviews Section ────────────── */}
+        <section className="mt-28 border-t border-white/10 pt-20 animate-fade-in-up">
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px w-8 bg-[#c9a96e]" />
             <span className="text-[10px] uppercase tracking-[0.25em] text-[#c9a96e] font-bold">
-              {t('productView.communityLabel')}
+              {t('productView.communityLabel') || "HAMJAMIYAT"}
             </span>
           </div>
-          <div className="flex flex-col items-center mb-12 text-center lg:text-left lg:items-start">
-            <h2 className="text-2xl lg:text-3xl font-brilliant text-[#f5f5f3] mb-4">
-              {t('productView.communityTitle')}
+          <div className="flex flex-col items-center mb-12 text-center lg:text-left lg:items-start space-y-2">
+            <h2 className="text-2xl lg:text-3xl font-serif text-white">
+              {t('productView.communityTitle') || "Mijozlarimiz suratlari"}
             </h2>
-            <p className="text-[#8a8a8d] max-w-lg text-[15px]">
-              {t('productView.communityDesc')}
+            <p className="text-[#8a8a8d] max-w-lg text-sm leading-relaxed">
+              {t('productView.communityDesc') || "Luxx.uz mahsulotlari bilan o'z stilini namoyon etgan xaridorlarimiz suratlari to'plami."}
             </p>
           </div>
           <CustomerPhotoReviews productId={product._id || product.id || id} productName={product.name} product={product} />
         </section>
 
-        {/* ── Related Products + AI Visual Similar ──────── */}
-        <div className="mt-24">
+        {/* ── Related Products + AI Visual Similarity ───── */}
+        <div className="mt-28">
           <RelatedProducts
             relatedProducts={relatedProducts}
             visualResults={visualResults}
@@ -332,8 +339,8 @@ export default function ProductView() {
           />
         </div>
 
-        {/* ── Reviews Section ───────────────────────────── */}
-        <div className="mt-24">
+        {/* ── Customer Reviews & Form Section ───────────── */}
+        <div className="mt-28">
           <ReviewsSection
             product={product}
             reviews={reviews}
@@ -344,7 +351,7 @@ export default function ProductView() {
         </div>
       </div>
 
-      {/* ── Floating CTA Bar (desktop) ──────────────────── */}
+      {/* ── Sticky Bottom Floating Bar ──────────────────── */}
       <FloatingCTA
         product={product}
         quantity={quantity}
@@ -352,7 +359,7 @@ export default function ProductView() {
         onAddToCart={() => {
           if (getProductOptions(product, 'size').length || getProductOptions(product, 'color').length) {
             mainCtaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            toast.error(t('productView.errorSelectVariant'));
+            toast.error(t('productView.errorSelectVariant') || "Iltimos, rang va o'lchamni tanlang!");
             return;
           }
           handleAddToCart('', '', quantity);
@@ -363,6 +370,7 @@ export default function ProductView() {
         ctaRef={mainCtaRef}
       />
 
+      {/* ── Size Guide Modal ────────────────────────────── */}
       <SizeGuideModal
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
