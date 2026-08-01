@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, X, ZoomIn, Maximize2, Sparkles, Share2, Chec
 
 /**
  * PremiumGallery — Immersive luxury product image gallery
- * Features: hover zoom lens, thumbnail strip, full-screen lightbox, micro-interactions
+ * Features: hover zoom lens, interactive hotspots, thumbnail strip, full-screen lightbox, micro-interactions
  */
 export default function PremiumGallery({ images = [], productName = '', badge = '' }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -192,7 +192,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
     <div className="space-y-5">
       {/* ── Main Gallery Card ───────────────────────────── */}
       <div
-        className="group relative cursor-zoom-in overflow-hidden rounded-3xl bg-[#141416] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]"
+        className="group relative cursor-zoom-in overflow-hidden rounded-3xl bg-[#141416] border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.7)] transition-all duration-500 hover:border-[#c9a96e]/30"
         onClick={() => setIsLightboxOpen(true)}
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
@@ -212,18 +212,18 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
           />
 
           {/* Luxury Inner Frame Vignette */}
-          <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+          <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl z-10" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-60 group-hover:opacity-40 transition-opacity duration-500 z-10" />
 
           {/* Top Floating Glass Badges */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-30">
             {badge ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#c9a96e]/90 text-black px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] backdrop-blur-md shadow-lg pointer-events-auto border border-[#c9a96e]">
                 <Sparkles className="h-3 w-3" />
                 {badge}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 text-[#c9a96e] border border-[#c9a96e]/30 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] backdrop-blur-md pointer-events-auto">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/50 text-[#c9a96e] border border-[#c9a96e]/40 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] backdrop-blur-md pointer-events-auto shadow-md">
                 <Sparkles className="h-3 w-3" />
                 LUXX EXCLUSIVE
               </span>
@@ -248,7 +248,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
           </div>
 
           {/* Bottom Floating Glass Indicators */}
-          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
+          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none z-30">
             {/* Zoom hint */}
             <div className={`flex items-center gap-2 rounded-full bg-black/60 border border-white/10 px-3.5 py-1.5 text-xs text-white/90 backdrop-blur-md transition-opacity duration-300 ${isZooming ? 'opacity-0' : 'opacity-100'}`}>
               <ZoomIn className="h-3.5 w-3.5 text-[#c9a96e]" />
@@ -266,14 +266,14 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); prev(); }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md border border-white/15 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-[#c9a96e] hover:text-black hover:scale-110 active:scale-95"
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md border border-white/15 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-[#c9a96e] hover:text-black hover:scale-110 active:scale-95"
                 aria-label="Oldingi rasm"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); next(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md border border-white/15 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-[#c9a96e] hover:text-black hover:scale-110 active:scale-95"
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md border border-white/15 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-[#c9a96e] hover:text-black hover:scale-110 active:scale-95"
                 aria-label="Keyingi rasm"
               >
                 <ChevronRight className="h-5 w-5" />

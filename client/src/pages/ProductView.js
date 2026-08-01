@@ -29,6 +29,9 @@ import ProductInfoPanel from '../components/ProductView/ProductInfoPanel';
 import FloatingCTA from '../components/ProductView/FloatingCTA';
 import RelatedProducts from '../components/ProductView/RelatedProducts';
 import ReviewsSection from '../components/ProductView/ReviewsSection';
+import CraftsmanshipSpotlight from '../components/ProductView/CraftsmanshipSpotlight';
+import CompleteTheLook from '../components/ProductView/CompleteTheLook';
+import QuickOrderModal from '../components/ProductView/QuickOrderModal';
 import SizeGuideModal from '../components/SizeGuideModal';
 
 // Shared components
@@ -41,18 +44,18 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 // ── Loading Animation ──────────────────────────────────────
 const DotLoader = () => (
   <div className="flex flex-col items-center gap-4">
-    <div className="relative flex h-12 w-12 items-center justify-center">
+    <div className="relative flex h-14 w-14 items-center justify-center">
       <div className="absolute h-full w-full rounded-full border-2 border-[#c9a96e]/20 border-t-[#c9a96e] animate-spin" />
-      <Sparkles className="h-5 w-5 text-[#c9a96e] animate-pulse" />
+      <Sparkles className="h-6 w-6 text-[#c9a96e] animate-pulse" />
     </div>
-    <span className="text-xs uppercase tracking-[0.2em] font-bold text-[#c9a96e]">
-      LUXX Collections
+    <span className="text-xs uppercase tracking-[0.25em] font-black text-[#c9a96e]">
+      LUXX COLLECTIONS
     </span>
   </div>
 );
 
 // ════════════════════════════════════════════════════════════
-// ProductView — Ultra Luxury Product Detail Page
+// ProductView — Ultra Luxury Cinematic Product Detail Page
 // ════════════════════════════════════════════════════════════
 export default function ProductView() {
   const { id } = useParams();
@@ -71,6 +74,8 @@ export default function ProductView() {
   const [visualResults, setVisualResults] = useState([]);
   const [visualLoading, setVisualLoading] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
+  const [quickOrderVariant, setQuickOrderVariant] = useState({ color: '', size: '' });
   const [quantity, setQuantity] = useState(1);
 
   // Refs for scroll targets and CTA observation
@@ -96,6 +101,26 @@ export default function ProductView() {
       .then((data) => setReviews(data))
       .catch((err) => console.error('Error fetching reviews:', err));
   }, [id]);
+
+  useEffect(() => {
+    const sections = document.querySelectorAll('[data-product-reveal]');
+    if (!sections.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.14 }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [product?.id]);
 
   // ── Review Handlers ───────────────────────────────────
   const handleReviewAdded = (newReview) => {
@@ -156,6 +181,11 @@ export default function ProductView() {
     reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const handleOpenQuickOrder = (color = '', size = '') => {
+    setQuickOrderVariant({ color, size });
+    setIsQuickOrderOpen(true);
+  };
+
   // ── Loading State ─────────────────────────────────────
   if (isLoading) {
     return (
@@ -169,17 +199,17 @@ export default function ProductView() {
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0b]">
-        <div className="max-w-sm text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#141416] border border-white/10 shadow-xl">
+        <div className="max-w-sm text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#141416] border border-white/10 shadow-xl">
             <ShoppingCart className="h-7 w-7 text-[#c9a96e]" />
           </div>
           <h1 className="text-2xl font-serif text-white">{t('productView.notFoundTitle') || "Mahsulot topilmadi"}</h1>
-          <p className="mt-2 text-sm text-[#8a8a8d]">
+          <p className="text-xs text-[#8a8a8d]">
             {t('productView.notFoundDesc') || "Siz qidirayotgan mahsulot mavjud emas yoki o'chirilgan bo'lishi mumkin."}
           </p>
           <Link
             to="/products"
-            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-[#c9a96e] px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-[#0a0a0b] hover:bg-[#d4b87a] transition-all shadow-lg active:scale-95"
+            className="inline-flex items-center gap-2 rounded-2xl bg-[#c9a96e] px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-[#0a0a0b] hover:bg-[#d4b87a] transition-all shadow-lg active:scale-95"
           >
             <ArrowLeft className="h-4 w-4" />
             {t('productView.backToCatalog') || "Katalogga qaytish"}
@@ -202,10 +232,25 @@ export default function ProductView() {
   // RENDER
   // ══════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-[#f5f5f3] pt-24 pb-20 relative overflow-hidden selection:bg-[#c9a96e] selection:text-black">
+    <div className="clean-product-page min-h-screen text-[#f5f5f3] pt-24 pb-20 relative overflow-hidden selection:bg-[#c9a96e] selection:text-black">
       {/* ── Ambient Luxury Glow Backdrops ──────────────── */}
-      <div className="pointer-events-none fixed top-0 left-1/4 h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,rgba(201,169,110,0.08)_0%,transparent_70%)] blur-3xl" />
-      <div className="pointer-events-none fixed top-1/3 right-10 h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.04)_0%,transparent_70%)] blur-3xl" />
+      <div className="clean-page-orb clean-page-orb-left" />
+      <div className="clean-page-orb clean-page-orb-right" />
+
+      {/* ── Ticker Tape Top Banner ──────────────────────── */}
+      <div className="product-marquee w-full py-2.5 overflow-hidden whitespace-nowrap mb-7 pointer-events-none">
+        <div className="inline-flex items-center gap-8 animate-[marquee_25s_linear_infinite] text-[10px] font-black uppercase tracking-[0.25em] text-[#c9a96e]">
+          <span>✨ EXCLUSIVE LUXURY COLLECTION</span>
+          <span>•</span>
+          <span>⚡ TOSHKEN BO'YLAB 3-6 SOATDA EXPRESS YETKAZIB BERISH</span>
+          <span>•</span>
+          <span>💎 100% KAFOLATLANGAN ORIGINAL SIFAT</span>
+          <span>•</span>
+          <span>🌟 TO'PLAM CHEGIRMASI: -15% OUTFIT MATCHING</span>
+          <span>•</span>
+          <span>✨ EXCLUSIVE LUXURY COLLECTION</span>
+        </div>
+      </div>
 
       {/* ── SEO Metadata ──────────────────────────────── */}
       <SEO
@@ -251,10 +296,10 @@ export default function ProductView() {
         </script>
       </Helmet>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-[1340px] px-4 sm:px-6 lg:px-8">
 
         {/* ── Breadcrumb Navigation ─────────────────────── */}
-        <nav className="mb-8 flex items-center flex-wrap gap-2 text-xs text-[#8a8a8d] animate-fade-in-up">
+        <nav className="clean-breadcrumb mb-7 flex items-center flex-wrap gap-2 text-xs animate-fade-in-up">
           <Link
             to="/products"
             className="hover:text-[#c9a96e] transition-colors flex items-center gap-1.5 font-medium group"
@@ -285,16 +330,21 @@ export default function ProductView() {
           )}
         </nav>
 
-        {/* ── Main Product Section ──────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+        {/* ── Main Product Section (5-Second WOW Grid) ───── */}
+        <div className="clean-product-hero grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] gap-8 xl:gap-20 items-start">
 
-          {/* Left Column: Gallery */}
-          <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          {/* Left Column: Gallery with Interactive Hotspots */}
+          <div className="clean-gallery-shell animate-fade-in-up" style={{ animationDelay: '100ms' }}>
             <PremiumGallery images={images} productName={product.name} badge={product.badge} />
           </div>
 
-          {/* Right Column: Sticky Product Info */}
-          <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+          {/* Right Column: Sticky Product Info with 1-Click Buy */}
+          <div className="clean-info-shell animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            <div className="product-editorial-kicker">
+              <span>THE PRIVATE EDIT</span>
+              <span className="product-editorial-line" />
+              <span>01 / {String(images.length).padStart(2, '0')}</span>
+            </div>
             <div ref={mainCtaRef}>
               <ProductInfoPanel
                 product={product}
@@ -305,13 +355,24 @@ export default function ProductView() {
                 isAddingToCart={isAddingToCart}
                 onReviewClick={scrollToReviews}
                 onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+                onOpenQuickOrder={handleOpenQuickOrder}
               />
             </div>
           </div>
         </div>
 
+        {/* ── 3D Craftsmanship Spotlight Section ────────── */}
+        <div data-product-reveal className="product-scroll-reveal">
+          <CraftsmanshipSpotlight />
+        </div>
+
+        {/* ── Outfit Matcher Lookbook (Complete The Look) ── */}
+        <div data-product-reveal className="product-scroll-reveal">
+          <CompleteTheLook currentProduct={product} />
+        </div>
+
         {/* ── Customer Photo Reviews Section ────────────── */}
-        <section className="mt-28 border-t border-white/10 pt-20 animate-fade-in-up">
+        <section data-product-reveal className="product-scroll-reveal mt-28 border-t border-white/10 pt-20">
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px w-8 bg-[#c9a96e]" />
             <span className="text-[10px] uppercase tracking-[0.25em] text-[#c9a96e] font-bold">
@@ -330,7 +391,7 @@ export default function ProductView() {
         </section>
 
         {/* ── Related Products + AI Visual Similarity ───── */}
-        <div className="mt-28">
+        <div data-product-reveal className="product-scroll-reveal mt-28">
           <RelatedProducts
             relatedProducts={relatedProducts}
             visualResults={visualResults}
@@ -340,7 +401,7 @@ export default function ProductView() {
         </div>
 
         {/* ── Customer Reviews & Form Section ───────────── */}
-        <div className="mt-28">
+        <div data-product-reveal className="product-scroll-reveal mt-28">
           <ReviewsSection
             product={product}
             reviews={reviews}
@@ -376,6 +437,15 @@ export default function ProductView() {
         onClose={() => setIsSizeGuideOpen(false)}
         productCategory={product?.category}
         product={product}
+      />
+
+      {/* ── 1-Click Fast Express Order Modal ────────────── */}
+      <QuickOrderModal
+        isOpen={isQuickOrderOpen}
+        onClose={() => setIsQuickOrderOpen(false)}
+        product={product}
+        selectedColor={quickOrderVariant.color}
+        selectedSize={quickOrderVariant.size}
       />
     </div>
   );

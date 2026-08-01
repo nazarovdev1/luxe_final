@@ -393,47 +393,40 @@ const CustomerPhotoReviews = ({ productId, productName }) => {
   );
 
   return (
-    <div>
-      <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#c9a96e]/20 bg-[#c9a96e]/10">
-            <Camera className="h-6 w-6 text-[#c9a96e]" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold uppercase tracking-wide text-[#f5f5f3]">{t('customerPhotoReviews.title')}</h3>
-            <p className="mt-1 text-xs font-bold uppercase tracking-[0.1em] text-[#8a8a8d]">
-              {isLoading ? 'Yuklanmoqda...' : `${posts.length} ta real uslub`}
-            </p>
-          </div>
+    <div className="photo-community">
+      <div className="photo-community-toolbar">
+        <div className="photo-community-intro">
+          <Camera className="h-5 w-5" />
+          <span><b>Real obrazlar</b><small>{isLoading ? 'Yuklanmoqda...' : `${posts.length} ta xaridor uslubi`}</small></span>
         </div>
-        <button onClick={openUpload} className="flex items-center justify-center gap-3 rounded-2xl bg-[#c9a96e] px-8 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#0a0a0b] shadow-[0_10px_20px_rgba(201,169,110,0.2)] transition hover:bg-[#d4b87a] active:scale-[0.98]">
-          <Upload className="h-4 w-4" strokeWidth={3} />
-          {t('customerPhotoReviews.shareStyle')}
+        <button onClick={openUpload} className="photo-community-action">
+          <Upload className="h-4 w-4" strokeWidth={2.5} />
+          Surat qo‘shish
         </button>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="photo-community-grid grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="aspect-[3/4] animate-pulse rounded-2xl border border-white/5 bg-white/[0.04]" />
           ))}
         </div>
       ) : posts.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-white/10 bg-white/[0.025] p-8 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#c9a96e]/20 bg-[#c9a96e]/10">
+        <div className="photo-community-empty">
+          <div className="photo-community-empty-icon">
             <Camera className="h-7 w-7 text-[#c9a96e]" />
           </div>
-          <h4 className="text-xl font-semibold text-[#f5f5f3]">Hali suratli uslub yo'q</h4>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[#8a8a8d]">
-            Bu mahsulotni sotib olgan mijozlar real obrazlarini ulashganda shu yerda ko'rinadi.
-          </p>
-          <button onClick={openUpload} className="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl border border-[#c9a96e]/20 bg-[#c9a96e]/10 px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#c9a96e] transition hover:bg-[#c9a96e]/20">
+          <div>
+            <h4>Bu model sizda qanday ko‘rinadi?</h4>
+            <p>Suratingizni ulashing — u shu yerda, boshqa xaridorlar uchun ilhom sifatida chiqadi.</p>
+          </div>
+          <button onClick={openUpload} className="photo-community-outline-action">
             <Upload className="h-4 w-4" />
-            Uslubingizni ulashing
+            Birinchi bo‘lib ulashing
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="photo-community-grid grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
           {posts.map((post, idx) => (
             <div
               key={post._id}
