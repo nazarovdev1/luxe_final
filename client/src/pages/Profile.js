@@ -62,7 +62,7 @@ const Profile = () => {
                         {t('profile.welcome')}, {displayName}
                     </h1>
                     <p className="text-gray-400 font-light text-lg">
-                        Profil ma'lumotlaringiz, VIP daraja va ballar holati.
+                        {t('profile.subtitle')}
                     </p>
                 </div>
 
@@ -96,8 +96,8 @@ const Profile = () => {
                             <p className="mt-2 text-2xl font-semibold text-[#d6b47c]">{pointsBalance.toLocaleString()}</p>
                         </div>
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">Jami to'plangan</p>
-                            <p className="mt-2 text-2xl font-semibold text-white">{totalEarned.toLocaleString()} <span className="text-xs text-gray-500">pts</span></p>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('profile.totalEarned')}</p>
+                            <p className="mt-2 text-2xl font-semibold text-white">{totalEarned.toLocaleString()} <span className="text-xs text-gray-500">{t('profile.ball')}</span></p>
                         </div>
                         <div className="rounded-2xl border border-[#d6b47c]/20 bg-[#d6b47c]/10 p-4">
                             <p className="text-[11px] uppercase tracking-[0.16em] text-[#d6b47c]">{t('profile.vipStatus')}</p>
@@ -125,11 +125,11 @@ const Profile = () => {
                         {points && points.level !== 'Diamond' && (
                             <div className="mt-auto pt-4 border-t border-white/5">
                                 <div className="flex justify-between text-xs mb-2">
-                                    <span className="text-gray-400">Keyingi darajagacha</span>
+                                    <span className="text-gray-400">{t('profile.nextLevel')}</span>
                                     <span className="text-white font-medium">
                                         {points.level === 'Bronze' ? 300 - points.totalEarned :
                                             points.level === 'Silver' ? 650 - points.totalEarned :
-                                                1000 - points.totalEarned} ball
+                                                1000 - points.totalEarned} {t('profile.ball')}
                                     </span>
                                 </div>
                                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -147,17 +147,17 @@ const Profile = () => {
                         )}
 
                         <div className="flex items-center justify-between mt-4">
-                            <p className="text-sm text-gray-400">Jami to'plangan: <span className="text-white font-semibold">{totalEarned.toLocaleString()} pts</span></p>
+                            <p className="text-sm text-gray-400">{t('profile.totalEarned')}: <span className="text-white font-semibold">{totalEarned.toLocaleString()} {t('profile.ball')}</span></p>
                             <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full text-xs text-white">
                                 <Gem className="w-3.5 h-3.5 text-amber-300" />
-                                {pointsBalance.toLocaleString()} balans
+                                {pointsBalance.toLocaleString()} {t('profile.balance')}
                             </div>
                         </div>
                     </Link>
 
                     <div className="bg-[#111] border border-white/5 p-8 rounded-[32px] text-left flex flex-col h-full">
                         <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-6 flex items-center gap-2">
-                            <RefreshCw className="w-3.5 h-3.5" /> Ballar tarixi
+                            <RefreshCw className="w-3.5 h-3.5" /> {t('profile.pointsHistory')}
                         </p>
                         <div className="space-y-4 overflow-y-auto max-h-[220px] pr-2 scrollbar-thin scrollbar-thumb-white/10">
                             {pointTransactions.length > 0 ? (
@@ -173,7 +173,7 @@ const Profile = () => {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-xs text-gray-600 italic py-4">Hali ballar tarixi yo'q</p>
+                                <p className="text-xs text-gray-600 italic py-4">{t('profile.noPointsHistory')}</p>
                             )}
                         </div>
                     </div>
@@ -181,7 +181,7 @@ const Profile = () => {
 
                 <div className="mt-8 bg-[#111] border border-white/5 p-6 rounded-[32px] text-left">
                     <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Medal className="w-3.5 h-3.5" /> Erishilgan nishonlar
+                        <Medal className="w-3.5 h-3.5" /> {t('profile.earnedBadges')}
                     </p>
                     <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                         {badges.map(b => (
@@ -192,7 +192,7 @@ const Profile = () => {
                                 <span className="text-[10px] text-gray-400 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">{b.badge.name}</span>
                             </div>
                         ))}
-                        {badges.length === 0 && <p className="text-xs text-gray-600 italic px-2">Hali nishonlar yo'q</p>}
+                        {badges.length === 0 && <p className="text-xs text-gray-600 italic px-2">{t('profile.noBadges')}</p>}
                     </div>
                 </div>
 
@@ -202,7 +202,7 @@ const Profile = () => {
 
                 <div className="mt-8 bg-[#111] border border-white/5 p-8 rounded-[32px] text-left">
                     <p className="text-xs text-gray-500 font-black uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <Gift className="w-3.5 h-3.5" /> Mening sovg'a kartalarim
+                        <Gift className="w-3.5 h-3.5" /> {t('profile.giftCards')}
                     </p>
                     <MyGiftCards />
                 </div>

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Radio, Clock, Users, PlayCircle, CalendarClock, Tv2, Plus, X, Trash2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -11,13 +12,7 @@ const extractYouTubeId = (url) => {
   return match ? match[1] : null;
 };
 
-const STATUS_CONFIG = {
-  live: { label: '● JONLI EFIR', color: '#ef4444', bg: 'bg-red-500/10', border: 'border-red-500/30' },
-  scheduled: { label: 'REJALASHTIRILGAN', color: '#d6b47c', bg: 'bg-[#d6b47c]/10', border: 'border-[#d6b47c]/30' },
-  ended: { label: 'YAKUNLANDI', color: '#6b7280', bg: 'bg-gray-500/10', border: 'border-gray-500/20' },
-};
-
-const StreamCard = ({ stream, isAdmin, onDelete, onNavigate }) => {
+const StreamCard = ({ stream, isAdmin, onDelete, onNavigate, t }) => {
   const videoId = extractYouTubeId(stream.videoUrl);
   const cfg = STATUS_CONFIG[stream.status] || STATUS_CONFIG.ended;
 
@@ -97,7 +92,7 @@ const StreamCard = ({ stream, isAdmin, onDelete, onNavigate }) => {
                 : 'border border-[#d6b47c]/30 text-[#d6b47c] bg-[#d6b47c]/10'
             }`}
           >
-            {stream.status === 'live' ? '● Jonli Efirga Kirish' : 'Xabar olish'}
+            {stream.status === 'live' ? t('mobileLive.buttons.enterLive') : t('mobileLive.buttons.notify')}
           </button>
         )}
       </div>
@@ -105,14 +100,14 @@ const StreamCard = ({ stream, isAdmin, onDelete, onNavigate }) => {
   );
 };
 
-const CreateStreamModal = ({ onClose, onSubmit }) => {
+const CreateStreamModal = ({ onClose, onSubmit, t }) => {
   const [form, setForm] = useState({ title: '', description: '', videoUrl: '', scheduledAt: '' });
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-end">
       <div className="w-full bg-[#0f0f0f] rounded-t-[32px] p-6 border-t border-white/10">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-brilliant text-white">Yangi Efir</h3>
+          <h3 className="text-lg font-brilliant text-white">{t('mobileLive.modal.title')}</h3>
           <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
             <X className="w-4 h-4 text-gray-400" />
           </button>
@@ -121,18 +116,18 @@ const CreateStreamModal = ({ onClose, onSubmit }) => {
           {['title', 'description', 'videoUrl'].map(field => (
             <div key={field}>
               <label className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1 block">
-                {field === 'title' ? 'Sarlavha' : field === 'description' ? 'Tavsif' : 'YouTube URL'}
+                {field === 'title' ? t('mobileLive.modal.fieldTitle') : field === 'description' ? t('mobileLive.modal.fieldDescription') : t('mobileLive.modal.fieldVideoUrl')}
               </label>
               <input
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-red-500/50"
-                placeholder={field === 'videoUrl' ? 'https://youtube.com/...' : ''}
+                placeholder={field === 'videoUrl' ? t('mobileLive.modal.videoUrlPlaceholder') : ''}
                 value={form[field]}
                 onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
               />
             </div>
           ))}
           <div>
-            <label className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1 block">Sana</label>
+            <label className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1 block">{t('mobileLive.modal.fieldDate')}</label>
             <input
               type="datetime-local"
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50"
@@ -144,7 +139,7 @@ const CreateStreamModal = ({ onClose, onSubmit }) => {
             onClick={() => onSubmit(form)}
             className="w-full py-3.5 bg-red-600 text-white rounded-xl font-black text-xs uppercase tracking-widest mt-2"
           >
-            Efir Yaratish
+            {t('mobileLive.modal.createButton')}
           </button>
         </div>
       </div>
@@ -155,17 +150,24 @@ const CreateStreamModal = ({ onClose, onSubmit }) => {
 export default function MobileLive() {
   const { isAdmin, token } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [streams, setStreams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+
+  const STATUS_CONFIG = {
+    live: { label: t('mobileLive.statusLabels.live'), color: '#ef4444', bg: 'bg-red-500/10', border: 'border-red-500/30' },
+    scheduled: { label: t('mobileLive.statusLabels.scheduled'), color: '#d6b47c', bg: 'bg-[#d6b47c]/10', border: 'border-[#d6b47c]/30' },
+    ended: { label: t('mobileLive.statusLabels.ended'), color: '#6b7280', bg: 'bg-gray-500/10', border: 'border-gray-500/20' },
+  };
 
   const fetchStreams = async () => {
     try {
       const res = await axios.get('/api/livestreams');
       if (res.data.success) setStreams(res.data.data);
     } catch {
-      toast.error('Efirlarni yuklashda xatolik');
+      toast.error(t('mobileLive.errors.loadError'));
     } finally {
       setIsLoading(false);
     }
@@ -179,27 +181,27 @@ export default function MobileLive() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
-        toast.success('Efir yaratildi!');
+        toast.success(t('mobileLive.errors.created'));
         setIsCreateOpen(false);
         fetchStreams();
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Xatolik');
+      toast.error(err.response?.data?.message || t('mobileLive.errors.createError'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Haqiqatdan ham o\'chirmoqchimisiz?')) return;
+    if (!window.confirm(t('mobileLive.errors.confirmDelete'))) return;
     try {
       const res = await axios.delete(`/api/livestreams/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.success) {
-        toast.success('O\'chirildi');
+        toast.success(t('mobileLive.errors.deleted'));
         fetchStreams();
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'O\'chirishda xatolik');
+      toast.error(err.response?.data?.message || t('mobileLive.errors.deleteError'));
     }
   };
 
@@ -214,10 +216,10 @@ export default function MobileLive() {
     streams;
 
   const FILTERS = [
-    { id: 'all', label: 'Hammasi', count: streams.length },
-    { id: 'live', label: '● Jonli', count: liveStreams.length },
-    { id: 'scheduled', label: 'Rejalashtirilgan', count: scheduledStreams.length },
-    { id: 'ended', label: 'Yakunlangan', count: endedStreams.length },
+    { id: 'all', label: t('mobileLive.filters.all'), count: streams.length },
+    { id: 'live', label: t('mobileLive.filters.live'), count: liveStreams.length },
+    { id: 'scheduled', label: t('mobileLive.filters.scheduled'), count: scheduledStreams.length },
+    { id: 'ended', label: t('mobileLive.filters.ended'), count: endedStreams.length },
   ];
 
   return (
@@ -227,24 +229,24 @@ export default function MobileLive() {
       <div className="absolute top-[20%] right-0 w-64 h-64 bg-[#d6b47c]/5 rounded-full blur-[80px] translate-x-1/3" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-900/5 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4" />
 
-      {isCreateOpen && <CreateStreamModal onClose={() => setIsCreateOpen(false)} onSubmit={handleCreate} />}
+      {isCreateOpen && <CreateStreamModal onClose={() => setIsCreateOpen(false)} onSubmit={handleCreate} t={t} />}
 
       <div className="relative z-10">
         {/* Header */}
         <div className="px-5 pt-10 pb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-10 active:scale-90 transition-transform">
             <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium uppercase tracking-widest">Orqaga</span>
+            <span className="text-sm font-medium uppercase tracking-widest">{t('mobileLive.back')}</span>
           </button>
 
           <div className="flex items-center justify-between">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-red-500/30 bg-red-500/10 text-red-500 mb-4 backdrop-blur-xl">
                 <Radio className="w-3.5 h-3.5 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Arena</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('mobileLive.badge')}</span>
               </div>
               <h1 className="text-6xl font-brilliant text-white leading-none">
-                Live <span className="text-red-600">Arena</span>
+                {t('mobileLive.titlePrefix')} <span className="text-red-600">{t('mobileLive.titleSuffix')}</span>
               </h1>
             </div>
 
@@ -257,9 +259,9 @@ export default function MobileLive() {
               </button>
             )}
           </div>
-          
+
           <p className="text-base text-gray-400 mt-6 leading-relaxed max-w-[300px]">
-            Ekskluziv <span className="text-white font-bold">fashion shoularni</span> jonli efirda tomosha qiling va xarid qiling.
+            {t('mobileLive.subtitle')}
           </p>
         </div>
 
@@ -267,7 +269,7 @@ export default function MobileLive() {
         {liveStreams.length > 0 && (
           <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-2xl">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-xs text-red-400 font-black uppercase tracking-wider">{liveStreams.length} ta jonli efir davom etmoqda</span>
+            <span className="text-xs text-red-400 font-black uppercase tracking-wider">{liveStreams.length} {t('mobileLive.liveCountSuffix')}</span>
           </div>
         )}
 
@@ -298,10 +300,10 @@ export default function MobileLive() {
         ) : filteredStreams.length === 0 ? (
           <div className="text-center py-16">
             <Tv2 className="w-14 h-14 text-gray-800 mx-auto mb-4" />
-            <h3 className="text-lg text-gray-500">Efirlar yo'q</h3>
+            <h3 className="text-lg text-gray-500">{t('mobileLive.empty')}</h3>
             {isAdmin && (
               <button onClick={() => setIsCreateOpen(true)} className="mt-4 px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest">
-                Efir Qo'shish
+                {t('mobileLive.adminAdd')}
               </button>
             )}
           </div>
@@ -314,6 +316,7 @@ export default function MobileLive() {
                 isAdmin={isAdmin}
                 onDelete={handleDelete}
                 onNavigate={(id) => navigate(`/mobile/live/${id}`)}
+                t={t}
               />
             ))}
           </div>

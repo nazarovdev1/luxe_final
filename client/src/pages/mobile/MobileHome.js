@@ -142,11 +142,11 @@ const MobileHome = () => {
 
   const voices = useMemo(() => {
     const customQuotes = [
-      "Bu yerda haqiqatan ham noyob va sifatli kiyimlar bor. Har bir tafsilotga e'tibor qaratilgan. Men doimiy mijozman!",
-      "LUXX.UZ dan olgan har bir kiyimim mening kutganimdan ham a'lo chiqdi. Sifati va dizayni haqiqatan ham premium darajada!",
-      "Mijozlarga xizmat ko'rsatish darajasi a'lo. Yetkazib berish tez va mahsulotlar sifatli. Tavsiya qilaman!"
+      t('mobileHome.voice_quote_1'),
+      t('mobileHome.voice_quote_2'),
+      t('mobileHome.voice_quote_3'),
     ];
-    const names = ['Madina R.', 'Aziza K.', 'Sevinch T.'];
+    const names = [t('mobileHome.voice_name_1'), t('mobileHome.voice_name_2'), t('mobileHome.voice_name_3')];
 
     // Creating an array for the 3 custom voices
     return customQuotes.map((quote, index) => ({
@@ -155,7 +155,7 @@ const MobileHome = () => {
       quote: quote,
       rating: "5.0",
     }));
-  }, []);
+  }, [t]);
 
   const heroImage = getProductImage(newestProducts[0]);
 
@@ -208,7 +208,7 @@ const MobileHome = () => {
                 <div className="flex items-center justify-center w-9 h-9 rounded-full border border-[#d6b47c]/30 bg-[#d6b47c]/5 flex-shrink-0">
                   <Gem className="w-4 h-4 text-[#d6b47c]" />
                 </div>
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">Premium To'plamlar</span>
+                <span className="text-[9px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold">{t('mobileHome.premiumBundlesBadge')}</span>
               </div>
               <div className="flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.02] flex-shrink-0">
                 <ArrowRight className="w-4 h-4 text-neutral-400" />
@@ -218,10 +218,10 @@ const MobileHome = () => {
             {/* Content Area */}
             <div className="mb-6">
               <h3 className="font-brilliant text-[22px] leading-snug text-white mb-2">
-                Barcha to'plamlarni ko'rish
+                {t('mobileHome.allBundlesTitle')}
               </h3>
               <p className="text-[11px] text-neutral-400 leading-relaxed max-w-[280px]">
-                Maxsus chegirmalar va premium to'plamlar faqat siz uchun.
+                {t('mobileHome.allBundlesDesc')}
               </p>
             </div>
 
@@ -234,9 +234,9 @@ const MobileHome = () => {
         {/* Platform Features */}
         <section className="py-8">
           <div className="px-4 flex items-center justify-between mb-5">
-            <h2 className="font-brilliant text-[26px] text-[#f4f1eb]">Platformalar</h2>
+            <h2 className="font-brilliant text-[26px] text-[#f4f1eb]">{t('mobileHome.platforms')}</h2>
             <Link to="/mobile/events" className="text-[11px] text-neutral-400 flex items-center gap-1">
-              Barchasini ko'rish <ArrowRight className="w-3 h-3" />
+              {t('mobileHome.viewAll')} <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           
@@ -290,9 +290,9 @@ const MobileHome = () => {
 
         <section className="py-8">
           <div className="px-4 flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-[#f4f1eb]">Kategoriyalar</h2>
+            <h2 className="text-xl font-semibold text-[#f4f1eb]">{t('mobileHome.categories')}</h2>
             <Link to="/mobile/products" className="text-sm text-neutral-300 inline-flex items-center gap-1">
-              Hammasi
+              {t('mobileHome.viewAllShort')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -314,7 +314,7 @@ const MobileHome = () => {
                   <div className="relative h-full p-3.5 flex items-end">
                     <div>
                       <p className="text-base font-semibold text-[#f4f1eb]">{category.name}</p>
-                      <p className="text-xs text-neutral-300">{category.count} model</p>
+                      <p className="text-xs text-neutral-300">{category.count} {t('mobileHome.model_count')}</p>
                     </div>
                   </div>
                 </Link>
@@ -328,9 +328,9 @@ const MobileHome = () => {
 
         <section className="px-4 pb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-[#f4f1eb]">Bestsellerlar</h2>
+            <h2 className="text-xl font-semibold text-[#f4f1eb]">{t('mobileHome.bestsellers')}</h2>
             <Link to="/mobile/products" className="text-sm text-neutral-300 inline-flex items-center gap-1">
-              Korish
+              {t('mobileHome.viewProducts')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -364,9 +364,9 @@ const MobileHome = () => {
 
         <section className="px-4 pb-8 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-[#f4f1eb]">Lookbook</h2>
+            <h2 className="text-xl font-semibold text-[#f4f1eb]">{t('mobileHome.lookbook')}</h2>
             <Link to="/mobile/lookbooks" className="text-sm text-neutral-300 inline-flex items-center gap-1">
-              Hammasi
+              {t('mobileHome.viewAllShort')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -389,7 +389,7 @@ const MobileHome = () => {
 
                 <div className="absolute top-2 right-2">
                   <div className="bg-white/90 text-black text-[10px] uppercase font-bold px-2 py-1 rounded-full">
-                    Shop
+                    {t('mobileHome.shop_badge')}
                   </div>
                 </div>
 
@@ -403,7 +403,7 @@ const MobileHome = () => {
           </div>
 
           <div className="space-y-3 pt-2">
-            <h3 className="text-lg font-semibold text-[#f4f1eb]">Mijozlar fikri</h3>
+            <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('mobileHome.customerVoices')}</h3>
             {voices.map((voice) => (
               <article key={voice.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-center justify-between">
@@ -421,12 +421,12 @@ const MobileHome = () => {
 
         <section className="px-4 py-2">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Mahsulotlar</h2>
+            <h2 className="text-xl font-bold text-white">{t('mobileHome.products')}</h2>
             <Link
               to="/mobile/products"
               className="text-fuchsia-400 text-sm font-medium flex items-center gap-1"
             >
-              Hammasi
+              {t('mobileHome.viewAllShort')}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -451,7 +451,7 @@ const MobileHome = () => {
                 to="/mobile/products"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-white rounded-full font-medium"
               >
-                Barcha mahsulotlar
+                {t('mobileHome.allProducts')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

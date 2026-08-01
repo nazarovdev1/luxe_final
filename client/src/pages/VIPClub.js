@@ -24,7 +24,7 @@ const VIP_TIERS = [
         <text x="12" y="10.5" textAnchor="middle" fill="currentColor" fontSize="7" fontWeight="900" style={{ fontFamily: 'Inter, sans-serif' }}>3</text>
       </svg>
     ),
-    perks: ['Xaridlar uchun ball yig\'ish', 'Style Feed kirish', 'Bepul yetkazib berish'],
+    perkKeys: ['vip.tier_bronze_perk_0', 'vip.tier_bronze_perk_1', 'vip.tier_bronze_perk_2'],
   },
   {
     level: 'Silver',
@@ -42,7 +42,7 @@ const VIP_TIERS = [
         <text x="12" y="10.5" textAnchor="middle" fill="currentColor" fontSize="7" fontWeight="900" style={{ fontFamily: 'Inter, sans-serif' }}>2</text>
       </svg>
     ),
-    perks: ['5% chegirma', 'Bepul yetkazib berish', 'Maxsus aktsiyalarga kirish', 'Musobaqa imtiyozlari'],
+    perkKeys: ['vip.tier_silver_perk_0', 'vip.tier_silver_perk_1', 'vip.tier_silver_perk_2', 'vip.tier_silver_perk_3'],
   },
   {
     level: 'Gold',
@@ -60,7 +60,7 @@ const VIP_TIERS = [
         <text x="12" y="10.5" textAnchor="middle" fill="currentColor" fontSize="7" fontWeight="900" style={{ fontFamily: 'Inter, sans-serif' }}>1</text>
       </svg>
     ),
-    perks: ['10% chegirma', 'Bepul yetkazib berish', 'Yangi kolleksiyaga ilk kirish', 'VIP musobaqa'],
+    perkKeys: ['vip.tier_gold_perk_0', 'vip.tier_gold_perk_1', 'vip.tier_gold_perk_2', 'vip.tier_gold_perk_3'],
   },
   {
     level: 'Diamond',
@@ -72,17 +72,17 @@ const VIP_TIERS = [
     glow: 'bg-[#a8d8ea]/10',
     discount: 15,
     icon: <Gem className="w-12 h-12" style={{ color: '#a8d8ea' }} />,
-    perks: ['15% chegirma', 'Bepul yetkazib berish', 'Ekskluziv mahsulotlar', 'VIP tadbirlarga taklif'],
+    perkKeys: ['vip.tier_diamond_perk_0', 'vip.tier_diamond_perk_1', 'vip.tier_diamond_perk_2', 'vip.tier_diamond_perk_3'],
   },
 ];
 
 const HOW_TO_EARN = [
-  { icon: <ShieldCheck className="w-5 h-5" />, actionKey: 'vip.purchase', points: '+3 ball / 10 000 so\'m', desc: 'Har bir xariddan ball to\'plang' },
-  { icon: <Unlock className="w-5 h-5" />, actionKey: 'vip.register', points: '+30 ball', desc: 'Yangi hisob ochganingiz uchun' },
-  { icon: <Star className="w-5 h-5" />, actionKey: 'vip.review', points: '+20 ball', desc: 'Mahsulotlarga sharh yozing' },
-  { icon: <Trophy className="w-5 h-5" />, actionKey: 'vip.challengeWin', points: '(Musobaqada belgilangan ballga qarab beriladi)', desc: 'Style Challenge\'da g\'olib bo\'ling' },
-  { icon: <Zap className="w-5 h-5" />, actionKey: 'vip.dailyLogin', points: '+5 ball', desc: 'Har kuni saytga kiring' },
-  { icon: <Gift className="w-5 h-5" />, actionKey: 'vip.birthday', points: '+100 ball', desc: 'Tug\'ilgan kuningizda sovg\'a' },
+  { icon: <ShieldCheck className="w-5 h-5" />, actionKey: 'vip.earnActionPurchase', pointsKey: 'vip.earnPointsPurchase', descKey: 'vip.earnDescPurchase' },
+  { icon: <Unlock className="w-5 h-5" />, actionKey: 'vip.earnActionRegister', pointsKey: 'vip.earnPointsRegister', descKey: 'vip.earnDescRegister' },
+  { icon: <Star className="w-5 h-5" />, actionKey: 'vip.earnActionReview', pointsKey: 'vip.earnPointsReview', descKey: 'vip.earnDescReview' },
+  { icon: <Trophy className="w-5 h-5" />, actionKey: 'vip.earnActionChallengeWin', pointsKey: 'vip.earnPointsChallengeWin', descKey: 'vip.earnDescChallengeWin' },
+  { icon: <Zap className="w-5 h-5" />, actionKey: 'vip.earnActionDailyLogin', pointsKey: 'vip.earnPointsDailyLogin', descKey: 'vip.earnDescDailyLogin' },
+  { icon: <Gift className="w-5 h-5" />, actionKey: 'vip.earnActionBirthday', pointsKey: 'vip.earnPointsBirthday', descKey: 'vip.earnDescBirthday' },
 ];
 
 const VIPClub = () => {
@@ -223,7 +223,7 @@ const VIPClub = () => {
                       <div className="mb-16 bg-white/[0.02] p-8 rounded-[32px] border border-white/5">
                         <div className="flex justify-between items-end mb-6">
                           <div className="flex items-center gap-3">
-                            <span className="text-sm font-black text-white uppercase tracking-[0.2em]">Progress</span>
+                            <span className="text-sm font-black text-white uppercase tracking-[0.2em]">{t('vip.progress')}</span>
                             <span className="text-xs font-bold text-[#d6b47c] bg-[#d6b47c]/10 px-2 py-0.5 rounded-md">{Math.round(progress)}%</span>
                           </div>
                           <div className="text-right">
@@ -246,12 +246,12 @@ const VIPClub = () => {
 
                     {/* Perks Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 pt-12 border-t border-white/5">
-                      {currentTier.perks.map((perk, i) => (
+                      {currentTier.perkKeys.map((perkKey, i) => (
                         <div key={i} className="flex items-center gap-4 group">
                           <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
                             <ShieldCheck className="w-5 h-5" style={{ color: currentTier.color }} />
                           </div>
-                          <span className="text-sm text-gray-300 font-bold tracking-wide">{perk}</span>
+                          <span className="text-sm text-gray-300 font-bold tracking-wide">{t(perkKey)}</span>
                         </div>
                       ))}
                     </div>
@@ -269,8 +269,8 @@ const VIPClub = () => {
                 <div className="w-20 h-20 bg-[#d6b47c]/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-[#d6b47c]/20">
                   <Crown className="w-10 h-10 text-[#d6b47c]" />
                 </div>
-                <h3 className="text-3xl font-serif mb-3">VIP darajangizni ko'ring</h3>
-                <p className="text-gray-500 mb-10 max-w-sm mx-auto text-lg font-light">Tizimga kirish orqali o'z ballaringiz, nishonlaringiz va eksklyuziv darajangizni ko'ring.</p>
+                <h3 className="text-3xl font-serif mb-3">{t('vip.seeLevel')}</h3>
+                <p className="text-gray-500 mb-10 max-w-sm mx-auto text-lg font-light">{t('vip.loginHint')}</p>
                 <button onClick={() => navigate('/login')} className="px-12 py-5 bg-[#d6b47c] text-black rounded-full font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform">
                   {t('vip.login')}
                 </button>
@@ -312,27 +312,27 @@ const VIPClub = () => {
 
                       <h3 className="text-4xl font-brilliant text-white mb-3">{tier.level}</h3>
                       <p className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-10">
-                        {tier.threshold.toLocaleString()} <span className="opacity-50">{t('vip.points')} dan</span>
+                        {tier.threshold.toLocaleString()} <span className="opacity-50">{t('vip.points')} {t('vip.from')}</span>
                       </p>
 
                       <div className="space-y-5 mb-12">
-                        {tier.perks.map((perk, i) => (
+                        {tier.perkKeys.map((perkKey, i) => (
                           <div key={i} className="flex items-start gap-4">
                             <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${tier.color}20` }}>
                               <span className="text-[10px] font-black" style={{ color: tier.color }}>✓</span>
                             </div>
-                            <span className="text-sm text-gray-300 font-medium leading-tight">{perk}</span>
+                            <span className="text-sm text-gray-300 font-medium leading-tight">{t(perkKey)}</span>
                           </div>
                         ))}
                       </div>
 
                       {tier.discount > 0 ? (
                         <div className="mt-auto py-4 text-center rounded-2xl text-[11px] font-black uppercase tracking-widest border border-white/5" style={{ background: `${tier.color}10`, color: tier.color }}>
-                          -{tier.discount}% chegirma
+                          -{tier.discount}% {t('vip.discountLabel')}
                         </div>
                       ) : (
                         <div className="mt-auto py-4 text-center rounded-2xl text-[11px] font-black uppercase tracking-widest border border-white/5 text-gray-500 bg-white/[0.02]">
-                          Luxe Member
+                          {t('vip.luxeMember')}
                         </div>
                       )}
 
@@ -349,7 +349,7 @@ const VIPClub = () => {
         {/* --- BADGES TAB --- */}
         {activeTab === 'badges' && (
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-serif text-center mb-8">🎖️ Mening nishonlarim</h2>
+            <h2 className="text-2xl font-serif text-center mb-8">🎖️ {t('vip.myBadges')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
               {badges.map(userBadge => (
                 <div key={userBadge._id} className="relative group flex flex-col items-center p-6 rounded-[32px] border border-[#d6b47c]/20 bg-gradient-to-b from-[#d6b47c]/10 to-transparent hover:border-[#d6b47c]/40 transition-all text-center overflow-hidden">
@@ -383,7 +383,7 @@ const VIPClub = () => {
         {/* --- HISTORY TAB --- */}
         {activeTab === 'history' && (
           <div className="max-w-2xl mx-auto space-y-4">
-            <h2 className="text-2xl font-serif text-center mb-8">⏳ Ballar tarixi</h2>
+            <h2 className="text-2xl font-serif text-center mb-8">⏳ {t('vip.historyTitle')}</h2>
             {history.map(tx => (
               <div key={tx._id} className="flex items-center justify-between p-5 rounded-3xl border border-white/5 bg-[#111] hover:bg-white/[0.02] transition-all">
                 <div className="flex items-center gap-4">
@@ -424,7 +424,7 @@ const VIPClub = () => {
                     {index + 1}
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold">{entry.user?.username || 'Noma\'lum'}</p>
+                    <p className="font-bold">{entry.user?.username || t('challenges.anonymous')}</p>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3" style={{ color: tier.color }}>{tier.icon}</div>
                       <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">{entry.level}</p>
@@ -455,8 +455,8 @@ const VIPClub = () => {
                   </div>
                   <div>
                     <p className="font-bold mb-1">{t(item.actionKey)}</p>
-                    <p className="text-[#d6b47c] text-sm font-black mb-1">{item.points}</p>
-                    <p className="text-xs text-gray-500">{item.desc}</p>
+                    <p className="text-[#d6b47c] text-sm font-black mb-1">{t(item.pointsKey)}</p>
+                    <p className="text-xs text-gray-500">{t(item.descKey)}</p>
                   </div>
                 </div>
               ))}

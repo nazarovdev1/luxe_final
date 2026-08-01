@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShoppingBag, Loader2 } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -14,6 +15,7 @@ const MobileBundleStickyCTA = ({
   isAdding,
   onAddToCart,
 }) => {
+  const { t } = useLanguage();
   const savings = originalPrice - discountedPrice;
 
   return (
@@ -24,7 +26,7 @@ const MobileBundleStickyCTA = ({
           <p className="text-[#9aa3b2] text-[10px] uppercase tracking-wider truncate">{bundle.title}</p>
           <div className="flex items-center gap-2">
             <span className="text-white font-bold text-base tracking-tight">
-              {formatPrice(discountedPrice)} so'm
+              {formatPrice(discountedPrice)} {t('common.sum')}
             </span>
             <span className="text-white/30 text-xs line-through">{formatPrice(originalPrice)}</span>
             <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-[9px] font-bold">
@@ -34,8 +36,8 @@ const MobileBundleStickyCTA = ({
         </div>
         {savings > 0 && (
           <div className="text-right">
-            <p className="text-[8px] text-[#9aa3b2] uppercase tracking-wider">Tejash</p>
-            <p className="text-xs font-bold text-emerald-400">{formatPrice(savings)} so'm</p>
+            <p className="text-[8px] text-[#9aa3b2] uppercase tracking-wider">{t('bundleDetail.savingsLabel')}</p>
+            <p className="text-xs font-bold text-emerald-400">{formatPrice(savings)} {t('common.sum')}</p>
           </div>
         )}
       </div>
@@ -49,12 +51,12 @@ const MobileBundleStickyCTA = ({
         {isAdding ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Qo'shilmoqda...
+            {t('bundleDetail.adding')}
           </>
         ) : (
           <>
             <ShoppingBag className="w-5 h-5" />
-            To'plamni savatga qo'shish
+            {t('bundleDetail.addToCart')}
           </>
         )}
       </button>

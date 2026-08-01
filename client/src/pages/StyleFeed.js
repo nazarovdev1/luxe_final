@@ -105,14 +105,14 @@ const StyleFeed = () => {
     };
 
     const handleDeletePost = async (postId) => {
-        if (!window.confirm('Haqiqatdan ham ushbu postni o\'chirmoqchimisiz?')) return;
+        if (!window.confirm(t('styleFeed.confirmDeletePost'))) return;
 
         try {
             const response = await axios.delete(`/api/posts/${postId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.data.success) {
-                toast.success('Post o\'chirildi');
+                toast.success(t('styleFeed.postDeleted'));
                 setPosts(posts.filter(p => p._id !== postId));
                 setSelectedPost(null);
             }
@@ -211,7 +211,7 @@ const StyleFeed = () => {
                     >
                         <div className="absolute inset-0 bg-white opacity-5 group-hover:opacity-10 transition-opacity" />
                         <div className="absolute inset-0 border border-white/10 rounded-full" />
-                        <span className="relative z-10 text-xs font-black uppercase tracking-[0.2em] text-gray-300 group-hover:text-white">Yana yuklash</span>
+                        <span className="relative z-10 text-xs font-black uppercase tracking-[0.2em] text-gray-300 group-hover:text-white">{t('styleFeed.loadMore')}</span>
                     </button>
                 </div>
             )}
@@ -344,13 +344,13 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
         if (files.length === 0) return;
 
         setIsUploading(true);
-        const loadingToast = toast.loading('Rasmlar yuklanmoqda...');
+        const loadingToast = toast.loading(t('styleFeed.uploadingImages'));
 
         try {
             const uploadedUrls = [];
             const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
             if (!publicKey) {
-                throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+                throw new Error(t('styleFeed.imagekitMissing'));
             }
 
             for (const file of files) {
@@ -372,7 +372,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
                 if (result.url) uploadedUrls.push(result.url);
             }
             setImages([...images, ...uploadedUrls]);
-            toast.success('Tayyor!', { id: loadingToast });
+            toast.success(t('styleFeed.uploadReady'), { id: loadingToast });
         } catch (error) {
             toast.error(t('styleFeed.error'), { id: loadingToast });
         } finally {
@@ -447,7 +447,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
                                 <Upload className="w-6 h-6 text-[#d6b47c]" />
                             </div>
                             <p className="font-semibold text-gray-300">{t('styleFeed.uploadImage')}</p>
-                            <p className="text-xs text-gray-600 mt-2">Kiyimlaringiz kiygan obrazingizni ko'rsating</p>
+                            <p className="text-xs text-gray-600 mt-2">{t('styleFeed.showYourLook')}</p>
                         </div>
                     )}
                     <input type="file" ref={fileInputRef} className="hidden" multiple onChange={handleUpload} accept="image/*" />
@@ -456,7 +456,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
                 {/* Right Side - Details */}
                 <div className="w-full md:w-1/2 p-8 flex flex-col h-full overflow-y-auto custom-scrollbar">
                     <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-serif">Post tafsilotlari</h2>
+                        <h2 className="text-2xl font-serif">{t('styleFeed.postDetails')}</h2>
                         <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full"><X className="w-5 h-5" /></button>
                     </div>
 
@@ -530,7 +530,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
                             disabled={isSubmitting || isUploading}
                             className="w-full py-4 bg-[#d6b47c] text-[#0a0a0a] rounded-full font-black text-sm uppercase tracking-widest hover:bg-[#e8c98a] transition-all disabled:opacity-50"
                         >
-                            {isSubmitting ? 'Tayyorlanmoqda...' : t('styleFeed.sharePost')}
+                            {isSubmitting ? t('styleFeed.submitting') : t('styleFeed.sharePost')}
                         </button>
                     </div>
                 </div>
@@ -597,7 +597,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
     };
 
     const handleDeleteComment = async (commentId) => {
-        if (!window.confirm('Ushbu izohni o\'chirmoqchimisiz?')) return;
+        if (!window.confirm(t('styleFeed.confirmDeleteComment'))) return;
 
         try {
             const response = await axios.delete(`/api/comments/${commentId}`, {
@@ -605,7 +605,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
             });
             if (response.data.success) {
                 setComments(comments.filter(c => c._id !== commentId));
-                toast.success('Izoh o\'chirildi');
+                toast.success(t('styleFeed.commentDeleted'));
             }
         } catch (error) {
             toast.error(t('styleFeed.error'));
@@ -621,10 +621,10 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                 <div className="w-full md:w-[60%] bg-black flex items-center justify-center overflow-hidden relative">
                     <img src={post.images?.[0]} className="w-full h-full object-contain" alt={post.caption} />
                     {(isOwner || isAdmin) && (
-                        <button 
+                        <button
                             onClick={() => onDelete(post._id)}
                             className="absolute top-4 left-4 p-2.5 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-xl border border-red-500/30 transition-all backdrop-blur-md group"
-                            title="Postni o'chirish"
+                            title={t('styleFeed.deletePostTitle')}
                         >
                             <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                         </button>
@@ -663,7 +663,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                         {/* Tagged Products */}
                         {post.taggedProducts?.length > 0 && (
                             <div>
-                                <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold mb-4">Mahsulotlar</h4>
+                                <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] font-bold mb-4">{t('styleFeed.taggedProducts')}</h4>
                                 <div className="space-y-3">
                                     {post.taggedProducts.map(prod => (
                                         <div 
@@ -735,7 +735,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                                 <span className="font-bold text-sm">{post.likes?.length || 0} {t('styleFeed.likesCount')}</span>
                             </button>
                             <div className="text-[10px] text-gray-500 uppercase tracking-widest">
-                                Obraz ulashildi
+                                {t('styleFeed.lookShared')}
                             </div>
                         </div>
 

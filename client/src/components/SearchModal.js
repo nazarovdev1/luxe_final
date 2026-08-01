@@ -220,17 +220,17 @@ const SearchModal = ({ isOpen, onClose }) => {
           <span className="flex items-center gap-1.5 text-[10px] text-[#444]">
             <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">↑</kbd>
             <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">↓</kbd>
-            <span className='text-[#d1c9c9]'>harakatlanish</span>
+            <span className='text-[#d1c9c9]'>{t('searchModal.navigate')}</span>
             
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-[#444]">
             <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">↵</kbd>
-            <span className='text-[#d1c9c9]'>tanlash</span>
+            <span className='text-[#d1c9c9]'>{t('searchModal.select')}</span>
             
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-[#444]">
             <kbd className="px-1.5 py-0.5 rounded bg-[#d1c9c9] text-[9px] font-mono">esc</kbd>
-            <span className='text-[#d1c9c9]'>yopish</span>
+            <span className='text-[#d1c9c9]'>{t('searchModal.close')}</span>
             
           </span>
         </div>

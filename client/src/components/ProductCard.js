@@ -45,7 +45,7 @@ const ProductCard = ({ product, onQuickView, onCompare, isCompareSelected }) => 
                 ? 'bg-[#c9a96e]/30 border-[#c9a96e]/40 text-[#c9a96e]'
                 : 'bg-[#0a0a0b]/60 border-white/15 text-white opacity-0 group-hover:opacity-100'
             }`}
-            title="Taqqoslash"
+            title={t('productCard.compareTitle')}
           >
             <Heart className="w-3.5 h-3.5" />
           </button>
@@ -53,7 +53,7 @@ const ProductCard = ({ product, onQuickView, onCompare, isCompareSelected }) => 
           <button
             onClick={(e) => { e.preventDefault(); onQuickView?.(product); }}
             className="absolute bottom-3 left-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a0a0b]/60 backdrop-blur-md border border-white/15 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-[#c9a96e]/30 hover:border-[#c9a96e]/40"
-            title="Tezkor ko'rish"
+            title={t('productCard.quickViewTitle')}
           >
             <Eye className="w-3.5 h-3.5" />
           </button>

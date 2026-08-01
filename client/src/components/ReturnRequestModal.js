@@ -102,15 +102,15 @@ const ReturnRequestModal = ({ order, onClose }) => {
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-amber-400" />
           </div>
-          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">Buyurtma hali yetkazilmagan</h3>
+          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('returnRequest.notDeliveredTitle')}</h3>
           <p className="text-sm text-[#9aa3b2] mb-6">
-            Qaytarish so'rovi faqat buyurtma "Yetkazildi" holatiga o'tgandan keyin va 14 kun ichida amalga oshirilishi mumkin.
+            {t('returnRequest.notDeliveredDesc')}
           </p>
           <button
             onClick={onClose}
             className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm hover:bg-white/10 transition-colors"
           >
-            Yopish
+            {t('common.close')}
           </button>
         </div>
       </div>
@@ -148,9 +148,9 @@ const ReturnRequestModal = ({ order, onClose }) => {
           <div className="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-5">
             <RotateCcw className="w-10 h-10 text-[#d6b47c]" />
           </div>
-          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">Qaytarish so'rovi</h3>
+          <h3 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('returnRequest.requestTitle')}</h3>
           <p className="text-sm text-[#9aa3b2] mb-6">
-            Qaytarish so'rovingizni rasmiylashtirish uchun bizning mijozlarni qo'llab-quvvatlash guruhimiz bilan bog'laning. Support xodimimiz sizga tezda yordam beradi.
+            {t('returnRequest.requestDesc')}
           </p>
           <div className="flex flex-col gap-2">
             <a

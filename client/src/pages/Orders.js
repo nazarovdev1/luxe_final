@@ -71,7 +71,7 @@ const Orders = () => {
                         {t('orders.title', 'Mening buyurtmalarim')}
                     </p>
                     <h1 className="text-4xl font-light tracking-tight text-white">{t('orders.summary', 'Buyurtmalar tarixi')}</h1>
-                    <p className="mt-4 text-lg font-light text-gray-400">Status, mahsulotlar va yetkazib berish ma'lumotlari bir joyda.</p>
+                    <p className="mt-4 text-lg font-light text-gray-400">{t('orders.status')}</p>
                 </div>
 
                 <div className="mb-8 rounded-[32px] border border-white/10 bg-[#0f0f0f]/80 p-6 text-left">
@@ -79,16 +79,16 @@ const Orders = () => {
                         <div>
                             <p className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500">
                                 <ReceiptText className="h-3.5 w-3.5" />
-                                Buyurtma tarixi
+                                {t('orders.historyTitle')}
                             </p>
-                            <h2 className="mt-2 text-2xl font-light text-white">Xaridlaringiz qisqacha holati</h2>
+                            <h2 className="mt-2 text-2xl font-light text-white">{t('orders.historySubtitle')}</h2>
                         </div>
                         {orderStats.lastOrder && (
                             <button
                                 onClick={() => setTrackingOrder(orderStats.lastOrder)}
                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#d6b47c]/20 bg-[#d6b47c]/10 px-4 py-3 text-sm font-medium text-[#d6b47c] transition-colors hover:bg-[#d6b47c]/20"
                             >
-                                Oxirgi buyurtmani kuzatish
+                                {t('orders.trackLast')}
                                 <ChevronRight className="h-4 w-4" />
                             </button>
                         )}
@@ -96,19 +96,19 @@ const Orders = () => {
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">Jami buyurtma</p>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('orders.totalOrders')}</p>
                             <p className="mt-2 text-2xl font-semibold text-white">{orders.length}</p>
                         </div>
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">Jarayonda</p>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('orders.inProgress')}</p>
                             <p className="mt-2 text-2xl font-semibold text-blue-300">{orderStats.activeCount}</p>
                         </div>
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">Yetkazilgan</p>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('orders.delivered')}</p>
                             <p className="mt-2 text-2xl font-semibold text-emerald-300">{orderStats.deliveredCount}</p>
                         </div>
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">Jami xarid</p>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('orders.totalSpent')}</p>
                             <p className="mt-2 text-2xl font-semibold text-[#d6b47c]">{orderStats.totalSpent.toLocaleString()} <span className="text-xs text-gray-500">so'm</span></p>
                         </div>
                     </div>
@@ -120,9 +120,9 @@ const Orders = () => {
                             <Package className="w-8 h-8 text-gray-400" />
                         </div>
                         <h3 className="text-xl font-medium text-white mb-2">{t('orders.empty', 'Hali buyurtmalar yo\'q')}</h3>
-                        <p className="text-gray-500 font-light mb-8">Sizning ilk xaridingiz shu yerda paydo bo'ladi.</p>
+                        <p className="text-gray-500 font-light mb-8">{t('orders.emptyDesc')}</p>
                         <Link to="/" className="inline-flex items-center gap-2 text-white border-b border-white pb-1 hover:text-gray-300 hover:border-gray-300 transition-colors uppercase text-sm tracking-widest">
-                            Xaridni boshlash <ChevronRight className="w-4 h-4" />
+                            {t('orders.startShopping')} <ChevronRight className="w-4 h-4" />
                         </Link>
                     </div>
                 )}
@@ -135,7 +135,7 @@ const Orders = () => {
                                     <div className="flex items-center gap-4 mb-3">
                                         <span className="text-xl font-medium text-white tracking-wide">#{order._id.slice(-6).toUpperCase()}</span>
                                         <span className={`px-4 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider border ${getStatusClass(order.status)}`}>
-                                            {order.status || 'Kutilmoqda'}
+                                            {order.status || t('orders.pending')}
                                         </span>
                                     </div>
                                     <div className="flex items-center text-gray-500 text-sm font-light">
@@ -172,7 +172,7 @@ const Orders = () => {
                                         <div className="flex-1 min-w-0">
                                             <h4 className="text-white font-medium text-lg mb-1 truncate">{item.name}</h4>
                                             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 font-light">
-                                                <span className="text-white">{item.quantity} dona</span>
+                                                <span className="text-white">{item.quantity} {t('orders.pieces')}</span>
                                                 <span className="w-1 h-1 rounded-full bg-gray-700"></span>
                                                 <span>{(item.price || 0).toLocaleString()} so'm</span>
                                                 {item.selectedSize && (
@@ -193,7 +193,7 @@ const Orders = () => {
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-gray-300 font-medium mb-1">{t('checkoutPage.step2')}</p>
-                                    <p className="text-gray-500 text-sm font-light leading-relaxed max-w-lg">{order.customer?.address || 'Manzil ko\'rsatilmagan'}</p>
+                                    <p className="text-gray-500 text-sm font-light leading-relaxed max-w-lg">{order.customer?.address || t('orders.addressUnavailable')}</p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     {order.status !== 'Bekor qilindi' && (

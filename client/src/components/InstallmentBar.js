@@ -146,13 +146,13 @@ const InstallmentContent = ({ price }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg bg-[#1c1c1f] p-2.5">
-                  <p className="text-[10px] text-[#6b6b6e]">Umumiy summa</p>
+                  <p className="text-[10px] text-[#6b6b6e]">{t('installment.totalAmount')}</p>
                   <p className="text-sm font-semibold text-[#f5f5f3]">
                     {formatPrice(calculation.totalWithInterest)} {t('common.sum')}
                   </p>
                 </div>
                 <div className="rounded-lg bg-[#1c1c1f] p-2.5">
-                  <p className="text-[10px] text-[#6b6b6e]">Foiz</p>
+                  <p className="text-[10px] text-[#6b6b6e]">{t('installment.interest')}</p>
                   <p className={`text-sm font-semibold ${calculation.totalInterest > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {calculation.totalInterest > 0 ? `+${formatPrice(calculation.totalInterest)}` : '0'} {t('common.sum')}
                   </p>

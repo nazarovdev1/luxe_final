@@ -9,7 +9,7 @@ import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
 /* ─── helpers ──────────────────────────────────────────────────── */
-const SEASONS = ['Spring/Summer', 'Fall/Winter', 'Resort', 'Pre-Fall', 'Capsule'];
+const SEASONS = ['lookbooks.season_0', 'lookbooks.season_1', 'lookbooks.season_2', 'lookbooks.season_3', 'lookbooks.season_4'];
 
 function getSeason(index) {
     return SEASONS[index % SEASONS.length];
@@ -129,7 +129,7 @@ function HeroSection() {
                     className="text-[9px] uppercase tracking-[0.4em] text-[#d6b47c]/40"
                     style={{ writingMode: 'vertical-rl' }}
                 >
-                    2024 Collection
+                    {t('lookbooks.year2024')}
                 </span>
                 <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#d6b47c]/30 to-transparent" />
             </div>
@@ -139,7 +139,7 @@ function HeroSection() {
                     className="text-[9px] uppercase tracking-[0.4em] text-[#56c4bb]/40"
                     style={{ writingMode: 'vertical-rl' }}
                 >
-                    Premium Looks
+                    {t('lookbooks.premiumLooks')}
                 </span>
                 <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#56c4bb]/30 to-transparent" />
             </div>
@@ -158,7 +158,7 @@ function FilterBar({ categories, activeFilter, setActiveFilter }) {
                 <div className="hidden md:flex items-center gap-2.5 shrink-0">
                     <Gem className="w-4 h-4 text-[#d6b47c]" />
                     <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]">
-                        Lookbook
+                        {t('lookbooks.lookbookMark')}
                     </span>
                 </div>
 
@@ -242,7 +242,7 @@ function LookCard({ look, index, onOpen }) {
                 <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#060810]/95 to-transparent pointer-events-none" />
 
                 <span className="absolute top-3 left-3 text-[9px] uppercase tracking-[0.3em] text-white/70 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/10">
-                    {season}
+                    {t(season)}
                 </span>
 
                 {hasDiscount && discountLabel && (
@@ -264,7 +264,7 @@ function LookCard({ look, index, onOpen }) {
 
             <div className="px-5 pt-3 pb-5 absolute bottom-0 left-0 w-full flex flex-col justify-end transform transition-transform duration-500 group-hover:-translate-y-1">
                 <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] mb-1.5 font-semibold drop-shadow-md">
-                    {look.items?.[0]?.category || 'Kolleksiya'}
+                    {look.items?.[0]?.category || t('lookbooks.collection')}
                 </p>
                 <h3 className="font-serif text-2xl text-[#f5f0e8] leading-snug line-clamp-2 mb-3 drop-shadow-lg" style={{ letterSpacing: '0.02em' }}>
                     {look.title}
@@ -339,11 +339,11 @@ const Lookbooks = () => {
                 if (result.success) {
                     setLooks(result.data || []);
                 } else {
-                    toast.error('Looklarni yuklashda xatolik');
+                    toast.error(t('lookbooks.fetchError'));
                 }
             } catch (err) {
                 console.error('Failed to fetch looks:', err);
-                toast.error('Looklarni yuklashda xatolik');
+                toast.error(t('lookbooks.fetchError'));
             } finally {
                 setIsLoading(false);
             }
@@ -490,7 +490,7 @@ const Lookbooks = () => {
                                 <>
                                     <div className="flex items-center justify-between gap-2 mb-2 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
                                         <span className="text-[9px] uppercase tracking-[0.3em] text-white/80 bg-black/55 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/15">
-                                            {item.season}
+                                            {t(item.season)}
                                         </span>
                                         {hasDiscount && discountLabel && (
                                             <span className="px-2 py-1 rounded-full bg-emerald-500/90 text-white text-[10px] font-bold shadow-lg">
@@ -537,7 +537,7 @@ const Lookbooks = () => {
                         {t('lookbooks.viewAllProducts')}
                     </h2>
                     <p className="text-sm text-neutral-400 max-w-md">
-                        Premium brend mahsulotlari va noyob editoriyallar bilan tanishing.
+                        {t('lookbooks.footerSubtitle')}
                     </p>
                     <div className="flex items-center gap-3 flex-wrap justify-center">
                         <button

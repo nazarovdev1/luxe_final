@@ -120,7 +120,7 @@ const OrderTimeline = ({ order }) => {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-[#f4f1eb] truncate">{item.name}</p>
                   <p className="text-[10px] text-[#9aa3b2]">
-                    {item.quantity} dona
+                    {item.quantity} {t('orderTimeline.pcs')}
                     {item.selectedSize ? ` • ${item.selectedSize}` : ''}
                     {item.selectedColor ? ` • ${item.selectedColor}` : ''}
                   </p>
@@ -135,7 +135,7 @@ const OrderTimeline = ({ order }) => {
         {order.status === 'Yetkazilmoqda' && (
           <div className="mt-4 rounded-xl bg-gradient-to-r from-[#d6b47c]/10 to-transparent border border-[#d6b47c]/20 p-3">
             <p className="text-xs text-[#d6b47c]">
-              🚚 Yetkazib berish 3-6 soat ichida bo'lib o'tadi
+              🚚 {t('orderTimeline.deliveryInfo')}
             </p>
           </div>
         )}

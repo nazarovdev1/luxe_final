@@ -41,7 +41,7 @@ const PriceDropAlert = ({ product }) => {
       <button
         onClick={handleUnsubscribe}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400 transition-all group"
-        title="Obunani bekor qilish"
+        title={t('priceDropAlert.cancel')}
       >
         <BellRing className="w-4 h-4 group-hover:hidden" />
         <Bell className="w-4 h-4 hidden group-hover:block" />
@@ -112,7 +112,7 @@ const PriceDropAlert = ({ product }) => {
                   }}
                   className="w-full py-3 rounded-xl bg-[#d6b47c] text-black font-semibold text-sm hover:bg-[#c9a46d] transition-colors"
                 >
-                  Tushundim
+                  {t('priceDropAlert.understand')}
                 </button>
               </div>
             ) : (
@@ -221,7 +221,7 @@ const PriceDropAlert = ({ product }) => {
                   className="w-full py-3.5 rounded-xl bg-[#d6b47c] text-black font-semibold text-sm hover:bg-[#c9a46d] transition-colors flex items-center justify-center gap-2"
                 >
                   <Bell className="w-4 h-4" />
-                  Kuzatishni yoqish
+                  {t('priceDropAlert.enable')}
                 </button>
               </form>
             )}

@@ -260,20 +260,19 @@ const PremiumHomeSections = () => {
               <div className="grid grid-cols-2 gap-3 sm:gap-4 self-end">
                 <div className="rounded-2xl border border-white/15 bg-black/35 backdrop-blur-md p-4">
                   <div className="text-2xl font-bold text-[#f4f1eb]">{products.length}+</div>
-                  <div className="text-xs text-neutral-300 mt-1">Premium mahsulotlar</div>
+                  <div className="text-xs text-neutral-300 mt-1">{t('premiumHome.statsPremiumProducts')}</div>
                 </div>
                 <div className="rounded-2xl border border-white/15 bg-black/35 backdrop-blur-md p-4">
                   <div className="text-2xl font-bold text-[#f4f1eb]">{categoryCards.length}+</div>
-                  <div className="text-xs text-neutral-300 mt-1">Asosiy kategoriyalar</div>
+                  <div className="text-xs text-neutral-300 mt-1">{t('premiumHome.statsMainCategories')}</div>
                 </div>
                 <div className="col-span-2 rounded-2xl border border-white/15 bg-black/35 backdrop-blur-md p-4">
                   <div className="flex items-center gap-2 text-amber-300 mb-2">
                     <Crown className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wide">Premium service</span>
+                    <span className="text-xs uppercase tracking-wide">{t('premiumHome.statsPremiumService')}</span>
                   </div>
                   <p className="text-sm text-neutral-200">
-                    Tez buyurtma, aniq o'lcham guidance va elegant qadoqlash bilan xarid jarayoni
-                    maksimal qulayliklar qilib qurilgan.
+                    {t('premiumHome.statsServiceDesc')}
                   </p>
                 </div>
               </div>
@@ -289,7 +288,7 @@ const PremiumHomeSections = () => {
                   transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
               >
-                <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Shop by style</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">{t('premiumHome.categoriesShopStyle')}</p>
                 <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.categories')}</h3>
               </div>
               <Link

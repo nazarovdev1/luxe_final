@@ -3,70 +3,44 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, Database, Bell, Mail, Phone, Calendar } from 'lucide-react';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const PrivacyPolicy = () => {
+    const { t } = useLanguage();
+
     const sections = [
         {
             icon: <Database className="w-6 h-6" />,
-            title: "Qanday ma'lumotlar yig'iladi",
-            content: [
-                "Ism va familiya",
-                "Telefon raqami",
-                "Yetkazib berish manzili",
-                "Elektron pochta manzili (ixtiyoriy)",
-                "Buyurtma tarixi va afzalliklar"
-            ]
+            titleKey: 'privacy.section1Title',
+            contentKey: 'privacy.section1Items'
         },
         {
             icon: <Eye className="w-6 h-6" />,
-            title: "Ma'lumotlardan foydalanish maqsadi",
-            content: [
-                "Buyurtmalarni qayta ishlash va yetkazib berish",
-                "Mijozlar bilan bog'lanish (buyurtma holati, aksiyalar)",
-                "Xizmat sifatini yaxshilash",
-                "Shaxsiylashtirilgan tavsiyalar berish",
-                "Qonuniy talablarni bajarish"
-            ]
+            titleKey: 'privacy.section2Title',
+            contentKey: 'privacy.section2Items'
         },
         {
             icon: <Lock className="w-6 h-6" />,
-            title: "Ma'lumotlar xavfsizligi",
-            content: [
-                "Barcha ma'lumotlar shifrlangan holda saqlanadi",
-                "Faqat vakolatli xodimlar kirish huquqiga ega",
-                "Muntazam xavfsizlik tekshiruvlari o'tkaziladi",
-                "To'lov ma'lumotlari bizda saqlanmaydi",
-                "SSL sertifikati orqali himoyalangan ulanish"
-            ]
+            titleKey: 'privacy.section3Title',
+            contentKey: 'privacy.section3Items'
         },
         {
             icon: <Bell className="w-6 h-6" />,
-            title: "Xabarlar va bildirishnomalar",
-            content: [
-                "Buyurtma holati haqida SMS xabarnomalar",
-                "Maxsus takliflar va chegirmalar (rozilik bilan)",
-                "Muhim yangiliklar va o'zgarishlar",
-                "Xabarlardan voz kechish istalgan vaqtda mumkin"
-            ]
+            titleKey: 'privacy.section4Title',
+            contentKey: 'privacy.section4Items'
         },
         {
             icon: <Shield className="w-6 h-6" />,
-            title: "Sizning huquqlaringiz",
-            content: [
-                "Ma'lumotlaringizni ko'rish huquqi",
-                "Ma'lumotlarni tuzatish huquqi",
-                "Ma'lumotlarni o'chirish huquqi",
-                "Marketing xabarlaridan voz kechish huquqi",
-                "Shikoyat qilish huquqi"
-            ]
+            titleKey: 'privacy.section5Title',
+            contentKey: 'privacy.section5Items'
         }
     ];
 
     return (
         <div className="min-h-screen bg-gray-900">
             <SEO
-                title="Maxfiylik siyosati"
-                description="Luxx.uz maxfiylik siyosati - Shaxsiy ma'lumotlaringiz qanday himoyalanishini bilib oling."
+                title={t('privacy.seoTitle')}
+                description={t('privacy.seoDesc')}
             />
 
             {/* Header */}
@@ -77,7 +51,7 @@ const PrivacyPolicy = () => {
                         className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6"
                     >
                         <ArrowLeft className="w-5 h-5" />
-                        <span>Bosh sahifa</span>
+                        <span>{t('privacy.backHome')}</span>
                     </Link>
 
                     <div className="flex items-center space-x-4">
@@ -86,10 +60,10 @@ const PrivacyPolicy = () => {
                         </div>
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold text-white">
-                                Maxfiylik siyosati
+                                {t('privacy.title')}
                             </h1>
                             <p className="text-gray-400 mt-1">
-                                Shaxsiy ma'lumotlaringiz biz uchun muhim
+                                {t('privacy.subtitle')}
                             </p>
                         </div>
                     </div>
@@ -101,17 +75,12 @@ const PrivacyPolicy = () => {
                 {/* Introduction */}
                 <div className="bg-gradient-to-br from-purple-900/30 to-fuchsia-900/20 rounded-3xl p-6 md:p-8 border border-purple-500/20 mb-8">
                     <h2 className="text-xl font-bold text-white mb-4">
-                        Hurmatli mijoz!
+                        {t('privacy.introTitle')}
                     </h2>
-                    <p className="text-gray-300 leading-relaxed">
-                        <strong>Luxx.uz</strong> onlayn do'koni sifatida biz sizning shaxsiy ma'lumotlaringiz
-                        xavfsizligini ta'minlashga alohida e'tibor qaratamiz. Ushbu maxfiylik siyosati
-                        qanday ma'lumotlar yig'ilishi, ulardan qanday foydalanilishi va ular qanday
-                        himoyalanishini tushuntiradi.
-                    </p>
+                    <p className="text-gray-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacy.introBody') }} />
                     <div className="flex items-center space-x-2 mt-4 text-sm text-gray-400">
                         <Calendar className="w-4 h-4" />
-                        <span>Oxirgi yangilanish: 20-yanvar, 2026-yil</span>
+                        <span>{t('privacy.lastUpdated')}</span>
                     </div>
                 </div>
 
@@ -127,16 +96,18 @@ const PrivacyPolicy = () => {
                                     {section.icon}
                                 </div>
                                 <h3 className="text-lg font-semibold text-white">
-                                    {section.title}
+                                    {t(section.titleKey)}
                                 </h3>
                             </div>
                             <ul className="space-y-2 ml-13">
-                                {section.content.map((item, i) => (
-                                    <li key={i} className="flex items-start space-x-3 text-gray-300">
-                                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
+                                {Array.isArray(t(section.contentKey)) ? (
+                                    t(section.contentKey).map((item, i) => (
+                                        <li key={i} className="flex items-start space-x-3 text-gray-300">
+                                            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></span>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))
+                                ) : null}
                             </ul>
                         </div>
                     ))}
@@ -145,56 +116,50 @@ const PrivacyPolicy = () => {
                 {/* Cookie Policy */}
                 <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 mt-6">
                     <h3 className="text-lg font-semibold text-white mb-4">
-                        🍪 Cookie fayllar haqida
+                        {t('privacy.cookieTitle')}
                     </h3>
                     <p className="text-gray-300 leading-relaxed mb-4">
-                        Biz sayt ishlashini yaxshilash uchun cookie fayllardan foydalanamiz.
-                        Cookie fayllar sizning qurilmangizda saqlanadigan kichik matn fayllari bo'lib,
-                        ular saytda qulay tajriba yaratishga yordam beradi.
+                        {t('privacy.cookieBody')}
                     </p>
                     <p className="text-gray-400 text-sm">
-                        Saytimizdan foydalanishda davom etish orqali siz cookie fayllar ishlatilishiga
-                        rozilik bildirasiz.
+                        {t('privacy.cookieNote')}
                     </p>
                 </div>
 
                 {/* Third Parties */}
                 <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 mt-6">
                     <h3 className="text-lg font-semibold text-white mb-4">
-                        Uchinchi taraflar
+                        {t('privacy.thirdPartyTitle')}
                     </h3>
                     <p className="text-gray-300 leading-relaxed mb-4">
-                        Biz sizning ma'lumotlaringizni quyidagi hollarda uchinchi taraflarga
-                        taqdim etishimiz mumkin:
+                        {t('privacy.thirdPartyBody')}
                     </p>
                     <ul className="space-y-2">
                         <li className="flex items-start space-x-3 text-gray-300">
                             <span className="w-1.5 h-1.5 bg-fuchsia-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>Yetkazib berish xizmatlari (manzil va telefon raqami)</span>
+                            <span>{t('privacy.thirdPartyItem1')}</span>
                         </li>
                         <li className="flex items-start space-x-3 text-gray-300">
                             <span className="w-1.5 h-1.5 bg-fuchsia-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>To'lov tizimlari (xavfsiz to'lovni amalga oshirish uchun)</span>
+                            <span>{t('privacy.thirdPartyItem2')}</span>
                         </li>
                         <li className="flex items-start space-x-3 text-gray-300">
                             <span className="w-1.5 h-1.5 bg-fuchsia-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span>Qonun talabiga ko'ra davlat organlariga</span>
+                            <span>{t('privacy.thirdPartyItem3')}</span>
                         </li>
                     </ul>
                     <p className="text-gray-400 text-sm mt-4">
-                        Biz sizning ma'lumotlaringizni hech qachon reklama maqsadlarida sotmaymiz
-                        yoki uchinchi taraflarga bermaymiz.
+                        {t('privacy.thirdPartyNote')}
                     </p>
                 </div>
 
                 {/* Contact Section */}
                 <div className="bg-gradient-to-br from-fuchsia-900/30 to-purple-900/20 rounded-3xl p-6 md:p-8 border border-fuchsia-500/20 mt-8">
                     <h3 className="text-xl font-bold text-white mb-4">
-                        Savollaringiz bormi?
+                        {t('privacy.contactTitle')}
                     </h3>
                     <p className="text-gray-300 mb-6">
-                        Maxfiylik siyosati yoki shaxsiy ma'lumotlaringiz haqida savollaringiz
-                        bo'lsa, biz bilan bog'laning:
+                        {t('privacy.contactBody')}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <a
@@ -202,23 +167,21 @@ const PrivacyPolicy = () => {
                             className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 px-4 py-3 rounded-xl transition-colors"
                         >
                             <Phone className="w-5 h-5 text-fuchsia-400" />
-                            <span className="text-white">+998 88 429 99 69</span>
+                            <span className="text-white">{t('privacy.contactPhone')}</span>
                         </a>
                         <a
                             href="mailto:support@luxx.uz"
                             className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 px-4 py-3 rounded-xl transition-colors"
                         >
                             <Mail className="w-5 h-5 text-purple-400" />
-                            <span className="text-white">support@luxx.uz</span>
+                            <span className="text-white">{t('privacy.contactEmail')}</span>
                         </a>
                     </div>
                 </div>
 
                 {/* Disclaimer */}
                 <p className="text-center text-gray-500 text-sm mt-8">
-                    Ushbu maxfiylik siyosati O'zbekiston Respublikasi qonunchiligiga muvofiq
-                    tuzilgan va istalgan vaqtda o'zgartirilishi mumkin. O'zgarishlar saytda
-                    e'lon qilinadi.
+                    {t('privacy.disclaimer')}
                 </p>
             </div>
 

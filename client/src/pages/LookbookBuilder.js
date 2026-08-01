@@ -16,12 +16,14 @@ import toast from 'react-hot-toast';
 import { useNavigate, Navigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const LookbookBuilder = () => {
     const navigate = useNavigate();
     const { token, isAuthenticated, isLoading: authLoading } = useAuth();
+    const { t, language } = useLanguage();
     const canvasRef = useRef(null);
-    const [lookName, setLookName] = useState('Mening yangi obrazim');
+    const [lookName, setLookName] = useState(t('lookbookBuilder.defaultLookName'));
     const [activeTab, setActiveTab] = useState('wardrobe'); // 'wardrobe' or 'favorites'
     const [wardrobeItems, setWardrobeItems] = useState([]);
     const [favorites, setFavorites] = useState([]);
@@ -29,6 +31,13 @@ const LookbookBuilder = () => {
     const [canvasItems, setCanvasItems] = useState([]);
     const [selectedItemId, setSelectedItemId] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Update default look name when language changes (only if user hasn't customized)
+    useEffect(() => {
+        setLookName(() => {
+            return t('lookbookBuilder.defaultLookName');
+        });
+    }, [language, t]);
 
     // Fetch wardrobe and favorites
     useEffect(() => {
@@ -55,7 +64,7 @@ const LookbookBuilder = () => {
                 }
             } catch (error) {
                 console.error('Data fetch error:', error);
-                toast.error('Ma\'lumotlarni yuklashda xatolik');
+                toast.error(t('lookbookBuilder.loadError'));
             } finally {
                 setIsLoading(false);
             }
@@ -105,7 +114,7 @@ const LookbookBuilder = () => {
 
     const saveLookbook = async () => {
         if (canvasItems.length === 0) {
-            toast.error('Kamida bitta kiyim qo\'shing');
+            toast.error(t('lookbookBuilder.emptyItemError'));
             return;
         }
 
@@ -130,11 +139,11 @@ const LookbookBuilder = () => {
             });
 
             if (response.data.success) {
-                toast.success('Obraz muvaffaqiyatli saqlandi');
+                toast.success(t('lookbookBuilder.saveSuccess'));
             }
         } catch (error) {
             console.error('Save error:', error);
-            toast.error('Saqlashda xatolik yuz berdi');
+            toast.error(t('lookbookBuilder.saveError'));
         } finally {
             setIsSaving(false);
         }
@@ -160,10 +169,10 @@ const LookbookBuilder = () => {
                 link.download = `${lookName}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                toast.success('Rasm yuklab olindi');
+                toast.success(t('lookbookBuilder.downloadSuccess'));
             } catch (error) {
                 console.error('Download error:', error);
-                toast.error('Rasm yuklashda xatolik');
+                toast.error(t('lookbookBuilder.downloadError'));
             } finally {
                 setSelectedItemId(originalSelectedId);
             }
@@ -172,41 +181,41 @@ const LookbookBuilder = () => {
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col pt-20">
-            <SEO title="Lookbook Builder - Shaxsiy obraz yaratish" description="O'zingiz sotib olgan kiyimlardan yangi obrazlar yarating." />
-            
+            <SEO title={t('lookbookBuilder.seoTitle')} description={t('lookbookBuilder.seoDesc')} />
+
             {/* Header Controls */}
             <div className="h-16 border-b border-[#2a2a2a] bg-[#111111] flex items-center justify-between px-6 shrink-0">
                 <div className="flex items-center gap-4">
-                    <button 
+                    <button
                         onClick={() => navigate('/lookbooks')}
                         className="p-2 hover:bg-[#2a2a2a] rounded-full transition-colors"
                     >
                         <ChevronLeft className="w-5 h-5 text-[#d6b47c]" />
                     </button>
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         value={lookName}
                         onChange={(e) => setLookName(e.target.value)}
                         className="bg-transparent border-none focus:ring-0 text-lg font-medium text-[#d6b47c] w-64 outline-none"
-                        placeholder="Obraz nomi..."
+                        placeholder={t('lookbookBuilder.placeholderLookName')}
                     />
                 </div>
-                
+
                 <div className="flex items-center gap-3">
-                    <button 
+                    <button
                         onClick={downloadAsImage}
                         className="flex items-center gap-2 px-4 py-2 border border-[#2a2a2a] rounded-lg hover:bg-[#2a2a2a] transition-colors text-sm"
                     >
                         <Download className="w-4 h-4" />
-                        <span className="hidden sm:inline">Yuklab olish</span>
+                        <span className="hidden sm:inline">{t('lookbookBuilder.download')}</span>
                     </button>
-                    <button 
+                    <button
                         onClick={saveLookbook}
                         disabled={isSaving}
                         className="flex items-center gap-2 px-6 py-2 bg-[#d6b47c] text-[#0a0a0a] rounded-lg font-semibold hover:bg-[#e8c98a] transition-colors text-sm disabled:opacity-50"
                     >
                         <Save className="w-4 h-4" />
-                        <span>{isSaving ? 'Saqlanmoqda...' : 'Saqlash'}</span>
+                        <span>{isSaving ? t('lookbookBuilder.saving') : t('lookbookBuilder.save')}</span>
                     </button>
                 </div>
             </div>
@@ -215,18 +224,18 @@ const LookbookBuilder = () => {
                 {/* Sidebar */}
                 <aside className="w-20 sm:w-80 border-r border-[#2a2a2a] bg-[#111111] flex flex-col shrink-0">
                     <div className="flex border-b border-[#2a2a2a]">
-                        <button 
+                        <button
                             onClick={() => setActiveTab('wardrobe')}
                             className={`flex-1 py-4 text-[10px] sm:text-xs uppercase tracking-widest font-bold transition-colors ${activeTab === 'wardrobe' ? 'text-[#d6b47c] border-b-2 border-[#d6b47c]' : 'text-gray-500'}`}
                         >
-                            <span className="hidden sm:inline">Mening shkafim</span>
+                            <span className="hidden sm:inline">{t('lookbookBuilder.tabWardrobe')}</span>
                             <ShoppingBag className="sm:hidden mx-auto w-5 h-5" />
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('favorites')}
                             className={`flex-1 py-4 text-[10px] sm:text-xs uppercase tracking-widest font-bold transition-colors ${activeTab === 'favorites' ? 'text-[#d6b47c] border-b-2 border-[#d6b47c]' : 'text-gray-500'}`}
                         >
-                            <span className="hidden sm:inline">Sevimlilar</span>
+                            <span className="hidden sm:inline">{t('lookbookBuilder.tabFavorites')}</span>
                             <ImageIcon className="sm:hidden mx-auto w-5 h-5" />
                         </button>
                     </div>
@@ -260,7 +269,7 @@ const LookbookBuilder = () => {
                         {!isLoading && (activeTab === 'wardrobe' ? wardrobeItems : favorites).length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 px-4">
                                 <ShoppingBag className="w-8 h-8 sm:w-12 sm:h-12 mb-4 opacity-20" />
-                                <p className="text-xs sm:text-sm">Hozircha kiyimlar yo'q</p>
+                                <p className="text-xs sm:text-sm">{t('lookbookBuilder.emptyWardrobe')}</p>
                             </div>
                         )}
                     </div>
@@ -287,8 +296,8 @@ const LookbookBuilder = () => {
                                 <div className="w-20 h-20 bg-[#111111] rounded-full flex items-center justify-center mx-auto mb-6 border border-[#2a2a2a]">
                                     <ImageIcon className="w-8 h-8 text-[#d6b47c]/40" />
                                 </div>
-                                <h3 className="text-xl text-gray-300 font-medium">Obraz yaratishni boshlang</h3>
-                                <p className="text-gray-500 text-sm mt-2 max-w-xs mx-auto">Chap tomondagi shkafingizdan kiyimlarni tanlab, kanvasga joylashtiring.</p>
+                                <h3 className="text-xl text-gray-300 font-medium">{t('lookbookBuilder.emptyCanvasTitle')}</h3>
+                                <p className="text-gray-500 text-sm mt-2 max-w-xs mx-auto">{t('lookbookBuilder.emptyCanvasDesc')}</p>
                             </div>
                         )}
 
@@ -330,32 +339,32 @@ const LookbookBuilder = () => {
                                     
                                     {selectedItemId === item.id && (
                                         <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#111111] border border-[#2a2a2a] rounded-lg p-1 flex items-center gap-1 shadow-2xl z-[1000]">
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.stopPropagation(); updateItem(item.id, { rotation: (item.rotation - 15) % 360 }); }}
                                                 className="p-2 hover:bg-[#2a2a2a] rounded text-gray-400 hover:text-[#d6b47c] transition-colors"
-                                                title="Chapga aylantirish"
+                                                title={t('lookbookBuilder.rotateLeftTitle')}
                                             >
                                                 <RotateCw className="w-4 h-4 transform -scale-x-100" />
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.stopPropagation(); updateItem(item.id, { rotation: (item.rotation + 15) % 360 }); }}
                                                 className="p-2 hover:bg-[#2a2a2a] rounded text-gray-400 hover:text-[#d6b47c] transition-colors"
-                                                title="O'ngga aylantirish"
+                                                title={t('lookbookBuilder.rotateRightTitle')}
                                             >
                                                 <RotateCw className="w-4 h-4" />
                                             </button>
                                             <div className="w-px h-4 bg-[#2a2a2a] mx-1" />
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.stopPropagation(); bringToFront(item.id); }}
                                                 className="p-2 hover:bg-[#2a2a2a] rounded text-gray-400 hover:text-[#d6b47c] transition-colors"
-                                                title="Oldinga o'tkazish"
+                                                title={t('lookbookBuilder.bringToFrontTitle')}
                                             >
                                                 <Layers className="w-4 h-4" />
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={(e) => { e.stopPropagation(); removeFromCanvas(item.id); }}
                                                 className="p-2 hover:bg-[#2a2a2a] rounded text-red-500/70 hover:text-red-500 transition-colors"
-                                                title="O'chirish"
+                                                title={t('lookbookBuilder.removeTitle')}
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>

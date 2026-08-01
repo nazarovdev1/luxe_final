@@ -86,7 +86,7 @@ const MobileProfile = () => {
                     getMyOrders(token),
                     axios.get('/api/points', config)
                 ]);
-                
+
                 if (ordersRes.success) setOrders(ordersRes.data || []);
                 if (pointsRes.data.success) setPoints(pointsRes.data.points);
             } catch (err) {
@@ -114,12 +114,12 @@ const MobileProfile = () => {
 
         if (item.isNotification) {
             if (!isSupported) {
-                toast.error('Brauzeringizda xabarnoma qo\'llab-quvvatlanmaydi');
+                toast.error(t('mobileProfile.notif_not_supported'));
                 return;
             }
 
             if (notificationPermission === 'granted') {
-                toast.success('Xabarnomalar allaqachon yoqilgan');
+                toast.success(t('mobileProfile.notif_already_on'));
             } else {
                 enableNotifications();
             }
@@ -147,13 +147,13 @@ const MobileProfile = () => {
         { id: 'orders', label: t('profile.myOrders'), icon: ShoppingBag, subtitle: t('profile.orderHistory'), isLink: true, linkTo: '/mobile/orders' },
         { id: 'saved', label: t('profile.saved'), icon: Heart, subtitle: 'Wishlist', count: favorites.length },
         ...platformItems,
-        { id: 'notifications', label: 'Xabarnomalar', icon: Bell, subtitle: 'Push status', isNotification: true },
-        { id: 'contact', label: "Biz bilan bog'lanish", icon: Phone, subtitle: 'Support markazi' },
-        { id: 'faq', label: "Ko'p beriladigan savollar", icon: HelpCircle, subtitle: 'Tez javoblar' },
-        { id: 'my-gift-cards', label: "Mening sovg'a kartalarim", icon: Gift, subtitle: 'Balans va transfer' },
-        { id: 'about', label: 'Biz haqimizda', icon: Info, subtitle: 'Brand hikoyasi' },
-        { id: 'privacy', label: 'Maxfiylik siyosati', icon: Shield, subtitle: 'Shaxsiy ma\'lumotlar', isLink: true, linkTo: '/mobile/privacy-policy' },
-        { id: 'terms', label: 'Foydalanish shartlari', icon: FileText, subtitle: 'Qoidalar', isLink: true, linkTo: '/mobile/terms' },
+        { id: 'notifications', label: t('mobileProfile.notifications'), icon: Bell, subtitle: t('mobileProfile.push_status'), isNotification: true },
+        { id: 'contact', label: t('mobileProfile.contact'), icon: Phone, subtitle: t('mobileProfile.contact_subtitle') },
+        { id: 'faq', label: t('mobileProfile.faq'), icon: HelpCircle, subtitle: t('mobileProfile.faq_subtitle') },
+        { id: 'my-gift-cards', label: t('mobileProfile.my_gift_cards'), icon: Gift, subtitle: t('mobileProfile.my_gift_cards_sub') },
+        { id: 'about', label: t('mobileProfile.about'), icon: Info, subtitle: t('mobileProfile.about_sub') },
+        { id: 'privacy', label: t('mobileProfile.privacy'), icon: Shield, subtitle: t('mobileProfile.privacy_sub'), isLink: true, linkTo: '/mobile/privacy-policy' },
+        { id: 'terms', label: t('mobileProfile.terms'), icon: FileText, subtitle: t('mobileProfile.terms_sub'), isLink: true, linkTo: '/mobile/terms' },
     ];
 
     const faqItems = [
@@ -169,7 +169,7 @@ const MobileProfile = () => {
             className="mb-4 inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-2 text-sm text-gray-400 hover:bg-white/10 transition-colors"
         >
             <ArrowLeft className="h-4 w-4" />
-            Orqaga
+            {t('mobileProfile.back')}
         </button>
     );
 
@@ -187,9 +187,9 @@ const MobileProfile = () => {
                                 {user?.username?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div>
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Atelier Account</p>
-                                <h1 className="text-xl font-semibold text-white">{user?.username || 'Foydalanuvchi'}</h1>
-                                <p className="text-sm text-gray-400">{user?.phone || 'Telefon raqam yo\'q'}</p>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{t('mobileProfile.atelier_account')}</p>
+                                <h1 className="text-xl font-semibold text-white">{user?.username || t('profile.userFallback')}</h1>
+                                <p className="text-sm text-gray-400">{user?.phone || t('profile.phoneUnavailable')}</p>
                             </div>
                         </div>
 
@@ -199,11 +199,11 @@ const MobileProfile = () => {
                                 <p className="mt-1 text-sm font-semibold text-white">{orders.length}</p>
                             </div>
                             <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
-                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">Balans</p>
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('mobileProfile.balance')}</p>
                                 <p className="mt-1 text-sm font-semibold text-amber-300">{points?.balance?.toLocaleString() || 0}</p>
                             </div>
                             <div className="rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 p-2.5 text-center">
-                                <p className="text-[10px] uppercase tracking-[0.12em] text-[#d6b47c]">Daraja</p>
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-[#d6b47c]">{t('mobileProfile.level')}</p>
                                 <p className="mt-1 text-[11px] font-black text-white uppercase">{points?.level || 'Bronze'}</p>
                             </div>
                         </div>
@@ -219,7 +219,7 @@ const MobileProfile = () => {
                                     <LayoutDashboard className="h-5 w-5 text-white" />
                                 </span>
                                 <div className="text-left">
-                                    <p className="text-sm font-semibold text-white">Admin Panel</p>
+                                    <p className="text-sm font-semibold text-white">{t('mobileProfile.admin_panel')}</p>
                                     <p className="text-xs text-gray-400">{t('profile.adminCenter')}</p>
                                 </div>
                             </div>
@@ -229,7 +229,7 @@ const MobileProfile = () => {
 
                     <div className="mt-4 space-y-2.5">
                         {/* Platform Features Section */}
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1">Platform</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1">{t('mobileProfile.platform')}</p>
                         {menuItems.filter(i => i.color).map((item) => (
                             <button
                                 key={item.id}
@@ -249,7 +249,7 @@ const MobileProfile = () => {
                             </button>
                         ))}
 
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1 pt-2">Hisobim</p>
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1 pt-2">{t('mobileProfile.account')}</p>
                         {menuItems.filter(i => !i.color).map((item) => (
                             <button
                                 key={item.id}
@@ -273,7 +273,7 @@ const MobileProfile = () => {
                                     )}
                                     {item.isNotification && notificationPermission === 'granted' && (
                                         <span className="rounded-full bg-[#1f3b2d] px-2 py-0.5 text-[10px] text-[#7ce0a4]">
-                                            On
+                                            {t('mobileProfile.on')}
                                         </span>
                                     )}
                                     <ChevronRight className="h-4 w-4 text-gray-600" />
@@ -290,7 +290,7 @@ const MobileProfile = () => {
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10">
                                 <LogOut className="h-4 w-4 text-red-400" />
                             </span>
-                            <span className="text-sm font-medium text-red-400">Chiqish</span>
+                            <span className="text-sm font-medium text-red-400">{t('mobileProfile.logout')}</span>
                         </div>
                         <ChevronRight className="h-4 w-4 text-red-400/50" />
                     </button>
@@ -303,17 +303,17 @@ const MobileProfile = () => {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
                 <BackButton />
-                <h2 className="mb-3 text-xl font-semibold text-white">Saqlangan mahsulotlar</h2>
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.saved_title')}</h2>
 
                 {savedProducts.length === 0 ? (
                     <div className="rounded-3xl bg-[#0f0f0f] border border-white/10 p-8 text-center">
                         <Heart className="mx-auto h-12 w-12 text-gray-600" />
-                        <p className="mt-3 text-white">Saqlangan mahsulotlar yo'q</p>
+                        <p className="mt-3 text-white">{t('mobileProfile.saved_empty')}</p>
                         <button
                             onClick={() => navigate('/mobile/products')}
                             className="mt-4 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black"
                         >
-                            Mahsulotlarni ko'rish
+                            {t('mobileProfile.saved_view_products')}
                         </button>
                     </div>
                 ) : (
@@ -355,7 +355,7 @@ const MobileProfile = () => {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
                 <BackButton />
-                <h2 className="mb-3 text-xl font-semibold text-white">Biz bilan bog'lanish</h2>
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.contact_title')}</h2>
 
                 <div className="space-y-3">
                     <a href="tel:+998901234567" className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
@@ -363,8 +363,8 @@ const MobileProfile = () => {
                             <Phone className="h-5 w-5 text-[#7ce0a4]" />
                         </span>
                         <div>
-                            <p className="text-sm font-medium text-white">Telefon</p>
-                            <p className="text-xs text-gray-400">+998 90 123 45 67</p>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_phone')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_phone_value')}</p>
                         </div>
                     </a>
 
@@ -373,8 +373,8 @@ const MobileProfile = () => {
                             <MessageCircle className="h-5 w-5 text-[#8ac7ff]" />
                         </span>
                         <div>
-                            <p className="text-sm font-medium text-white">Telegram</p>
-                            <p className="text-xs text-gray-400">@luxe_store</p>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_telegram')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_telegram_value')}</p>
                         </div>
                     </a>
 
@@ -383,8 +383,8 @@ const MobileProfile = () => {
                             <Mail className="h-5 w-5 text-[#c7ceda]" />
                         </span>
                         <div>
-                            <p className="text-sm font-medium text-white">Email</p>
-                            <p className="text-xs text-gray-400">info@luxe.uz</p>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_email')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_email_value')}</p>
                         </div>
                     </a>
 
@@ -393,8 +393,8 @@ const MobileProfile = () => {
                             <Clock className="h-5 w-5 text-[#e8cb95]" />
                         </span>
                         <div>
-                            <p className="text-sm font-medium text-white">Ish vaqti</p>
-                            <p className="text-xs text-gray-400">Dushanba - Shanba: 9:00 - 18:00</p>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_hours')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_hours_value')}</p>
                         </div>
                     </div>
                 </div>
@@ -406,7 +406,7 @@ const MobileProfile = () => {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
                 <BackButton />
-                <h2 className="mb-4 text-xl font-semibold text-white">Mening sovg'a kartalarim</h2>
+                <h2 className="mb-4 text-xl font-semibold text-white">{t('mobileProfile.my_gift_cards')}</h2>
                 <MyGiftCards />
             </div>
         );
@@ -416,7 +416,7 @@ const MobileProfile = () => {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
                 <BackButton />
-                <h2 className="mb-3 text-xl font-semibold text-white">Ko'p beriladigan savollar</h2>
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.faq')}</h2>
                 <div className="space-y-3">
                     {faqItems.map((item, idx) => (
                         <div key={idx} className="rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
@@ -433,43 +433,42 @@ const MobileProfile = () => {
         return (
             <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
                 <BackButton />
-                <h2 className="mb-3 text-xl font-semibold text-white">Biz haqimizda</h2>
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.about_title')}</h2>
                 <div className="rounded-[26px] bg-[#0f0f0f] border border-white/5 p-6 shadow-lg">
                     <div className="mb-5 flex items-center gap-3">
                         <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
                             <Star className="h-7 w-7 text-white" />
                         </span>
                         <div>
-                            <h3 className="text-xl font-semibold text-white">Luxe Store</h3>
-                            <p className="text-xs uppercase tracking-[0.16em] text-gray-500">Premium Fashion</p>
+                            <h3 className="text-xl font-semibold text-white">{t('mobileProfile.about_brand')}</h3>
+                            <p className="text-xs uppercase tracking-[0.16em] text-gray-500">{t('mobileProfile.about_tag')}</p>
                         </div>
                     </div>
 
                     <p className="text-sm leading-relaxed text-gray-300">
-                        Luxe Store O'zbekiston ayollari uchun zamonaviy, sifatli va premium ruhdagi kolleksiyalarni taqdim etadi.
-                        Biz mahsulot tanlashdan tortib yetkazib berishgacha bo'lgan jarayonni editoral tajribaga aylantiramiz.
+                        {t('mobileProfile.about_description')}
                     </p>
 
                     <div className="mt-5 grid grid-cols-3 gap-2">
                         <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
                             <p className="text-lg font-semibold text-white">100+</p>
-                            <p className="text-[11px] text-gray-400">Mijozlar</p>
+                            <p className="text-[11px] text-gray-400">{t('mobileProfile.about_customers')}</p>
                         </div>
                         <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
                             <p className="text-lg font-semibold text-white">1000+</p>
-                            <p className="text-[11px] text-gray-400">Mahsulot</p>
+                            <p className="text-[11px] text-gray-400">{t('mobileProfile.about_products')}</p>
                         </div>
                         <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
                             <p className="text-lg font-semibold text-white">4.9</p>
-                            <p className="text-[11px] text-gray-400">Reyting</p>
+                            <p className="text-[11px] text-gray-400">{t('mobileProfile.about_rating')}</p>
                         </div>
                     </div>
 
                     <div className="mt-5 rounded-2xl bg-white/5 border border-white/5 p-4">
-                        <p className="text-sm text-white">"Sifat, uslub va servis bir xil darajada premium bo'lishi kerak."</p>
+                        <p className="text-sm text-white">{t('mobileProfile.about_quote')}</p>
                         <span className="mt-2 inline-flex items-center gap-1 text-xs text-gray-400">
                             <Gem className="h-3.5 w-3.5" />
-                            Luxe Atelier Manifest
+                            {t('mobileProfile.about_manifest')}
                         </span>
                     </div>
                 </div>

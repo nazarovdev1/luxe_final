@@ -6,11 +6,9 @@ const SITE_NAME = 'Luxx.uz';
 const SITE_URL = 'https://luxx.uz';
 const SITE_LOGO = `${SITE_URL}/logoweb2.png`;
 
-const DEFAULT_TITLE = "Luxx.uz - Ayollar kiyimlari, luxury kiyimlar va paltolar | Женская одежда в Ташкенте";
-const DEFAULT_DESCRIPTION =
-    "Luxx.uz - O'zbekistondagi premium ayollar kiyimlari do'koni. Luxury kiyimlar, paltolar va zamonaviy kolleksiyalar. Женская одежда премиум-класса в Ташкенте. Купить платье, пальто и стильные образы с доставкой.";
-const DEFAULT_KEYWORDS =
-    "luxx.uz, luxx uz, luxe uz, luxury uz, luxe, luxury, luxury kiyimlar, ayollar kiyimlari, paltolar, ko'ylaklar, premium kiyimlar, onlayn kiyim do'kon, женская одежда ташкент, купить платье ташкент, брендовая одежда узбекистан, стильные образы, luxury clothing uzbekistan";
+const DEFAULT_TITLE = '';
+const DEFAULT_DESCRIPTION = '';
+const DEFAULT_KEYWORDS = '';
 
 const toAbsoluteUrl = (value) => {
     if (!value) return SITE_LOGO;
@@ -63,11 +61,14 @@ const SEO = ({
     structuredData,
     breadcrumbSteps = [], // New prop for breadcrumbs
 }) => {
-    const { language } = useLanguage();
+    const { language, t } = useLanguage();
     const locale = LOCALE_MAP[language] || 'uz_UZ';
-    const pageTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE;
-    const pageDescription = description || DEFAULT_DESCRIPTION;
-    const pageKeywords = keywords || DEFAULT_KEYWORDS;
+    const defaultTitle = t('seo.defaultTitle');
+    const defaultDescription = t('seo.defaultDescription');
+    const defaultKeywords = t('seo.defaultKeywords');
+    const pageTitle = title ? t('seo.pageTitleTemplate', { title }) : defaultTitle;
+    const pageDescription = description || defaultDescription;
+    const pageKeywords = keywords || defaultKeywords;
     const pageImage = toAbsoluteUrl(image);
 
     const runtimePath =
@@ -132,7 +133,7 @@ const SEO = ({
                 {
                     '@type': 'ListItem',
                     position: 1,
-                    name: 'Asosiy',
+                    name: t('seo.homeBreadcrumb'),
                     item: SITE_URL,
                 },
                 ...breadcrumbSteps.map((step, index) => ({

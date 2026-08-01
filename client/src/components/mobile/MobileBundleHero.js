@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Percent } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -8,6 +9,7 @@ const formatPrice = (price) => {
 };
 
 const MobileBundleHero = ({ bundle, products, discountPercent, onImageClick }) => {
+  const { t } = useLanguage();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [swipeDelta, setSwipeDelta] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -79,7 +81,7 @@ const MobileBundleHero = ({ bundle, products, discountPercent, onImageClick }) =
           <div className="mb-3">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-[#d6b47c] to-[#c4985a] text-[#0a0a0b] text-[10px] font-black uppercase tracking-widest shadow-lg">
               <Percent className="w-3 h-3" />
-              {discountPercent}% Chegirma
+              {discountPercent}% {t('bundleDetail.discountBadge')}
             </span>
           </div>
         )}
@@ -93,11 +95,11 @@ const MobileBundleHero = ({ bundle, products, discountPercent, onImageClick }) =
         <div className="flex items-center gap-3">
           <span className="text-3xl font-bold text-white tracking-tight">
             {formatPrice(discountedPrice)}
-            <span className="text-base text-[#9aa3b2] font-normal ml-1">so'm</span>
+            <span className="text-base text-[#9aa3b2] font-normal ml-1">{t('common.sum')}</span>
           </span>
           {originalPrice > discountedPrice && (
             <span className="text-base text-white/40 line-through">
-              {formatPrice(originalPrice)} so'm
+              {formatPrice(originalPrice)} {t('common.sum')}
             </span>
           )}
         </div>
@@ -106,7 +108,7 @@ const MobileBundleHero = ({ bundle, products, discountPercent, onImageClick }) =
       {/* Products count badge — top left */}
       <div className="absolute top-4 left-4 z-20">
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white text-[11px] font-medium">
-          {products.length} ta mahsulot
+          {t('bundleDetail.toastItems', { count: products.length })}
         </span>
       </div>
     </section>

@@ -3,69 +3,44 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, FileText, ShoppingCart, Truck, RotateCcw, CreditCard, AlertTriangle, Phone, Mail, Calendar } from 'lucide-react';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const TermsOfService = () => {
+    const { t } = useLanguage();
+
     const sections = [
         {
             icon: <ShoppingCart className="w-6 h-6" />,
-            title: "Buyurtma berish tartibi",
-            content: [
-                "Mahsulotni tanlang va savatga qo'shing",
-                "Telefon raqamingiz va manzilni to'g'ri kiriting",
-                "Buyurtma tasdiqlanganidan so'ng operator siz bilan bog'lanadi",
-                "Buyurtma minimal miqdori 50,000 so'mdan boshlanadi",
-                "Bir nechta mahsulotni bitta buyurtmada olish mumkin"
-            ]
+            titleKey: 'terms.section1Title',
+            contentKey: 'terms.section1Items'
         },
         {
             icon: <CreditCard className="w-6 h-6" />,
-            title: "To'lov shartlari",
-            content: [
-                "Naqd pul orqali mahsulotni qabul qilganda to'lash",
-                "Click yoki Payme orqali oldindan to'lash",
-                "Plastik karta orqali kuryerga to'lash",
-                "Oldindan to'lov qaytarilmaydigan holatlar mavjud",
-                "Chegirmalar boshqa aksiyalar bilan qo'shilmaydi"
-            ]
+            titleKey: 'terms.section2Title',
+            contentKey: 'terms.section2Items'
         },
         {
             icon: <Truck className="w-6 h-6" />,
-            title: "Yetkazib berish",
-            content: [
-                "Toshkent shahri bo'ylab 1-2 soat ichida",
-                "Tez orada viloyatlarga yetkazib berish hizmati mavjud bo'ladi",
-                "Yetkazib berish bepul",
-                "Kuryer siz bilan oldindan bog'lanadi",
-                "Manzilni aniq ko'rsating, aks holda yetkazish kechikishi mumkin"
-            ]
+            titleKey: 'terms.section3Title',
+            contentKey: 'terms.section3Items'
         },
         {
             icon: <RotateCcw className="w-6 h-6" />,
-            title: "Qaytarish va almashtirish",
-            content: [
-                "Mahsulotni 14 kun ichida qaytarish mumkin",
-                "Mahsulot asl ko'rinishini saqlab qolgan bo'lishi kerak",
-                "Teglar va qadoq buzilmagan bo'lishi shart",
-                "Pul mablag'i 3-5 ish kuni ichida qaytariladi"
-            ]
+            titleKey: 'terms.section4Title',
+            contentKey: 'terms.section4Items'
         },
         {
             icon: <AlertTriangle className="w-6 h-6" />,
-            title: "Muhim shartlar",
-            content: [
-                "Buyurtma tasdiqlangandan keyin bekor qilish huquqiga egasiz",
-                "Rasm va haqiqiy rang ozgina farq qilishi mumkin",
-                "Narxlar oldindan ogohlantirmasdan o'zgarishi mumkin",
-                "Akkaunt ma'lumotlarini o'zgartirish foydalanuvchi javobgarligida"
-            ]
+            titleKey: 'terms.section5Title',
+            contentKey: 'terms.section5Items'
         }
     ];
 
     return (
         <div className="min-h-screen bg-gray-900">
             <SEO
-                title="Foydalanish shartlari"
-                description="Luxx.uz foydalanish shartlari - Buyurtma, to'lov, yetkazib berish va qaytarish qoidalari."
+                title={t('terms.title')}
+                description={t('terms.title') + ' - Luxx.uz'}
             />
 
             {/* Header */}
@@ -76,7 +51,7 @@ const TermsOfService = () => {
                         className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6"
                     >
                         <ArrowLeft className="w-5 h-5" />
-                        <span>Bosh sahifa</span>
+                        <span>{t('terms.backHome')}</span>
                     </Link>
 
                     <div className="flex items-center space-x-4">
@@ -85,10 +60,10 @@ const TermsOfService = () => {
                         </div>
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold text-white">
-                                Foydalanish shartlari
+                                {t('terms.title')}
                             </h1>
                             <p className="text-gray-400 mt-1">
-                                Xarid qilishdan oldin o'qib chiqing
+                                {t('terms.subtitle')}
                             </p>
                         </div>
                     </div>
@@ -100,16 +75,12 @@ const TermsOfService = () => {
                 {/* Introduction */}
                 <div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/20 rounded-3xl p-6 md:p-8 border border-blue-500/20 mb-8">
                     <h2 className="text-xl font-bold text-white mb-4">
-                        Hurmatli mijoz!
+                        {t('terms.introTitle')}
                     </h2>
-                    <p className="text-gray-300 leading-relaxed">
-                        <strong>Luxx.uz</strong> onlayn do'konidan xarid qilishingizdan oldin ushbu foydalanish
-                        shartlari bilan tanishib chiqishingizni so'raymiz. Buyurtma berish orqali siz ushbu
-                        shartlarga rozilik bildirasiz.
-                    </p>
+                    <p className="text-gray-300 leading-relaxed" dangerouslySetInnerHTML={{ __html: t('terms.introBody') }} />
                     <div className="flex items-center space-x-2 mt-4 text-sm text-gray-400">
                         <Calendar className="w-4 h-4" />
-                        <span>Oxirgi yangilanish: 20-yanvar, 2026-yil</span>
+                        <span>{t('terms.lastUpdated')}</span>
                     </div>
                 </div>
 
@@ -125,16 +96,18 @@ const TermsOfService = () => {
                                     {section.icon}
                                 </div>
                                 <h3 className="text-lg font-semibold text-white">
-                                    {section.title}
+                                    {t(section.titleKey)}
                                 </h3>
                             </div>
                             <ul className="space-y-2 ml-13">
-                                {section.content.map((item, i) => (
-                                    <li key={i} className="flex items-start space-x-3 text-gray-300">
-                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
+                                {Array.isArray(t(section.contentKey)) ? (
+                                    t(section.contentKey).map((item, i) => (
+                                        <li key={i} className="flex items-start space-x-3 text-gray-300">
+                                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                                            <span>{item}</span>
+                                        </li>
+                                    ))
+                                ) : null}
                             </ul>
                         </div>
                     ))}
@@ -143,24 +116,23 @@ const TermsOfService = () => {
                 {/* Warranty Section */}
                 <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 mt-6">
                     <h3 className="text-lg font-semibold text-white mb-4">
-                        ✅ Kafolat
+                        {t('terms.warrantyTitle')}
                     </h3>
                     <p className="text-gray-300 leading-relaxed mb-4">
-                        Barcha mahsulotlar sifat kafolati bilan sotiladi. Agar mahsulotda ishlab
-                        chiqarish nuqsoni aniqlansa, biz uni bepul almashtiramiz yoki pulni qaytaramiz.
+                        {t('terms.warrantyBody')}
                     </p>
                     <p className="text-gray-400 text-sm">
-                        Kafolat buzilgan, ishlatilgan yoki noto'g'ri saqlangan mahsulotlarga tegishli emas.
+                        {t('terms.warrantyNote')}
                     </p>
                 </div>
 
                 {/* Contact Section */}
                 <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/20 rounded-3xl p-6 md:p-8 border border-cyan-500/20 mt-8">
                     <h3 className="text-xl font-bold text-white mb-4">
-                        Savollaringiz bormi?
+                        {t('terms.contactTitle')}
                     </h3>
                     <p className="text-gray-300 mb-6">
-                        Foydalanish shartlari haqida savollaringiz bo'lsa, biz bilan bog'laning:
+                        {t('terms.contactBody')}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <a
@@ -168,22 +140,21 @@ const TermsOfService = () => {
                             className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 px-4 py-3 rounded-xl transition-colors"
                         >
                             <Phone className="w-5 h-5 text-cyan-400" />
-                            <span className="text-white">+998 88 429 99 69</span>
+                            <span className="text-white">{t('terms.contactPhone')}</span>
                         </a>
                         <a
                             href="mailto:support@luxx.uz"
                             className="flex items-center space-x-3 bg-white/10 hover:bg-white/20 px-4 py-3 rounded-xl transition-colors"
                         >
                             <Mail className="w-5 h-5 text-blue-400" />
-                            <span className="text-white">support@luxx.uz</span>
+                            <span className="text-white">{t('terms.contactEmail')}</span>
                         </a>
                     </div>
                 </div>
 
                 {/* Disclaimer */}
                 <p className="text-center text-gray-500 text-sm mt-8">
-                    Ushbu foydalanish shartlari O'zbekiston Respublikasi qonunchiligiga muvofiq
-                    tuzilgan va istalgan vaqtda o'zgartirilishi mumkin.
+                    {t('terms.disclaimer')}
                 </p>
             </div>
 

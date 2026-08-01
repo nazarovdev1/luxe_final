@@ -1,27 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TrendingDown, Coffee, Tag } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
+const localize = (value, lang) => {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    if (value[lang]) return value[lang];
+    if (value.uz) return value.uz;
+    if (value.ru) return value.ru;
+    if (value.en) return value.en;
+  }
+  return '';
+};
+
 // Fun comparisons for savings
-const getSavingsFunFact = (savings) => {
-  if (savings >= 1000000) return { icon: '✈️', text: `Bu bir shahar ichidagi samolyot chiptasiga teng!` };
-  if (savings >= 500000) return { icon: '🏨', text: `Bu premium mehmonxonada 1 kunlik xonani to'lash uchun yetadi!` };
-  if (savings >= 200000) return { icon: '🍽️', text: `Bu oilangiz bilan restoranda kechki ovqat uchun yetadi!` };
-  if (savings >= 100000) return { icon: '💆', text: `Bu premium SPA seans uchun yetarli!` };
-  if (savings >= 50000) return { icon: '☕', text: `Bu taxminan ${Math.round(savings / 35000)} dona kapuchino narxiga teng!` };
-  return { icon: '🎁', text: `Bu kichik bir sovg'a uchun yetadi!` };
+const getSavingsFunFact = (savings, t) => {
+  if (savings >= 1000000) return { icon: '✈️', text: t('bundleDetail.savingsFact1m') };
+  if (savings >= 500000) return { icon: '🏨', text: t('bundleDetail.savingsFact500k') };
+  if (savings >= 200000) return { icon: '🍽️', text: t('bundleDetail.savingsFact200k') };
+  if (savings >= 100000) return { icon: '💆', text: t('bundleDetail.savingsFact100k') };
+  if (savings >= 50000) return { icon: '☕', text: t('bundleDetail.savingsFact50k', { count: Math.round(savings / 35000) }) };
+  return { icon: '🎁', text: t('bundleDetail.savingsFactSmall') };
 };
 
 const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercent, products }) => {
+  const { t, language } = useLanguage();
   const [animated, setAnimated] = useState(false);
   const sectionRef = useRef(null);
 
   const savings = originalPrice - discountedPrice;
-  const funFact = getSavingsFunFact(savings);
+  const funFact = getSavingsFunFact(savings, t);
+  const currency = language === 'en' ? 'UZS' : "so'm";
+  const localizedProducts = products.map((p) => ({ ...p, name: localize(p.name, language) }));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -46,10 +62,10 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-4">
             <TrendingDown className="w-3.5 h-3.5" />
-            Tejamkorlik
+            {t('bundleDetail.savingsBadge')}
           </div>
           <h2 className="text-3xl sm:text-4xl font-light text-white">
-            Qancha <span className="text-[#d6b47c]">tejaysiz</span>?
+            {t('bundleDetail.savingsHeading1')} <span className="text-[#d6b47c]">{t('bundleDetail.savingsHeading2')}</span>?
           </h2>
         </div>
 
@@ -57,7 +73,7 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
         <div className="rounded-3xl overflow-hidden border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-8 lg:p-12">
           {/* Product breakdown */}
           <div className="space-y-4 mb-10">
-            {products.map((product, i) => (
+            {localizedProducts.map((product, i) => (
               <div key={product.id || i} className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
@@ -66,7 +82,7 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
                   <p className="text-white/70 text-sm truncate">{product.name}</p>
                 </div>
                 <p className="text-white text-sm font-medium shrink-0">
-                  {formatPrice(product.price)} so'm
+                  {formatPrice(product.price)} {currency}
                 </p>
               </div>
             ))}
@@ -75,24 +91,24 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
           <div className="border-t border-white/[0.06] pt-8 space-y-5">
             {/* Original total */}
             <div className="flex items-center justify-between">
-              <span className="text-[#9aa3b2] text-sm">Alohida narx (jami)</span>
-              <span className="text-white/50 line-through text-sm">{formatPrice(originalPrice)} so'm</span>
+              <span className="text-[#9aa3b2] text-sm">{t('bundleDetail.savingsSeparateTotal')}</span>
+              <span className="text-white/50 line-through text-sm">{formatPrice(originalPrice)} {currency}</span>
             </div>
 
             {/* Discount */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Tag className="w-4 h-4 text-[#d6b47c]" />
-                <span className="text-[#d6b47c] text-sm">To'plam chegirmasi ({discountPercent}%)</span>
+                <span className="text-[#d6b47c] text-sm">{t('bundleDetail.savingsBundleDiscount', { percent: discountPercent })}</span>
               </div>
-              <span className="text-[#d6b47c] text-sm font-medium">-{formatPrice(savings)} so'm</span>
+              <span className="text-[#d6b47c] text-sm font-medium">-{formatPrice(savings)} {currency}</span>
             </div>
 
             {/* Progress bar */}
             <div className="relative">
               <div className="flex justify-between text-[10px] text-[#9aa3b2] uppercase tracking-wider mb-2">
-                <span>To'plam narxi</span>
-                <span>Alohida narx</span>
+                <span>{t('bundleDetail.savingsPriceLeft')}</span>
+                <span>{t('bundleDetail.savingsPriceRight')}</span>
               </div>
               <div className="h-3 rounded-full bg-white/5 overflow-hidden">
                 <div
@@ -110,16 +126,16 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
             {/* Final price */}
             <div className="flex items-end justify-between pt-4 border-t border-white/[0.06]">
               <div>
-                <p className="text-[#9aa3b2] text-xs uppercase tracking-wider mb-1">To'plam narxi</p>
+                <p className="text-[#9aa3b2] text-xs uppercase tracking-wider mb-1">{t('bundleDetail.savingsFinalLabel')}</p>
                 <p className="text-4xl font-semibold text-white tracking-tight">
                   {formatPrice(discountedPrice)}
-                  <span className="text-base text-[#9aa3b2] font-light ml-2">so'm</span>
+                  <span className="text-base text-[#9aa3b2] font-light ml-2">{currency}</span>
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-[#9aa3b2] uppercase tracking-wider mb-1">Tejash</p>
+                <p className="text-[10px] text-[#9aa3b2] uppercase tracking-wider mb-1">{t('bundleDetail.savingsFinalValue')}</p>
                 <p className="text-2xl font-bold text-emerald-400">
-                  {formatPrice(savings)} so'm
+                  {formatPrice(savings)} {currency}
                 </p>
               </div>
             </div>
@@ -131,7 +147,7 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
           <div className="mt-6 flex items-center gap-4 p-5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
             <span className="text-3xl shrink-0">{funFact.icon}</span>
             <div>
-              <p className="text-[#9aa3b2] text-xs uppercase tracking-wider mb-0.5">Qiziq fakt</p>
+              <p className="text-[#9aa3b2] text-xs uppercase tracking-wider mb-0.5">{t('bundleDetail.savingsFunTitle')}</p>
               <p className="text-white/80 text-sm">{funFact.text}</p>
             </div>
           </div>
@@ -140,9 +156,9 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
         {/* Guarantees */}
         <div className="mt-6 grid grid-cols-3 gap-4">
           {[
-            { icon: '🛡️', label: '14 kun', sub: 'qaytarish kafolati' },
-            { icon: '🚚', label: 'Bepul', sub: 'yetkazib berish' },
-            { icon: '✨', label: 'Original', sub: 'brendlar' },
+            { icon: '🛡️', label: t('bundleDetail.guarantee14'), sub: t('bundleDetail.guaranteeReturn') },
+            { icon: '🚚', label: t('bundleDetail.guaranteeFree'), sub: t('bundleDetail.guaranteeShipping') },
+            { icon: '✨', label: t('bundleDetail.guaranteeOriginal'), sub: t('bundleDetail.guaranteeBrands') },
           ].map((item) => (
             <div key={item.label} className="text-center p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
               <div className="text-2xl mb-1">{item.icon}</div>

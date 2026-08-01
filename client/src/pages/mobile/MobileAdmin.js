@@ -30,6 +30,30 @@ import './mobileAdminTheme.css';
 
 const ORDER_STATUSES = ['Kutilmoqda', 'Jarayonda', 'Yetkazilmoqda', 'Yetkazildi', 'Bekor qilindi'];
 
+const STATUS_KEY_MAP = {
+  'Kutilmoqda': 'mobileAdmin.order_statuses_pending',
+  'Jarayonda': 'mobileAdmin.order_statuses_processing',
+  'Yetkazilmoqda': 'mobileAdmin.order_statuses_shipping',
+  'Yetkazildi': 'mobileAdmin.order_statuses_delivered',
+  'Bekor qilindi': 'mobileAdmin.order_statuses_cancelled',
+};
+
+const translateStatus = (status, t) => t(STATUS_KEY_MAP[status] || 'mobileAdmin.order_statuses_pending');
+
+const TIME_SLOT_KEYS = {
+  morning: 'mobileAdmin.time_morning',
+  afternoon: 'mobileAdmin.time_afternoon',
+  evening: 'mobileAdmin.time_evening',
+  late_evening: 'mobileAdmin.time_late_evening',
+  express: 'mobileAdmin.time_express',
+};
+
+const GIFT_TYPE_KEYS = {
+  classic: 'mobileAdmin.gift_classic',
+  premium: 'mobileAdmin.gift_premium',
+  minimal: 'mobileAdmin.gift_minimal',
+};
+
 const getStatusClass = (status) => {
   if (status === 'Yetkazildi') {
     return 'mobile-admin-pill mobile-admin-pill-success';
@@ -97,13 +121,13 @@ const MobileAdmin = () => {
 
   const tabs = useMemo(
     () => [
-      { id: 'products', label: 'Mahsulotlar', icon: Package, count: products.length },
-      { id: 'orders', label: 'Buyurtmalar', icon: ShoppingBag, count: orders.length },
-      { id: 'users', label: 'Mijozlar', icon: Users, count: users.length },
-      { id: 'promos', label: 'Promokod', icon: Tag, count: promos.length },
-      { id: 'lookbook', label: 'Lookbook', icon: Layers, count: '' },
+      { id: 'products', label: t('mobileAdmin.tab_products'), icon: Package, count: products.length },
+      { id: 'orders', label: t('mobileAdmin.tab_orders'), icon: ShoppingBag, count: orders.length },
+      { id: 'users', label: t('mobileAdmin.tab_users'), icon: Users, count: users.length },
+      { id: 'promos', label: t('mobileAdmin.tab_promos'), icon: Tag, count: promos.length },
+      { id: 'lookbook', label: t('mobileAdmin.tab_lookbook'), icon: Layers, count: '' },
     ],
-    [products.length, orders.length, users.length, promos.length]
+    [products.length, orders.length, users.length, promos.length, t]
   );
 
   const fetchOrders = async () => {
@@ -165,7 +189,7 @@ const MobileAdmin = () => {
   };
 
   const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm("Buyurtmani rostdan ham o'chirmoqchimisiz?")) {
+    if (!window.confirm(t('mobileAdmin.confirm_delete_order'))) {
       return;
     }
 
@@ -176,7 +200,7 @@ const MobileAdmin = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Mahsulotni rostdan ham o'chirmoqchimisiz?")) {
+    if (!window.confirm(t('mobileAdmin.confirm_delete_product'))) {
       return;
     }
 
@@ -225,7 +249,7 @@ const MobileAdmin = () => {
   };
 
   const handleDeletePromo = async (promoId) => {
-    if (!window.confirm("Promokodni rostdan ham o'chirmoqchimisiz?")) {
+    if (!window.confirm(t('mobileAdmin.confirm_delete_promo'))) {
       return;
     }
 
@@ -246,14 +270,14 @@ const MobileAdmin = () => {
           <div className="w-16 h-16 mx-auto rounded-2xl bg-red-500/15 border border-red-400/30 flex items-center justify-center">
             <ShieldCheck className="w-8 h-8 text-red-300" />
           </div>
-          <h1 className="text-xl font-semibold">Ruxsat yo'q</h1>
-          <p className="mobile-admin-muted text-sm">Bu bo'lim faqat admin foydalanuvchilar uchun.</p>
+          <h1 className="text-xl font-semibold">{t('mobileAdmin.access_denied_title')}</h1>
+          <p className="mobile-admin-muted text-sm">{t('mobileAdmin.access_denied_desc')}</p>
           <button
             type="button"
             onClick={() => navigate('/mobile')}
             className="mobile-admin-btn-primary w-full py-3"
           >
-            Bosh sahifaga qaytish
+            {t('mobileAdmin.back_home')}
           </button>
         </div>
       </div>
@@ -269,12 +293,12 @@ const MobileAdmin = () => {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="mobile-admin-title text-sm">Luxe Mobile Admin</h1>
-              <p className="mobile-admin-muted text-[11px] truncate">Real-time boshqaruv paneli</p>
+              <h1 className="mobile-admin-title text-sm">{t('mobileAdmin.header_title')}</h1>
+              <p className="mobile-admin-muted text-[11px] truncate">{t('mobileAdmin.header_subtitle')}</p>
             </div>
           </div>
 
-          <button type="button" onClick={logout} className="mobile-admin-icon-btn" title="Chiqish">
+          <button type="button" onClick={logout} className="mobile-admin-icon-btn" title={t('mobileAdmin.logout_title')}>
             <LogOut className="w-4.5 h-4.5" />
           </button>
         </div>
@@ -284,15 +308,15 @@ const MobileAdmin = () => {
         <section className="mobile-admin-card p-4">
           <div className="grid grid-cols-3 gap-2">
             <div className="mobile-admin-card-soft p-3">
-              <p className="mobile-admin-muted text-[10px] uppercase tracking-[0.12em]">Catalog</p>
+              <p className="mobile-admin-muted text-[10px] uppercase tracking-[0.12em]">{t('mobileAdmin.stat_catalog')}</p>
               <p className="text-xl font-bold text-amber-200 mt-1">{products.length}</p>
             </div>
             <div className="mobile-admin-card-soft p-3">
-              <p className="mobile-admin-muted text-[10px] uppercase tracking-[0.12em]">Orders</p>
+              <p className="mobile-admin-muted text-[10px] uppercase tracking-[0.12em]">{t('mobileAdmin.stat_orders')}</p>
               <p className="text-xl font-bold text-amber-200 mt-1">{orders.length}</p>
             </div>
             <div className="mobile-admin-card-soft p-3">
-              <p className="mobile-admin-muted text-[10px] uppercase tracking-[0.12em]">Promos</p>
+              <p className="mobile-admin-muted text-[10px] uppercase tracking-[0.12em]">{t('mobileAdmin.stat_promos')}</p>
               <p className="text-xl font-bold text-amber-200 mt-1">{promos.length}</p>
             </div>
           </div>
@@ -332,7 +356,7 @@ const MobileAdmin = () => {
               className="mobile-admin-btn-primary w-full py-3"
             >
               <Plus className="w-4.5 h-4.5" />
-              Yangi mahsulot qo'shish
+              {t('mobileAdmin.add_product')}
             </button>
 
             {productsLoading ? (
@@ -342,7 +366,7 @@ const MobileAdmin = () => {
             ) : products.length === 0 ? (
               <div className="mobile-admin-empty p-10 text-center">
                 <Package className="w-11 h-11 mx-auto mb-3 text-slate-500" />
-                <p className="mobile-admin-muted text-sm">Mahsulotlar topilmadi</p>
+                <p className="mobile-admin-muted text-sm">{t('mobileAdmin.empty_products')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -377,7 +401,7 @@ const MobileAdmin = () => {
                           type="button"
                           onClick={() => navigate(`/mobile/admin/edit/${product.id}`)}
                           className="mobile-admin-icon-btn"
-                          title="Tahrirlash"
+                          title={t('mobileAdmin.edit')}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -385,7 +409,7 @@ const MobileAdmin = () => {
                           type="button"
                           onClick={() => handleDeleteProduct(product.id)}
                           className="mobile-admin-icon-btn"
-                          title="O'chirish"
+                          title={t('mobileAdmin.delete')}
                         >
                           <Trash2 className="w-4 h-4 text-red-300" />
                         </button>
@@ -406,7 +430,7 @@ const MobileAdmin = () => {
               className="mobile-admin-btn-secondary w-full py-2.5"
             >
               <RefreshCw className={`w-4 h-4 ${loadingOrders ? 'animate-spin' : ''}`} />
-              Yangilash
+              {t('mobileAdmin.refresh')}
             </button>
 
             {loadingOrders ? (
@@ -416,7 +440,7 @@ const MobileAdmin = () => {
             ) : orders.length === 0 ? (
               <div className="mobile-admin-empty p-10 text-center">
                 <ShoppingBag className="w-11 h-11 mx-auto mb-3 text-slate-500" />
-                <p className="mobile-admin-muted text-sm">Buyurtmalar topilmadi</p>
+                <p className="mobile-admin-muted text-sm">{t('mobileAdmin.empty_orders')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -430,13 +454,13 @@ const MobileAdmin = () => {
                           {new Date(order.createdAt).toLocaleDateString('uz-UZ')}
                         </p>
                       </div>
-                      <span className={getStatusClass(order.status)}>{order.status}</span>
+                      <span className={getStatusClass(order.status)}>{translateStatus(order.status, t)}</span>
                     </div>
 
                     <div className="space-y-1.5">
                       <p className="mobile-admin-muted text-xs inline-flex items-center gap-1.5">
                         <UserIcon className="w-3.5 h-3.5 text-amber-200" />
-                        <span className="text-slate-100">{order.customer?.name || 'Nomaʼlum'}</span>
+                        <span className="text-slate-100">{order.customer?.name || t('mobileAdmin.customer_unknown')}</span>
                       </p>
                       <p className="mobile-admin-muted text-xs inline-flex items-center gap-1.5">
                         <Phone className="w-3.5 h-3.5 text-amber-200" />
@@ -444,18 +468,14 @@ const MobileAdmin = () => {
                       </p>
                       <p className="mobile-admin-muted text-xs inline-flex items-start gap-1.5">
                         <MapPin className="w-3.5 h-3.5 mt-0.5 text-amber-200" />
-                        <span className="text-slate-100 line-clamp-2">{order.customer?.address || 'Manzil yo\'q'}</span>
+                        <span className="text-slate-100 line-clamp-2">{order.customer?.address || t('mobileAdmin.address_missing')}</span>
                       </p>
                       {order.scheduledDelivery && (
                         <p className="mobile-admin-muted text-xs inline-flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-amber-200" />
                           <span className="text-slate-100">
                             {new Date(order.scheduledDelivery.date).toLocaleDateString('uz-UZ')} &bull; {
-                              order.scheduledDelivery.timeSlot === 'morning' ? '09:00 - 12:00' :
-                              order.scheduledDelivery.timeSlot === 'afternoon' ? '12:00 - 15:00' :
-                              order.scheduledDelivery.timeSlot === 'evening' ? '15:00 - 18:00' :
-                              order.scheduledDelivery.timeSlot === 'late_evening' ? '18:00 - 21:00' :
-                              order.scheduledDelivery.timeSlot === 'express' ? 'Tezkor (2 soat)' : order.scheduledDelivery.timeSlot
+                              t(TIME_SLOT_KEYS[order.scheduledDelivery.timeSlot] || order.scheduledDelivery.timeSlot)
                             }
                           </span>
                         </p>
@@ -465,9 +485,7 @@ const MobileAdmin = () => {
                           <p className="mobile-admin-muted text-xs inline-flex items-center gap-1.5 -ml-5">
                             <Gift className="w-3.5 h-3.5 text-amber-200" />
                             <span className="text-slate-100 font-medium">
-                              {order.totals.giftWrap.type === 'classic' ? 'Klassik paket (+25k)' :
-                               order.totals.giftWrap.type === 'premium' ? 'Premium paket (+45k)' :
-                               order.totals.giftWrap.type === 'minimal' ? 'Minimal paket (+15k)' : order.totals.giftWrap.type}
+                              {t(GIFT_TYPE_KEYS[order.totals.giftWrap.type] || order.totals.giftWrap.type)}
                             </span>
                           </p>
                           {order.totals.giftWrap.message && (
@@ -478,7 +496,7 @@ const MobileAdmin = () => {
                     </div>
 
                     <div className="mobile-admin-card-soft p-2.5 flex items-center justify-between">
-                      <span className="mobile-admin-muted text-xs">Jami summa</span>
+                      <span className="mobile-admin-muted text-xs">{t('mobileAdmin.total_sum')}</span>
                       <span className="text-amber-200 text-sm font-semibold">
                         {Number(order.totals?.total || 0).toLocaleString('uz-UZ')} {t('common.sum')}
                       </span>
@@ -493,7 +511,7 @@ const MobileAdmin = () => {
                       >
                         {ORDER_STATUSES.map((status) => (
                           <option key={status} value={status}>
-                            {status}
+                            {translateStatus(status, t)}
                           </option>
                         ))}
                       </select>
@@ -521,7 +539,7 @@ const MobileAdmin = () => {
               className="mobile-admin-btn-secondary w-full py-2.5"
             >
               <RefreshCw className={`w-4 h-4 ${loadingUsers ? 'animate-spin' : ''}`} />
-              Yangilash
+              {t('mobileAdmin.refresh')}
             </button>
 
             {loadingUsers ? (
@@ -531,7 +549,7 @@ const MobileAdmin = () => {
             ) : users.length === 0 ? (
               <div className="mobile-admin-empty p-10 text-center">
                 <Users className="w-11 h-11 mx-auto mb-3 text-slate-500" />
-                <p className="mobile-admin-muted text-sm">Foydalanuvchilar topilmadi</p>
+                <p className="mobile-admin-muted text-sm">{t('mobileAdmin.empty_users')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -563,34 +581,34 @@ const MobileAdmin = () => {
             <div className="mobile-admin-card p-3.5 space-y-3">
               <div className="grid grid-cols-3 gap-2">
                 <div className="mobile-admin-card-soft p-2.5 text-center">
-                  <p className="mobile-admin-muted text-[10px] uppercase">Jami</p>
+                  <p className="mobile-admin-muted text-[10px] uppercase">{t('mobileAdmin.promo_total')}</p>
                   <p className="text-base text-amber-200 font-semibold mt-1">{promoStats.total}</p>
                 </div>
                 <div className="mobile-admin-card-soft p-2.5 text-center">
-                  <p className="mobile-admin-muted text-[10px] uppercase">Faol</p>
+                  <p className="mobile-admin-muted text-[10px] uppercase">{t('mobileAdmin.promo_active_short')}</p>
                   <p className="text-base text-emerald-200 font-semibold mt-1">{promoStats.active}</p>
                 </div>
                 <div className="mobile-admin-card-soft p-2.5 text-center">
-                  <p className="mobile-admin-muted text-[10px] uppercase">Noaktiv</p>
+                  <p className="mobile-admin-muted text-[10px] uppercase">{t('mobileAdmin.promo_inactive_short')}</p>
                   <p className="text-base text-red-200 font-semibold mt-1">{promoStats.inactive}</p>
                 </div>
               </div>
 
               <form onSubmit={handleCreatePromo} className="space-y-2.5">
                 <div>
-                  <label className="block text-[11px] mobile-admin-muted mb-1">Promokod</label>
+                  <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.promo_label')}</label>
                   <input
                     type="text"
                     value={newPromo.code}
                     onChange={(event) =>
                       setNewPromo((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))
                     }
-                    placeholder="YANGI20"
+                    placeholder={t('mobileAdmin.promo_placeholder')}
                     className="mobile-admin-input uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] mobile-admin-muted mb-1">Chegirma foizi</label>
+                  <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.discount_label')}</label>
                   <input
                     type="number"
                     min="1"
@@ -599,7 +617,7 @@ const MobileAdmin = () => {
                     onChange={(event) =>
                       setNewPromo((prev) => ({ ...prev, discountPercentage: event.target.value }))
                     }
-                    placeholder="20"
+                    placeholder={t('mobileAdmin.discount_placeholder')}
                     className="mobile-admin-input"
                   />
                 </div>
@@ -610,7 +628,7 @@ const MobileAdmin = () => {
                   className="mobile-admin-btn-primary w-full py-2.5 disabled:opacity-60"
                 >
                   <TicketPercent className="w-4 h-4" />
-                  {isCreatingPromo ? 'Saqlanmoqda...' : "Promokod qo'shish"}
+                  {isCreatingPromo ? t('mobileAdmin.creating') : t('mobileAdmin.create_promo')}
                 </button>
               </form>
             </div>
@@ -621,7 +639,7 @@ const MobileAdmin = () => {
               className="mobile-admin-btn-secondary w-full py-2.5"
             >
               <RefreshCw className={`w-4 h-4 ${loadingPromos ? 'animate-spin' : ''}`} />
-              Yangilash
+              {t('mobileAdmin.refresh')}
             </button>
 
             {loadingPromos ? (
@@ -631,7 +649,7 @@ const MobileAdmin = () => {
             ) : promos.length === 0 ? (
               <div className="mobile-admin-empty p-10 text-center">
                 <BadgePercent className="w-11 h-11 mx-auto mb-3 text-slate-500" />
-                <p className="mobile-admin-muted text-sm">Hozircha promokodlar yo'q</p>
+                <p className="mobile-admin-muted text-sm">{t('mobileAdmin.empty_promos')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -640,12 +658,12 @@ const MobileAdmin = () => {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-bold tracking-wider text-white">{promo.code}</p>
-                        <p className="text-xs text-amber-200 mt-1">-{promo.discountPercentage}% chegirma</p>
+                        <p className="text-xs text-amber-200 mt-1">-{promo.discountPercentage}% {t('mobileAdmin.promo_discount_label')}</p>
                       </div>
                       <span
                         className={promo.isActive ? 'mobile-admin-pill mobile-admin-pill-success' : 'mobile-admin-pill mobile-admin-pill-danger'}
                       >
-                        {promo.isActive ? 'Faol' : 'Noaktiv'}
+                        {promo.isActive ? t('mobileAdmin.promo_active') : t('mobileAdmin.promo_inactive')}
                       </span>
                     </div>
 
@@ -655,14 +673,14 @@ const MobileAdmin = () => {
                         onClick={() => handleTogglePromo(promo._id, promo.isActive)}
                         className={promo.isActive ? 'mobile-admin-btn-secondary py-2 text-sm' : 'mobile-admin-btn-primary py-2 text-sm'}
                       >
-                        {promo.isActive ? 'Noaktiv qilish' : 'Faollashtirish'}
+                        {promo.isActive ? t('mobileAdmin.deactivate') : t('mobileAdmin.activate')}
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeletePromo(promo._id)}
                         className="mobile-admin-btn-danger py-2 text-sm"
                       >
-                        O'chirish
+                        {t('mobileAdmin.delete')}
                       </button>
                     </div>
                   </article>

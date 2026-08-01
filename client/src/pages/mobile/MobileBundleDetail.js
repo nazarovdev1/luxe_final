@@ -57,13 +57,13 @@ const MobileBundleDetail = () => {
                 }
             } catch (err) {
                 console.error(err);
-                toast.error("To'plamni yuklashda xatolik");
+                toast.error(t('mobileBundleDetail.toast_load_error'));
             } finally {
                 setLoading(false);
             }
         };
         fetchBundle();
-    }, [id]);
+    }, [id, t]);
 
     const handleVariantChange = useCallback((productId, variant) => {
         setSelectedVariants(prev => ({
@@ -99,8 +99,8 @@ const MobileBundleDetail = () => {
         if (!canAddToCart) {
             const first = selectionIssues[0];
             const msg = first?.missing === 'color'
-                ? `Iltimos, \"${first.productName}\" uchun rang tanlang.`
-                : `Iltimos, \"${first.productName}\" uchun o'lcham tanlang.`;
+                ? t('mobileBundleDetail.toast_color_missing', { name: first.productName })
+                : t('mobileBundleDetail.toast_size_missing', { name: first.productName });
             toast.error(msg);
             return;
         }
@@ -114,12 +114,12 @@ const MobileBundleDetail = () => {
             };
             addLookToCart(lookForCart, selectedVariants);
             showCartToast({
-                title: "To'plam savatga qo'shildi",
+                title: t('mobileBundleDetail.toast_add_title'),
                 itemName: bundle.title,
-                meta: `${products.length} ta mahsulot`,
+                meta: `${products.length} ${t('mobileBundleDetail.toast_items_meta')}`,
             });
         } catch (err) {
-            toast.error("Xatolik yuz berdi");
+            toast.error(t('mobileBundleDetail.toast_error'));
         } finally {
             setIsAdding(false);
         }
@@ -139,7 +139,7 @@ const MobileBundleDetail = () => {
         } else {
             // Fallback: Copy to clipboard
             navigator.clipboard.writeText(window.location.href);
-            toast.success("Link nusxalandi");
+            toast.success(t('mobileBundleDetail.toast_link_copied'));
         }
     };
 
@@ -162,7 +162,7 @@ const MobileBundleDetail = () => {
 
     return (
         <div className="min-h-screen bg-[#060a14] text-white pb-32">
-            <SEO title={`${bundle.title} | Premium To'plam`} />
+            <SEO title={`${bundle.title} | ${t('mobileBundleDetail.seo_title')}`} />
 
             {/* Floating Top Header */}
             <div className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between px-4 py-4">
@@ -196,10 +196,10 @@ const MobileBundleDetail = () => {
             <div className="px-5 mt-8 space-y-10">
                 <div className="flex flex-col gap-1">
                     <h2 className="text-2xl font-semibold tracking-tight text-[#f4f1eb]">
-                        To'plamdagi <span className="text-[#d6b47c] italic font-serif">kiyimlar</span>
+                        {t('mobileBundleDetail.section_title_main')} <span className="text-[#d6b47c] italic font-serif">{t('mobileBundleDetail.section_title_accent')}</span>
                     </h2>
                     <p className="text-xs text-neutral-500 uppercase tracking-widest">
-                        {products.length} ta mahsulot • Rang va o'lcham tanlash
+                        {products.length} {t('mobileBundleDetail.section_subtitle')}
                     </p>
                 </div>
 

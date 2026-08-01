@@ -215,7 +215,7 @@ const BlogPost = () => {
             <div className="w-1 h-1 rounded-full bg-[#3f4658]" />
             <div className="flex items-center gap-1.5 text-[#9aa3b2]">
               <Clock className="w-3.5 h-3.5" />
-              <span>{blog.readTime} {t('blog.minRead')}</span>
+              <span>{blog.readTime} {t('blogPost.readTime')}</span>
             </div>
             <div className="w-1 h-1 rounded-full bg-[#3f4658]" />
             <div className="flex items-center gap-1.5 text-[#9aa3b2]">
@@ -286,14 +286,14 @@ const BlogPost = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2AABEE]/10 border border-[#2AABEE]/20 text-[#2AABEE] text-xs font-medium hover:bg-[#2AABEE]/20 transition-all"
             >
               <Send className="w-3.5 h-3.5" />
-              Telegram
+              {t('blogPost.shareTelegram')}
             </button>
             <button
               onClick={() => handleShare('instagram')}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#E4405F]/10 border border-[#E4405F]/20 text-[#E4405F] text-xs font-medium hover:bg-[#E4405F]/20 transition-all"
             >
               <Instagram className="w-3.5 h-3.5" />
-              Instagram
+              {t('blogPost.shareInstagram')}
             </button>
             <button
               onClick={() => handleShare('copy')}
@@ -346,7 +346,7 @@ const BlogPost = () => {
                       </h4>
                       <div className="flex items-center gap-2 text-[10px] text-[#9aa3b2]">
                         <Clock className="w-3 h-3" />
-                        <span>{post.readTime} daqiqa</span>
+                        <span>{post.readTime} {t('blogPost.readTimeShort')}</span>
                       </div>
                     </div>
                   </Link>

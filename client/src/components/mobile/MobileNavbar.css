@@ -30,7 +30,7 @@
 
 .mobile-bottom-nav__pill .glass-surface__content {
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
   width: 100% !important;
   height: 100% !important;
   padding: 5px 6px !important;
@@ -251,4 +251,70 @@
   .mobile-bottom-nav__active-dot {
     transition-duration: 0.01ms !important;
   }
+}
+
+.mobile-bottom-nav__lang {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-bottom-nav__lang-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  width: 100%;
+  padding: 0;
+}
+
+.mobile-bottom-nav__lang-btn--active {
+  color: var(--nav-gold);
+}
+
+.mobile-bottom-nav__lang-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 88px;
+  padding: 6px;
+  border-radius: 16px;
+  background: rgba(10, 10, 12, 0.95);
+  border: 1px solid rgba(232, 189, 104, 0.2);
+  box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.55), 0 0 16px rgba(208, 157, 72, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10000;
+}
+
+.mobile-bottom-nav__lang-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: #f4f1eb;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mobile-bottom-nav__lang-option:hover {
+  background: rgba(232, 189, 104, 0.12);
+}
+
+.mobile-bottom-nav__lang-option--active {
+  background: rgba(232, 189, 104, 0.18);
+  color: var(--nav-gold);
+}
+
+.mobile-bottom-nav__lang-flag {
+  font-size: 14px;
+  line-height: 1;
 }

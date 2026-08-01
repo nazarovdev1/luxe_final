@@ -54,7 +54,7 @@ const LiveStreams = () => {
       await axios.put(`/api/livestreams/${id}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Holat yangilandi');
+      toast.success(t('liveStreams.statusUpdated'));
       fetchStreams();
     } catch {
       toast.error(t('liveStreams.error'));
@@ -221,7 +221,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(stream._id); }}
           className="absolute top-4 right-4 z-20 p-2 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white rounded-xl border border-red-500/30 transition-all backdrop-blur-md group"
-          title="Efirni o'chirish"
+          title={t('liveStreams.deleteTitle')}
         >
           <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
         </button>
@@ -252,7 +252,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
         )}
         {!isLive && !ended && (
           <div className="absolute top-4 left-4 bg-[#d6b47c] text-black text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
-            Breda
+            {t('liveStreams.soon')}
           </div>
         )}
         {stream.viewersCount > 0 && (
@@ -301,8 +301,8 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
               className="px-3 py-2 bg-[#1a1a1a] border border-white/10 rounded-full text-xs text-gray-400 outline-none"
             >
               <option value="scheduled">{t('liveStreams.scheduled')}</option>
-              <option value="live">Live</option>
-              <option value="ended">Tugagan</option>
+              <option value="live">{t('liveStreams.liveTag')}</option>
+              <option value="ended">{t('liveStreams.ended')}</option>
             </select>
           )}
         </div>
@@ -340,9 +340,9 @@ const CreateLivestreamModal = ({ onClose, onSubmit, t }) => {
           <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full"><X className="w-5 h-5" /></button>
         </div>
         {[
-          { key: 'title', label: `${t('liveStreams.streamName')} *`, placeholder: 'Masalan: Kuzgi kolleksiya taqdimoti' },
-          { key: 'videoUrl', label: 'YouTube URL *', placeholder: 'https://youtube.com/watch?v=...' },
-          { key: 'description', label: t('liveStreams.description'), placeholder: 'Efir haqida qisqacha...' },
+          { key: 'title', label: `${t('liveStreams.streamName')} *`, placeholder: t('liveStreams.streamNamePlaceholder') },
+          { key: 'videoUrl', label: `${t('liveStreams.youtubeUrl')} *`, placeholder: 'https://youtube.com/watch?v=...' },
+          { key: 'description', label: t('liveStreams.description'), placeholder: t('liveStreams.descriptionPlaceholder') },
         ].map(f => (
           <div key={f.key}>
             <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{f.label}</label>

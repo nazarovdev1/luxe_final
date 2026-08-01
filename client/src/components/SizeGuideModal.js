@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { X, Ruler, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { getProductOptions } from '../utils/productVariants';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const SIZE_CHARTS = {
+const getInitialCharts = (t) => ({
   default: {
-    name: "Ayollar kiyimlari",
-    headers: ["O'lcham", "Ko'krak (sm)", "Bel (sm)", "Son (sm)", "Bo'yi (sm)"],
+    name: t('sizeGuideModal.defaultCategory'),
+    headers: [t('sizeGuideModal.bustHeader').replace(' (sm)', ''), t('sizeGuideModal.bustHeader'), t('sizeGuideModal.waistHeader'), t('sizeGuideModal.hipsHeader'), t('sizeGuideModal.heightHeader')],
     rows: [
       ["XS", "80-84", "60-64", "86-90", "158-164"],
       ["S", "84-88", "64-68", "90-94", "164-170"],
@@ -17,8 +18,8 @@ const SIZE_CHARTS = {
     ],
   },
   dresses: {
-    name: "Ko'ylaklar va Kombinezonlar",
-    headers: ["O'lcham", "Ko'krak (sm)", "Bel (sm)", "Son (sm)", "Uzunlik (sm)"],
+    name: t('sizeGuideModal.dressesCategory'),
+    headers: ["O'lcham", t('sizeGuideModal.bustHeader'), t('sizeGuideModal.waistHeader'), t('sizeGuideModal.hipsHeader'), t('sizeGuideModal.lengthHeader')],
     rows: [
       ["XS", "80-84", "60-64", "86-90", "85-90"],
       ["S", "84-88", "64-68", "90-94", "90-95"],
@@ -28,8 +29,8 @@ const SIZE_CHARTS = {
     ],
   },
   outerwear: {
-    name: "Tashqi kiyimlar (Paltolar, Kurtkalar)",
-    headers: ["O'lcham", "Ko'krak (sm)", "Bel (sm)", "Son (sm)", "Yelka (sm)"],
+    name: t('sizeGuideModal.outerwearCategory'),
+    headers: ["O'lcham", t('sizeGuideModal.bustHeader'), t('sizeGuideModal.waistHeader'), t('sizeGuideModal.hipsHeader'), t('sizeGuideModal.shoulderHeader')],
     rows: [
       ["XS", "80-84", "60-64", "86-90", "36-38"],
       ["S", "84-88", "64-68", "90-94", "38-40"],
@@ -38,9 +39,11 @@ const SIZE_CHARTS = {
       ["XL", "96-100", "76-80", "102-106", "44-46"],
     ],
   },
-};
+});
 
 const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
+  const { t } = useLanguage();
+  const SIZE_CHARTS = getInitialCharts(t);
   const [activeTab, setActiveTab] = useState('chart');
   const [activeChart, setActiveChart] = useState('default');
   const [expandedChart, setExpandedChart] = useState(null);
@@ -90,12 +93,12 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
     const hipsVal = parseFloat(hips);
 
     if (!chestVal || !waistVal || !hipsVal) {
-      setRecommendedSize({ error: "Iltimos, ko'krak, bel va son o'lchamlarini kiriting" });
+      setRecommendedSize({ error: t('sizeGuideModal.calcError') });
       return;
     }
 
     let size = '';
-    let confidence = 'Yuqori';
+    let confidence = t('sizeGuideModal.confidenceHigh');
 
     // If product has sizeGuide entries, use them first
     if (product && Array.isArray(product.sizeGuide) && product.sizeGuide.length > 0) {
@@ -109,7 +112,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
         size = match.size;
       } else {
         size = sortedGuide[sortedGuide.length - 1]?.size || '';
-        confidence = "Past";
+        confidence = t('sizeGuideModal.confidenceLow');
       }
     } else {
       // Standard table comparison (fallback)
@@ -133,17 +136,17 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
         else if (avg <= 96) size = 'L';
         else if (avg <= 102) size = 'XL';
         else size = 'XXL';
-        confidence = "O'rtacha";
+        confidence = t('sizeGuideModal.confidenceMedium');
       }
     }
 
     const availableSizes = getProductOptions(product, 'size');
     const isAvailable = availableSizes.length === 0 || availableSizes.includes(size);
 
-    if (confidence !== 'Yuqori' || !isAvailable) {
+    if (confidence !== t('sizeGuideModal.confidenceHigh') || !isAvailable) {
       setRecommendedSize({
         size: null,
-        message: "Kechirasiz, siz kiritgan o'lchamlar bo'yicha do'kondagi mavjud variantlar orasidan kafolatlangan o'lchamni tavsiya eta olmadik. Iltimos, o'zingiz tanlang yoki yordam uchun yordamchi guruhimiz bilan bog'laning."
+        message: t('sizeGuideModal.noMatchMessage')
       });
       return;
     }
@@ -151,8 +154,8 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
     const heightVal = parseFloat(height);
     let heightNote = '';
     if (heightVal) {
-      if (heightVal < 160) heightNote = "Bo'yingizga ko'ra, qisqaroq model tanlashni tavsiya etamiz.";
-      else if (heightVal > 175) heightNote = "Bo'yingizga ko'ra, uzunroq model tanlashni tavsiya etamiz.";
+      if (heightVal < 160) heightNote = t('sizeGuideModal.shortHeight');
+      else if (heightVal > 175) heightNote = t('sizeGuideModal.tallHeight');
     }
 
     setRecommendedSize({ size, confidence, heightNote, isAvailable: true, availableSizes });
@@ -243,8 +246,8 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
               <Ruler className="h-5 w-5 text-[#d6b47c]" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-[#f4f1eb]">O'lcham jadvali</h2>
-              <p className="text-xs text-[#9aa3b2]">To'g'ri o'lchamni tanlash uchun yo'riqnoma</p>
+              <h2 className="text-lg font-semibold text-[#f4f1eb]">{t('product.sizeGuide')}</h2>
+              <p className="text-xs text-[#9aa3b2]">{t('sizeGuide.subtitle')}</p>
             </div>
           </div>
           <button
@@ -265,7 +268,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                 : 'bg-white/5 text-[#9aa3b2] border border-white/10 hover:bg-white/10'
             }`}
           >
-            📏 O'lcham jadvali
+            📏 {t('sizeGuideModal.chartTab')}
           </button>
           <button
             onClick={() => setActiveTab('calculator')}
@@ -275,7 +278,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                 : 'bg-white/5 text-[#9aa3b2] border border-white/10 hover:bg-white/10'
             }`}
           >
-            🎯 O'lcham topish
+            🎯 {t('sizeGuideModal.findSizeTab')}
           </button>
         </div>
 
@@ -347,7 +350,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                 >
                   <span className="flex items-center gap-2">
                     <Info className="h-4 w-4 text-[#d6b47c]" />
-                    Qanday o'lchash kerak?
+                    {t('sizeGuideModal.howToMeasure')}
                   </span>
                   {expandedChart === 'how' ? (
                     <ChevronUp className="h-4 w-4 text-[#9aa3b2]" />
@@ -361,29 +364,29 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                     <div className="flex gap-3 rounded-xl bg-white/[0.03] p-3">
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#d6b47c]/10 text-xs font-bold text-[#d6b47c]">1</span>
                       <div>
-                        <p className="text-sm font-medium text-[#f4f1eb]">Ko'krak aylanasi</p>
-                        <p className="text-xs text-[#9aa3b2]">Lentani ko'krakning eng keng qismidan o'tkazing. Nafas oling va normal holatda turing.</p>
+                        <p className="text-sm font-medium text-[#f4f1eb]">{t('sizeGuideModal.bustTitle')}</p>
+                        <p className="text-xs text-[#9aa3b2]">{t('sizeGuide.bustDesc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-3 rounded-xl bg-white/[0.03] p-3">
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#d6b47c]/10 text-xs font-bold text-[#d6b47c]">2</span>
                       <div>
-                        <p className="text-sm font-medium text-[#f4f1eb]">Bel aylanasi</p>
-                        <p className="text-xs text-[#9aa3b2]">Belning eng tor qismidan (kindik atrofidan) o'lchang. Odatda qovurg'a va son orasida.</p>
+                        <p className="text-sm font-medium text-[#f4f1eb]">{t('sizeGuideModal.waistTitle')}</p>
+                        <p className="text-xs text-[#9aa3b2]">{t('sizeGuide.waistDesc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-3 rounded-xl bg-white/[0.03] p-3">
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#d6b47c]/10 text-xs font-bold text-[#d6b47c]">3</span>
                       <div>
-                        <p className="text-sm font-medium text-[#f4f1eb]">Son aylanasi</p>
-                        <p className="text-xs text-[#9aa3b2]">Sonning eng keng qismidan o'lchang. Oyoqlarni birga tuting.</p>
+                        <p className="text-sm font-medium text-[#f4f1eb]">{t('sizeGuideModal.hipsTitle')}</p>
+                        <p className="text-xs text-[#9aa3b2]">{t('sizeGuide.hipsDesc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-3 rounded-xl bg-white/[0.03] p-3">
                       <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#d6b47c]/10 text-xs font-bold text-[#d6b47c]">4</span>
                       <div>
-                        <p className="text-sm font-medium text-[#f4f1eb]">Bo'yi</p>
-                        <p className="text-xs text-[#9aa3b2]">Oyoq yalangoyoq holatda devorga yopishib turganingizda, boshning yuqori qismidan o'lchang.</p>
+                        <p className="text-sm font-medium text-[#f4f1eb]">{t('sizeGuideModal.heightTitle')}</p>
+                        <p className="text-xs text-[#9aa3b2]">{t('sizeGuide.heightDesc')}</p>
                       </div>
                     </div>
                   </div>
@@ -393,7 +396,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
               {/* Tip */}
               <div className="rounded-2xl bg-gradient-to-r from-[#d6b47c]/10 to-transparent border border-[#d6b47c]/20 p-4">
                 <p className="text-sm text-[#f4f1eb]">
-                  💡 <strong>Maslahat:</strong> Agar sizning o'lchamingiz ikki o'lcham orasida bo'lsa, kattaroq o'lchamni tanlashni tavsiya etamiz. Kiyimni kichikroq qilish kattaroq qilishdan osonroq.
+                  💡 <strong>{t('sizeGuideModal.tipTitle')}</strong> {t('sizeGuideModal.tipText')}
                 </p>
               </div>
             </div>
@@ -404,57 +407,57 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
             <div className="space-y-4">
               <div className="rounded-2xl border border-white/10 bg-[#0d1423]/80 p-4">
                 <p className="text-sm text-[#9aa3b2] mb-4">
-                  O'zingizning tana o'lchamlaringizni kiriting va biz sizga mos o'lchamni topamiz.
+                  {t('sizeGuideModal.calcIntro')}
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
-                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">Bo'yi (sm)</span>
+                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('sizeGuide.heightCm')}</span>
                     <input
                       type="number"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
-                      placeholder="Masalan: 165"
+                      placeholder={t('sizeGuideModal.placeholders.height')}
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-3 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">Vazni (kg)</span>
+                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('sizeGuide.weightKg')}</span>
                     <input
                       type="number"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
-                      placeholder="Masalan: 55"
+                      placeholder={t('sizeGuideModal.placeholders.weight')}
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-3 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">Ko'krak (sm) *</span>
+                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('sizeGuide.bustCm')}</span>
                     <input
                       type="number"
                       value={chest}
                       onChange={(e) => setChest(e.target.value)}
-                      placeholder="Masalan: 88"
+                      placeholder={t('sizeGuideModal.placeholders.chest')}
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-3 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">Bel (sm) *</span>
+                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('sizeGuide.waistCm')}</span>
                     <input
                       type="number"
                       value={waist}
                       onChange={(e) => setWaist(e.target.value)}
-                      placeholder="Masalan: 68"
+                      placeholder={t('sizeGuideModal.placeholders.waist')}
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-3 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
                     />
                   </label>
                   <label className="block col-span-2">
-                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">Son (sm) *</span>
+                    <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('sizeGuide.hipsCm')}</span>
                     <input
                       type="number"
                       value={hips}
                       onChange={(e) => setHips(e.target.value)}
-                      placeholder="Masalan: 94"
+                      placeholder={t('sizeGuideModal.placeholders.hips')}
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-3 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
                     />
                   </label>
@@ -465,13 +468,13 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                     onClick={calculateSize}
                     className="flex-1 rounded-xl bg-[#d6b47c] px-4 py-2.5 text-sm font-semibold text-[#0f1014] transition-all hover:bg-[#e0c08e] active:scale-[0.98]"
                   >
-                    O'lchamni topish
+                    {t('sizeGuideModal.findSizeBtn')}
                   </button>
                   <button
                     onClick={resetCalculator}
                     className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-[#9aa3b2] hover:bg-white/10 transition-all"
                   >
-                    Tozalash
+                    {t('sizeGuideModal.resetBtn')}
                   </button>
                 </div>
               </div>
@@ -487,13 +490,13 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                     <p className="text-sm text-red-400">{recommendedSize.error}</p>
                   ) : (
                     <>
-                      <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-2">Sizga mos o'lcham</p>
+                      <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2] mb-2">{t('sizeGuideModal.yourSize')}</p>
                       {recommendedSize.size ? (
                         <div className="flex items-center gap-4">
                           <span className="text-5xl font-bold text-[#d6b47c]">{recommendedSize.size}</span>
                           <div>
                             <p className="text-sm text-[#f4f1eb]">
-                              Ishonchlilik: <span className="text-[#d6b47c] font-medium">{recommendedSize.confidence}</span>
+                              {t('sizeGuideModal.confidence')}: <span className="text-[#d6b47c] font-medium">{recommendedSize.confidence}</span>
                             </p>
                             {recommendedSize.heightNote && (
                               <p className="text-xs text-[#9aa3b2] mt-1">{recommendedSize.heightNote}</p>
@@ -505,7 +508,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                       )}
                       <div className="mt-4 rounded-xl bg-white/[0.03] p-3">
                         <p className="text-xs text-[#9aa3b2]">
-                          ⚠️ Bu faqat taxminiy tavsiya. Har bir model o'ziga xos kesilgan bo'lishi mumkin. Agar shubhangiz bo'lsa, kattaroq o'lchamni tanlang.
+                          {t('sizeGuideModal.disclaimer')}
                         </p>
                       </div>
                     </>

@@ -31,6 +31,7 @@ import SizeGuideModal from '../components/SizeGuideModal';
 // Shared components
 import SEO from '../components/SEO';
 import CustomerPhotoReviews from '../components/CustomerPhotoReviews';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -56,6 +57,7 @@ export default function ProductView() {
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addToRecentlyViewed } = useRecentlyViewed();
+  const { t } = useLanguage();
 
   const product = getProduct(id);
   const isProductFavorite = product ? isFavorite(product.id) : false;
@@ -118,7 +120,7 @@ export default function ProductView() {
       });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.", { duration: 6000 });
+      toast.error(t('productView.errorAddToCart'), { duration: 6000 });
     } finally {
       setIsAddingToCart(false);
     }
@@ -168,16 +170,16 @@ export default function ProductView() {
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#141416]">
             <ShoppingCart className="h-6 w-6 text-[#c9a96e]" />
           </div>
-          <h1 className="text-2xl font-semibold text-[#f5f5f3]">Mahsulot topilmadi</h1>
+          <h1 className="text-2xl font-semibold text-[#f5f5f3]">{t('productView.notFoundTitle')}</h1>
           <p className="mt-2 text-sm text-[#8a8a8d]">
-            Bu mahsulot o'chirib yuborilgan yoki mavjud emas.
+            {t('productView.notFoundDesc')}
           </p>
           <Link
             to="/products"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#c9a96e] px-6 py-3 text-sm font-bold text-[#0a0a0b] hover:bg-[#d4b87a] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Katalogga qaytish
+            {t('productView.backToCatalog')}
           </Link>
         </div>
       </div>
@@ -251,7 +253,7 @@ export default function ProductView() {
             className="hover:text-[#c9a96e] transition-colors flex items-center gap-1.5"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Katalog
+            {t('productView.breadcrumbCatalog')}
           </Link>
           {product.category && (
             <>
@@ -306,15 +308,15 @@ export default function ProductView() {
           <div className="flex items-center gap-3 mb-3">
             <div className="h-px w-8 bg-[#c9a96e]" />
             <span className="text-[10px] uppercase tracking-[0.25em] text-[#c9a96e] font-bold">
-              Hamjamiyat
+              {t('productView.communityLabel')}
             </span>
           </div>
           <div className="flex flex-col items-center mb-12 text-center lg:text-left lg:items-start">
             <h2 className="text-2xl lg:text-3xl font-brilliant text-[#f5f5f3] mb-4">
-              Mijozlarimiz nigohida
+              {t('productView.communityTitle')}
             </h2>
             <p className="text-[#8a8a8d] max-w-lg text-[15px]">
-              Sizning uslubingiz bizni ilhomlantiradi. O'z suratingizni ulashing va hamjamiyatimizning bir qismiga aylaning.
+              {t('productView.communityDesc')}
             </p>
           </div>
           <CustomerPhotoReviews productId={product._id || product.id || id} productName={product.name} product={product} />
@@ -350,7 +352,7 @@ export default function ProductView() {
         onAddToCart={() => {
           if (getProductOptions(product, 'size').length || getProductOptions(product, 'color').length) {
             mainCtaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            toast.error("Rang va o'lchamni tanlang");
+            toast.error(t('productView.errorSelectVariant'));
             return;
           }
           handleAddToCart('', '', quantity);

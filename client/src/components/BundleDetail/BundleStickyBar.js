@@ -1,9 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingBag, Loader2, ChevronUp } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
+const localize = (value, lang) => {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    if (value[lang]) return value[lang];
+    if (value.uz) return value.uz;
+    if (value.ru) return value.ru;
+    if (value.en) return value.en;
+  }
+  return '';
 };
 
 const BundleStickyBar = ({
@@ -17,8 +30,12 @@ const BundleStickyBar = ({
   heroRef,
   canAddToCart = true,
 }) => {
+  const { t, language } = useLanguage();
   const [isVisible, setIsVisible] = useState(false);
   const [isScrolledDown, setIsScrolledDown] = useState(false);
+
+  const currency = language === 'en' ? 'UZS' : "so'm";
+  const localizedTitle = localize(bundle.title, language);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,17 +69,17 @@ const BundleStickyBar = ({
                   className="w-11 h-11 rounded-xl overflow-hidden border-2 border-[#0a0a0b]"
                   style={{ zIndex: 3 - i }}
                 >
-                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                  <img src={p.image} alt={localize(p.name, language)} className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>
 
             {/* Bundle name & price */}
             <div className="flex-1 min-w-0">
-              <p className="text-white/60 text-xs truncate hidden sm:block">{bundle.title}</p>
+              <p className="text-white/60 text-xs truncate hidden sm:block">{localizedTitle}</p>
               <div className="flex items-center gap-3">
                 <span className="text-white font-bold text-lg sm:text-xl tracking-tight">
-                  {formatPrice(discountedPrice)} so'm
+                  {formatPrice(discountedPrice)} {currency}
                 </span>
                 <span className="text-white/30 text-sm line-through hidden sm:block">
                   {formatPrice(originalPrice)}
@@ -92,14 +109,14 @@ const BundleStickyBar = ({
               {isAdding ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="hidden sm:block">Qo'shilmoqda...</span>
+                  <span className="hidden sm:block">{t('bundleDetail.adding')}</span>
                 </>
               ) : !canAddToCart ? (
-                <span>Rang/o'lcham tanlang</span>
+                <span>{t('bundleDetail.stickySelectVariant')}</span>
               ) : (
                 <>
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Savatga qo'shish</span>
+                  <span>{t('bundleDetail.stickyAddToCart')}</span>
                 </>
               )}
             </button>

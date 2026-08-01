@@ -1,15 +1,5 @@
 export const eventNavItems = [
   {
-    id: 'reels',
-    labelKey: 'nav.reels',
-    fallbackLabel: 'Reels',
-    path: '/reels',
-    mobilePath: '/mobile/reels',
-    icon: 'Play',
-    color: '#f472b6',
-    subtitle: 'Short fashion drops',
-  },
-  {
     id: 'style-feed',
     labelKey: 'nav.community',
     fallbackLabel: 'Style Feed',

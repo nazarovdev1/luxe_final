@@ -8,10 +8,10 @@ import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
 
 const ECO_TIPS = [
-  { icon: <Shirt className="w-full h-full" />, tip: 'Kiyimni uzoq muddatga olish' },
-  { icon: <Recycle className="w-full h-full" />, tip: 'Natural matеriallardan tanlash' },
-  { icon: <Sprout className="w-full h-full" />, tip: 'Lokal brendlarga ustunlik berish' },
-  { icon: <Waves className="w-full h-full" />, tip: 'Kiyimlarni sovuq suvda yuvish' },
+  { icon: <Shirt className="w-full h-full" />, tipKey: 'eco.eco_tip_0' },
+  { icon: <Recycle className="w-full h-full" />, tipKey: 'eco.eco_tip_1' },
+  { icon: <Sprout className="w-full h-full" />, tipKey: 'eco.eco_tip_2' },
+  { icon: <Waves className="w-full h-full" />, tipKey: 'eco.eco_tip_3' },
 ];
 
 const StatCard = ({ icon, value, label, color, unit }) => (
@@ -109,8 +109,8 @@ const EcoImpact = () => {
             <div className="w-20 h-20 bg-green-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-green-500/20">
               <Leaf className="w-10 h-10 text-green-500" />
             </div>
-            <h3 className="text-3xl font-serif mb-3">O'z Eco-ta'siringizni ko'ring</h3>
-            <p className="text-gray-500 mb-10 max-w-sm mx-auto text-lg font-light">Xaridlaringiz orqali tabiatga qo'shgan hissangizni real vaqtda kuzatib boring.</p>
+            <h3 className="text-3xl font-serif mb-3">{t('eco.seeYourImpact')}</h3>
+            <p className="text-gray-500 mb-10 max-w-sm mx-auto text-lg font-light">{t('eco.impactHint')}</p>
             <button onClick={() => navigate('/login')} className="px-12 py-5 bg-green-600 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform">
               {t('eco.login')}
             </button>
@@ -135,7 +135,7 @@ const EcoImpact = () => {
                 </div>
               </div>
               <p className="text-[12px] text-gray-500 font-black uppercase tracking-widest mt-8">
-                {stats.totalOrders} ta buyurtma asosida hisoblandi
+                {stats.totalOrders} {t('eco.basedOnOrders')}
               </p>
             </div>
 
@@ -158,7 +158,7 @@ const EcoImpact = () => {
               <StatCard
                 icon={<TreeDeciduous />}
                 value={stats.treesEquivalent}
-                label="Daraxt ekvivalenti"
+                label={t('eco.treeEquivalent')}
                 color="#4ade80"
               />
             </div>
@@ -170,7 +170,7 @@ const EcoImpact = () => {
                 <h2 className="text-xl font-serif mb-10 text-white">{t('eco.averageScore')}</h2>
                 <EcoScoreBar score={stats.avgEcoScore} t={t} />
                 <p className="text-[11px] text-gray-500 mt-8 leading-relaxed font-light">
-                  Bu ko'rsatkich xaridlaringiz tarkibidagi <span className="text-white font-medium italic">organik va qayta ishlangan</span> materiallar miqdori asosida shakllanadi.
+                  {t('eco.scoreDescription')}
                 </p>
               </div>
 
@@ -217,7 +217,7 @@ const EcoImpact = () => {
                     <div className="flex justify-center mb-6 text-green-500/60 group-hover:text-green-500 group-hover:scale-110 transition-all duration-500">
                       {tip.icon}
                     </div>
-                    <p className="text-[11px] text-gray-500 font-medium leading-relaxed">{tip.tip}</p>
+                    <p className="text-[11px] text-gray-500 font-medium leading-relaxed">{t(tip.tipKey)}</p>
                   </div>
                 ))}
               </div>
@@ -232,7 +232,7 @@ const EcoImpact = () => {
                 <div className="absolute inset-0 bg-green-600 opacity-20 group-hover:opacity-30 transition-opacity" />
                 <div className="absolute inset-0 border border-green-600/30 rounded-full" />
                 <span className="relative z-10 flex items-center gap-3 text-green-500 text-xs font-black tracking-widest uppercase">
-                  <ShoppingBag className="w-5 h-5" /> Eco-friendly kolleksiya
+                  <ShoppingBag className="w-5 h-5" /> {t('eco.ecoCollection')}
                 </span>
               </button>
             </div>
@@ -241,7 +241,7 @@ const EcoImpact = () => {
           <div className="text-center py-20">
             <Leaf className="w-16 h-16 text-gray-800 mx-auto mb-4" />
             <h3 className="text-xl text-gray-500">{t('eco.noPurchases')}</h3>
-            <p className="text-gray-600 mt-2">Xarid qilish orqali o'z eco-statistikangizni ko'ring.</p>
+            <p className="text-gray-600 mt-2">{t('eco.purchaseHint')}</p>
             <button onClick={() => navigate('/products')} className="mt-6 px-8 py-3 bg-[#d6b47c] text-black rounded-full font-bold text-sm">
               {t('eco.shopNow')}
             </button>

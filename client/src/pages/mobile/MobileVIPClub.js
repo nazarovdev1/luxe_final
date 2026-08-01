@@ -8,11 +8,12 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/LoginForm';
+import { useLanguage } from '../../contexts/LanguageContext';
 
-const VIP_TIERS = [
+const VIP_TIER_DEFS = [
   {
-    level: 'Bronze', threshold: 0, color: '#cd7f32',
-    discount: 0, perks: ['Xaridlar uchun ball yig\'ish', 'Style Feed kirish', 'Obraz yaratish'],
+    key: 'Bronze', threshold: 0, color: '#cd7f32',
+    discount: 0, perksKey: 'bronze',
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" /><circle cx="12" cy="8" r="6" />
@@ -21,8 +22,8 @@ const VIP_TIERS = [
     ),
   },
   {
-    level: 'Silver', threshold: 1000, color: '#c0c0c0',
-    discount: 5, perks: ['5% chegirma', 'Maxsus aktsiyalarga kirish', 'Musobaqa imtiyozlari'],
+    key: 'Silver', threshold: 1000, color: '#c0c0c0',
+    discount: 5, perksKey: 'silver',
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" /><circle cx="12" cy="8" r="6" />
@@ -31,8 +32,8 @@ const VIP_TIERS = [
     ),
   },
   {
-    level: 'Gold', threshold: 5000, color: '#d6b47c',
-    discount: 10, perks: ['10% chegirma', 'Yangi kolleksiyaga ilk kirish', 'VIP musobaqa', 'Stilist maslahat'],
+    key: 'Gold', threshold: 5000, color: '#d6b47c',
+    discount: 10, perksKey: 'gold',
     icon: (
       <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" /><circle cx="12" cy="8" r="6" />
@@ -41,38 +42,74 @@ const VIP_TIERS = [
     ),
   },
   {
-    level: 'Diamond', threshold: 20000, color: '#a8d8ea',
-    discount: 15, perks: ['15% chegirma', 'Bepul yetkazib berish', 'Ekskluziv mahsulotlar', 'Shaxsiy stilist', 'VIP tadbirlarga taklif'],
+    key: 'Diamond', threshold: 20000, color: '#a8d8ea',
+    discount: 15, perksKey: 'diamond',
     icon: <Gem className="w-8 h-8" />,
   },
 ];
 
-const HOW_TO_EARN = [
-  { icon: <ShieldCheck className="w-4 h-4" />, action: 'Xarid qilish', points: '+100 ball' },
-  { icon: <Star className="w-4 h-4" />, action: 'Izoh qoldirish', points: '+20 ball' },
-  { icon: <Flame className="w-4 h-4" />, action: 'Post ulashish', points: '+30 ball' },
-  { icon: <Trophy className="w-4 h-4" />, action: 'Musobaqada g\'alaba', points: '+500 ball' },
-  { icon: <Zap className="w-4 h-4" />, action: 'Kunlik kirish', points: '+5 ball' },
-  { icon: <Gift className="w-4 h-4" />, action: 'Tug\'ilgan kun', points: '+100 ball' },
+const HOW_TO_EARN_DEFS = [
+  { icon: <ShieldCheck className="w-4 h-4" />, key: 'purchase' },
+  { icon: <Star className="w-4 h-4" />, key: 'review' },
+  { icon: <Flame className="w-4 h-4" />, key: 'sharePost' },
+  { icon: <Trophy className="w-4 h-4" />, key: 'challengeWin' },
+  { icon: <Zap className="w-4 h-4" />, key: 'dailyLogin' },
+  { icon: <Gift className="w-4 h-4" />, key: 'birthday' },
 ];
 
-const TABS = [
-  { id: 'overview', label: 'Darajam' },
-  { id: 'badges', label: 'Nishonlar' },
-  { id: 'leaderboard', label: 'Reyting' },
-  { id: 'history', label: 'Tarix' },
-  { id: 'earn', label: 'Ishlash' },
+const TABS_DEFS = [
+  { id: 'overview', labelKey: 'overview' },
+  { id: 'badges', labelKey: 'badges' },
+  { id: 'leaderboard', labelKey: 'leaderboard' },
+  { id: 'history', labelKey: 'history' },
+  { id: 'earn', labelKey: 'earn' },
 ];
 
 export default function MobileVIPClub() {
   const { isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [pointsData, setPointsData] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [badges, setBadges] = useState([]);
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const VIP_TIERS = VIP_TIER_DEFS.map(tier => ({
+    ...tier,
+    perks: tier.perksKey === 'bronze' ? [
+      t('mobileVip.tierPerks.bronze.0'),
+      t('mobileVip.tierPerks.bronze.1'),
+      t('mobileVip.tierPerks.bronze.2'),
+    ] : tier.perksKey === 'silver' ? [
+      t('mobileVip.tierPerks.silver.0'),
+      t('mobileVip.tierPerks.silver.1'),
+      t('mobileVip.tierPerks.silver.2'),
+    ] : tier.perksKey === 'gold' ? [
+      t('mobileVip.tierPerks.gold.0'),
+      t('mobileVip.tierPerks.gold.1'),
+      t('mobileVip.tierPerks.gold.2'),
+      t('mobileVip.tierPerks.gold.3'),
+    ] : [
+      t('mobileVip.tierPerks.diamond.0'),
+      t('mobileVip.tierPerks.diamond.1'),
+      t('mobileVip.tierPerks.diamond.2'),
+      t('mobileVip.tierPerks.diamond.3'),
+      t('mobileVip.tierPerks.diamond.4'),
+    ],
+  }));
+
+  const HOW_TO_EARN = HOW_TO_EARN_DEFS.map(item => ({
+    icon: item.icon,
+    action: t(`mobileVip.earn.${item.key}`),
+    points: t(`mobileVip.${item.key}Points`),
+  }));
+
+  const TABS = TABS_DEFS.map(tab => ({
+    id: tab.id,
+    label: t(`mobileVip.tabs.${tab.labelKey}`),
+  }));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,7 +135,7 @@ export default function MobileVIPClub() {
     fetchData();
   }, [isAuthenticated, token]);
 
-  const currentTier = VIP_TIERS.find(t => t.level === pointsData?.points?.level) || VIP_TIERS[0];
+  const currentTier = VIP_TIERS.find(tier => tier.key === pointsData?.points?.level) || VIP_TIERS[0];
   const nextTier = VIP_TIERS[VIP_TIERS.indexOf(currentTier) + 1];
   const progress = nextTier
     ? Math.min(100, ((pointsData?.points?.totalEarned - currentTier.threshold) / (nextTier.threshold - currentTier.threshold)) * 100)
@@ -116,7 +153,7 @@ export default function MobileVIPClub() {
         <div className="px-5 pt-10 pb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-10 active:scale-90 transition-transform">
             <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium uppercase tracking-widest">Orqaga</span>
+            <span className="text-sm font-medium uppercase tracking-widest">{t('mobileVip.back')}</span>
           </button>
 
           <div className="flex items-center gap-3 mb-4">
@@ -126,10 +163,10 @@ export default function MobileVIPClub() {
             <span className="text-[11px] uppercase tracking-[0.4em] font-black" style={{ color: currentTier.color }}>Privileged Access</span>
           </div>
           <h1 className="text-6xl font-brilliant text-white leading-none">
-            Luxe <span style={{ color: currentTier.color }}>VIP Club</span>
+            {t('mobileVip.titlePrefix')} <span style={{ color: currentTier.color }}>{t('mobileVip.titleSuffix')}</span>
           </h1>
           <p className="text-base text-gray-400 mt-4 leading-relaxed max-w-[300px]">
-             Ekskluziv imtiyozlar va <span className="text-white font-bold">premium fashion</span> tajribasi olamiga xush kelibsiz.
+             {t('mobileVip.subtitle')}
           </p>
         </div>
 
@@ -172,8 +209,8 @@ export default function MobileVIPClub() {
                         {/* Tier icon + label */}
                         <div className="flex items-center justify-between mb-6">
                           <div>
-                            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-1">Joriy Darajangiz</p>
-                            <h2 className="text-4xl font-brilliant" style={{ color: currentTier.color }}>{currentTier.level}</h2>
+                            <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-1">{t('mobileVip.currentLevel')}</p>
+                            <h2 className="text-4xl font-brilliant" style={{ color: currentTier.color }}>{currentTier.key}</h2>
                           </div>
                           <div className="w-16 h-16 rounded-2xl flex items-center justify-center border" style={{ background: `${currentTier.color}15`, borderColor: `${currentTier.color}30`, color: currentTier.color }}>
                             {currentTier.icon}
@@ -182,7 +219,7 @@ export default function MobileVIPClub() {
 
                         {/* Balance */}
                         <div className="bg-white/5 rounded-2xl p-4 mb-4 border border-white/5">
-                          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-1">To'plangan Ballar</p>
+                          <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-1">{t('mobileVip.accumulatedPoints')}</p>
                           <p className="text-5xl font-brilliant" style={{ color: currentTier.color }}>
                             {pointsData.points.balance.toLocaleString()}
                           </p>
@@ -192,9 +229,9 @@ export default function MobileVIPClub() {
                         {nextTier && (
                           <div>
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">{currentTier.level}</span>
+                              <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">{currentTier.key}</span>
                               <span className="text-[10px] font-black" style={{ color: currentTier.color }}>{Math.round(progress)}%</span>
-                              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-black">{nextTier.level}</span>
+                              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-black">{nextTier.key}</span>
                             </div>
                             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                               <div
@@ -203,7 +240,7 @@ export default function MobileVIPClub() {
                               />
                             </div>
                             <p className="text-[10px] text-gray-500 mt-2 text-center">
-                              Keyingi darajaga <span className="font-black" style={{ color: currentTier.color }}>{(nextTier.threshold - pointsData.points.totalEarned).toLocaleString()} ball</span> qoldi
+                              {t('mobileVip.nextLevelBefore')} <span className="font-black" style={{ color: currentTier.color }}>{(nextTier.threshold - pointsData.points.totalEarned).toLocaleString()} {t('mobileVip.nextLevelSuffix')}</span> {t('mobileVip.nextLevelAfter')}
                             </p>
                           </div>
                         )}
@@ -226,7 +263,7 @@ export default function MobileVIPClub() {
                     {badges.length > 0 && (
                       <div className="rounded-[28px] bg-white/[0.02] border border-white/5 p-5">
                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                          <Trophy className="w-4 h-4 text-[#d6b47c]" /> Medallari
+                          <Trophy className="w-4 h-4 text-[#d6b47c]" /> {t('mobileVip.badgesTitle')}
                         </h3>
                         <div className="grid grid-cols-3 gap-3">
                           {badges.slice(0, 6).map((badge, i) => (
@@ -250,21 +287,21 @@ export default function MobileVIPClub() {
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-[#d6b47c]/10 border border-[#d6b47c]/20">
                       <Crown className="w-8 h-8 text-[#d6b47c]" />
                     </div>
-                    <h3 className="text-xl font-brilliant mb-2">VIP Club</h3>
-                    <p className="text-sm text-gray-400 mb-5">Ball to'plash va imtiyozlardan foydalanish uchun kirish kerak</p>
+                    <h3 className="text-xl font-brilliant mb-2">{t('mobileVip.loginTitle')}</h3>
+                    <p className="text-sm text-gray-400 mb-5">{t('mobileVip.loginDesc')}</p>
                     <button
                       onClick={() => navigate('/mobile/login')}
                       className="w-full py-3.5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-black"
                       style={{ background: '#d6b47c' }}
                     >
-                      Tizimga Kirish
+                      {t('mobileVip.loginButton')}
                     </button>
                   </div>
                 ) : null}
 
                 {/* How to Earn */}
                 <div className="rounded-[28px] bg-white/[0.02] border border-white/5 p-5">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">Ball Qanday Yig'iladi?</h3>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">{t('mobileVip.howToEarnTitle')}</h3>
                   <div className="space-y-3">
                     {HOW_TO_EARN.map((item, i) => (
                       <div key={i} className="flex items-center justify-between">
@@ -293,7 +330,7 @@ export default function MobileVIPClub() {
                       <p className="text-[9px] text-gray-500 leading-tight mb-2">{userBadge.badge.description}</p>
                       {userBadge.badge.reward?.points > 0 && (
                         <div className="inline-block px-2 py-0.5 bg-[#d6b47c]/20 border border-[#d6b47c]/30 rounded-full text-[8px] text-[#d6b47c] font-black">
-                          +{userBadge.badge.reward.points} ball
+                          +{userBadge.badge.reward.points} {t('mobileVip.pointsSuffix')}
                         </div>
                       )}
                       <div className="absolute top-2 right-2 bg-green-500 text-black p-0.5 rounded-full scale-75">
@@ -304,7 +341,7 @@ export default function MobileVIPClub() {
                   {badges.length === 0 && (
                     <div className="col-span-full py-16 text-center rounded-3xl border border-white/5 bg-white/[0.01]">
                       <Medal className="w-12 h-12 text-gray-800 mx-auto mb-3" />
-                      <p className="text-xs text-gray-600">Hali nishonlar yo'q</p>
+                      <p className="text-xs text-gray-600">{t('mobileVip.noBadges')}</p>
                     </div>
                   )}
                 </div>
@@ -334,10 +371,10 @@ export default function MobileVIPClub() {
                 {leaderboard.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     <Trophy className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">Hali ma'lumot yo'q</p>
+                    <p className="text-sm">{t('mobileVip.leaderboardEmpty')}</p>
                   </div>
                 ) : leaderboard.map((entry, i) => {
-                  const tier = VIP_TIERS.find(t => t.level === entry.level) || VIP_TIERS[0];
+                  const tier = VIP_TIERS.find(tierItem => tierItem.key === entry.level) || VIP_TIERS[0];
                   const rankColors = ['#d6b47c', '#c0c0c0', '#cd7f32'];
                   const rankColor = rankColors[i] || '#555';
                   return (
@@ -349,14 +386,14 @@ export default function MobileVIPClub() {
                         {entry.user?.username?.charAt(0).toUpperCase() || '?'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-white truncate">{entry.user?.username || 'Noma\'lum'}</p>
+                        <p className="text-sm font-bold text-white truncate">{entry.user?.username || t('mobileVip.pointsSuffix')}</p>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[9px] font-black" style={{ color: tier.color }}>{entry.level}</span>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-black text-[#d6b47c]">{entry.balance?.toLocaleString()}</p>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wider">ball</p>
+                        <p className="text-[9px] text-gray-500 uppercase tracking-wider">{t('mobileVip.pointsSuffix')}</p>
                       </div>
                     </div>
                   );
@@ -370,15 +407,15 @@ export default function MobileVIPClub() {
                 {!isAuthenticated ? (
                   <div className="text-center py-12">
                     <History className="w-12 h-12 mx-auto mb-3 text-gray-700" />
-                    <p className="text-sm text-gray-500">Tarixni ko'rish uchun kiring</p>
+                    <p className="text-sm text-gray-500">{t('mobileVip.historyLoginRequired')}</p>
                     <button onClick={() => navigate('/mobile/login')} className="mt-4 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-black" style={{ background: '#d6b47c' }}>
-                      Kirish
+                      {t('mobileVip.loginShort')}
                     </button>
                   </div>
                 ) : history.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     <History className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">Hali tranzaksiyalar yo'q</p>
+                    <p className="text-sm">{t('mobileVip.historyEmpty')}</p>
                   </div>
                 ) : history.map((tx, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.02] border border-white/5 p-4">

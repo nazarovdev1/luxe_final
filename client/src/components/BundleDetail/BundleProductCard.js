@@ -1,18 +1,37 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ZoomIn, Check } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
   return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
+const localize = (value, lang) => {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    if (value[lang]) return value[lang];
+    if (value.uz) return value.uz;
+    if (value.ru) return value.ru;
+    if (value.en) return value.en;
+  }
+  return '';
+};
+
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, bundleUnitPrice }) => {
+  const { t, language } = useLanguage();
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+
+  const currency = language === 'en' ? 'UZS' : "so'm";
+  const localizedName = localize(product.name, language);
+  const localizedDescription = localize(product.description, language);
+  const localizedCategory = localize(product.category, language);
 
   // Normalize images to array of strings
   const images = (() => {
@@ -54,7 +73,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
         >
           <img
             src={images[activeImageIdx] || '/placeholder.jpg'}
-            alt={product.name}
+            alt={localizedName}
             className="w-full h-full object-cover transition-transform duration-700"
             style={isZoomed ? {
               transform: 'scale(1.85)',
@@ -65,7 +84,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
           {/* Zoom hint */}
           <div className={`absolute bottom-4 left-4 flex items-center gap-1.5 rounded-full bg-black/50 px-3 py-1.5 text-xs text-white backdrop-blur-sm transition-opacity ${isZoomed ? 'opacity-0' : 'opacity-100'}`}>
             <ZoomIn className="w-3.5 h-3.5" />
-            Kattalashtirish
+            {t('bundleDetail.productCardZoom')}
           </div>
 
           {/* Index badge */}
@@ -97,31 +116,31 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
         <div>
           {/* Category */}
           <p className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]/60 font-bold mb-3">
-            {product.category}
+            {localizedCategory}
           </p>
 
           {/* Name */}
           <h3 className="text-2xl lg:text-3xl font-light text-white leading-tight mb-4">
-            {product.name}
+            {localizedName}
           </h3>
 
           {/* Description */}
-          {product.description && (
+          {localizedDescription && (
             <p className="text-[#9aa3b2] text-sm leading-relaxed mb-6 line-clamp-3">
-              {product.description}
+              {localizedDescription}
             </p>
           )}
 
           {/* Price */}
           <div className="flex items-end gap-4 mb-8">
             <div>
-              <p className="text-[10px] text-[#9aa3b2] uppercase tracking-wider mb-1">Alohida narxi</p>
-              <p className="text-xl text-white/40 line-through">{formatPrice(originalPrice)} so'm</p>
+              <p className="text-[10px] text-[#9aa3b2] uppercase tracking-wider mb-1">{t('bundleDetail.productCardSeparatePrice')}</p>
+              <p className="text-xl text-white/40 line-through">{formatPrice(originalPrice)} {currency}</p>
             </div>
             {savings > 0 && (
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                 <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400 text-xs font-bold">To'plamda arzon</span>
+                <span className="text-emerald-400 text-xs font-bold">{t('bundleDetail.productCardCheaper')}</span>
               </div>
             )}
           </div>
@@ -130,7 +149,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
           {colors.length > 0 && (
             <div className="mb-6">
               <p className="text-xs text-[#9aa3b2] uppercase tracking-widest mb-3 font-medium">
-                Rang
+                {t('bundleDetail.productCardColor')}
                 {selectedColor && (
                   <span className="ml-2 text-white font-normal normal-case">{selectedColor}</span>
                 )}
@@ -154,7 +173,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
           {/* Sizes */}
           <div className="mb-8">
             <p className="text-xs text-[#9aa3b2] uppercase tracking-widest mb-3 font-medium">
-              O'lcham
+              {t('bundleDetail.productCardSize')}
               {selectedSize && (
                 <span className="ml-2 text-white font-normal normal-case">{selectedSize}</span>
               )}
@@ -181,17 +200,17 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
             {(selectedColor || selectedSize) ? (
               <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-medium">
                 <Check className="w-3.5 h-3.5" />
-                Tanlandi
+                {t('bundleDetail.productCardSelected')}
               </div>
             ) : (
-              <p className="text-[#9aa3b2] text-xs">Rang va o'lcham tanlang</p>
+              <p className="text-[#9aa3b2] text-xs">{t('bundleDetail.productCardPickColorSize')}</p>
             )}
           </div>
           <Link
             to={`/product/${product.id}`}
             className="flex items-center gap-1 text-xs text-[#d6b47c] hover:gap-2 transition-all"
           >
-            Batafsil
+            {t('bundleDetail.productCardDetails')}
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>

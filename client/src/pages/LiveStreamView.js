@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { ShoppingBag, Users, Send, ArrowLeft, Radio, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { io } from 'socket.io-client';
 import SEO from '../components/SEO';
 
@@ -19,6 +20,7 @@ const LiveStreamView = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isAdmin, token } = useAuth();
   const { addToCart } = useCart();
+  const { t } = useLanguage();
   const [stream, setStream] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [newMsg, setNewMsg] = useState('');
@@ -32,7 +34,7 @@ const LiveStreamView = () => {
         const res = await axios.get(`/api/livestreams/${id}`);
         if (res.data.success) setStream(res.data.data);
       } catch {
-        toast.error('Efir topilmadi');
+        toast.error(t('liveStreamView.notFound'));
         navigate('/live');
       } finally {
         setIsLoading(false);
@@ -80,11 +82,11 @@ const LiveStreamView = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!isAuthenticated) return toast.error('Chat uchun tizimga kiring');
+    if (!isAuthenticated) return toast.error(t('liveStreamView.loginRequired'));
     if (!newMsg.trim()) return;
 
     try {
-      const res = await axios.post(`/api/live-chat/${id}`, 
+      const res = await axios.post(`/api/live-chat/${id}`,
         { text: newMsg },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -97,12 +99,12 @@ const LiveStreamView = () => {
         setNewMsg('');
       }
     } catch (err) {
-      toast.error('Xabar yuborishda xatolik');
+      toast.error(t('liveStreamView.sendError'));
     }
   };
 
   const handleDeleteMessage = async (msgId) => {
-    if (!window.confirm('Xabarni o\'chirmoqchimisiz?')) return;
+    if (!window.confirm(t('liveStreamView.deleteConfirm'))) return;
 
     try {
       const res = await axios.delete(`/api/live-chat/${msgId}`, {
@@ -111,16 +113,16 @@ const LiveStreamView = () => {
 
       if (res.data.success) {
         socket.current.emit('delete_message', { streamId: id, messageId: msgId });
-        toast.success('Xabar o\'chirildi');
+        toast.success(t('liveStreamView.deleteSuccess'));
       }
     } catch (err) {
-      toast.error('Xabarni o\'chirishda xatolik');
+      toast.error(t('liveStreamView.deleteError'));
     }
   };
 
   const handleAddToCart = (product) => {
     addToCart(product);
-    toast.success(`${product.name} savatchaga qo'shildi!`);
+    toast.success(`${product.name} ${t('liveStreamView.addedToCartSuffix')}`);
   };
 
   if (isLoading) {
@@ -156,7 +158,7 @@ const LiveStreamView = () => {
               </span>
             )}
             <span className="flex items-center gap-1">
-              <Users className="w-3 h-3" /> {stream.viewersCount || 0} tomosha
+              <Users className="w-3 h-3" /> {stream.viewersCount || 0} {t('liveStreamView.viewers')}
             </span>
           </div>
         </div>
@@ -178,7 +180,7 @@ const LiveStreamView = () => {
               <div className="w-full h-full flex items-center justify-center text-gray-600">
                 <div className="text-center">
                   <Radio className="w-16 h-16 mx-auto mb-4 text-red-500/30" />
-                  <p>Efir URL mavjud emas</p>
+                  <p>{t('liveStreamView.streamUrlMissing')}</p>
                 </div>
               </div>
             )}
@@ -194,7 +196,7 @@ const LiveStreamView = () => {
           {/* Featured Products */}
           {stream.featuredProducts?.length > 0 && (
             <div className="p-4 border-t border-white/5">
-              <p className="text-xs uppercase tracking-[0.15em] text-gray-500 font-bold mb-3">Efirdagi mahsulotlar</p>
+              <p className="text-xs uppercase tracking-[0.15em] text-gray-500 font-bold mb-3">{t('liveStreamView.featuredLabel')}</p>
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {stream.featuredProducts.map(product => (
                   <div key={product._id} className="shrink-0 w-36 bg-[#111] border border-white/5 rounded-2xl overflow-hidden hover:border-[#d6b47c]/30 transition-all">
@@ -208,7 +210,7 @@ const LiveStreamView = () => {
                         onClick={() => handleAddToCart(product)}
                         className="w-full py-1.5 bg-[#d6b47c] text-black rounded-full text-[10px] font-black hover:bg-[#e8c98a] transition-all flex items-center justify-center gap-1"
                       >
-                        <ShoppingBag className="w-3 h-3" /> Sotib olish
+                        <ShoppingBag className="w-3 h-3" /> {t('liveStreamView.buy')}
                       </button>
                     </div>
                   </div>
@@ -221,7 +223,7 @@ const LiveStreamView = () => {
         {/* Right: Chat */}
         <div className="w-full lg:w-80 xl:w-96 border-l border-white/5 flex flex-col bg-[#0d0d0d] h-full max-h-screen">
           <div className="p-4 border-b border-white/5">
-            <h3 className="font-bold text-sm">Jonli chat</h3>
+            <h3 className="font-bold text-sm">{t('liveStreamView.liveChat')}</h3>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
@@ -271,7 +273,7 @@ const LiveStreamView = () => {
                 type="text"
                 value={newMsg}
                 onChange={e => setNewMsg(e.target.value)}
-                placeholder={isAuthenticated ? 'Xabar yozing...' : 'Chat uchun kiring'}
+                placeholder={isAuthenticated ? t('liveStreamView.messagePlaceholder') : t('liveStreamView.loginPlaceholder')}
                 disabled={!isAuthenticated}
                 className="flex-1 bg-[#1a1a1a] border border-white/5 rounded-full px-4 py-2.5 text-sm outline-none focus:border-[#d6b47c]/40 transition-all disabled:opacity-50"
               />

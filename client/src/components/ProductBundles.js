@@ -92,18 +92,18 @@ const BundleCard = ({ look, resolvedProducts }) => {
         {/* Pricing */}
         <div className="mt-3 pt-3 border-t border-white/5 space-y-1.5">
           <div className="flex items-center justify-between text-xs text-[#9aa3b2]">
-            <span>Jami alohida</span>
+            <span>{t('productBundles.totalSeparate')}</span>
             <span className="line-through">{formatPrice(originalTotal)} {t('common.sum')}</span>
           </div>
           <div className="flex items-center justify-between text-xs text-[#d6b47c]">
             <span className="flex items-center gap-1">
               <Tag className="w-3 h-3" />
-              To'plam chegirmasi
+              {t('productBundles.bundleDiscount')}
             </span>
             <span>-{formatPrice(discountAmount)} {t('common.sum')}</span>
           </div>
           <div className="flex items-center justify-between pt-1">
-            <span className="text-sm font-semibold text-[#f4f1eb]">To'plam narxi</span>
+            <span className="text-sm font-semibold text-[#f4f1eb]">{t('productBundles.bundlePrice')}</span>
             <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(bundlePrice)} {t('common.sum')}</span>
           </div>
         </div>
@@ -116,7 +116,7 @@ const BundleCard = ({ look, resolvedProducts }) => {
             className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:border-[#d6b47c]/30 hover:bg-[#d6b47c]/5 transition-all"
           >
             <Eye className="w-4 h-4" />
-            Ko'rish
+            {t('productBundles.view')}
           </Link>
 
           {/* Add to Cart */}
@@ -125,7 +125,7 @@ const BundleCard = ({ look, resolvedProducts }) => {
             className="flex items-center justify-center gap-2 rounded-xl bg-[#d6b47c] px-4 py-2.5 text-sm font-semibold text-[#0f1014] transition-all hover:bg-[#e0c08e] active:scale-[0.98]"
           >
             <ShoppingBag className="w-4 h-4" />
-            Tanlab savatga
+            {t('productBundles.selectToCart')}
           </Link>
         </div>
       </div>
@@ -238,13 +238,13 @@ const ProductBundles = () => {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#d6b47c] mb-3">
               <Percent className="w-3 h-3" />
-              To'plamlar
+              {t('productBundles.bundlesBadge')}
             </div>
             <h2 className="text-2xl sm:text-3xl font-semibold text-[#f4f1eb]">
-              To'liq lookni <span className="text-[#d6b47c]">chegirma</span> bilan
+              {t('productBundles.bundlesTitle1')} <span className="text-[#d6b47c]">{t('productBundles.bundlesTitle2')}</span> {t('productBundles.bundlesSubtitle')}
             </h2>
             <p className="text-sm text-[#9aa3b2] mt-1">
-              Alohida sotib olishdan arzonroq
+              {t('productBundles.bundlesDesc')}
             </p>
           </div>
         </div>

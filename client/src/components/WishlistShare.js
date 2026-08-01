@@ -11,7 +11,7 @@ const WishlistShare = ({ favorites = [], userName }) => {
 
   const wishlistCode = Buffer.from(`wl_${Date.now()}`).toString('base64').slice(0, 10).toLowerCase();
   const shareUrl = `${window.location.origin}/wishlist/${wishlistCode}`;
-  const displayName = userName || 'Foydalanuvchi';
+  const displayName = userName || t('wishlistShare.userFallback');
 
   const shareText = shareAsGiftList
     ? `🎁 ${displayName} ning sovg'a ro'yxati! Eng yaxshi sovg'ani tanlang: ${shareUrl}`

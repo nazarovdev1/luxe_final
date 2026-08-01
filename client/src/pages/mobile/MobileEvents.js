@@ -161,11 +161,11 @@ const MobileEvents = () => {
       <div className="mx-auto w-full max-w-[430px]">
         <header className="flex items-center justify-between px-1">
           <Link to="/mobile" className="font-brilliant text-[21px] leading-none text-[#d6b47c] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#d6b47c]">
-            LUXX UZ
+            {t('mobileEvents.logo')}
           </Link>
           <Link
             to="/mobile/profile"
-            aria-label="Notifications"
+            aria-label={t('mobileEvents.notifications_label')}
             className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.035] text-[#d6b47c] shadow-[0_0_18px_rgba(214,180,124,.08)] transition hover:border-[#d6b47c]/30 active:scale-95"
           >
             <Bell className="h-[17px] w-[17px] stroke-[1.45]" />
@@ -185,19 +185,19 @@ const MobileEvents = () => {
           <div className="relative z-10 flex h-full max-w-[68%] flex-col justify-center px-5">
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#d6b47c]/35 bg-black/25 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-[#d6b47c]">
               <Sparkles className="h-2.5 w-2.5" />
-              Explore
+              {t('mobileEvents.explore_badge')}
             </span>
             <h1 className="mt-3 whitespace-nowrap font-[Georgia,serif] text-[22px] leading-[1.08] text-[#f7f1e8]">
-              Har bir tajriba<br />endi yanada chiroyli
+              {t('mobileEvents.hero_title_line1')}<br />{t('mobileEvents.hero_title_line2')}
             </h1>
             <span className="mt-2 h-px w-5 bg-[#d6b47c]" />
             <p className="mt-2 max-w-[190px] text-[10px] leading-[1.45] text-white/60">
-              Desktopdagi barcha imkoniyatlar endi mobil qurilmangizda mukammal.
+              {t('mobileEvents.hero_subtitle')}
             </p>
           </div>
         </section>
 
-        <section className="mt-3 grid grid-cols-2 gap-3" aria-label="Explore features">
+        <section className="mt-3 grid grid-cols-2 gap-3" aria-label={t('mobileEvents.explore_section_label')}>
           {eventNavItems.map((item) => <ExploreCard key={item.id} item={item} t={t} />)}
         </section>
 
@@ -209,8 +209,8 @@ const MobileEvents = () => {
             <Crown className="h-4 w-4 stroke-[1.4]" />
           </span>
           <span className="min-w-0 flex-1 text-[10px] leading-[1.35] text-white/70">
-            <span className="block text-white/90">Exclusive kolleksiyalar</span>
-            va maxsus takliflarni kashf eting
+            <span className="block text-white/90">{t('mobileEvents.bundles_title')}</span>
+            {t('mobileEvents.bundles_subtitle')}
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-[#d6b47c] transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>

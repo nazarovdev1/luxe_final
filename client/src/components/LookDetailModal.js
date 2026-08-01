@@ -74,7 +74,7 @@ function ProductItem({ product, selection, error, onSelect }) {
                             {/* Color */}
                             {product.colors?.length > 0 && (
                                 <div className="space-y-1.5">
-                                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium">Rang</span>
+                                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium">{t('lookDetail.color')}</span>
                                     <div className="flex flex-wrap gap-1.5">
                                         {product.colors.map((color, idx) => {
                                             const isHex = color.startsWith('#');
@@ -111,7 +111,7 @@ function ProductItem({ product, selection, error, onSelect }) {
                             {/* Size */}
                             {sizeOptions.length > 0 && (
                                 <div className="space-y-1.5 flex-1 min-w-[100px]">
-                                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium">O'lcham</span>
+                                    <span className="text-[9px] uppercase tracking-wider text-neutral-500 font-medium">{t('lookDetail.size')}</span>
                                     <div className="flex flex-wrap gap-1">
                                         {sizeOptions.map((size, idx) => {
                                             const isSelected = selection?.size === size;
@@ -242,20 +242,20 @@ return look.products.map((p) => {
         });
 
         if (inStockProducts.length === 0) {
-            toast.error('Barcha mahsulotlar tugagan');
+            toast.error(t('lookDetail.outOfStock'));
             return;
         }
 
         inStockProducts.forEach((p) => {
             const sel = selections[p.id] || {};
-            if (p.colors?.length > 0 && !sel.color) { newErrors[p.id] = 'Rang tanlang'; hasError = true; }
+            if (p.colors?.length > 0 && !sel.color) { newErrors[p.id] = t('lookDetail.selectColor'); hasError = true; }
             const sizes = getSizes(p);
             if (sizes.length > 0 && !sel.size) {
-                newErrors[p.id] = newErrors[p.id] ? "Rang va o'lcham tanlang" : "O'lcham tanlang";
+                newErrors[p.id] = newErrors[p.id] ? t('lookDetail.selectColorSize') : t('lookDetail.selectSize');
                 hasError = true;
             }
         });
-        if (hasError) { setErrors(newErrors); toast.error('Barcha variantlarni tanlang'); return; }
+        if (hasError) { setErrors(newErrors); toast.error(t('lookDetail.selectAll')); return; }
 
         const lookForCart = {
             ...look,
@@ -265,7 +265,7 @@ return look.products.map((p) => {
 
         const result = addLookToCart(lookForCart, selections);
         if (result) {
-            toast.success(`Look "${look.title}" savatga qo'shildi (${inStockProducts.length} mahsulot)`);
+            toast.success(t('lookDetail.addedToCart').replace('...', `"${look.title}" (${inStockProducts.length})`));
             onClose();
         }
     };
@@ -364,7 +364,7 @@ return look.products.map((p) => {
                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <div className="bg-black/60 backdrop-blur-sm text-white/80 px-2.5 py-1.5 rounded-full flex items-center gap-1.5 text-[10px] border border-white/10">
                             <ZoomIn className="w-3 h-3" />
-                            Zoom
+                            {t('lookDetail.zoom')}
                         </div>
                     </div>
 
@@ -394,8 +394,8 @@ return look.products.map((p) => {
                                 <ShoppingBag className="w-4 h-4 text-[#d6b47c]" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-semibold text-[#f4efe7]">Look tarkibi</h3>
-                                <p className="text-[10px] text-neutral-500">{lookProducts.length} mahsulot</p>
+                                <h3 className="text-sm font-semibold text-[#f4efe7]">{t('lookDetail.lookComposition')}</h3>
+                                <p className="text-[10px] text-neutral-500">{lookProducts.length} {t('lookDetail.productsCount')}</p>
                             </div>
                         </div>
                         <button
@@ -410,7 +410,7 @@ return look.products.map((p) => {
                         <div className="mx-6 mt-3 px-3 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
                             <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                             <p className="text-[11px] text-amber-300">
-                                {outOfStockProducts.length} ta mahsulot hozirda tugagan: {outOfStockProducts.map(p => p.name).join(', ')}
+                                {outOfStockProducts.length} {t('lookDetail.outOfStockTail')} {outOfStockProducts.map(p => p.name).join(', ')}
                             </p>
                         </div>
                     )}
@@ -423,7 +423,7 @@ return look.products.map((p) => {
                                     <ShoppingBag className="w-5 h-5 text-neutral-600" />
                                 </div>
                                 <p className="text-sm text-neutral-500 text-center">
-                                    Ushbu look uchun mahsulotlar topilmadi
+                                    {t('lookDetail.noProducts')}
                                 </p>
                             </div>
                         ) : (
@@ -448,24 +448,24 @@ return look.products.map((p) => {
                                 {hasDiscount && lookDiscountAmount > 0 ? (
                                     <>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs text-neutral-500 uppercase tracking-wider">Original</span>
+                                            <span className="text-xs text-neutral-500 uppercase tracking-wider">{t('lookDetail.original')}</span>
                                             <span className="text-sm text-neutral-500 line-through">{formatPrice(totalPrice)} {t('common.sum')}</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs text-neutral-500 uppercase tracking-wider">Chegirma</span>
+                                            <span className="text-xs text-neutral-500 uppercase tracking-wider">{t('lookDetail.discount')}</span>
                                             <span className="inline-flex items-center gap-1.5">
                                                 <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-                                                    {look.discountType === 'percentage' ? `-${look.discountValue}%` : 'Chegirma'}
+                                                    {look.discountType === 'percentage' ? `-${look.discountValue}%` : t('lookDetail.discount')}
                                                 </span>
                                                 <span className="text-sm text-emerald-400">-{formatPrice(lookDiscountAmount)} {t('common.sum')}</span>
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xs text-[#d6b47c] uppercase tracking-wider font-medium">Yakuniy</span>
+                                            <span className="text-xs text-[#d6b47c] uppercase tracking-wider font-medium">{t('lookDetail.final')}</span>
                                             <span className="text-lg font-bold text-[#d6b47c]">{formatPrice(discountedTotalPrice)} {t('common.sum')}</span>
                                         </div>
                                         <div className="flex items-center justify-center gap-1.5 py-1">
-                                            <span className="text-xs text-emerald-400 font-medium">{formatPrice(lookDiscountAmount)} so'm tejaysiz!</span>
+                                            <span className="text-xs text-emerald-400 font-medium">{formatPrice(lookDiscountAmount)} {t('lookDetail.saved')}</span>
                                         </div>
                                     </>
                                 ) : (
@@ -489,7 +489,7 @@ return look.products.map((p) => {
                                 "
                             >
                                 <ChevronLeft className="w-3.5 h-3.5" />
-                                Looklar
+                                {t('lookDetail.looks')}
                             </button>
 
                             {/* Primary: add all to cart */}
@@ -511,7 +511,7 @@ return look.products.map((p) => {
                                 "
                             >
                                 <ShoppingBag className="w-4 h-4" />
-                                Barchasini savatga
+                                {t('lookDetail.addAllToCart')}
                             </button>
                         </div>
                     </div>

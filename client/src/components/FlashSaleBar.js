@@ -57,11 +57,11 @@ const FlashSaleTimerFull = ({ endTime, originalPrice, salePrice, totalStock, sol
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-center gap-2">
         <Clock className="w-4 h-4 text-red-400" />
-        <TimeBlock value={timeLeft.hours} label="soat" />
+        <TimeBlock value={timeLeft.hours} label={t('flashSale.hoursLabel')} />
         <span className="text-xl font-bold text-red-400 mt-[-8px]">:</span>
-        <TimeBlock value={timeLeft.minutes} label="daq" />
+        <TimeBlock value={timeLeft.minutes} label={t('flashSale.minutesLabel')} />
         <span className="text-xl font-bold text-red-400 mt-[-8px]">:</span>
-        <TimeBlock value={timeLeft.seconds} label="son" />
+        <TimeBlock value={timeLeft.seconds} label={t('flashSale.secondsLabel')} />
       </div>
 
       <div className="flex items-end justify-center gap-3">
@@ -85,9 +85,9 @@ const FlashSaleTimerFull = ({ endTime, originalPrice, salePrice, totalStock, sol
           <div className="flex items-center justify-between text-[10px]">
             <span className="text-red-300 flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" />
-              Faqat {remaining} ta qoldi
+              {t('flashSale.remaining', { count: remaining })}
             </span>
-            <span className="text-[#9aa3b2]">{soldCount} / {totalStock} sotilgan</span>
+            <span className="text-[#9aa3b2]">{t('flashSale.sold', { sold: soldCount, total: totalStock })}</span>
           </div>
         </div>
       )}
@@ -111,7 +111,7 @@ const FlashSaleBar = ({ originalPrice, salePrice, stock, endTime, soldCount }) =
       >
         <div className="flex items-center gap-3">
           <Zap className="h-4 w-4 text-red-400 fill-current" />
-          <span className="text-xs font-bold uppercase tracking-wider text-red-400">Flash Sale</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-red-400">{t('flashSale.title')}</span>
           <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold">
             -{discountPercent}%
           </span>

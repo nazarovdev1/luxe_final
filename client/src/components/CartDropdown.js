@@ -25,7 +25,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
   const handleCheckout = () => {
     onClose();
     if (!isAuthenticated) {
-      toast.error("Iltimos, buyurtma berish uchun ro'yxatdan o'ting");
+      toast.error(t('cartDropdown.loginPrompt'));
       navigate('/login');
       return;
     }
@@ -74,7 +74,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
           <button
             onClick={onClose}
             className="flex items-center justify-center text-white/50 hover:text-white transition-colors"
-            aria-label="Savatni yopish"
+            aria-label={t('cartDropdown.closeAria')}
           >
             <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
@@ -132,11 +132,11 @@ const CartDropdown = ({ isOpen, onClose }) => {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[9px] font-bold uppercase tracking-widest text-[#d6b47c] mb-1.5">
-                            To'plam
+                            {t('cartDropdown.bundleLabel')}
                           </div>
                           <h3 className="text-[15px] text-white font-medium leading-tight truncate">{look.title}</h3>
                           <p className="text-[11px] text-white/40 mt-1">
-                            {look.products.length} mahsulot
+                            {look.products.length} {t('common.piece')}
                           </p>
                         </div>
                         <button
@@ -250,7 +250,7 @@ const CartDropdown = ({ isOpen, onClose }) => {
           <div className="mt-auto px-8 py-8 shrink-0 border-t border-white/10 bg-[#1a1b1e]">
             {savings > 0 && (
               <div className="flex items-center justify-between mb-3">
-                <span className="text-emerald-400 text-xs">Tejash</span>
+                <span className="text-emerald-400 text-xs">{t('cartDropdown.savings')}</span>
                 <span className="text-emerald-400 text-sm font-medium">-{money(savings)}</span>
               </div>
             )}

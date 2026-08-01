@@ -184,7 +184,7 @@ const CustomerPhotoReviews = ({ productId, productName }) => {
       return;
     }
     if (uploadFiles.length === 0) {
-      toast.error('Kamida bitta rasm yuklang');
+      toast.error(t('customerPhotoReviews.errorNoImage'));
       return;
     }
     if (!uploadComment.trim()) {

@@ -216,8 +216,8 @@ const MobileProductView = () => {
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#141416]">
           <ShoppingCart className="h-6 w-6 text-[#c9a96e]" />
         </div>
-        <h2 className="text-xl font-bold text-[#f5f5f3] mb-2">Mahsulot topilmadi</h2>
-        <p className="text-sm text-[#8a8a8d] mb-6">Bu mahsulot o'chirib yuborilgan yoki mavjud emas.</p>
+        <h2 className="text-xl font-bold text-[#f5f5f3] mb-2">{t('mobileProductView.not_found_title')}</h2>
+        <p className="text-sm text-[#8a8a8d] mb-6">{t('mobileProductView.not_found_desc')}</p>
         <Link to="/mobile" className="inline-flex items-center gap-2 rounded-xl bg-[#c9a96e] px-6 py-3 text-sm font-bold text-[#0a0a0b]">
           <ArrowLeft className="w-4 h-4" />
           {t('common.back')}
@@ -228,12 +228,12 @@ const MobileProductView = () => {
 
   const handleAddToCart = async () => {
     if (product.colors && product.colors.length > 0 && !selectedColor) {
-      toast.error('Iltimos, rang tanlang!');
+      toast.error(t('mobileProductView.toast_select_color'));
       return;
     }
     const sizeOptions = getProductOptions(product, 'size');
     if (sizeOptions.length > 0 && !selectedSize) {
-      toast.error("Iltimos, o'lcham tanlang!");
+      toast.error(t('mobileProductView.toast_select_size'));
       return;
     }
     setIsAddingToCart(true);
@@ -246,7 +246,7 @@ const MobileProductView = () => {
         quantity,
       });
     } catch (error) {
-      toast.error('Xatolik yuz berdi');
+      toast.error(t('mobileProductView.toast_error'));
     } finally {
       setIsAddingToCart(false);
     }
@@ -371,7 +371,7 @@ const MobileProductView = () => {
                 <div className="w-px h-4 bg-white/10" />
                 <div className="flex items-center gap-1.5 text-[#8a8a8d]">
                   <MessageCircle className="w-3.5 h-3.5" />
-                  <span className="text-xs font-bold">{reviews.length} sharh</span>
+                  <span className="text-xs font-bold">{reviews.length} {t('mobileProductView.reviews_single')}</span>
                 </div>
               </button>
 
@@ -486,7 +486,7 @@ const MobileProductView = () => {
                       <Palette className="w-4 h-4 text-[#c9a96e]" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-0.5">Materiallar</p>
+                      <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-0.5">{t('mobileProductView.materials')}</p>
                       <p className="text-sm text-[#f5f5f3]">{product.materials.join(', ')}</p>
                     </div>
                   </div>
@@ -497,7 +497,7 @@ const MobileProductView = () => {
                       <Sparkles className="w-4 h-4 text-green-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-1">Eko-mas'uliyat</p>
+                      <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-1">{t('mobileProductView.eco_responsibility')}</p>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                           <div className="h-full bg-green-500 rounded-full" style={{ width: `${product.ecoScore * 10}%` }} />
@@ -513,9 +513,9 @@ const MobileProductView = () => {
             {/* ── Trust Badges ────────────────────────────── */}
             <div className="grid grid-cols-3 gap-3 mb-10">
               {[
-                { icon: Truck, label: '3-6 soat' },
-                { icon: Shield, label: 'Kafolat' },
-                { icon: RotateCcw, label: '7 kun' },
+                { icon: Truck, label: t('mobileProductView.trust_delivery') },
+                { icon: Shield, label: t('mobileProductView.trust_warranty') },
+                { icon: RotateCcw, label: t('mobileProductView.trust_return') },
               ].map(({ icon: Icon, label }, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] border border-white/5">
                   <Icon className="w-4 h-4 text-[#c9a96e]" />
@@ -528,9 +528,9 @@ const MobileProductView = () => {
             <div className="mb-10">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-px w-6 bg-[#c9a96e]" />
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">Hamjamiyat</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">{t('mobileProductView.community_tag')}</span>
               </div>
-              <h3 className="font-brilliant text-2xl text-[#f5f5f3] mb-6">Mijozlarimiz nigohida</h3>
+              <h3 className="font-brilliant text-2xl text-[#f5f5f3] mb-6">{t('mobileProductView.customer_photos_title')}</h3>
               <CustomerPhotoReviews productId={product._id || product.id || id} productName={product.name} product={product} />
             </div>
 
@@ -541,9 +541,9 @@ const MobileProductView = () => {
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <div className="h-px w-6 bg-[#c9a96e]" />
-                      <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">Tavsiya</span>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">{t('mobileProductView.related_tag')}</span>
                     </div>
-                    <h3 className="font-brilliant text-2xl text-[#f5f5f3]">O'xshash mahsulotlar</h3>
+                    <h3 className="font-brilliant text-2xl text-[#f5f5f3]">{t('mobileProductView.related_title')}</h3>
                   </div>
                   <button
                     onClick={fetchVisualSimilar}
@@ -551,7 +551,7 @@ const MobileProductView = () => {
                     className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141416] border border-white/5 text-[10px] font-bold text-[#f5f5f3]"
                   >
                     {visualLoading ? <Loader2 size={12} className="animate-spin text-[#c9a96e]" /> : <Sparkles size={12} className="text-[#c9a96e]" />}
-                    AI
+                    {t('mobileProductView.ai_button')}
                   </button>
                 </div>
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2" style={{ scrollbarWidth: 'none' }}>
@@ -578,7 +578,7 @@ const MobileProductView = () => {
                   <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
                     <Sparkles className="text-purple-400" size={16} />
                   </div>
-                  <h3 className="font-brilliant text-xl text-[#f5f5f3]">AI Tanlovlari</h3>
+                  <h3 className="font-brilliant text-xl text-[#f5f5f3]">{t('mobileProductView.ai_title')}</h3>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {visualResults.map((item) => (
@@ -603,9 +603,9 @@ const MobileProductView = () => {
             <div ref={reviewsRef} className="mb-8 scroll-mt-24">
               <div className="flex items-center gap-3 mb-6">
                 <div className="h-px w-6 bg-[#c9a96e]" />
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">Fikrlar</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#c9a96e] font-bold">{t('mobileProductView.reviews_tag')}</span>
               </div>
-              <h3 className="font-brilliant text-2xl text-[#f5f5f3] mb-6">Mijozlar fikri</h3>
+              <h3 className="font-brilliant text-2xl text-[#f5f5f3] mb-6">{t('mobileProductView.reviews_title')}</h3>
 
               {/* Rating summary */}
               <div className="p-5 rounded-xl bg-white/[0.02] border border-white/5 mb-6">
@@ -613,7 +613,7 @@ const MobileProductView = () => {
                   <div className="text-3xl font-bold text-[#f5f5f3]">{(product.rating || 0).toFixed(1)}</div>
                   <div>
                     <div className="flex items-center gap-0.5 mb-1">{renderStars(product.rating || 0)}</div>
-                    <p className="text-xs text-[#8a8a8d]">{reviews.length} ta sharh</p>
+                    <p className="text-xs text-[#8a8a8d]">{reviews.length} {t('mobileProductView.reviews_count')}</p>
                   </div>
                 </div>
                 {reviews.length > 0 && (

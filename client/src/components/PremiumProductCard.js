@@ -97,7 +97,7 @@ const PremiumProductCard = ({
                 ? 'bg-[#c9a96e] text-[#0a0a0b] border-[#c9a96e]'
                 : 'bg-black/40 text-white border-white/10 hover:bg-[#c9a96e] hover:text-[#0a0a0b] hover:border-[#c9a96e]'
             }`}
-            title="Taqqoslash"
+            title={t('premiumProductCard.compare')}
           >
             <BarChart3 className="w-4 h-4" />
           </button>
@@ -108,7 +108,7 @@ const PremiumProductCard = ({
                 ? 'bg-red-500/20 border-red-500/40 text-red-400'
                 : 'bg-black/40 text-white border-white/10 hover:bg-white/20 hover:border-white/20'
             }`}
-            title="Sevimlilarga qo'shish"
+            title={t('premiumProductCard.favorite')}
           >
             <Heart className={`w-4 h-4 transition-transform duration-300 ${isLiked ? 'fill-current scale-110' : ''}`} />
           </button>

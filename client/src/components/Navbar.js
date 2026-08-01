@@ -53,7 +53,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
         link: item.path,
       }))
     },
-    { name: t('nav.about'), sectionId: 'about' },
+    { name: t('nav.about'), link: '/about' },
   ];
 
   const closeAllMenus = () => {
@@ -472,14 +472,14 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
 /* ─── Language Switcher Component ─────────────────────────────── */
 const LanguageSwitcher = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { language, setLanguage, languageInfo, availableLanguages } = useLanguage();
+  const { t, language, setLanguage, languageInfo, availableLanguages } = useLanguage();
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-neutral-300 hover:text-white hover:bg-white/5 transition-colors"
-        title="Tilni o'zgartirish"
+        title={t('mobileNav.changeLanguage')}
       >
         <Globe className="w-4 h-4" />
         <span className="text-xs font-medium uppercase">{language}</span>

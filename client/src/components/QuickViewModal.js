@@ -82,11 +82,11 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
 
   const handleAddToCart = async () => {
     if (product.colors && product.colors.length > 0 && !selectedColor) {
-      toast.error('Iltimos, rang tanlang!');
+      toast.error(t('quickView.selectColor'));
       return;
     }
     if (sizeOptions.length > 0 && !selectedSize) {
-      toast.error("Iltimos, o'lcham tanlang!");
+      toast.error(t('quickView.selectSize'));
       return;
     }
 
@@ -99,7 +99,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
       });
       onClose();
     } catch (error) {
-      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+      toast.error(t('quickView.error'));
     } finally {
       setIsAdding(false);
     }
@@ -153,7 +153,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
               </>
             ) : (
               <div className="flex h-full items-center justify-center bg-[#0d1423] text-[#9aa3b2]">
-                Rasm mavjud emas
+                {t('quickView.noImage')}
               </div>
             )}
 
@@ -287,7 +287,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
 
             {/* Quantity */}
             <div className="mt-4">
-              <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9aa3b2] mb-2">Soni</h4>
+              <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9aa3b2] mb-2">{t('quickView.quantity')}</h4>
               <div className="inline-flex items-center rounded-xl bg-white/5 border border-white/10 p-0.5">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -337,16 +337,16 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
             {/* Features */}
             <div className="mt-4 grid grid-cols-3 gap-2">
               <div className="rounded-xl bg-white/[0.03] p-2 text-center">
-                <p className="text-[10px] text-[#9aa3b2]">Yetkazish</p>
-                <p className="text-[11px] font-semibold text-[#f4f1eb]">3-6 soat</p>
+                <p className="text-[10px] text-[#9aa3b2]">{t('quickView.shipping')}</p>
+                <p className="text-[11px] font-semibold text-[#f4f1eb]">{t('quickView.shippingTime')}</p>
               </div>
               <div className="rounded-xl bg-white/[0.03] p-2 text-center">
-                <p className="text-[10px] text-[#9aa3b2]">Kafolat</p>
-                <p className="text-[11px] font-semibold text-[#f4f1eb]">30 kun</p>
+                <p className="text-[10px] text-[#9aa3b2]">{t('quickView.warranty')}</p>
+                <p className="text-[11px] font-semibold text-[#f4f1eb]">{t('quickView.warrantyTime')}</p>
               </div>
               <div className="rounded-xl bg-white/[0.03] p-2 text-center">
-                <p className="text-[10px] text-[#9aa3b2]">Qaytarish</p>
-                <p className="text-[11px] font-semibold text-[#f4f1eb]">7 kun</p>
+                <p className="text-[10px] text-[#9aa3b2]">{t('quickView.returns')}</p>
+                <p className="text-[11px] font-semibold text-[#f4f1eb]">{t('quickView.returnTime')}</p>
               </div>
             </div>
           </div>

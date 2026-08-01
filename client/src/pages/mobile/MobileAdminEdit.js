@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProducts } from '../../contexts/ProductContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import {
   ArrowLeft,
@@ -51,6 +52,7 @@ const MobileAdminEdit = () => {
 
   const { isAuthenticated, user } = useAuth();
   const { products, addProduct, updateProduct, getImageKitAuth } = useProducts();
+  const { t } = useLanguage();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPipetteActive, setIsPipetteActive] = useState(false);
@@ -115,20 +117,20 @@ const MobileAdminEdit = () => {
       return;
     }
 
-    const loadingToast = toast.loading('Rasmlar yuklanmoqda...');
+    const loadingToast = toast.loading(t('mobileAdmin.imagesUploading'));
 
     try {
       const uploadedUrls = [];
       const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
 
       if (!publicKey) {
-        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+        throw new Error(t('mobileAdmin.imagekitKeyMissing'));
       }
 
       for (const file of files) {
         const auth = await getImageKitAuth();
         if (!auth || !auth.signature) {
-          throw new Error('ImageKit auth xato');
+          throw new Error(t('mobileAdmin.imagekitAuthError'));
         }
 
         const data = new FormData();
@@ -149,7 +151,7 @@ const MobileAdminEdit = () => {
         if (result.url) {
           uploadedUrls.push(result.url);
         } else {
-          throw new Error('Rasm yuklash xatoligi');
+          throw new Error(t('mobileAdmin.imageUploadError'));
         }
       }
 
@@ -158,10 +160,10 @@ const MobileAdminEdit = () => {
         images: [...prev.images, ...uploadedUrls],
       }));
 
-      toast.success('Rasm yuklandi', { id: loadingToast });
+      toast.success(t('mobileAdmin.imageUploaded'), { id: loadingToast });
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(error.message || 'Rasm yuklashda xatolik', { id: loadingToast });
+      toast.error(error.message || t('mobileAdmin.imageUploadFailed'), { id: loadingToast });
     }
   };
 
@@ -205,12 +207,12 @@ const MobileAdminEdit = () => {
         setColorDraft(hexColor);
         setIsPipetteActive(false);
         document.body.style.cursor = 'default';
-        toast.success(`Rang tanlandi: ${hexColor}`);
+        toast.success(`${t('mobileAdmin.colorPicked')} ${hexColor}`);
       } catch (error) {
         console.error('Pipette error:', error);
         setIsPipetteActive(false);
         document.body.style.cursor = 'default';
-        toast.error("Rangni aniqlab bo'lmadi");
+        toast.error(t('mobileAdmin.colorPickFailed'));
       }
     };
   };
@@ -238,12 +240,12 @@ const MobileAdminEdit = () => {
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.category || !formData.price) {
-      toast.error("Barcha majburiy maydonlarni to'ldiring");
+      toast.error(t('mobileAdmin.requiredFields'));
       return;
     }
 
     if (formData.images.length === 0) {
-      toast.error('Kamida bitta rasm yuklang');
+      toast.error(t('mobileAdmin.needAtLeastOneImage'));
       return;
     }
 
@@ -270,14 +272,14 @@ const MobileAdminEdit = () => {
       const result = id ? await updateProduct(id, payload) : await addProduct(payload);
 
       if (result) {
-        toast.success(id ? 'Mahsulot yangilandi' : "Mahsulot qo'shildi");
+        toast.success(id ? t('mobileAdmin.productUpdated') : t('mobileAdmin.productAdded'));
         navigate('/mobile/admin');
       } else {
-        toast.error('Saqlashda xatolik yuz berdi');
+        toast.error(t('mobileAdmin.saveFailed'));
       }
     } catch (error) {
       console.error('Save error:', error);
-      toast.error('Xatolik yuz berdi');
+      toast.error(t('mobileAdmin.genericError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -291,14 +293,14 @@ const MobileAdminEdit = () => {
     return (
       <div className="mobile-admin-shell flex items-center justify-center px-4">
         <div className="mobile-admin-card w-full max-w-sm p-6 text-center space-y-4">
-          <h1 className="text-xl font-semibold">Ruxsat yo'q</h1>
-          <p className="mobile-admin-muted text-sm">Bu sahifa faqat adminlar uchun.</p>
+          <h1 className="text-xl font-semibold">{t('mobileAdmin.accessDenied')}</h1>
+          <p className="mobile-admin-muted text-sm">{t('mobileAdmin.accessDeniedDesc')}</p>
           <button
             type="button"
             onClick={() => navigate('/mobile')}
             className="mobile-admin-btn-primary w-full py-3"
           >
-            Bosh sahifaga qaytish
+            {t('mobileAdmin.backToHome')}
           </button>
         </div>
       </div>
@@ -315,11 +317,11 @@ const MobileAdminEdit = () => {
             className="mobile-admin-btn-secondary px-3 py-2 text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Orqaga
+            {t('mobileAdmin.back')}
           </button>
 
           <h1 className="mobile-admin-title text-[12px] text-center">
-            {id ? 'Mahsulotni Tahrirlash' : 'Yangi Mahsulot'}
+            {id ? t('mobileAdmin.editTitle') : t('mobileAdmin.newTitle')}
           </h1>
 
           <div className="w-20" />
@@ -330,30 +332,30 @@ const MobileAdminEdit = () => {
         <section className="mobile-admin-card p-3.5 space-y-3">
           <h2 className="text-sm font-semibold text-white inline-flex items-center gap-1.5">
             <Gem className="w-4 h-4 text-amber-300" />
-            Asosiy ma'lumotlar
+            {t('mobileAdmin.basicInfo')}
           </h2>
 
           <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">Mahsulot nomi *</label>
+            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.productName')}</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               className="mobile-admin-input"
-              placeholder="Masalan: Elegant ko'ylak"
+              placeholder={t('mobileAdmin.productNamePlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">Kategoriya *</label>
+            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.category')}</label>
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
               className="mobile-admin-select"
             >
-              <option value="">Tanlang</option>
+              <option value="">{t('mobileAdmin.selectCategory')}</option>
               {CATEGORIES.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -364,7 +366,7 @@ const MobileAdminEdit = () => {
 
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">Narx *</label>
+              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.price')}</label>
               <input
                 type="text"
                 name="price"
@@ -375,7 +377,7 @@ const MobileAdminEdit = () => {
               />
             </div>
             <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">Eski narx</label>
+              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.originalPrice')}</label>
               <input
                 type="text"
                 name="originalPrice"
@@ -389,21 +391,21 @@ const MobileAdminEdit = () => {
 
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">Badge</label>
+              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.badge')}</label>
               <select
                 name="badge"
                 value={formData.badge}
                 onChange={handleChange}
                 className="mobile-admin-select"
               >
-                <option value="">Tanlanmagan</option>
-                <option value="NEW">Yangi</option>
-                <option value="BESTSELLER">Bestseller</option>
+                <option value="">{t('mobileAdmin.badgeNone')}</option>
+                <option value="NEW">{t('mobileAdmin.badgeNew')}</option>
+                <option value="BESTSELLER">{t('mobileAdmin.badgeBestseller')}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">Reyting</label>
+              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.rating')}</label>
               <input
                 type="number"
                 name="rating"
@@ -422,13 +424,13 @@ const MobileAdminEdit = () => {
         <section className="mobile-admin-card p-3.5 space-y-3">
           <h2 className="text-sm font-semibold text-white inline-flex items-center gap-1.5">
             <ImageIcon className="w-4 h-4 text-amber-300" />
-            Rasmlar
+            {t('mobileAdmin.images')}
           </h2>
 
           <label className="mobile-admin-empty p-4 block text-center cursor-pointer">
             <div className="inline-flex items-center gap-2 text-slate-200 text-sm">
               <Upload className="w-4 h-4 text-amber-300" />
-              Rasm yuklash
+              {t('mobileAdmin.uploadImage')}
             </div>
             <input
               ref={fileInputRef}
@@ -461,7 +463,7 @@ const MobileAdminEdit = () => {
                     <X className="w-3.5 h-3.5" />
                   </button>
                   {index === 0 ? (
-                    <span className="mobile-admin-pill mobile-admin-pill-warning absolute bottom-1 left-1">Asosiy</span>
+                    <span className="mobile-admin-pill mobile-admin-pill-warning absolute bottom-1 left-1">{t('mobileAdmin.mainImageBadge')}</span>
                   ) : null}
                 </div>
               ))}
@@ -470,10 +472,10 @@ const MobileAdminEdit = () => {
         </section>
 
         <section className="mobile-admin-card p-3.5 space-y-3">
-          <h2 className="text-sm font-semibold text-white">Ranglar va o'lchamlar</h2>
+          <h2 className="text-sm font-semibold text-white">{t('mobileAdmin.colorsAndSizes')}</h2>
 
           <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">Ranglar</label>
+            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.colors')}</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.colors.map((color, index) => (
                 <span
@@ -518,7 +520,7 @@ const MobileAdminEdit = () => {
                   }
                 }}
                 className="mobile-admin-input"
-                placeholder="Rang kodi yoki nomi"
+                placeholder={t('mobileAdmin.colorPlaceholder')}
               />
               <button
                 type="button"
@@ -537,7 +539,7 @@ const MobileAdminEdit = () => {
           </div>
 
           <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">O'lchamlar</label>
+            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.sizes')}</label>
             <input
               type="text"
               name="sizes"
@@ -559,18 +561,18 @@ const MobileAdminEdit = () => {
                 }))
               }
             />
-            Lookbookda ko'rsatish
+            {t('mobileAdmin.showInLookbook')}
           </label>
 
           <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">Tavsif</label>
+            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.description')}</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows={4}
               className="mobile-admin-textarea"
-              placeholder="Mahsulot haqida ma'lumot"
+              placeholder={t('mobileAdmin.descriptionPlaceholder')}
             />
           </div>
         </section>
@@ -586,12 +588,12 @@ const MobileAdminEdit = () => {
           {isSubmitting ? (
             <>
               <div className="mobile-admin-loading w-4 h-4" />
-              Saqlanmoqda...
+              {t('mobileAdmin.saving')}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              {id ? 'Saqlash' : "Qo'shish"}
+              {id ? t('mobileAdmin.save') : t('mobileAdmin.add')}
             </>
           )}
         </button>

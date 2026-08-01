@@ -31,7 +31,7 @@ const getSizes = (product) =>
         .filter(Boolean)
     : [];
 
-const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct }) => {
+const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct, t }) => {
   const sizeOptions = getSizes(product);
   const hasVariants = (product.colors?.length || 0) > 0 || sizeOptions.length > 0;
 
@@ -64,7 +64,7 @@ const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct })
               onClick={() => onOpenProduct(product.id)}
               className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/70 hover:text-white transition-colors"
             >
-              Ochish
+              {t('mobileLookDetail.open_label')}
               <ArrowUpRight className="w-3 h-3" />
             </button>
           </div>
@@ -75,7 +75,7 @@ const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct })
         <div className="mt-3 flex flex-wrap gap-3 border-t border-white/5 pt-3">
           {product.colors?.length > 0 ? (
             <div className="space-y-1.5">
-              <p className="text-[9px] uppercase tracking-[0.2em] text-neutral-500">Rang</p>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-neutral-500">{t('mobileLookDetail.color_label')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {product.colors.map((color, index) => {
                   const isHex = color.startsWith('#');
@@ -107,7 +107,7 @@ const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct })
 
           {sizeOptions.length > 0 ? (
             <div className="space-y-1.5">
-              <p className="text-[9px] uppercase tracking-[0.2em] text-neutral-500">O'lcham</p>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-neutral-500">{t('mobileLookDetail.size_label')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {sizeOptions.map((size) => {
                   const isSelected = selection?.size === size;
@@ -300,22 +300,22 @@ const MobileLookDetail = () => {
     lookProducts.forEach((product) => {
       const selected = selections[product.id] || {};
       if ((product.colors || []).length > 0 && !selected.color) {
-        nextErrors[product.id] = 'Rang tanlang';
+        nextErrors[product.id] = t('mobileLookDetail.error_color');
         hasError = true;
       }
 
       const sizes = getSizes(product);
       if (sizes.length > 0 && !selected.size) {
         nextErrors[product.id] = nextErrors[product.id]
-          ? "Rang va o'lcham tanlang"
-          : "O'lcham tanlang";
+          ? t('mobileLookDetail.error_both')
+          : t('mobileLookDetail.error_size');
         hasError = true;
       }
     });
 
     if (hasError) {
       setErrors(nextErrors);
-      toast.error('Barcha variantlarni tanlang');
+      toast.error(t('mobileLookDetail.toast_variants'));
       return;
     }
 
@@ -337,7 +337,7 @@ const MobileLookDetail = () => {
     setIsAddingAll(false);
 
     if (added > 0) {
-      toast.success(`Look savatga qo'shildi (${added} mahsulot)`);
+      toast.success(`${t('mobileLookDetail.toast_success')} (${added} ${t('mobileLookDetail.success_count')})`);
     }
   };
 
@@ -352,14 +352,14 @@ const MobileLookDetail = () => {
   if (!look) {
     return (
       <div className="min-h-screen bg-[#08090d] flex flex-col items-center justify-center px-6 text-center">
-        <h2 className="text-xl font-semibold text-[#f4f1eb] mb-2">Look topilmadi</h2>
-        <p className="text-sm text-neutral-400 mb-6">Ushbu look mavjud emas yoki o'chirilgan.</p>
+        <h2 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('mobileLookDetail.not_found_title')}</h2>
+        <p className="text-sm text-neutral-400 mb-6">{t('mobileLookDetail.not_found_desc')}</p>
         <button
           type="button"
           onClick={() => navigate('/mobile/lookbooks')}
           className="px-5 py-3 rounded-2xl bg-[#d6b47c] text-[#060810] font-semibold"
         >
-          Lookbookga qaytish
+          {t('mobileLookDetail.back_to_lookbook')}
         </button>
       </div>
     );
@@ -382,7 +382,7 @@ const MobileLookDetail = () => {
           className="h-10 px-4 rounded-full bg-black/35 backdrop-blur-md border border-white/15 inline-flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/90"
         >
           <ShoppingBag className="w-4 h-4 text-[#d6b47c]" />
-          Savat
+          {t('mobileLookDetail.cart_button')}
         </button>
       </div>
 
@@ -391,7 +391,7 @@ const MobileLookDetail = () => {
           type="button"
           onClick={() => setIsImageFullscreen(true)}
           className="block w-full h-full cursor-zoom-in"
-          aria-label="Rasmni to'liq ochish"
+          aria-label={t('mobileLookDetail.image_zoom_label')}
         >
           <img
             src={heroImage}
@@ -409,7 +409,7 @@ const MobileLookDetail = () => {
         <div className="mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d6b47c]/20 border border-[#d6b47c]/30 mb-3">
             <Gem className="w-3.5 h-3.5 text-[#d6b47c]" />
-            <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]">Look {look.id || ''}</span>
+            <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]">{t('mobileLookDetail.look_label')} {look.id || ''}</span>
           </div>
 
           <h1 className="font-brilliant text-[1.85rem] leading-[1.06] text-[#f4f1eb]">{look.title}</h1>
@@ -420,14 +420,14 @@ const MobileLookDetail = () => {
 
         <div className="rounded-2xl bg-[#0e1625]/75 border border-white/10 p-3.5 mb-5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-neutral-500 uppercase tracking-[0.2em]">Look tarkibi</span>
-            <span className="text-[#d6b47c] font-semibold">{lookProducts.length} mahsulot</span>
+            <span className="text-neutral-500 uppercase tracking-[0.2em]">{t('mobileLookDetail.contents_label')}</span>
+            <span className="text-[#d6b47c] font-semibold">{lookProducts.length} {t('mobileLookDetail.success_count')}</span>
           </div>
         </div>
 
         {lookProducts.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-[#0f1623]/65 p-8 text-center">
-            <p className="text-neutral-400 text-sm">Ushbu look uchun mahsulotlar topilmadi</p>
+            <p className="text-neutral-400 text-sm">{t('mobileLookDetail.no_products')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -439,6 +439,7 @@ const MobileLookDetail = () => {
                 error={errors[product.id]}
                 onSelect={handleSelect}
                 onOpenProduct={(productId) => navigate(`/mobile/product/${productId}`)}
+                t={t}
               />
             ))}
           </div>
@@ -458,7 +459,7 @@ const MobileLookDetail = () => {
               onClick={() => navigate('/mobile/lookbooks')}
               className="h-12 rounded-xl border border-white/10 text-neutral-300 text-sm inline-flex items-center justify-center gap-1.5"
             >
-              Looklar
+              {t('mobileLookDetail.looks_label')}
               <ChevronRight className="w-4 h-4" />
             </button>
 
@@ -469,7 +470,7 @@ const MobileLookDetail = () => {
               className="h-12 px-5 rounded-xl bg-[#d6b47c] text-[#060810] font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <ShoppingBag className="w-4 h-4" />
-              {isAddingAll ? "Qo'shilmoqda..." : 'Barchasini savatga'}
+              {isAddingAll ? t('mobileLookDetail.adding') : t('mobileLookDetail.add_all')}
             </button>
           </div>
         </div>

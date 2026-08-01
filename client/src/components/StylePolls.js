@@ -39,7 +39,7 @@ const storeVote = (pollId, optionId) => {
 const BrokenImage = () => (
   <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#0d0f16] text-[#586071]">
     <ImageOff className="h-8 w-8" />
-    <span className="text-[10px] uppercase tracking-[0.18em]">Rasm yo'q</span>
+    <span className="text-[10px] uppercase tracking-[0.18em]">{t('stylePolls.noImage')}</span>
   </div>
 );
 
@@ -75,7 +75,7 @@ const StylePolls = () => {
         setPolls(response.data.data || []);
       }
     } catch (error) {
-      toast.error("So'rovnomalarni yuklashda xato");
+      toast.error(t('stylePolls.errorLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +110,7 @@ const StylePolls = () => {
         setVotedPolls((prev) => ({ ...prev, [pollId]: optionId }));
         storeVote(pollId, optionId);
       }
-      toast.error(error.response?.data?.message || 'Ovoz berishda xato');
+      toast.error(error.response?.data?.message || t('stylePolls.voteError'));
     } finally {
       setVotingId(null);
     }
@@ -127,7 +127,7 @@ const StylePolls = () => {
         <div className="rounded-[28px] border border-white/10 bg-[#0c0e14]/80 p-8">
           <div className="flex items-center justify-center gap-3 text-[#d6b47c]">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span className="text-sm">So'rovnomalar yuklanmoqda...</span>
+            <span className="text-sm">{t('stylePolls.loading')}</span>
           </div>
         </div>
       </section>
@@ -141,7 +141,7 @@ const StylePolls = () => {
           <BarChart3 className="mx-auto mb-4 h-10 w-10 text-[#d6b47c]/50" />
           <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('stylePolls.title')}</h3>
           <p className="mt-2 text-sm text-[#7f8797]">
-            Hozircha so'rovnomalar yo'q.
+            {t('stylePolls.empty')}
           </p>
         </div>
       </section>
@@ -179,7 +179,7 @@ const StylePolls = () => {
                     {poll.category || 'Community'}
                   </span>
                   {poll.timeLeft && (
-                    <span className="text-[11px] text-[#9aa3b2]">{poll.timeLeft} qoldi</span>
+                    <span className="text-[11px] text-[#9aa3b2]">{poll.timeLeft} {t('stylePolls.remaining')}</span>
                   )}
                 </div>
                 <h4 className="text-lg font-semibold leading-tight text-[#f4f1eb]">{poll.question}</h4>
@@ -226,7 +226,7 @@ const StylePolls = () => {
                           <div className="min-w-0">
                             <p className="text-base font-bold text-white sm:text-lg">{option.label}</p>
                             <p className="mt-1 text-xs text-white/55">
-                              {hasVoted ? `${option.votes || 0} ovoz` : t('stylePolls.clickToVote')}
+                              {hasVoted ? `${option.votes || 0} ${t('stylePolls.vote')}` : t('stylePolls.clickToVote')}
                             </p>
                           </div>
 
@@ -239,7 +239,7 @@ const StylePolls = () => {
                               </span>
                             ) : (
                               <span className="rounded-full border border-white/20 bg-black/35 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white/80">
-                                Tanlash
+                                {t('stylePolls.select')}
                               </span>
                             )}
                           </div>
@@ -254,11 +254,11 @@ const StylePolls = () => {
                 <div className="flex items-center gap-5 text-[#9aa3b2]">
                   <span className="flex items-center gap-1.5 text-xs">
                     <Users className="h-3.5 w-3.5" />
-                    {totalVotes} ovoz
+                    {totalVotes} {t('stylePolls.vote')}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs">
                     <MessageCircle className="h-3.5 w-3.5" />
-                    Natijalar real vaqtga yaqin yangilanadi
+                    {t('stylePolls.liveUpdates')}
                   </span>
                 </div>
 
@@ -280,7 +280,7 @@ const StylePolls = () => {
           onClick={() => setShowAll(true)}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] py-3 text-sm text-[#9aa3b2] transition-all hover:border-[#d6b47c]/25 hover:bg-[#d6b47c]/5 hover:text-[#f4f1eb]"
         >
-          Barcha so'rovnomalar <ArrowRight className="h-4 w-4" />
+          {t('stylePolls.viewAll')} <ArrowRight className="h-4 w-4" />
         </button>
       )}
     </section>

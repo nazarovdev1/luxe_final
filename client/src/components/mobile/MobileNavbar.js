@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Compass, Home, ShoppingBag, ShoppingCart, User } from 'lucide-react';
+import { Compass, Globe, Home, ShoppingBag, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -11,11 +11,18 @@ import {
 import { GlassSurface } from '../ui';
 import './MobileNavbar.css';
 
+const LANGS = [
+  { code: 'uz', label: 'UZ' },
+  { code: 'ru', label: 'RU' },
+  { code: 'en', label: 'EN' },
+];
+
 const MobileNavbar = () => {
   const { totalItems } = useCart();
   const { isAuthenticated } = useAuth();
-  const { t } = useLanguage();
+  const { t, language, setLanguage, availableLanguages } = useLanguage();
   const { pathname } = useLocation();
+  const [langOpen, setLangOpen] = useState(false);
 
   const navItems = [
     {
@@ -37,7 +44,7 @@ const MobileNavbar = () => {
       path: '/mobile/events',
       matchPrefixes: MOBILE_NAV_ROUTE_GROUPS.explore,
       icon: Compass,
-      label: 'Kashf et',
+      label: t('mobileNav.explore'),
     },
     {
       id: 'cart',
@@ -59,6 +66,8 @@ const MobileNavbar = () => {
   const activeId = getActiveMobileNavId(pathname);
   const activeIndex = navItems.findIndex((item) => item.id === activeId);
 
+  const currentLang = (availableLanguages || LANGS).find((l) => l.code === language) || { code: language, label: (language || 'uz').toUpperCase() };
+
   return (
     <nav className="mobile-bottom-nav border-none" aria-label={t('mobileNav.ariaLabel', 'Asosiy mobil navigatsiya')}>
       <GlassSurface
@@ -79,7 +88,7 @@ const MobileNavbar = () => {
         className="mobile-bottom-nav__pill"
         style={{ '--active-index': Math.max(activeIndex, 0) }}
       >
-    
+
 
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -107,6 +116,44 @@ const MobileNavbar = () => {
             </Link>
           );
         })}
+
+        {/* Language switcher */}
+        <div className="mobile-bottom-nav__item mobile-bottom-nav__lang">
+          <button
+            type="button"
+            onClick={() => setLangOpen((v) => !v)}
+            aria-label={t('mobileNav.changeLanguage')}
+            title={t('mobileNav.changeLanguage')}
+            className={`mobile-bottom-nav__content mobile-bottom-nav__lang-btn${langOpen ? ' mobile-bottom-nav__lang-btn--active' : ''}`}
+          >
+            <span className="mobile-bottom-nav__content">
+              <span className="mobile-bottom-nav__icon-wrap">
+                <Globe className="mobile-bottom-nav__icon" aria-hidden="true" />
+                <span className="mobile-bottom-nav__active-dot mb-[6px]" aria-hidden="true" />
+              </span>
+              <span className="mobile-bottom-nav__label">{currentLang.label}</span>
+            </span>
+          </button>
+          {langOpen && (
+            <div className="mobile-bottom-nav__lang-menu" role="menu">
+              {(availableLanguages || LANGS).map((lng) => (
+                <button
+                  key={lng.code}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setLanguage(lng.code);
+                    setLangOpen(false);
+                  }}
+                  className={`mobile-bottom-nav__lang-option${lng.code === language ? ' mobile-bottom-nav__lang-option--active' : ''}`}
+                >
+                  <span className="mobile-bottom-nav__lang-flag" aria-hidden="true">{lng.flag || ''}</span>
+                  <span>{(lng.label || lng.code).toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </GlassSurface>
     </nav>
   );

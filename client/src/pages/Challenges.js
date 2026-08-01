@@ -164,15 +164,15 @@ const Challenges = () => {
                             </div>
                             <div className="text-right">
                               <span className={`text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-[0.2em] inline-block mb-2 ${challenge.isActive && !isExpired ? 'bg-green-500/10 text-green-400 border border-green-500/20' : challenge.winner ? 'bg-amber-300 text-black shadow-[0_5px_15px_rgba(214,180,124,0.3)]' : 'bg-gray-800 text-gray-500'}`}>
-                                {challenge.isActive && !isExpired ? 'Active' : challenge.winner ? 'G\'olib aniqlandi' : 'Yakunlangan'}
+                                {challenge.isActive && !isExpired ? t('challenges.statusActive') : challenge.winner ? t('challenges.statusWinner') : t('challenges.statusFinished')}
                               </span>
                               {challenge.winner && (
                                 <p className="text-[10px] text-amber-300/80 font-black uppercase tracking-widest mt-1 animate-pulse">
-                                  {t('challenges.winner')}: {challenge.submissions?.find(s => s.user?._id === challenge.winner)?.user?.username || 'Noma\'lum'}
+                                  {t('challenges.winner')}: {challenge.submissions?.find(s => s.user?._id === challenge.winner)?.user?.username || t('challenges.anonymous')}
                                 </p>
                               )}
                               {daysLeft !== null && !isExpired && (
-                                <p className="text-xs text-orange-400/80 font-medium">Tugashiga {daysLeft} kun qoldi</p>
+                                <p className="text-xs text-orange-400/80 font-medium">{t('challenges.daysLeftPrefix')}{daysLeft} {t('challenges.daysLeftSuffix')}</p>
                               )}
                             </div>
                           </div>
@@ -206,10 +206,10 @@ const Challenges = () => {
                     {/* Submissions Section */}
                     <div className="space-y-6">
                       <div className="flex items-center justify-between px-2">
-                        <h3 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">Top Obrazlar</h3>
+                        <h3 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">{t('challenges.topLooks')}</h3>
                         <div className="flex items-center gap-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-[#d6b47c] animate-pulse" />
-                          <span className="text-[10px] text-gray-400 uppercase tracking-widest">Ovoz berish ochiq</span>
+                          <span className="text-[10px] text-gray-400 uppercase tracking-widest">{t('challenges.voteOpen')}</span>
                         </div>
                       </div>
 
@@ -259,7 +259,7 @@ const Challenges = () => {
                                     <p className="text-white text-xs font-bold truncate">{sub.user?.username}</p>
                                     <div className="flex items-center gap-1 mt-0.5">
                                       <Star className={`w-2.5 h-2.5 ${isWinner ? 'text-amber-300 fill-amber-300' : 'text-[#d6b47c] fill-[#d6b47c]'}`} />
-                                      <span className="text-[9px] text-gray-400 font-medium">{isWinner ? 'Grand Winner' : `#${idx + 1} Rank`}</span>
+                                      <span className="text-[9px] text-gray-400 font-medium">{isWinner ? t('challenges.grandWinner') : `#{idx + 1} ${t('challenges.rank')}`}</span>
                                     </div>
                                   </div>
                                   {!challenge.isClosed && (
@@ -360,7 +360,7 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
     try {
       const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
       if (!publicKey) {
-        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
+        throw new Error(t('challenges.imagekitMissing'));
       }
 
       const auth = await getImageKitAuth();
@@ -376,14 +376,14 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
       const result = await res.json();
       if (result.url) setImage(result.url);
     } catch (error) {
-      toast.error(error.message || 'Rasm yuklashda xatolik');
+      toast.error(error.message || t('challenges.uploadErrorGeneric'));
     } finally {
       setIsUploading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!image) return toast.error('Rasm yuklang');
+    if (!image) return toast.error(t('challenges.uploadError'));
     setIsSubmitting(true);
     try {
       const postRes = await axios.post('/api/posts', {
@@ -391,7 +391,7 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
         caption: `${challenge.title} musobaqasiga ishtirok etmoqdaman! 🏆 #LuxeChallenge`
       }, { headers: { Authorization: `Bearer ${token}` } });
 
-      if (!postRes.data.success) throw new Error('Post yaratishda xatolik');
+      if (!postRes.data.success) throw new Error(t('challenges.submitError'));
 
       const res = await axios.post(`/api/challenges/${challenge._id}/submit`, {
         postId: postRes.data.data._id
@@ -416,7 +416,7 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
           <h2 className="text-xl font-serif">{t('challenges.participateTitle')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full"><X className="w-5 h-5" /></button>
         </div>
-        <p className="text-sm text-gray-400 mb-6">"{challenge.title}" musobaqasi uchun o'z obrazingiz rasmini yuklang.</p>
+        <p className="text-sm text-gray-400 mb-6">"{challenge.title}" {t('challenges.challengeFor')}</p>
 
         <div
           className="relative aspect-square rounded-2xl border-2 border-dashed border-white/10 overflow-hidden flex items-center justify-center cursor-pointer hover:border-[#d6b47c]/40 transition-all mb-6"
@@ -479,7 +479,7 @@ const AdminCreateModal = ({ token, onClose, onSuccess, t }) => {
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.data.success) {
-        toast.success('Musobaqa yaratildi!');
+        toast.success(t('challenges.createSuccess'));
         onSuccess();
       }
     } catch {
@@ -498,8 +498,8 @@ const AdminCreateModal = ({ token, onClose, onSuccess, t }) => {
           <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full"><X className="w-5 h-5" /></button>
         </div>
         {[
-          { key: 'title', label: t('challenges.challengeName'), type: 'text', placeholder: 'Masalan: Kuzgi romantika' },
-          { key: 'description', label: t('challenges.description'), type: 'textarea', placeholder: 'Musobaqa shartlarini kiriting' },
+          { key: 'title', label: t('challenges.challengeName'), type: 'text', placeholder: t('challenges.namePlaceholder') },
+          { key: 'description', label: t('challenges.description'), type: 'textarea', placeholder: t('challenges.descriptionPlaceholder') },
         ].map(f => (
           <div key={f.key}>
             <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{f.label}</label>
@@ -523,16 +523,16 @@ const AdminCreateModal = ({ token, onClose, onSuccess, t }) => {
         ))}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">Boshlanish</label>
+            <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{t('challenges.startLabel')}</label>
             <input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-[#d6b47c]/40" />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">Tugash (ixtiyoriy)</label>
+            <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{t('challenges.endLabel')}</label>
             <input type="date" value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-[#d6b47c]/40" />
           </div>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{t('challenges.reward')} (ball)</label>
+          <label className="block text-xs text-gray-500 mb-1.5 uppercase tracking-widest">{t('challenges.rewardLabel')}</label>
           <input type="number" value={form.rewardPoints} onChange={e => setForm({ ...form, rewardPoints: e.target.value })} className="w-full bg-[#1a1a1a] border border-white/5 rounded-xl p-3 text-sm outline-none focus:border-[#d6b47c]/40" />
         </div>
         <button
@@ -540,7 +540,7 @@ const AdminCreateModal = ({ token, onClose, onSuccess, t }) => {
           disabled={isSubmitting}
           className="w-full py-4 bg-[#d6b47c] text-black rounded-full font-black text-sm uppercase tracking-widest hover:bg-[#e8c98a] transition-all disabled:opacity-50 mt-2"
         >
-          {isSubmitting ? 'Yaratilmoqda...' : 'Musobaqa yaratish'}
+          {isSubmitting ? t('challenges.creating') : t('challenges.createButton')}
         </button>
       </div>
     </div>
@@ -587,7 +587,7 @@ const FullViewModal = ({ submissions, currentIndex, token, user, onClose, onVote
       if (res.data.success) {
         setComments([...comments, res.data.data]);
         setNewComment('');
-        toast.success('Fikr bildirildi');
+        toast.success(t('challenges.commentPosted'));
       }
     } catch {
       toast.error(t('challenges.error'));
@@ -636,7 +636,7 @@ const FullViewModal = ({ submissions, currentIndex, token, user, onClose, onVote
                className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-sm transition-all ${hasVoted ? 'bg-red-500 text-white' : 'bg-white/10 backdrop-blur-xl text-white hover:bg-red-500'}`}
              >
                <Heart className={`w-5 h-5 ${hasVoted ? 'fill-white' : ''}`} />
-               {sub.votes?.length || 0} Like
+               {sub.votes?.length || 0} {t('challenges.like')}
              </button>
           </div>
         </div>
@@ -650,7 +650,7 @@ const FullViewModal = ({ submissions, currentIndex, token, user, onClose, onVote
               </div>
               <div>
                 <p className="font-bold text-sm">{sub.user?.username}</p>
-                <p className="text-xs text-gray-500">Ihtirokchi</p>
+                <p className="text-xs text-gray-500">{t('challenges.participant')}</p>
               </div>
             </div>
             <p className="mt-4 text-sm text-gray-300 leading-relaxed">{sub.post.caption}</p>

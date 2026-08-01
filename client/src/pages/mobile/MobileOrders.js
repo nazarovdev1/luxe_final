@@ -23,6 +23,15 @@ const getStatusClass = (status) => {
     }
 };
 
+const STATUS_KEYS = {
+    'Yetkazildi': 'mobileOrders.status_delivered',
+    'Jarayonda': 'mobileOrders.status_processing',
+    'Yetkazilmoqda': 'mobileOrders.status_shipping',
+    'Bekor qilindi': 'mobileOrders.status_cancelled',
+};
+
+const getStatusLabel = (status, t) => t(STATUS_KEYS[status] || 'mobileOrders.default_status');
+
 const formatMoney = (value) => {
     if (typeof value === 'string') {
         return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString();
@@ -87,13 +96,13 @@ const MobileOrders = () => {
                 className="mb-4 inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-2 text-sm text-gray-400 hover:bg-white/10 transition-colors"
             >
                 <ArrowLeft className="h-4 w-4" />
-                Profil
+                {t('mobileOrders.back_to_profile')}
             </button>
 
             <div className="mt-6 mb-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/5 text-[#d6b47c] mb-4 backdrop-blur-md">
                     <ShoppingBag className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Xaridlar tarixi</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('mobileOrders.purchase_history')}</span>
                 </div>
                 <h1 className="text-4xl font-brilliant text-white leading-none">
                     {t('profile.myOrders')}
@@ -102,19 +111,19 @@ const MobileOrders = () => {
 
             <div className="mb-5 grid grid-cols-4 gap-2">
                 <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">Jami</p>
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('mobileOrders.stat_total')}</p>
                     <p className="mt-1 text-sm font-semibold text-white">{orders.length}</p>
                 </div>
                 <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">Jarayonda</p>
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('mobileOrders.stat_active')}</p>
                     <p className="mt-1 text-sm font-semibold text-blue-300">{stats.activeCount}</p>
                 </div>
                 <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">Yetkazilgan</p>
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('mobileOrders.stat_delivered')}</p>
                     <p className="mt-1 text-sm font-semibold text-emerald-300">{stats.deliveredCount}</p>
                 </div>
                 <div className="rounded-2xl border border-[#d6b47c]/15 bg-[#d6b47c]/5 p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#d6b47c]">Jami</p>
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#d6b47c]">{t('mobileOrders.stat_total')}</p>
                     <p className="mt-1 text-[11px] font-black text-white">{formatMoney(stats.totalSpent)}</p>
                 </div>
             </div>
@@ -130,14 +139,14 @@ const MobileOrders = () => {
                     <div className="w-20 h-20 bg-white/[0.02] border border-white/5 rounded-[32px] flex items-center justify-center mx-auto mb-6">
                         <ShoppingBag className="w-10 h-10 text-gray-700" />
                     </div>
-                    <h3 className="text-xl font-brilliant text-gray-400 mb-2">{t('orders.empty', 'Hali buyurtmalar yo\'q')}</h3>
-                    <p className="text-sm text-gray-500 mb-8 leading-relaxed">Sizning ilk xaridingiz bu yerda paydo bo'ladi.</p>
+                    <h3 className="text-xl font-brilliant text-gray-400 mb-2">{t('mobileOrders.empty_title')}</h3>
+                    <p className="text-sm text-gray-500 mb-8 leading-relaxed">{t('mobileOrders.empty_desc')}</p>
                     <button
                         onClick={() => navigate('/mobile/products')}
                         className="px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-black shadow-xl shadow-[#d6b47c]/20 transition-all active:scale-95"
                         style={{ background: '#d6b47c' }}
                     >
-                        Xarid boshlash
+                        {t('mobileOrders.start_shopping')}
                     </button>
                 </div>
             ) : (
@@ -157,7 +166,7 @@ const MobileOrders = () => {
                                     </div>
                                 </div>
                                 <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider ${getStatusClass(order.status)}`}>
-                                    {order.status || 'Kutilmoqda'}
+                                    {order.status ? getStatusLabel(order.status, t) : t('mobileOrders.default_status')}
                                 </div>
                             </div>
 
@@ -225,19 +234,19 @@ const MobileOrders = () => {
                     <div className="flex-1 overflow-y-auto p-6">
                         <div className="flex items-center justify-between mb-8">
                             <div>
-                                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">Status</p>
+                                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">{t('mobileOrders.status_label')}</p>
                                 <div className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider inline-block ${getStatusClass(selectedOrder.status)}`}>
-                                    {selectedOrder.status || 'Kutilmoqda'}
+                                    {selectedOrder.status ? getStatusLabel(selectedOrder.status, t) : t('mobileOrders.default_status')}
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">Sana</p>
+                                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">{t('mobileOrders.date_label')}</p>
                                 <p className="text-sm font-bold text-white">{new Date(selectedOrder.createdAt).toLocaleDateString('uz-UZ')}</p>
                             </div>
                         </div>
 
                         <div className="space-y-4 mb-8">
-                            <p className="text-[10px] uppercase tracking-widest text-[#d6b47c] font-black mb-4">Mahsulotlar</p>
+                            <p className="text-[10px] uppercase tracking-widest text-[#d6b47c] font-black mb-4">{t('mobileOrders.products_label')}</p>
                             {selectedOrder.items.map((item, idx) => (
                                 <div key={idx} className="flex gap-4 bg-white/[0.03] border border-white/10 rounded-3xl p-3">
                                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white/5 shrink-0">
@@ -251,7 +260,7 @@ const MobileOrders = () => {
                                     </div>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <p className="text-sm font-bold text-white mb-1">{item.name}</p>
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{item.quantity} dona</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{item.quantity} {t('mobileOrders.product_qty')}</p>
                                         <p className="text-sm font-black text-white mt-1">{formatMoney(item.price)} UZS</p>
                                     </div>
                                 </div>
@@ -262,8 +271,8 @@ const MobileOrders = () => {
                             <div className="flex gap-3 rounded-2xl border border-white/5 bg-white/[0.03] p-3">
                                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#d6b47c]" />
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Manzil</p>
-                                    <p className="mt-1 text-sm leading-5 text-gray-300">{selectedOrder.customer?.address || "Manzil ko'rsatilmagan"}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">{t('mobileOrders.address_label')}</p>
+                                    <p className="mt-1 text-sm leading-5 text-gray-300">{selectedOrder.customer?.address || t('mobileOrders.address_missing')}</p>
                                 </div>
                             </div>
                             {(selectedOrder.scheduledDelivery || selectedOrder.totals?.giftWrap) && (
@@ -272,9 +281,9 @@ const MobileOrders = () => {
                                         <div className="flex gap-3 rounded-2xl border border-[#d6b47c]/15 bg-[#d6b47c]/5 p-3">
                                             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#d6b47c]" />
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#d6b47c]">Yetkazib berish</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#d6b47c]">{t('mobileOrders.delivery_label')}</p>
                                                 <p className="mt-1 text-sm text-gray-300">
-                                                    {selectedOrder.scheduledDelivery.date || 'Sana tanlanmagan'} · {selectedOrder.scheduledDelivery.timeSlot || 'Vaqt tanlanmagan'}
+                                                    {selectedOrder.scheduledDelivery.date || t('mobileOrders.date_not_selected')} · {selectedOrder.scheduledDelivery.timeSlot || t('mobileOrders.time_not_selected')}
                                                 </p>
                                             </div>
                                         </div>
@@ -283,7 +292,7 @@ const MobileOrders = () => {
                                         <div className="flex gap-3 rounded-2xl border border-[#d6b47c]/15 bg-[#d6b47c]/5 p-3">
                                             <Gift className="mt-0.5 h-4 w-4 shrink-0 text-[#d6b47c]" />
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#d6b47c]">Sovg'a qadoqlash</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#d6b47c]">{t('mobileOrders.gift_wrap_label')}</p>
                                                 <p className="mt-1 text-sm text-gray-300">
                                                     {selectedOrder.totals.giftWrap.type} · {formatMoney(selectedOrder.totals.giftWrap.cost)} UZS
                                                 </p>
@@ -296,18 +305,18 @@ const MobileOrders = () => {
                                 </div>
                             )}
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Mahsulotlar summasi</span>
+                                <span className="text-gray-500">{t('mobileOrders.subtotal_label')}</span>
                                 <span className="text-white font-bold">{formatMoney(selectedOrder.totals?.subtotal)} UZS</span>
                             </div>
                             {(selectedOrder.totals?.discountAmount || 0) > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Chegirma</span>
+                                    <span className="text-gray-500">{t('mobileOrders.discount_label')}</span>
                                     <span className="font-bold text-[#d6b47c]">-{formatMoney(selectedOrder.totals?.discountAmount)} UZS</span>
                                 </div>
                             )}
                             {(selectedOrder.totals?.lookDiscountAmount || selectedOrder.totalLookDiscount || 0) > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Look chegirmasi</span>
+                                    <span className="text-gray-500">{t('mobileOrders.look_discount_label')}</span>
                                     <span className="font-bold text-[#d6b47c]">-{formatMoney(selectedOrder.totals?.lookDiscountAmount || selectedOrder.totalLookDiscount)} UZS</span>
                                 </div>
                             )}
@@ -325,7 +334,7 @@ const MobileOrders = () => {
                                     className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-3 text-xs font-black uppercase tracking-widest text-gray-300"
                                 >
                                     <RotateCcw className="h-4 w-4" />
-                                    Qaytarish
+                                    {t('mobileOrders.return_button')}
                                 </button>
                             )}
                             <button
@@ -333,7 +342,7 @@ const MobileOrders = () => {
                                 className="flex items-center justify-center gap-2 rounded-2xl border border-[#d6b47c]/20 bg-[#d6b47c]/10 py-3 text-xs font-black uppercase tracking-widest text-[#d6b47c]"
                             >
                                 <Eye className="h-4 w-4" />
-                                Kuzatish
+                                {t('mobileOrders.track_button')}
                             </button>
                         </div>
                     </div>

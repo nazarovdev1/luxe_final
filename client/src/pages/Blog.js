@@ -5,7 +5,14 @@ import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 
-const CATEGORIES_UZ = ['Barchasi', 'Trendlar', 'Maslahatlar', 'Kombinatsiyalar', 'Parvarish', 'Aksessuarlar'];
+const CATEGORIES = [
+  { slug: 'Barchasi',        labelKey: 'blogPage.allCategories' },
+  { slug: 'Trendlar',        labelKey: 'blogPage.categories.Trendlar' },
+  { slug: 'Maslahatlar',     labelKey: 'blogPage.categories.Maslahatlar' },
+  { slug: 'Kombinatsiyalar', labelKey: 'blogPage.categories.Kombinatsiyalar' },
+  { slug: 'Parvarish',       labelKey: 'blogPage.categories.Parvarish' },
+  { slug: 'Aksessuarlar',    labelKey: 'blogPage.categories.Aksessuarlar' },
+];
 
 const Blog = () => {
   const { t } = useLanguage();
@@ -18,8 +25,6 @@ const Blog = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-
-  const allLabel = t('blog.categoriesAll');
 
   const fetchBlogs = useCallback(async (pageNum = 1, append = false) => {
     try {
@@ -73,8 +78,8 @@ const Blog = () => {
     fetchBlogs(nextPage, true);
   };
 
-  const handleCategoryChange = (cat) => {
-    setActiveCategory(cat);
+  const handleCategoryChange = (slug) => {
+    setActiveCategory(slug);
     setSearchQuery('');
   };
 
@@ -175,17 +180,17 @@ const Blog = () => {
 
         {/* Categories */}
         <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {CATEGORIES_UZ.map((cat) => (
+          {CATEGORIES.map((cat) => (
             <button
-              key={cat}
-              onClick={() => handleCategoryChange(cat)}
+              key={cat.slug}
+              onClick={() => handleCategoryChange(cat.slug)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                activeCategory === cat
+                activeCategory === cat.slug
                   ? 'bg-[#d6b47c]/10 border border-[#d6b47c]/30 text-[#d6b47c]'
                   : 'bg-white/[0.02] border border-white/5 text-[#9aa3b2] hover:border-white/10'
               }`}
             >
-              {cat}
+              {t(cat.labelKey)}
             </button>
           ))}
         </div>

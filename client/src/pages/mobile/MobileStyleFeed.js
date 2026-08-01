@@ -5,11 +5,13 @@ import { Heart, MessageSquare, Plus, X, Upload, ShoppingBag, Image as ImageIcon,
 import { useAuth } from '../../contexts/AuthContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function MobileStyleFeed() {
   const { user, isAuthenticated, token, isAdmin } = useAuth();
   const { products } = useProducts();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -32,19 +34,19 @@ export default function MobileStyleFeed() {
       const res = await axios.get('/api/posts?page=1&limit=20');
       if (res.data.success) setPosts(res.data.data);
     } catch {
-      toast.error('Postlarni yuklashda xatolik');
+      toast.error(t('mobileStyleFeed.errors.loadingPosts'));
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const fetchComments = async (postId) => {
     try {
       setIsLoadingComments(true);
       const res = await axios.get(`/api/comments/${postId}`);
       if (res.data.success) setComments(res.data.data);
     } catch {
-      toast.error('Izohlarni yuklashda xatolik');
+      toast.error(t('mobileStyleFeed.errors.loadingComments'));
     } finally {
       setIsLoadingComments(false);
     }
@@ -53,7 +55,7 @@ export default function MobileStyleFeed() {
   useEffect(() => { fetchPosts(); }, []);
 
   const handleLike = async (postId) => {
-    if (!isAuthenticated) { toast.error('Layk bosish uchun kiring'); return; }
+    if (!isAuthenticated) { toast.error(t('mobileStyleFeed.errors.loginToLike')); return; }
     try {
       const res = await axios.put(`/api/posts/${postId}/like`, {}, {
         headers: { Authorization: `Bearer ${token}` }
@@ -62,8 +64,8 @@ export default function MobileStyleFeed() {
         const updateLikes = (p) => {
           if (p._id !== postId) return p;
           const isLiked = res.data.isLiked;
-          const newLikes = isLiked 
-            ? [...(p.likes || []), user._id] 
+          const newLikes = isLiked
+            ? [...(p.likes || []), user._id]
             : (p.likes || []).filter(id => id !== user._id);
           return { ...p, likes: newLikes };
         };
@@ -72,14 +74,14 @@ export default function MobileStyleFeed() {
         if (selectedPost?._id === postId) {
           setSelectedPost(prev => updateLikes(prev));
         }
-        
-        toast.success(res.data.isLiked ? 'Layk bosildi' : 'Layk olib tashlandi');
+
+        toast.success(res.data.isLiked ? t('mobileStyleFeed.errors.like') : t('mobileStyleFeed.errors.unlike'));
       }
-    } catch { toast.error('Xatolik'); }
+    } catch { toast.error(t('mobileStyleFeed.errors.likeError')); }
   };
 
   const handleAddComment = async () => {
-    if (!isAuthenticated) { toast.error('Izoh qoldirish uchun kiring'); return; }
+    if (!isAuthenticated) { toast.error(t('mobileStyleFeed.errors.loginToComment')); return; }
     if (!newComment.trim()) return;
     try {
       const res = await axios.post(`/api/comments/${selectedPost._id}`, { text: newComment }, {
@@ -95,19 +97,19 @@ export default function MobileStyleFeed() {
         };
         setPosts(prev => prev.map(updateCommentsCount));
         setSelectedPost(prev => updateCommentsCount(prev));
-        toast.success('Izoh qo\'shildi');
+        toast.success(t('mobileStyleFeed.errors.commentAdded'));
       }
-    } catch { toast.error('Xatolik'); }
+    } catch { toast.error(t('mobileStyleFeed.errors.likeError')); }
   };
 
   const handleDelete = async (postId) => {
-    if (!window.confirm('O\'chirilsinmi?')) return;
+    if (!window.confirm(t('mobileStyleFeed.errors.confirmDelete'))) return;
     try {
       await axios.delete(`/api/posts/${postId}`, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Post o\'chirildi');
+      toast.success(t('mobileStyleFeed.errors.postDeleted'));
       setPosts(prev => prev.filter(p => p._id !== postId));
       if (selectedPost?._id === postId) setSelectedPost(null);
-    } catch { toast.error('Xatolik'); }
+    } catch { toast.error(t('mobileStyleFeed.errors.deleteError')); }
   };
 
   const handleImageChange = (e) => {
@@ -120,7 +122,7 @@ export default function MobileStyleFeed() {
   };
 
   const handleSubmitPost = async () => {
-    if (!imageFile) { toast.error('Rasm tanlang'); return; }
+    if (!imageFile) { toast.error(t('mobileStyleFeed.errors.selectImage')); return; }
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -131,13 +133,13 @@ export default function MobileStyleFeed() {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       if (res.data.success) {
-        toast.success('Post qo\'yildi!');
+        toast.success(t('mobileStyleFeed.errors.postCreated'));
         setIsCreateOpen(false);
         setCaption(''); setTaggedProducts([]); setImageFile(null); setImagePreview('');
         fetchPosts();
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Xatolik');
+      toast.error(err.response?.data?.message || t('mobileStyleFeed.errors.createError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -162,7 +164,7 @@ export default function MobileStyleFeed() {
               <X className="w-5 h-5 text-gray-300" />
             </button>
             <div className="text-center">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black">Post Muallifi</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-black">{t('mobileStyleFeed.author')}</p>
               <p className="text-sm font-bold text-[#d6b47c]">{selectedPost.user?.username}</p>
             </div>
             {(isAdmin || selectedPost.user?._id === user?._id) ? (
@@ -200,7 +202,7 @@ export default function MobileStyleFeed() {
 
               {selectedPost.caption && (
                 <div className="mb-6">
-                   <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">Tavsif</p>
+                   <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-2">{t('mobileStyleFeed.captionLabel')}</p>
                    <p className="text-base text-gray-200 leading-relaxed italic">"{selectedPost.caption}"</p>
                 </div>
               )}
@@ -208,7 +210,7 @@ export default function MobileStyleFeed() {
               {selectedPost.taggedProducts?.length > 0 && (
                 <div className="mt-8">
                   <p className="text-[10px] uppercase tracking-widest text-[#d6b47c] font-black mb-4 flex items-center gap-2">
-                    <ShoppingBag className="w-3.5 h-3.5" /> Belgilangan Mahsulotlar
+                    <ShoppingBag className="w-3.5 h-3.5" /> {t('mobileStyleFeed.taggedProducts')}
                   </p>
                   <div className="grid grid-cols-1 gap-3">
                     {selectedPost.taggedProducts.map(p => (
@@ -222,7 +224,7 @@ export default function MobileStyleFeed() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-white truncate">{p.name}</p>
-                          <p className="text-xs text-[#d6b47c] font-black uppercase tracking-widest mt-1">Sotib olish</p>
+                          <p className="text-xs text-[#d6b47c] font-black uppercase tracking-widest mt-1">{t('mobileStyleFeed.buyNow')}</p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-600 mr-2" />
                       </button>
@@ -233,8 +235,8 @@ export default function MobileStyleFeed() {
 
               {/* Comments Section */}
               <div className="mt-12 mb-20">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-6">Fikrlar ({comments.length})</p>
-                
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-6">{t('mobileStyleFeed.commentsLabel')} ({comments.length})</p>
+
                 <div className="space-y-6">
                   {comments.map((comment, i) => (
                     <div key={i} className="flex gap-4">
@@ -260,7 +262,7 @@ export default function MobileStyleFeed() {
                   {comments.length === 0 && !isLoadingComments && (
                     <div className="text-center py-10 bg-white/[0.02] rounded-3xl border border-dashed border-white/5">
                       <MessageSquare className="w-8 h-8 text-gray-800 mx-auto mb-3 opacity-20" />
-                      <p className="text-xs text-gray-600">Hali fikrlar yo'q. Birinchi bo'ling!</p>
+                      <p className="text-xs text-gray-600">{t('mobileStyleFeed.noComments')}</p>
                     </div>
                   )}
                 </div>
@@ -273,7 +275,7 @@ export default function MobileStyleFeed() {
             <div className="flex gap-3 items-center">
               <input
                 className="flex-1 bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#d6b47c]/40 transition-all"
-                placeholder="Fikr bildiring..."
+                placeholder={t('mobileStyleFeed.commentPlaceholder')}
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
                 onKeyPress={e => e.key === 'Enter' && handleAddComment()}
@@ -296,7 +298,7 @@ export default function MobileStyleFeed() {
           <div className="w-full bg-[#0f0f13] rounded-t-[40px] p-6 border-t border-white/10 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-500">
             <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6" />
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-brilliant text-white">Yangi <span className="text-[#d6b47c]">Obraz</span></h3>
+              <h3 className="text-2xl font-brilliant text-white">{t('mobileStyleFeed.newLookTitlePrefix')} <span className="text-[#d6b47c]">{t('mobileStyleFeed.newLookTitleSuffix')}</span></h3>
               <button onClick={() => setIsCreateOpen(false)} className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center">
                 <X className="w-5 h-5 text-gray-400" />
               </button>
@@ -313,8 +315,8 @@ export default function MobileStyleFeed() {
                       <div className="w-16 h-16 rounded-full bg-[#d6b47c]/10 flex items-center justify-center mx-auto mb-4 border border-[#d6b47c]/20">
                         <Camera className="w-8 h-8 text-[#d6b47c]" />
                       </div>
-                      <p className="text-sm text-gray-400 font-medium">Rasm yuklash yoki suratga olish</p>
-                      <p className="text-[10px] text-gray-600 uppercase tracking-widest mt-2">Max 5MB • JPG, PNG</p>
+                      <p className="text-sm text-gray-400 font-medium">{t('mobileStyleFeed.uploadImage')}</p>
+                      <p className="text-[10px] text-gray-600 uppercase tracking-widest mt-2">{t('mobileStyleFeed.uploadHint')}</p>
                     </div>
                   )}
                 </div>
@@ -323,11 +325,11 @@ export default function MobileStyleFeed() {
 
               {/* Caption */}
               <div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black mb-3 ml-1">Sizning Taassurotingiz</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black mb-3 ml-1">{t('mobileStyleFeed.caption')}</p>
                 <textarea
                   className="w-full bg-white/[0.03] border border-white/10 rounded-[24px] px-5 py-4 text-sm text-white placeholder-gray-600 resize-none focus:outline-none focus:border-[#d6b47c]/40 transition-all"
                   rows={3}
-                  placeholder="Ushbu obrazingiz haqida yozing..."
+                  placeholder={t('mobileStyleFeed.captionPlaceholder')}
                   value={caption}
                   onChange={e => setCaption(e.target.value)}
                 />
@@ -335,12 +337,12 @@ export default function MobileStyleFeed() {
 
               {/* Product tagging */}
               <div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] font-black mb-3 ml-1">Mahsulotlarni Belgilang</p>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] font-black mb-3 ml-1">{t('mobileStyleFeed.tagProductsTitle')}</p>
                 <div className="relative mb-4">
                   <Search className="w-4 h-4 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
                   <input
                     className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-11 pr-5 py-3.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#d6b47c]/30"
-                    placeholder="Kiyim nomini qidiring..."
+                    placeholder={t('mobileStyleFeed.tagProductsPlaceholder')}
                     value={productSearch}
                     onChange={e => setProductSearch(e.target.value)}
                   />
@@ -387,7 +389,7 @@ export default function MobileStyleFeed() {
                 className="w-full py-4 rounded-[24px] font-black text-sm uppercase tracking-widest text-black disabled:opacity-50 transition-all active:scale-[0.98] shadow-2xl shadow-[#d6b47c]/20"
                 style={{ background: '#d6b47c' }}
               >
-                {isSubmitting ? 'Tayyorlanmoqda...' : 'Obrazni Ulashish'}
+                {isSubmitting ? t('mobileStyleFeed.submitting') : t('mobileStyleFeed.submitButton')}
               </button>
             </div>
           </div>
@@ -398,17 +400,17 @@ export default function MobileStyleFeed() {
       <div className="relative z-10 px-5 pt-8 pb-4">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-8 active:scale-90 transition-transform">
           <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium uppercase tracking-widest">Orqaga</span>
+          <span className="text-sm font-medium uppercase tracking-widest">{t('mobileStyleFeed.back')}</span>
         </button>
 
         <div className="flex items-end justify-between mb-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/5 text-[#d6b47c] mb-4 backdrop-blur-md">
               <Camera className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Luxe Community</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('mobileStyleFeed.community')}</span>
             </div>
             <h1 className="text-6xl font-brilliant text-white leading-none">
-              Style <span className="text-[#d6b47c]">Feed</span>
+              {t('mobileStyleFeed.titlePrefix')} <span className="text-[#d6b47c]">{t('mobileStyleFeed.titleSuffix')}</span>
             </h1>
           </div>
 
@@ -423,7 +425,7 @@ export default function MobileStyleFeed() {
         </div>
 
         <p className="text-sm text-gray-400 max-w-[280px] mb-8 leading-relaxed">
-          Premium hamjamiyatning eng so'nggi <span className="text-white font-bold">fashion obrazlaridan</span> ilhom oling.
+          {t('mobileStyleFeed.subtitle')}
         </p>
       </div>
 
@@ -440,22 +442,22 @@ export default function MobileStyleFeed() {
             <div className="w-20 h-20 bg-white/[0.02] border border-white/5 rounded-[32px] flex items-center justify-center mx-auto mb-6">
                <ImageIcon className="w-10 h-10 text-gray-700" />
             </div>
-            <h3 className="text-xl font-brilliant text-gray-400 mb-2">Hali postlar yo'q</h3>
-            <p className="text-sm text-gray-500 mb-8 leading-relaxed">Siz birinchilardan bo'lib o'z obrazingizni ulashishingiz mumkin.</p>
+            <h3 className="text-xl font-brilliant text-gray-400 mb-2">{t('mobileStyleFeed.emptyTitle')}</h3>
+            <p className="text-sm text-gray-500 mb-8 leading-relaxed">{t('mobileStyleFeed.emptyDesc')}</p>
             {isAuthenticated ? (
-              <button 
-                onClick={() => setIsCreateOpen(true)} 
-                className="px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-black" 
+              <button
+                onClick={() => setIsCreateOpen(true)}
+                className="px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-black"
                 style={{ background: '#d6b47c' }}
               >
-                Post qo'shish
+                {t('mobileStyleFeed.ctaPost')}
               </button>
             ) : (
-              <button 
-                onClick={() => navigate('/mobile/login')} 
+              <button
+                onClick={() => navigate('/mobile/login')}
                 className="px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white border border-white/10 bg-white/5"
               >
-                Kirish va Ulashish
+                {t('mobileStyleFeed.ctaLogin')}
               </button>
             )}
           </div>

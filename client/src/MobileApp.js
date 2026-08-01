@@ -16,6 +16,7 @@ const MobileAdmin = lazy(() => import('./pages/mobile/MobileAdmin'));
 const MobileAdminEdit = lazy(() => import('./pages/mobile/MobileAdminEdit'));
 const MobileProfile = lazy(() => import('./pages/mobile/MobileProfile'));
 const MobileOrders = lazy(() => import('./pages/mobile/MobileOrders'));
+const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
 const LoginForm = lazy(() => import('./components/LoginForm'));
 const RegisterForm = lazy(() => import('./components/RegisterForm'));
 const MobilePrivacyPolicy = lazy(() => import('./pages/mobile/MobilePrivacyPolicy'));
@@ -43,7 +44,7 @@ const MobileApp = () => {
             <Suspense fallback={<Loading />}>
                 <Routes>
                     <Route path="/" element={<MobileHome />} />
-                    <Route path="/about" element={<Navigate to="/#about" replace />} />
+                    <Route path="about" element={<MobileAbout />} />
                     <Route path="/products" element={<MobileProducts />} />
                     <Route path="/search" element={<MobileSearch />} />
                     <Route path="/events" element={<MobileEvents />} />

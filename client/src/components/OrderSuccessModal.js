@@ -43,7 +43,7 @@ const OrderSuccessModal = ({ isOpen, onClose, orderId, isMobile = false }) => {
                             }}
                             className="w-full py-4 bg-white text-black text-xs font-black tracking-[0.2em] rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)]"
                         >
-                            BUYURTMALARIM
+                            {t('orderSuccess.myOrders')}
                             <ShoppingBag className="w-4 h-4" />
                         </button>
 
@@ -54,13 +54,13 @@ const OrderSuccessModal = ({ isOpen, onClose, orderId, isMobile = false }) => {
                             }}
                             className="w-full py-4 bg-white/[0.03] border border-white/10 text-white text-xs font-black tracking-[0.2em] rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
                         >
-                            ASOSIY SAHIFA
+                            {t('orderSuccess.homePage')}
                             <Home className="w-4 h-4" />
                         </button>
                     </div>
 
                     <p className="mt-8 text-[10px] text-gray-600 font-medium leading-relaxed italic">
-                        Operatorlarimiz tez orada siz bilan bog'lanishadi
+                        {t('orderSuccess.operatorCall')}
                     </p>
                 </div>
             </div>

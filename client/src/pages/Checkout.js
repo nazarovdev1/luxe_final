@@ -38,19 +38,10 @@ const THEME = {
   textSoft: '#c7ceda',
 };
 
-const REGIONS = [
-  'Bektemir',
-  'Chilanzar',
-  'Yashnobod',
-  'Mirobod',
-  "Mirzo Ulug'bek",
-  'Sergeli',
-  'Shayxontohur',
-  'Olmazor',
-  'Uchtepa',
-  'Yakkasaray',
-  'Yunusabad',
-  'Yangihayot',
+const REGIONS_KEYS = [
+  'regions_0', 'regions_1', 'regions_2', 'regions_3',
+  'regions_4', 'regions_5', 'regions_6', 'regions_7',
+  'regions_8', 'regions_9', 'regions_10', 'regions_11',
 ];
 
 const parsePrice = (priceValue) => {
@@ -146,9 +137,9 @@ const Checkout = () => {
   const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('');
 
   const GIFT_WRAP_OPTIONS = {
-    classic: { name: 'Klassik qadoqlash', price: 25000, desc: 'Chiroyli qog\'oz va lenta bilan' },
-    premium: { name: 'Premium qadoqlash', price: 45000, desc: 'Luxury quti, lenta va gullar bilan' },
-    minimal: { name: 'Minimal qadoqlash', price: 15000, desc: 'Oddiy lekin zamonaviy qadoqlash' },
+    classic: { name: t('checkoutPage.gwp_classic_name'), price: 25000, desc: t('checkoutPage.gwp_classic_desc') },
+    premium: { name: t('checkoutPage.gwp_premium_name'), price: 45000, desc: t('checkoutPage.gwp_premium_desc') },
+    minimal: { name: t('checkoutPage.gwp_minimal_name'), price: 15000, desc: t('checkoutPage.gwp_minimal_desc') },
   };
 
   const giftWrapCost = giftWrap ? (GIFT_WRAP_OPTIONS[giftWrapType]?.price || 0) : 0;
@@ -173,7 +164,7 @@ const Checkout = () => {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      toast.error("Iltimos, buyurtma berish uchun ro'yxatdan o'ting");
+      toast.error(t('checkoutPage.toastLoginRequired'));
       navigate('/login');
     }
   }, [isAuthenticated, loading, navigate]);
@@ -249,7 +240,7 @@ const Checkout = () => {
 
   const nextFromStep1 = () => {
     if (!isStep1Valid) {
-      toast.error("Iltimos, ism va telefon raqamni to'g'ri kiriting");
+      toast.error(t('checkoutPage.toastEnterNamePhone'));
       return;
     }
     setCurrentStep(2);
@@ -257,7 +248,7 @@ const Checkout = () => {
 
   const nextFromStep2 = () => {
     if (!isStep2Valid) {
-      toast.error("Iltimos, tuman va manzilni to'g'ri kiriting");
+      toast.error(t('checkoutPage.toastEnterRegionAddress'));
       return;
     }
     setCurrentStep(3);
@@ -269,7 +260,7 @@ const Checkout = () => {
     if (!promoCode.trim()) return;
 
     setIsValidatingPromo(true);
-    let lastErrorMessage = "Kupon yoki promokod noto'g'ri";
+    let lastErrorMessage = t('checkoutPage.toastInvalidPromo');
 
     try {
       // First try generic promo
@@ -280,7 +271,7 @@ const Checkout = () => {
           discountPercentage: promoResult.discountPercentage,
           type: 'percentage'
         });
-        toast.success(`${promoResult.discountPercentage}% chegirma qo'llanildi!`);
+        toast.success(t('checkoutPage.toastDiscountApplied').replace('{percent}', promoResult.discountPercentage));
         setIsValidatingPromo(false);
         return;
       } else if (promoResult.message && !promoResult.message.includes('mavjud emas')) {
@@ -315,13 +306,13 @@ const Checkout = () => {
           discountAmount: couponResult.discount,
           type: couponResult.type
         });
-        toast.success(`Kupon qo'llanildi!`);
+        toast.success(t('checkoutPage.toastPromoApplied'));
       } else {
         setAppliedPromo(null);
         toast.error(couponResult.message || lastErrorMessage);
       }
     } catch (error) {
-      toast.error('Promokodni tekshirishda xatolik yuz berdi');
+      toast.error(t('checkoutPage.toastPromoCheckFailed'));
     } finally {
       setIsValidatingPromo(false);
     }
@@ -336,12 +327,12 @@ const Checkout = () => {
     if (event) event.preventDefault();
 
     if (items.length === 0 && lookItems.length === 0) {
-      toast.error("Savatingiz bo'sh");
+      toast.error(t('checkoutPage.toastCartEmpty'));
       return;
     }
 
     if (!isStep1Valid || !isStep2Valid || !isUzbekPhone(formData.phone)) {
-      toast.error("Iltimos, barcha majburiy maydonlarni to'ldiring");
+      toast.error(t('checkoutPage.toastFillRequired'));
       return;
     }
 
@@ -350,7 +341,7 @@ const Checkout = () => {
       return;
     }
     if (scheduledDelivery && (!deliveryDate || !deliveryTimeSlot)) {
-      toast.error("Yetkazish sanasi va vaqtini tanlang");
+      toast.error(t('checkoutPage.toastSelectDeliveryDateTime'));
       return;
     }
 
@@ -446,15 +437,19 @@ const Checkout = () => {
           const det = result.details;
           const colorText = det.color ? ` (${det.color} rang)` : '';
           const sizeText = det.size ? ` (${det.size} o'lcham)` : '';
-          toast.error(`${det.name}${sizeText}${colorText} uchun zaxira yetarli emas. Omborda: ${det.availableStock} dona.`);
+          toast.error(t('checkoutPage.toastInsufficientStock')
+            .replace('{name}', det.name)
+            .replace('{size}', sizeText)
+            .replace('{color}', colorText)
+            .replace('{stock}', det.availableStock));
         } else {
-          toast.error(result?.message || "Xatolik yuz berdi. Qayta urinib ko'ring.");
+          toast.error(result?.message || t('checkoutPage.toastGenericError'));
         }
       }
     } catch (error) {
       trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: error.message || 'network_error' });
       console.error('Checkout error:', error);
-      toast.error('Tizimda xatolik yuz berdi');
+      toast.error(t('checkoutPage.toastSystemError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -474,7 +469,7 @@ const Checkout = () => {
               to="/products"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#f4f1eb] px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-[#111319] transition-transform active:scale-[0.985]"
             >
-              Xaridni boshlash
+              {t('checkoutPage.startShopping')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
@@ -493,12 +488,12 @@ const Checkout = () => {
               className="inline-flex items-center gap-2 rounded-full bg-[#2d3442]/70 px-3 py-2 text-sm font-medium text-[#f4f1eb] transition-colors hover:bg-[#364053]"
             >
               <ArrowLeft className="h-4 w-4" />
-              Orqaga
+              {t('checkoutPage.back')}
             </button>
 
             <div className="text-center">
-              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">Checkout</p>
-              <h1 className="text-lg font-semibold text-[#f4f1eb]">Cinematic Concierge</h1>
+              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">{t('checkoutPage.headerCheckout')}</p>
+              <h1 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.conciergeActive')}</h1>
             </div>
 
             <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1f2532] px-3 py-1 text-xs font-semibold text-[#c7ceda]">
@@ -511,7 +506,7 @@ const Checkout = () => {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <section className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)] sm:p-7">
             <div className="mb-6">
-              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">Order flow</p>
+              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">{t('checkoutPage.orderFlowTag')}</p>
               <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#f4f1eb]">{t('checkoutPage.placeOrder')}</h2>
               <p className="mt-2 text-sm text-[#9aa3b2]">{t('checkoutPage.step1')}</p>
 
@@ -533,7 +528,7 @@ const Checkout = () => {
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
                       <User className="h-4 w-4" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[#f4f1eb]">Shaxsiy ma'lumotlar</h3>
+                    <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.personalInfoTitle')}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -546,7 +541,7 @@ const Checkout = () => {
                         onChange={handleChange}
                         required
                         className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
-                        placeholder="Ismingiz"
+                        placeholder={t('checkoutPage.firstNamePlaceholder')}
                       />
                     </label>
 
@@ -558,7 +553,7 @@ const Checkout = () => {
                         value={formData.lastName}
                         onChange={handleChange}
                         className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
-                        placeholder="Familiyangiz"
+                        placeholder={t('checkoutPage.lastNamePlaceholder')}
                       />
                     </label>
                   </div>
@@ -591,7 +586,7 @@ const Checkout = () => {
                   </div>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Tuman tanlang *</span>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.regionLabel')} *</span>
                     <select
                       name="region"
                       value={formData.region}
@@ -599,17 +594,17 @@ const Checkout = () => {
                       required
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
                     >
-                      <option value="">Tanlang</option>
-                      {REGIONS.map((region) => (
-                        <option key={region} value={region}>
-                          {region}
+                      <option value="">{t('checkoutPage.regionSelectPrompt')}</option>
+                      {REGIONS_KEYS.map((key) => (
+                        <option key={key} value={t(`checkoutPage.${key}`)}>
+                          {t(`checkoutPage.${key}`)}
                         </option>
                       ))}
                     </select>
                   </label>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Ko'cha va uy *</span>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.streetLabel')} *</span>
                     <input
                       type="text"
                       name="street"
@@ -617,24 +612,24 @@ const Checkout = () => {
                       onChange={handleChange}
                       required
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
-                      placeholder="Ko'cha nomi, uy raqami"
+                      placeholder={t('checkoutPage.streetPlaceholder')}
                     />
                   </label>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Mo'ljal (ixtiyoriy)</span>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.landmarkLabel')}</span>
                     <input
                       type="text"
                       name="house"
                       value={formData.house}
                       onChange={handleChange}
                       className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
-                      placeholder="Masalan: Maktab yonida"
+                      placeholder={t('checkoutPage.landmarkPlaceholder')}
                     />
                   </label>
 
                   <div>
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Xaritadan belgilash</span>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.selectOnMap')}</span>
                     <React.Suspense fallback={<div className="h-[230px] w-full rounded-xl bg-[#0e131d]" />}>
                       <CheckoutMap
                         className="h-[230px] w-full overflow-hidden rounded-xl bg-[#0e131d] shadow-[0_14px_30px_rgba(3,6,14,0.45)]"
@@ -642,7 +637,7 @@ const Checkout = () => {
                         onPositionChange={(position) => setFormData((prev) => ({ ...prev, location: position }))}
                       />
                     </React.Suspense>
-                    <p className="mt-2 text-xs text-[#9aa3b2]">Aniq nuqtani belgilasangiz yetkazish tezlashadi.</p>
+                    <p className="mt-2 text-xs text-[#9aa3b2]">{t('checkoutPage.mapHint')}</p>
                   </div>
 
                   {/* Scheduled Delivery */}
@@ -650,7 +645,7 @@ const Checkout = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-[#d6b47c]" />
-                        <span className="text-sm text-[#c7ceda] font-medium">Yetkazib berish vaqtini tanlash</span>
+                        <span className="text-sm text-[#c7ceda] font-medium">{t('checkoutPage.selectDeliveryTime')}</span>
                       </div>
                       <button
                         type="button"
@@ -671,7 +666,7 @@ const Checkout = () => {
                       <div className="space-y-3 animate-in fade-in duration-200">
                         {/* Date Selection */}
                         <div>
-                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">Sana tanlang</span>
+                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('checkoutPage.selectDate')}</span>
                           <div className="grid grid-cols-4 gap-2">
                             {[...Array(4)].map((_, i) => {
                               const date = getTashkentDate();
@@ -693,7 +688,7 @@ const Checkout = () => {
                                   }`}
                                 >
                                   <p className={`text-[10px] uppercase ${deliveryDate === dateValue ? 'text-[#d6b47c]' : 'text-[#6f7c90]'}`}>
-                                    {isToday ? 'Ertaga' : dayName}
+                                    {isToday ? t('checkoutPage.tomorrow') : dayName}
                                   </p>
                                   <p className={`text-lg font-bold ${deliveryDate === dateValue ? 'text-[#d6b47c]' : 'text-[#f4f1eb]'}`}>
                                     {dayNum}
@@ -710,15 +705,15 @@ const Checkout = () => {
                         {/* Time Slot Selection */}
                         {deliveryDate && (
                           <div>
-                            <span className="mb-1.5 block text-xs text-[#9aa3b2]">Vaqt tanlang</span>
+                            <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('checkoutPage.selectTime')}</span>
                             <div className="grid grid-cols-3 gap-2">
                               {[
-                                { value: 'morning', label: '09:00 – 12:00', icon: '🌅', name: 'Ertalab' },
-                                { value: 'afternoon', label: '12:00 – 15:00', icon: '☀️', name: 'Kunduzi' },
-                                { value: 'evening', label: '15:00 – 18:00', icon: '🌤️', name: 'Kechqurun' },
-                                { value: 'late_evening', label: '18:00 – 21:00', icon: '🌙', name: 'Kechasi' },
-                                { value: 'express', label: '2 soat ichida', icon: '⚡', name: 'Tezkor' },
-                                { value: 'any', label: 'Har qanday vaqt', icon: '🕐', name: 'Ahamiyatsiz' },
+                                { value: 'morning', label: t('checkoutPage.morningTime'), icon: '🌅', name: t('checkoutPage.timeslot_morning') },
+                                { value: 'afternoon', label: t('checkoutPage.afternoonTime'), icon: '☀️', name: t('checkoutPage.timeslot_day') },
+                                { value: 'evening', label: t('checkoutPage.eveningTime'), icon: '🌤️', name: t('checkoutPage.timeslot_evening') },
+                                { value: 'late_evening', label: t('checkoutPage.lateEveningTime'), icon: '🌙', name: t('checkoutPage.timeslot_night') },
+                                { value: 'express', label: t('checkoutPage.expressTime'), icon: '⚡', name: t('checkoutPage.timeslot_express') },
+                                { value: 'any', label: t('checkoutPage.anytimeTime'), icon: '🕐', name: t('checkoutPage.timeslot_anytime') },
                               ].map((slot) => (
                                 <button
                                   key={slot.value}
@@ -742,7 +737,7 @@ const Checkout = () => {
                             </div>
                             {deliveryTimeSlot === 'express' && (
                               <p className="mt-2 text-[11px] text-[#d6b47c] bg-[#d6b47c]/5 border border-[#d6b47c]/10 rounded-lg px-3 py-1.5">
-                                ⚡ Tezkor yetkazib berish uchun qo'shimcha 25,000 so'm to'lanadi
+                                {t('checkoutPage.expressFeeNote')}
                               </p>
                             )}
                           </div>
@@ -752,13 +747,13 @@ const Checkout = () => {
                           <div className="rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/20 p-3 flex items-center gap-3">
                             <Clock className="w-4 h-4 text-[#d6b47c] flex-shrink-0" />
                             <p className="text-xs text-[#c7ceda]">
-                              Yetkazib berish: <span className="text-[#d6b47c] font-semibold">
+                              {t('checkoutPage.deliveryScheduleLine')} <span className="text-[#d6b47c] font-semibold">
                                 {new Date(deliveryDate).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' })}
-                                {' '}{deliveryTimeSlot === 'express' ? '2 soat ichida' :
-                                  deliveryTimeSlot === 'morning' ? '09:00 – 12:00' :
-                                  deliveryTimeSlot === 'afternoon' ? '12:00 – 15:00' :
-                                  deliveryTimeSlot === 'evening' ? '15:00 – 18:00' :
-                                  deliveryTimeSlot === 'late_evening' ? '18:00 – 21:00' : 'kun davomida'}
+                                {' '}{deliveryTimeSlot === 'express' ? t('checkoutPage.expressTime') :
+                                  deliveryTimeSlot === 'morning' ? t('checkoutPage.morningTime') :
+                                  deliveryTimeSlot === 'afternoon' ? t('checkoutPage.afternoonTime') :
+                                  deliveryTimeSlot === 'evening' ? t('checkoutPage.eveningTime') :
+                                  deliveryTimeSlot === 'late_evening' ? t('checkoutPage.lateEveningTime') : t('checkoutPage.anytimeTime')}
                               </span>
                             </p>
                           </div>
@@ -801,30 +796,30 @@ const Checkout = () => {
 
                     <div className="relative rounded-xl bg-[#1a202d]/65 p-4 text-center text-[#9aa3b2] opacity-70">
                       <span className="absolute right-2 top-2 rounded-full bg-[#2d3442] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#c7ceda]">
-                        Tez orada
+                        {t('checkoutPage.paymentComingSoon')}
                       </span>
                       <p className="mb-2 text-base font-semibold">CLICK</p>
-                      <p className="text-sm">Click orqali</p>
+                      <p className="text-sm">{t('checkoutPage.clickPay')}</p>
                     </div>
 
                     <div className="relative rounded-xl bg-[#1a202d]/65 p-4 text-center text-[#9aa3b2] opacity-70">
                       <span className="absolute right-2 top-2 rounded-full bg-[#2d3442] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#c7ceda]">
-                        Tez orada
+                        {t('checkoutPage.paymentComingSoon')}
                       </span>
                       <p className="mb-2 text-base font-semibold">Payme</p>
-                      <p className="text-sm">Payme orqali</p>
+                      <p className="text-sm">{t('checkoutPage.paymePay')}</p>
                     </div>
                   </div>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">Izoh (ixtiyoriy)</span>
+                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.commentsLabel')}</span>
                     <textarea
                       name="comments"
                       value={formData.comments}
                       onChange={handleChange}
                       rows={3}
                       className="w-full resize-none rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
-                      placeholder="Buyurtma bo'yicha qo'shimcha izoh..."
+                      placeholder={t('checkoutPage.commentsPlaceholder')}
                     />
                   </label>
 
@@ -839,7 +834,7 @@ const Checkout = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Gift className="h-4 w-4 text-[#d6b47c]" />
-                        <span className="text-sm font-medium text-[#f4f1eb]">Sovg'a qadoqlash</span>
+                        <span className="text-sm font-medium text-[#f4f1eb]">{t('checkoutPage.giftWrapTitle')}</span>
                       </div>
                     </label>
 
@@ -862,20 +857,20 @@ const Checkout = () => {
                               </p>
                               <p className="text-[10px] text-[#9aa3b2] mt-0.5">{opt.desc}</p>
                               <p className={`text-xs font-bold mt-1.5 ${giftWrapType === key ? 'text-[#d6b47c]' : 'text-[#c7ceda]'}`}>
-                                {opt.price.toLocaleString()} so'm
+                                {opt.price.toLocaleString()} {t('checkoutPage.soM')}
                               </p>
                             </button>
                           ))}
                         </div>
                         <label className="block">
-                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">Sovg'a maktubi (ixtiyoriy)</span>
+                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('checkoutPage.giftMessageLabel')}</span>
                           <input
                             type="text"
                             value={giftMessage}
                             onChange={(e) => setGiftMessage(e.target.value)}
                             maxLength={200}
                             className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
-                            placeholder="Masalan: Tabriklayman, azizim!"
+                            placeholder={t('checkoutPage.giftMessagePlaceholder')}
                           />
                         </label>
                       </div>
@@ -908,7 +903,7 @@ const Checkout = () => {
                     onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
                     className="rounded-full bg-[#2d3442]/70 px-5 py-2.5 text-sm font-semibold text-[#f4f1eb] transition-transform active:scale-[0.985]"
                   >
-                    Orqaga
+                    {t('checkoutPage.back')}
                   </button>
                 ) : (
                   <div />
@@ -924,7 +919,7 @@ const Checkout = () => {
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 ) : (
-                  <p className="text-sm text-[#9aa3b2]">Yakuniy tasdiq uchun o'ng paneldagi tugmadan foydalaning.</p>
+                  <p className="text-sm text-[#9aa3b2]">{t('checkoutPage.finalConfirmHint')}</p>
                 )}
               </div>
             </form>
@@ -932,8 +927,8 @@ const Checkout = () => {
 
           <aside className="xl:sticky xl:top-20 xl:h-fit">
             <div className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)]">
-              <h3 className="text-xl font-semibold text-[#f4f1eb]">Order Capsule</h3>
-              <p className="mt-1 text-sm text-[#9aa3b2]">Tanlangan mahsulotlar va yakuniy to'lov.</p>
+              <h3 className="text-xl font-semibold text-[#f4f1eb]">{t('checkoutPage.orderCapsule')}</h3>
+              <p className="mt-1 text-sm text-[#9aa3b2]">{t('checkoutPage.selectedProductsDesc')}</p>
 
               <div className="mt-5 max-h-[340px] space-y-3 overflow-y-auto pr-1">
                 {lookItems.map((look) => (
@@ -944,14 +939,14 @@ const Checkout = () => {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-[#d6b47c]">{look.title}</p>
-                        <p className="mt-0.5 text-xs text-[#9aa3b2]">{look.products.length} mahsulot</p>
+                        <p className="mt-0.5 text-xs text-[#9aa3b2]">{look.products.length} {t('checkoutPage.productCount')}</p>
                         <div className="mt-1 flex items-center gap-2">
                           {look.discountAmount > 0 && (
                             <span className="text-[10px] text-[#9aa3b2] line-through">
-                              {formatMoney(look.originalPrice)} so'm
+                              {formatMoney(look.originalPrice)} {t('checkoutPage.soM')}
                             </span>
                           )}
-                          <span className="text-sm font-semibold text-[#c7ceda]">{formatMoney(look.discountedPrice)} so'm</span>
+                          <span className="text-sm font-semibold text-[#c7ceda]">{formatMoney(look.discountedPrice)} {t('checkoutPage.soM')}</span>
                         </div>
                       </div>
                     </div>
@@ -963,10 +958,10 @@ const Checkout = () => {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-[#f4f1eb]">{item.name}</p>
                       <p className="mt-0.5 text-xs text-[#9aa3b2]">
-                        {item.quantity} dona
+                        {item.quantity} {t('checkoutPage.piece')}
                         {item.selectedSize ? ` • ${item.selectedSize}` : ''}
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-[#c7ceda]">{formatMoney(item.parsedPrice * item.quantity)} so'm</p>
+                      <p className="mt-1 text-sm font-semibold text-[#c7ceda]">{formatMoney(item.parsedPrice * item.quantity)} {t('checkoutPage.soM')}</p>
                     </div>
                   </div>
                 ))}
@@ -984,8 +979,8 @@ const Checkout = () => {
                           <p className="text-sm font-semibold text-emerald-400">{appliedPromo.code}</p>
                           <p className="text-xs text-emerald-500/80">
                             {appliedPromo.type === 'giftcard' 
-                              ? `-${formatMoney(appliedPromo.discountAmount)} so'm chegirma` 
-                              : `-${appliedPromo.discountPercentage}% chegirma`}
+                              ? `-${formatMoney(appliedPromo.discountAmount)} ${t('checkoutPage.soM')}`
+                              : `-${appliedPromo.discountPercentage}%`}
                           </p>
                         </div>
                       </div>
@@ -1002,7 +997,7 @@ const Checkout = () => {
                         type="text"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                        placeholder="Promokod (agar bo'lsa)"
+                        placeholder={t('checkoutPage.promoPlaceholder')}
                         className="w-full flex-1 rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-1 focus:ring-[#f4f1eb]/20 uppercase"
                       />
                       <button
@@ -1011,38 +1006,38 @@ const Checkout = () => {
                         disabled={isValidatingPromo || !promoCode.trim()}
                         className="rounded-xl border border-[#2d3442] bg-[#1a202d] px-4 py-2 text-sm font-semibold text-[#f4f1eb] hover:bg-[#2d3442] transition-colors disabled:opacity-50"
                       >
-                        {isValidatingPromo ? '...' : 'Qo\'llash'}
+                        {isValidatingPromo ? '...' : t('checkoutPage.applyButton')}
                       </button>
                     </div>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
-                  <span>Mahsulot</span>
-                  <span>{formatMoney(summaryTotal)} so'm</span>
+                  <span>{t('checkoutPage.productCount')}</span>
+                  <span>{formatMoney(summaryTotal)} {t('checkoutPage.soM')}</span>
                 </div>
 
                 {userTier && tierDiscountAmount > 0 && (
                   <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                     <div className="flex items-center gap-1.5">
                       <Gem className="w-3.5 h-3.5" />
-                      <span>{userTier.level} Member chegirmasi</span>
+                      <span>{t('checkoutPage.memberDiscount').replace('{level}', userTier.level)}</span>
                     </div>
-                    <span>-{formatMoney(tierDiscountAmount)} so'm</span>
+                    <span>-{formatMoney(tierDiscountAmount)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
                 {appliedPromo && (
                   <div className="flex items-center justify-between text-sm text-emerald-400">
-                    <span>Promokod ({appliedPromo.code})</span>
-                    <span>-{formatMoney(discountAmount - tierDiscountAmount)} so'm</span>
+                    <span>{t('checkoutPage.promoCodeSummary').replace('{code}', appliedPromo.code)}</span>
+                    <span>-{formatMoney(discountAmount - tierDiscountAmount)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
                 {lookDiscountsTotal > 0 && (
                   <div className="flex items-center justify-between text-sm text-[#d6b47c]">
-                    <span>Look chegirmasi ({lookItems.length} look)</span>
-                    <span>-{formatMoney(lookDiscountsTotal)} so'm</span>
+                    <span>{t('checkoutPage.lookDiscount').replace('{count}', lookItems.length)}</span>
+                    <span>-{formatMoney(lookDiscountsTotal)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
@@ -1055,9 +1050,9 @@ const Checkout = () => {
                   <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                     <div className="flex items-center gap-1.5">
                       <Gift className="w-3.5 h-3.5" />
-                      <span>Sovg'a qadoqlash ({GIFT_WRAP_OPTIONS[giftWrapType]?.name})</span>
+                      <span>{t('checkoutPage.giftWrapSummary').replace('{type}', GIFT_WRAP_OPTIONS[giftWrapType]?.name)}</span>
                     </div>
-                    <span>{formatMoney(giftWrapCost)} so'm</span>
+                    <span>{formatMoney(giftWrapCost)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
@@ -1065,9 +1060,9 @@ const Checkout = () => {
                   <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>Tezkor yetkazib berish</span>
+                      <span>{t('checkoutPage.expressDeliveryLabel')}</span>
                     </div>
-                    <span>{formatMoney(expressDeliveryFee)} so'm</span>
+                    <span>{formatMoney(expressDeliveryFee)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
@@ -1086,7 +1081,7 @@ const Checkout = () => {
                 {isSubmitting ? (
                   <>
                     <DotLoader />
-                    <span>Rasmiylashtirilmoqda...</span>
+                    <span>{t('checkoutPage.processing')}</span>
                   </>
                 ) : (
                   <>
@@ -1096,7 +1091,7 @@ const Checkout = () => {
                 )}
               </button>
 
-              {currentStep !== 3 && <p className="mt-3 text-center text-xs text-[#9aa3b2]">Final tasdiq uchun 3-qadamga o'ting.</p>}
+              {currentStep !== 3 && <p className="mt-3 text-center text-xs text-[#9aa3b2]">{t('checkoutPage.finalConfirmStepHint')}</p>}
             </div>
           </aside>
         </div>

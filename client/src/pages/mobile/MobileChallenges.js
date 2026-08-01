@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const getDaysLeft = (endDate) => {
   if (!endDate) return null;
@@ -24,6 +25,7 @@ export default function MobileChallenges() {
   const { user, isAuthenticated, token, isAdmin } = useAuth();
   const { getImageKitAuth } = useProducts();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function MobileChallenges() {
       const res = await axios.get('/api/challenges');
       if (res.data.success) setChallenges(res.data.data);
     } catch {
-      toast.error('Musobaqalarni yuklashda xatolik');
+      toast.error(t('mobileChallenges.errors.loadError'));
     } finally {
       setIsLoading(false);
     }
@@ -53,19 +55,19 @@ export default function MobileChallenges() {
   useEffect(() => { fetchChallenges(); }, []);
 
   const handleVote = async (challengeId, submissionId) => {
-    if (!isAuthenticated) { toast.error('Ovoz berish uchun kiring'); return; }
+    if (!isAuthenticated) { toast.error(t('mobileChallenges.errors.loginToVote')); return; }
     try {
       const res = await axios.post(
         `/api/challenges/${challengeId}/vote/${submissionId}`, {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.data.success) {
-        toast.success(res.data.votesCount > selectedChallenge?.submissions?.find(s => s._id === submissionId)?.votes?.length 
-          ? 'Ovoz berildi!' 
-          : 'Ovoz qaytarib olindi');
+        toast.success(res.data.votesCount > selectedChallenge?.submissions?.find(s => s._id === submissionId)?.votes?.length
+          ? t('mobileChallenges.errors.voted')
+          : t('mobileChallenges.errors.voteRemoved'));
         fetchChallenges();
       }
-    } catch { toast.error('Xatolik yuz berdi'); }
+    } catch { toast.error(t('mobileChallenges.errors.error')); }
   };
 
   const handleImageChange = (e) => {
@@ -78,7 +80,7 @@ export default function MobileChallenges() {
   };
 
   const handleSubmit = async () => {
-    if (!imageFile) { toast.error('Rasm tanlang'); return; }
+    if (!imageFile) { toast.error(t('mobileChallenges.errors.selectImage')); return; }
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -90,13 +92,13 @@ export default function MobileChallenges() {
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
       );
       if (res.data.success) {
-        toast.success('Ishtirok etdingiz!');
+        toast.success(t('mobileChallenges.errors.submitted'));
         setIsSubmitOpen(false);
         setImageFile(null); setImagePreview(''); setSubmitCaption('');
         fetchChallenges();
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Xatolik');
+      toast.error(err.response?.data?.message || t('mobileChallenges.errors.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -148,7 +150,7 @@ export default function MobileChallenges() {
         <div className="p-4 border-t border-white/10 flex items-center justify-between">
           <div>
             {viewingSubmission.caption && <p className="text-sm text-gray-300">{viewingSubmission.caption}</p>}
-            <p className="text-[10px] text-gray-500 mt-1">{viewingSubmission.votes?.length || 0} ta ovoz</p>
+            <p className="text-[10px] text-gray-500 mt-1">{viewingSubmission.votes?.length || 0} {t('mobileChallenges.votingLabel')}</p>
           </div>
           <button
             onClick={() => handleVote(selectedChallenge._id, viewingSubmission._id)}
@@ -159,7 +161,7 @@ export default function MobileChallenges() {
             }`}
           >
             <Heart className={`w-4 h-4 ${viewingSubmission.votes?.includes(user?._id) ? 'fill-current' : ''}`} />
-            Ovoz
+            {t('mobileChallenges.voteButton')}
           </button>
         </div>
       </div>
@@ -180,7 +182,7 @@ export default function MobileChallenges() {
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-end">
             <div className="w-full bg-[#0f0f0f] rounded-t-[32px] p-6 border-t border-white/10 max-h-[80vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-brilliant">Ishtirok Etish</h3>
+                <h3 className="text-lg font-brilliant">{t('mobileChallenges.submitTitle')}</h3>
                 <button onClick={() => setIsSubmitOpen(false)} className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
                   <X className="w-4 h-4 text-gray-400" />
                 </button>
@@ -190,7 +192,7 @@ export default function MobileChallenges() {
                 <div className={`w-full aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer ${imagePreview ? 'border-transparent' : 'border-white/10'}`}>
                   {imagePreview
                     ? <img src={imagePreview} alt="" className="w-full h-full object-cover rounded-2xl" />
-                    : <><Camera className="w-8 h-8 text-gray-600 mb-2" /><p className="text-sm text-gray-500">Rasm tanlang</p></>
+                    : <><Camera className="w-8 h-8 text-gray-600 mb-2" /><p className="text-sm text-gray-500">{t('mobileChallenges.uploadPlaceholder')}</p></>
                   }
                 </div>
                 <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
@@ -199,7 +201,7 @@ export default function MobileChallenges() {
               <textarea
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 resize-none mb-4 focus:outline-none"
                 rows={3}
-                placeholder="Izoh (ixtiyoriy)..."
+                placeholder={t('mobileChallenges.commentPlaceholder')}
                 value={submitCaption}
                 onChange={e => setSubmitCaption(e.target.value)}
               />
@@ -210,7 +212,7 @@ export default function MobileChallenges() {
                 className="w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-widest text-black disabled:opacity-50"
                 style={{ background: color }}
               >
-                {isSubmitting ? 'Yuklanmoqda...' : 'Ishtirok Etish'}
+                {isSubmitting ? t('mobileChallenges.submitting') : t('mobileChallenges.submitShort')}
               </button>
             </div>
           </div>
@@ -219,7 +221,7 @@ export default function MobileChallenges() {
         <div className="px-4 pt-6">
           <button onClick={() => setSelectedChallenge(null)} className="flex items-center gap-2 text-gray-400 mb-5">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Orqaga</span>
+            <span className="text-sm">{t('mobileChallenges.back')}</span>
           </button>
 
           {/* Challenge Header */}
@@ -234,17 +236,17 @@ export default function MobileChallenges() {
                 {daysLeft !== null && (
                   <div className="flex items-center gap-1.5 text-xs text-gray-400">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>{daysLeft} kun qoldi</span>
+                    <span>{daysLeft} {t('mobileChallenges.daysSuffix')}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
                   <Users className="w-3.5 h-3.5" />
-                  <span>{selectedChallenge.submissions?.length || 0} ishtirokchi</span>
+                  <span>{selectedChallenge.submissions?.length || 0} {t('mobileChallenges.participantsLong')}</span>
                 </div>
                 {selectedChallenge.reward && (
                   <div className="flex items-center gap-1.5 text-xs font-black" style={{ color }}>
                     <Trophy className="w-3.5 h-3.5" />
-                    <span>{typeof selectedChallenge.reward === 'object' ? selectedChallenge.reward.points : selectedChallenge.reward} ball</span>
+                    <span>{typeof selectedChallenge.reward === 'object' ? selectedChallenge.reward.points : selectedChallenge.reward} {t('mobileChallenges.rewardSuffix')}</span>
                   </div>
                 )}
               </div>
@@ -255,12 +257,12 @@ export default function MobileChallenges() {
                   className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest text-black"
                   style={{ background: color }}
                 >
-                  Ishtirok Etish
+                  {t('mobileChallenges.submitShort')}
                 </button>
               )}
               {hasSubmitted && (
                 <div className="py-3 rounded-xl text-xs font-black uppercase tracking-widest text-center border" style={{ color, borderColor: `${color}40`, background: `${color}10` }}>
-                  ✓ Ishtirok etdingiz
+                  {t('mobileChallenges.submittedLabel')}
                 </div>
               )}
             </div>
@@ -269,7 +271,7 @@ export default function MobileChallenges() {
           {/* Submissions */}
           {sortedSubmissions.length > 0 && (
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-3">Ishtirokchilar</p>
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-3">{t('mobileChallenges.submissionsTitle')}</p>
               <div className="grid grid-cols-2 gap-2">
                 {sortedSubmissions.map((sub, idx) => {
                   const isVoted = sub.votes?.includes(user?._id);
@@ -324,23 +326,23 @@ export default function MobileChallenges() {
         <div className="pt-6 pb-5">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-5">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Orqaga</span>
+            <span className="text-sm">{t('mobileChallenges.back')}</span>
           </button>
 
           <div className="flex items-center gap-2 mb-2">
             <Swords className="w-3.5 h-3.5 text-[#d6b47c]" />
-            <span className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] font-black">Haftalik Duel</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] font-black">{t('mobileChallenges.badgeTitle')}</span>
           </div>
           <h1 className="text-4xl font-brilliant text-white">
-            Style <span className="text-[#d6b47c]">Challenges</span>
+            {t('mobileChallenges.titlePrefix')} <span className="text-[#d6b47c]">{t('mobileChallenges.titleSuffix')}</span>
           </h1>
-          <p className="text-sm text-gray-400 mt-2">Musobaqalarda qatnashing va mukofotlar yutib oling</p>
+          <p className="text-sm text-gray-400 mt-2">{t('mobileChallenges.subtitle')}</p>
         </div>
 
         {challenges.length === 0 ? (
           <div className="text-center py-16">
             <Swords className="w-14 h-14 text-gray-800 mx-auto mb-4" />
-            <p className="text-gray-500">Hali musobaqalar yo'q</p>
+            <p className="text-gray-500">{t('mobileChallenges.empty')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -360,12 +362,12 @@ export default function MobileChallenges() {
                   <div className="relative">
                     <div className="flex items-start justify-between mb-3">
                       <div className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest" style={{ background: `${color}20`, color }}>
-                        {isActive ? '● Aktiv' : challenge.status === 'completed' ? 'Yakunlandi' : 'Rejalashtirilgan'}
+                        {isActive ? t('mobileChallenges.active') : challenge.status === 'completed' ? t('mobileChallenges.completed') : t('mobileChallenges.scheduled')}
                       </div>
                       {daysLeft !== null && isActive && (
                         <div className="flex items-center gap-1 text-[10px] text-gray-500">
                           <Clock className="w-3 h-3" />
-                          <span>{daysLeft} kun</span>
+                          <span>{daysLeft} {t('mobileChallenges.daysSuffix')}</span>
                         </div>
                       )}
                     </div>
@@ -376,12 +378,12 @@ export default function MobileChallenges() {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1.5 text-xs text-gray-400">
                         <Users className="w-3.5 h-3.5" />
-                        <span>{challenge.submissions?.length || 0} ta</span>
+                        <span>{challenge.submissions?.length || 0} {t('mobileChallenges.participantsShort')}</span>
                       </div>
                       {challenge.reward && (
                         <div className="flex items-center gap-1.5 text-xs font-black" style={{ color }}>
                           <Trophy className="w-3.5 h-3.5" />
-                          <span>+{typeof challenge.reward === 'object' ? challenge.reward.points : challenge.reward} ball</span>
+                          <span>+{typeof challenge.reward === 'object' ? challenge.reward.points : challenge.reward} {t('mobileChallenges.rewardSuffix')}</span>
                         </div>
                       )}
                     </div>

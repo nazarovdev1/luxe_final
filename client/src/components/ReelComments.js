@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Send, MessageCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
@@ -10,6 +11,7 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   // Fetch comments
   const fetchComments = async () => {
@@ -37,12 +39,12 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
     e.preventDefault();
 
     if (!user) {
-      toast.error('Izoh qoldirish uchun tizimga kiring');
+      toast.error(t('reelComments.loginRequired'));
       return;
     }
 
     if (!text.trim()) {
-      toast.error('Izohni kiriting');
+      toast.error(t('reelComments.emptyComment'));
       return;
     }
 
@@ -58,12 +60,12 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
 
       if (response.data.success) {
         setText('');
-        toast.success('Izoh qo\'shildi!');
+        toast.success(t('reelComments.added'));
         fetchComments();
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-      toast.error('Xatolik yuz berdi');
+      toast.error(t('reelComments.addError'));
     } finally {
       setSubmitting(false);
     }
@@ -71,7 +73,7 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
 
   // Delete comment
   const handleDelete = async (commentId) => {
-    if (!window.confirm('Haqiqatan ham ushbu izohni o\'chirmoqchimisiz?')) return;
+    if (!window.confirm(t('reelComments.deleteConfirm'))) return;
 
     try {
       const response = await axios.delete(`/api/reels/manage-comment/${commentId}`, {
@@ -79,12 +81,12 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
       });
 
       if (response.data.success) {
-        toast.success('Izoh o\'chirildi');
+        toast.success(t('reelComments.deleted'));
         fetchComments();
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
-      const message = error.response?.data?.message || 'O\'chirishda xatolik yuz berdi';
+      const message = error.response?.data?.message || t('reelComments.deleteError');
       toast.error(message);
     }
   };
@@ -92,19 +94,19 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
   if (!isOpen) return null;
 
   const content = (
-    <div 
+    <div
       className={`flex flex-col h-full bg-[#0f0f12] ${isEmbedded ? 'w-full' : 'relative w-full max-w-[400px] bg-black/90 backdrop-blur-2xl border-l border-white/10 shadow-2xl transition-transform duration-500 ease-out'}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-white/5">
         <div>
           <h3 className="text-white font-black text-xl flex items-center gap-2">
-            Izohlar
+            {t('reelComments.title')}
             <span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
               {comments.length}
             </span>
           </h3>
-          <p className="text-gray-500 text-[10px] mt-1 uppercase tracking-widest font-bold">Hamjamiyat fikrlari</p>
+          <p className="text-gray-500 text-[10px] mt-1 uppercase tracking-widest font-bold">{t('reelComments.communityThoughts')}</p>
         </div>
         <button
           onClick={onClose}
@@ -119,13 +121,13 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
         {loading ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-500 text-sm animate-pulse">Yuklanmoqda...</p>
+            <p className="text-gray-500 text-sm animate-pulse">{t('reelComments.loading')}</p>
           </div>
         ) : comments.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-30">
             <MessageCircle size={48} className="text-gray-600" />
             <div>
-              <p className="text-white font-bold text-sm">Izohlar yo'q</p>
+              <p className="text-white font-bold text-sm">{t('reelComments.noComments')}</p>
             </div>
           </div>
         ) : (
@@ -156,14 +158,14 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
                   <p className="text-gray-300 text-xs leading-relaxed break-words">
                     {comment.text}
                   </p>
-                  
+
                   <div className="flex items-center gap-3 pt-1">
                     {(user?._id === comment.user?._id || user?.role === 'admin') && (
                       <button
                         onClick={() => handleDelete(comment._id)}
                         className="text-[9px] text-red-500/70 hover:text-red-400 font-bold uppercase tracking-tighter"
                       >
-                        O'chirish
+                        {t('reelComments.delete')}
                       </button>
                     )}
                   </div>
@@ -181,7 +183,7 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Izoh yozing..."
+            placeholder={t('reelComments.placeholder')}
             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-white text-xs focus:outline-none focus:border-amber-500/50 transition-all"
           />
           <button
@@ -217,7 +219,7 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
-      <div 
+      <div
         className={`relative w-full max-w-[400px] h-full shadow-2xl flex flex-col transition-transform duration-500 ease-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}

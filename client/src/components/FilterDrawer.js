@@ -27,7 +27,7 @@ const FilterDrawer = ({
       {/* Drawer */}
       <div className="relative w-full max-w-md h-full bg-[#0a0a0b] border-l border-white/10 shadow-2xl animate-page-slide-right flex flex-col">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <h2 className="text-xl font-semibold text-[#f5f5f3]">Filtrlash</h2>
+          <h2 className="text-xl font-semibold text-[#f5f5f3]">{t('filterDrawer.title')}</h2>
           <button 
             onClick={onClose}
             className="p-2 rounded-full hover:bg-white/5 text-[#6b6b6e] hover:text-[#f5f5f3] transition-colors"
@@ -46,7 +46,7 @@ const FilterDrawer = ({
                 type="text"
                 value={searchText}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Mahsulot nomini kiriting..."
+                placeholder={t('filterDrawer.searchPlaceholder')}
                 className="w-full bg-[#141416] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-[#f5f5f3] focus:outline-none focus:border-[#c9a96e] transition-colors"
               />
             </div>
@@ -78,14 +78,14 @@ const FilterDrawer = ({
           
           {/* Sort By */}
           <div className="space-y-3">
-            <label className="text-xs uppercase tracking-[0.2em] text-[#6b6b6e] font-medium">Saralash</label>
+            <label className="text-xs uppercase tracking-[0.2em] text-[#6b6b6e] font-medium">{t('filterDrawer.sortLabel')}</label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: 'Featured', value: 'featured' },
-                { label: 'Yangi', value: 'newest' },
-                { label: 'Reyting', value: 'rating' },
-                { label: 'Arzon', value: 'price-low' },
-                { label: 'Qimmat', value: 'price-high' }
+                { label: t('filterDrawer.sortFeatured'), value: 'featured' },
+                { label: t('filterDrawer.sortNew'), value: 'newest' },
+                { label: t('filterDrawer.sortRating'), value: 'rating' },
+                { label: t('filterDrawer.sortPriceLow'), value: 'price-low' },
+                { label: t('filterDrawer.sortPriceHigh'), value: 'price-high' }
               ].map((opt) => (
                 <button
                   key={opt.value}
@@ -108,7 +108,7 @@ const FilterDrawer = ({
             onClick={onClose}
             className="w-full py-4 rounded-xl bg-[#c9a96e] text-[#0a0a0b] font-bold hover:bg-[#d4b87a] transition-all shadow-xl shadow-[#c9a96e]/10"
           >
-            Natijalarni ko'rish
+            {t('filterDrawer.viewResults')}
           </button>
         </div>
       </div>

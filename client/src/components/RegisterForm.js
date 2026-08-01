@@ -319,7 +319,7 @@ const RegisterForm = () => {
                     required
                     value={formData.username}
                     onChange={handleChange}
-                    placeholder="username"
+                    placeholder={t('registerForm.usernamePlaceholder')}
                   />
 
                   {/* phone */}

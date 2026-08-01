@@ -208,7 +208,7 @@ const Contact = () => {
                   {t('contact.location')}
                 </div>
                 <iframe
-                  title="Luxx.uz manzil"
+                  title={t('contactMapTitle')}
                   src="https://www.openstreetmap.org/export/embed.html?bbox=69.1803%2C41.2646%2C69.3200%2C41.3500&layer=mapnik&marker=41.2995%2C69.2401"
                   className="h-56 w-full border-0"
                   loading="lazy"

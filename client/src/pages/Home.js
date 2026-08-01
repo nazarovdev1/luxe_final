@@ -12,10 +12,12 @@ import useRecentlyViewed from '../hooks/useRecentlyViewed';
 import SEO from '../components/SEO';
 import Galaxy from '../components/Galaxy';
 import SideRays from '../components/ui/SideRays';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Home = () => {
   const location = useLocation();
   const { recentlyViewed, clearRecentlyViewed } = useRecentlyViewed();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Handle hash-based scrolling when coming from another page
@@ -68,9 +70,9 @@ const Home = () => {
       </div>
 
       <SEO
-        title="Ayollar kiyimlari, luxury kiyimlar va paltolar | Женская одежда"
-        description="Luxx.uz - ayollar uchun premium va luxury kiyimlar onlayn do'koni. Yozgi kiyimlar, paltolar va zamonaviy kolleksiyalar. Женская одежда премиум-класса в Ташкенте."
-        keywords="luxx.uz, luxe uz, luxury uz, luxe, luxury, ayollar kiyimlari, luxury kiyimlar, paltolar, premium kiyimlar, moda do'kon, женская одежда ташкент, купить платье ташкент"
+        title={t('home.seoTitle')}
+        description={t('home.seoDesc')}
+        keywords={t('home.seoKeywords')}
         canonicalPath="/"
       />
       

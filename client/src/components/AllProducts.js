@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import ProductCard from './ProductCard';
 import { ProductGridSkeleton } from './ProductCardSkeleton';
 import { ArrowRight } from 'lucide-react';
 
 const AllProducts = () => {
     const { products, isLoading } = useProducts();
+    const { t } = useLanguage();
     const sectionRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -49,10 +51,10 @@ const AllProducts = () => {
                     }}
                 >
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                        Mahsulotlar
+                        {t('allProducts.title')}
                     </h2>
                     <p className="text-lg text-gray-400 max-w-xl mx-auto">
-                        Eng zamonaviy dizayn va yuqori sifatli mahsulotlarimiz
+                        {t('allProducts.subtitle')}
                     </p>
                 </div>
 

@@ -38,7 +38,7 @@ const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const BundleDetail = React.lazy(() => import('./pages/BundleDetail'));
 const MobileApp = lazyWithRetry(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
-const About = React.lazy(() => import('./components/About'));
+const AboutPage = React.lazy(() => import('./pages/AboutPage'));
 const VisualSearch = lazyWithRetry(() => import('./components/VisualSearch'));
 import { ProductProvider } from './contexts/ProductContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -71,6 +71,7 @@ function MainContent() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = location.pathname.startsWith('/mobile');
+  const isAboutPage = location.pathname === '/about';
   const showDesktopChrome = !isMobile && !['/login', '/register', '/checkout', '/reels', '/live/'].some(path => location.pathname.startsWith(path));
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -112,7 +113,7 @@ function MainContent() {
     // Mobile user on desktop path -> redirect to mobile
     if (isMobileUser && !isOnMobilePath) {
       setIsRedirecting(true);
-      const mobilePath = '/mobile' + location.pathname;
+      const mobilePath = '/mobile' + location.pathname + location.search + location.hash;
       navigate(mobilePath, { replace: true });
       return;
     }
@@ -120,13 +121,13 @@ function MainContent() {
     // Desktop user on mobile path -> redirect to desktop
     if (!isMobileUser && isOnMobilePath) {
       setIsRedirecting(true);
-      const desktopPath = location.pathname.replace('/mobile', '') || '/';
+      const desktopPath = (location.pathname.replace('/mobile', '') || '/') + location.search + location.hash;
       navigate(desktopPath, { replace: true });
       return;
     }
 
     setIsRedirecting(false);
-  }, [location.pathname, navigate]);
+  }, [location.hash, location.pathname, location.search, navigate]);
 
   const openSearch = () => {
     setIsCartOpen(false);
@@ -166,7 +167,7 @@ function MainContent() {
         {/* Fixed Header Container (Banner + Navbar) */}
         {showDesktopChrome && !isChromeHiddenBySurface && (
           <>
-            <AnnouncementBanner />
+            {!isAboutPage && <AnnouncementBanner />}
             <Navbar onSearchClick={openSearch} onCartClick={openCart} /* onVisualSearch={() => setIsVisualSearchOpen(true)} */ />
           </>
         )}
@@ -192,11 +193,7 @@ function MainContent() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={
               <React.Suspense fallback={<Loading />}>
-                <div className="min-h-screen bg-[#0a0a0b] pt-20">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <About />
-                  </div>
-                </div>
+                <AboutPage />
               </React.Suspense>
             } />
             <Route path="/login" element={<LoginForm />} />

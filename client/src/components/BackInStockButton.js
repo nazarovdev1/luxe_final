@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Bell, BellRing, Phone, X, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
 const BackInStockButton = ({ productId, productName, hasStock = true }) => {
   const { isAuthenticated, token } = useAuth();
+  const { t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [phone, setPhone] = useState('');
   const [notifyMethod, setNotifyMethod] = useState('sms'); // sms, push
@@ -17,12 +19,12 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
 
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
-      toast.error('Iltimos, avval ro\'yxatdan o\'ting');
+      toast.error(t('backInStock.errorLogin'));
       return;
     }
 
     if (notifyMethod === 'sms' && !phone.trim()) {
-      toast.error('Telefon raqamni kiriting');
+      toast.error(t('backInStock.errorPhone'));
       return;
     }
 
@@ -30,10 +32,10 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsSubscribed(true);
-      toast.success('Mahsulot paydo bo\'lganda sizga xabar beramiz!');
+      toast.success(t('backInStock.success'));
       setIsModalOpen(false);
     } catch (error) {
-      toast.error('Xatolik yuz berdi. Qaytadan urinib ko\'ring.');
+      toast.error(t('backInStock.errorGeneric'));
     } finally {
       setIsSubmitting(false);
     }
@@ -48,8 +50,8 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
             <Bell className="h-6 w-6 text-[#c9a96e]" />
           </div>
           <div>
-            <p className="text-sm font-black text-[#f5f5f3] uppercase tracking-wider">Hozirda mavjud emas</p>
-            <p className="text-[11px] text-[#8a8a8d] font-bold uppercase tracking-widest mt-1">Eksklyuziv obuna bo'ling</p>
+            <p className="text-sm font-black text-[#f5f5f3] uppercase tracking-wider">{t('backInStock.outOfStock')}</p>
+            <p className="text-[11px] text-[#8a8a8d] font-bold uppercase tracking-widest mt-1">{t('backInStock.exclusiveSub')}</p>
           </div>
         </div>
         <button
@@ -57,7 +59,7 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
           className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#c9a96e] px-6 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#0a0a0b] hover:bg-[#d4b87a] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_12px_24px_rgba(201,169,110,0.2)]"
         >
           <BellRing className="w-4 h-4" strokeWidth={3} />
-          Xabar berish
+          {t('backInStock.notifyBtn')}
         </button>
       </div>
 
@@ -78,20 +80,20 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
                 <BellRing className="h-6 w-6 text-[#c9a96e]" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[#f5f5f3] tracking-wide uppercase">Navbatga yozilish</h3>
-                <p className="text-[10px] font-bold text-[#8a8a8d] uppercase tracking-widest mt-1">Mahsulot qaytishi haqida xabar</p>
+                <h3 className="text-xl font-bold text-[#f5f5f3] tracking-wide uppercase">{t('backInStock.queueTitle')}</h3>
+                <p className="text-[10px] font-bold text-[#8a8a8d] uppercase tracking-widest mt-1">{t('backInStock.queueSub')}</p>
               </div>
             </div>
 
             {/* Product Name */}
             <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-4 mb-8">
-              <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">Mahsulot nomi</p>
+              <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">{t('backInStock.productNameLabel')}</p>
               <p className="text-sm font-bold text-[#f5f5f3]">{productName}</p>
             </div>
 
             {/* Notify Method */}
             <div className="space-y-4 mb-8">
-              <p className="text-[10px] font-black text-white uppercase tracking-[0.2em] px-2">Xabar olish usuli</p>
+              <p className="text-[10px] font-black text-white uppercase tracking-[0.2em] px-2">{t('backInStock.notifyMethodLabel')}</p>
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { id: 'sms', label: 'SMS', icon: Phone },
@@ -118,13 +120,13 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
             {notifyMethod === 'sms' && (
               <div className="mb-8 animate-fade-in">
                 <label className="block px-2 mb-3">
-                  <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Telefon raqamingiz</span>
+                  <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{t('backInStock.phoneLabel')}</span>
                 </label>
                 <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+998 90 123 45 67"
+                    placeholder={t('backInStock.phonePlaceholder')}
                     className="w-full rounded-2xl border border-white/5 bg-white/[0.02] px-5 py-4 text-sm text-[#f5f5f3] placeholder-[#3f4658] outline-none focus:border-[#c9a96e]/30 transition-all"
                 />
               </div>
@@ -141,13 +143,13 @@ const BackInStockButton = ({ productId, productName, hasStock = true }) => {
               ) : (
                 <>
                   <BellRing className="w-4 h-4" strokeWidth={3} />
-                  Navbatga yozilish
+                  {t('backInStock.submitBtn')}
                 </>
               )}
             </button>
 
             <p className="text-[9px] font-bold text-[#8a8a8d] text-center mt-6 uppercase tracking-widest leading-relaxed">
-              Mahsulot qayta sotuvga chiqqanda faqat bir marta xabar yuboramiz.
+              {t('backInStock.footNote')}
             </p>
           </div>
         </div>

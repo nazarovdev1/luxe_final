@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, ShoppingBag, Clock3, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -59,6 +60,7 @@ const MetricItem = ({ icon: Icon, value, label, tone = 'gold', live = false }) =
 };
 
 const BundleSocialProof = () => {
+  const { t } = useLanguage();
   const [viewers, setViewers] = useState(rand(24, 68));
   const [buyers, setBuyers] = useState(rand(7, 23));
 
@@ -75,27 +77,27 @@ const BundleSocialProof = () => {
   const metrics = [
     {
       icon: Eye,
-      value: `${viewers} kishi`,
-      label: "Hozir ko'rmoqda",
+      value: `${viewers} ${t('bundleDetail.socialViewers')}`,
+      label: t('bundleDetail.socialViewing'),
       tone: 'rose',
       live: true,
     },
     {
       icon: ShoppingBag,
-      value: `${buyers} ta xarid`,
-      label: 'Bugungi faollik',
+      value: `${buyers} ${t('bundleDetail.socialBuyers')}`,
+      label: t('bundleDetail.socialActivity'),
       tone: 'emerald',
     },
     {
       icon: Clock3,
-      value: 'Chegirma cheklangan',
-      label: 'Vaqtinchalik taklif',
+      value: t('bundleDetail.socialLimited'),
+      label: t('bundleDetail.socialLimitedLabel'),
       tone: 'gold',
     },
     {
       icon: ShieldCheck,
-      value: '14 kun kafolat',
-      label: 'Qaytarish imkoniyati',
+      value: t('bundleDetail.socialGuarantee'),
+      label: t('bundleDetail.socialReturnLabel'),
       tone: 'silver',
     },
   ];

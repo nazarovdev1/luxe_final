@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Info, CheckCircle, AlertTriangle, Bell } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 

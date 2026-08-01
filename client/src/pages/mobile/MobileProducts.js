@@ -24,12 +24,12 @@ import QuickViewModal from '../../components/QuickViewModal';
 import MobileProductComparison from '../../components/MobileProductComparison';
 
 const SORT_OPTIONS = [
-  { id: 'featured', label: 'Tavsiya' },
-  { id: 'newest', label: 'Yangilari' },
-  { id: 'bestseller', label: 'Ommabop' },
-  { id: 'rating', label: 'Reyting' },
-  { id: 'price-low', label: "Arzonrog'i" },
-  { id: 'price-high', label: "Qimmatrog'i" },
+  { id: 'featured', key: 'sort_recommended' },
+  { id: 'newest', key: 'sort_newest' },
+  { id: 'bestseller', key: 'sort_bestseller' },
+  { id: 'rating', key: 'sort_rating' },
+  { id: 'price-low', key: 'sort_price_low' },
+  { id: 'price-high', key: 'sort_price_high' },
 ];
 
 const parsePrice = (value) => {
@@ -85,7 +85,7 @@ const MobileProducts = () => {
   } = useProductListing({
     products,
     categories,
-    allLabel: 'Barchasi',
+    allLabel: t('common.all'),
     categoryFromUrl: searchParams.get('category'),
     filterFromUrl: searchParams.get('filter'),
     setSearchParams,
@@ -156,7 +156,7 @@ const MobileProducts = () => {
         itemName: product.name,
       });
     } catch {
-      toast.error("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+      toast.error(t('mobileProducts.error_generic'));
     }
   };
 
@@ -198,7 +198,7 @@ const MobileProducts = () => {
           <button
             onClick={(event) => handleFavoriteToggle(event, product.id)}
             className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 backdrop-blur-md active:scale-95"
-            aria-label="Wishlist"
+            aria-label={t('mobileProducts.wishlist_label')}
           >
             <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-white text-white' : 'text-white'}`} />
           </button>
@@ -207,7 +207,7 @@ const MobileProducts = () => {
             <button
               onClick={(event) => handleCompareClick(event, product)}
               className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${selectedForCompare ? 'border-[#d6b47c]/50 bg-[#d6b47c] text-black' : 'border-white/10 bg-black/45 text-white'}`}
-              aria-label="Compare"
+              aria-label={t('mobileProducts.compare_label')}
             >
               {selectedForCompare ? <Check className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
             </button>
@@ -236,7 +236,7 @@ const MobileProducts = () => {
               <button
                 onClick={(event) => handleQuickAdd(event, product)}
                 className="bg-white/10 p-2 active:bg-white/20"
-                aria-label="Add to cart"
+                aria-label={t('mobileProducts.add_to_cart_label')}
               >
                 <ShoppingBag className="h-4 w-4 text-white" />
               </button>
@@ -255,7 +255,7 @@ const MobileProducts = () => {
         <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
         <div className="relative max-h-[88vh] w-full overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#0a0a0a] p-6 pb-8">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-light tracking-wide text-white">Filter</h2>
+            <h2 className="text-xl font-light tracking-wide text-white">{t('mobileProducts.filter_title')}</h2>
             <button onClick={() => setShowFilters(false)} className="p-2 text-white/50 hover:text-white">
               <X className="h-5 w-5" />
             </button>
@@ -266,14 +266,14 @@ const MobileProducts = () => {
             <input
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Mahsulot yoki kategoriya..."
+              placeholder={t('mobileProducts.search_placeholder')}
               className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-10 pr-4 text-[16px] text-white placeholder:text-gray-500 outline-none focus:border-[#d6b47c]/50"
             />
           </div>
 
           <div className="space-y-8">
             <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-widest text-white/40">Saralash</h3>
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-widest text-white/40">{t('mobileProducts.sort_heading')}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {SORT_OPTIONS.map((option) => (
                   <button
@@ -281,14 +281,14 @@ const MobileProducts = () => {
                     onClick={() => setSortBy(option.id)}
                     className={`border px-4 py-3 text-left text-sm ${sortBy === option.id ? 'border-white bg-white/5 text-white' : 'border-white/10 text-white/60'}`}
                   >
-                    {option.label}
+                    {t(`mobileProducts.${option.key}`)}
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-widest text-white/40">Kategoriya</h3>
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-widest text-white/40">{t('mobileProducts.category_heading')}</h3>
               <div className="flex flex-wrap gap-2">
                 {derivedCategories.map((category) => (
                   <button
@@ -306,17 +306,17 @@ const MobileProducts = () => {
               onClick={() => handleNewOnlyChange(!isNewOnly)}
               className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm ${isNewOnly ? 'border-[#d6b47c]/40 bg-[#d6b47c]/10 text-[#d6b47c]' : 'border-white/10 bg-white/[0.03] text-white/70'}`}
             >
-              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> Faqat yangi kolleksiya</span>
+              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> {t('mobileProducts.only_new_collection')}</span>
               {isNewOnly && <Check className="h-4 w-4" />}
             </button>
           </div>
 
           <div className="mt-8 flex gap-4 border-t border-white/10 pt-6">
             <button onClick={resetFilters} className="flex-1 py-4 text-xs font-medium uppercase tracking-widest text-white/60">
-              Tozalash
+              {t('mobileProducts.clear')}
             </button>
             <button onClick={() => setShowFilters(false)} className="flex-1 bg-white py-4 text-xs font-bold uppercase tracking-widest text-black">
-              Natijalarni ko'rish
+              {t('mobileProducts.view_results')}
             </button>
           </div>
         </div>
@@ -333,8 +333,8 @@ const MobileProducts = () => {
       <header className={`sticky top-0 z-40 border-b bg-black/85 backdrop-blur-md transition-colors ${isScrolled ? 'border-white/10' : 'border-transparent'}`}>
         <div className="flex items-center justify-between px-5 py-4">
           <div>
-            <h1 className="text-xl font-light uppercase tracking-widest">Shop <span className="font-serif text-lg italic lowercase text-white/70">collection</span></h1>
-            <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-white/40">{sortedProducts.length} items</p>
+            <h1 className="text-xl font-light uppercase tracking-widest">{t('mobileProducts.header_title_main')} <span className="font-serif text-lg italic lowercase text-white/70">{t('mobileProducts.header_title_sub')}</span></h1>
+            <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-white/40">{sortedProducts.length} {t('mobileProducts.items_count')}</p>
           </div>
           <button onClick={() => setShowFilters(true)} className="flex h-10 w-10 items-center justify-center border border-white/10">
             <SlidersHorizontal className="h-4 w-4 text-white" />
@@ -358,12 +358,12 @@ const MobileProducts = () => {
         {isLoading ? (
           <div className="px-4 py-8 text-center">
             <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-white border-r-transparent" />
-            <p className="mt-4 text-xs uppercase tracking-widest text-white/40">Loading Collection...</p>
+            <p className="mt-4 text-xs uppercase tracking-widest text-white/40">{t('mobileProducts.loading')}</p>
           </div>
         ) : sortedProducts.length === 0 ? (
           <div className="px-8 py-20 text-center">
-            <p className="mb-4 text-2xl font-serif italic text-white/20">No results found</p>
-            <button onClick={resetFilters} className="border-b border-white pb-0.5 text-xs uppercase tracking-widest">Clear Filters</button>
+            <p className="mb-4 text-2xl font-serif italic text-white/20">{t('mobileProducts.no_results')}</p>
+            <button onClick={resetFilters} className="border-b border-white pb-0.5 text-xs uppercase tracking-widest">{t('mobileProducts.clear_filters')}</button>
           </div>
         ) : (
           <>
@@ -391,16 +391,16 @@ const MobileProducts = () => {
                   <img key={product.id} src={getProductImage(product)} alt="" className="h-10 w-10 rounded-full border-2 border-[#0f0f0f] object-cover" />
                 ))}
               </div>
-              <p className="text-xs font-semibold text-white">{compareList.length} ta taqqoslanmoqda</p>
+              <p className="text-xs font-semibold text-white">{compareList.length} {t('mobileProducts.comparing_count')}</p>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => setCompareList([])} className="px-2 text-xs text-white/50">Clear</button>
+              <button onClick={() => setCompareList([])} className="px-2 text-xs text-white/50">{t('mobileProducts.clear_short')}</button>
               <button
                 onClick={() => setShowComparison(true)}
                 disabled={compareList.length < 2}
                 className="rounded-2xl bg-[#d6b47c] px-4 py-2 text-xs font-bold uppercase text-black disabled:opacity-40"
               >
-                Compare
+                {t('mobileProducts.compare')}
               </button>
             </div>
           </div>

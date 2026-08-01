@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
@@ -11,22 +12,23 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      toast.error('Sharh qoldirish uchun tizimga kiring');
+      toast.error(t('reviewForm.loginRequired'));
       return;
     }
 
     if (rating === 0) {
-      toast.error("Iltimos, baho qo'ying");
+      toast.error(t('reviewForm.noRating'));
       return;
     }
 
     if (!comment.trim()) {
-      toast.error('Iltimos, fikringizni yozing');
+      toast.error(t('reviewForm.noComment'));
       return;
     }
 
@@ -48,11 +50,11 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Xatolik yuz berdi');
+        throw new Error(error.message || t('reviewForm.errorGeneric'));
       }
 
       const newReview = await response.json();
-      toast.success('Sharhingiz qabul qilindi!');
+      toast.success(t('reviewForm.success'));
       setRating(0);
       setComment('');
 
@@ -69,12 +71,12 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
   if (!isAuthenticated) {
     return (
       <div className="py-6 border-b border-white/5">
-        <p className="mb-3 text-sm text-white/50">Sharh qoldirish uchun tizimga kiring</p>
+        <p className="mb-3 text-sm text-white/50">{t('reviewForm.notAuth')}</p>
         <a
           href="/login"
           className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-transparent px-6 py-2 text-xs font-bold uppercase tracking-widest text-white transition-all hover:bg-white hover:text-black"
         >
-          Kirish
+          {t('reviewForm.loginBtn')}
         </a>
       </div>
     );
@@ -83,7 +85,7 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#f5f5f3] mb-6">O'z fikringizni qoldiring</h3>
+        <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#f5f5f3] mb-6">{t('reviewForm.title')}</h3>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -108,7 +110,7 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           className="h-32 w-full resize-none rounded-2xl border border-white/5 bg-white/[0.02] p-5 text-sm text-[#f5f5f3] placeholder-[#6b6b6e] outline-none focus:border-[#c9a96e]/30 focus:bg-white/[0.04] transition-all duration-500"
-          placeholder="Mahsulot haqida taassurotlaringizni yozing..."
+          placeholder={t('reviewForm.placeholder')}
         />
       </div>
 
@@ -117,7 +119,7 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
         disabled={isSubmitting}
         className="w-full rounded-2xl bg-[#c9a96e] py-4 text-[11px] font-black uppercase tracking-[0.2em] text-[#0a0a0b] transition-all hover:bg-[#d4b87a] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 shadow-[0_10px_20px_rgba(201,169,110,0.15)]"
       >
-        {isSubmitting ? 'Yuborilmoqda...' : 'Sharhni yuborish'}
+        {isSubmitting ? t('reviewForm.submitted') : t('reviewForm.submit')}
       </button>
     </form>
   );

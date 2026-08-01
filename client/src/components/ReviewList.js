@@ -1,15 +1,17 @@
 import React from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const ReviewList = ({ reviews, onReviewDeleted }) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const handleDelete = async (reviewId) => {
-    if (!window.confirm("Haqiqatan ham bu sharhni o'chirmoqchimisiz?")) {
+    if (!window.confirm(t('reviewList.deleteConfirm'))) {
       return;
     }
 
@@ -22,10 +24,10 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Xatolik yuz berdi');
+        throw new Error(t('reviewList.errorGeneric'));
       }
 
-      toast.success("Sharh o'chirildi");
+      toast.success(t('reviewList.deleted'));
       if (onReviewDeleted) {
         onReviewDeleted(reviewId);
       }
@@ -40,7 +42,7 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/5 mb-3">
           <Star className="h-6 w-6 text-white/20" />
         </div>
-        <p className="text-sm text-white/50">Hozircha sharhlar yo'q. Birinchi bo'lib fikr bildiring!</p>
+        <p className="text-sm text-white/50">{t('reviewList.noReviews')}</p>
       </div>
     );
   }
@@ -58,7 +60,7 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
                 {review.user?.username?.charAt(0).toUpperCase() || 'F'}
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#f5f5f3] tracking-wide">{review.user?.username || 'Foydalanuvchi'}</h4>
+                <h4 className="text-sm font-bold text-[#f5f5f3] tracking-wide">{review.user?.username || t('reviewList.userFallback')}</h4>
                 <p className="text-[10px] text-[#8a8a8d] uppercase tracking-[0.1em] mt-0.5">{new Date(review.createdAt).toLocaleDateString('uz-UZ')}</p>
               </div>
             </div>
@@ -81,7 +83,7 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
               className="mt-4 text-[10px] font-bold uppercase tracking-widest text-red-400/50 hover:text-red-400 transition-all flex items-center gap-2"
             >
               <Trash2 className="h-3 w-3" />
-              O'chirish
+              {t('reviewList.delete')}
             </button>
           )}
         </article>

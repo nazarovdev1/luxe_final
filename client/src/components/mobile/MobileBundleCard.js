@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Check } from 'lucide-react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -11,6 +12,7 @@ const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bundleUnitPrice }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useLanguage();
 
   // Normalize images
   const images = (() => {
@@ -63,7 +65,7 @@ const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bu
             <span className="text-xs text-white/40 line-through">{formatPrice(originalPrice)} so'm</span>
             {savings > 0 && (
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold">
-                To'plamda arzon
+                {t('bundleDetail.productCardCheaper')}
               </span>
             )}
           </div>
@@ -73,7 +75,7 @@ const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bu
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-1 text-[11px] text-[#d6b47c] font-medium"
           >
-            {isExpanded ? 'Yopish' : 'Rang/o\'lcham tanlash'}
+            {isExpanded ? t('common.close') : t('bundleDetail.productCardPickColorSize')}
             <ChevronRight className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
           </button>
         </div>
@@ -86,7 +88,7 @@ const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bu
           {colors.length > 0 && (
             <div>
               <p className="text-[10px] text-[#9aa3b2] uppercase tracking-widest mb-2 font-medium">
-                Rang
+                {t('bundleDetail.productCardColor')}
                 {selectedColor && (
                   <span className="ml-2 text-white font-normal normal-case text-[10px]">{selectedColor}</span>
                 )}
@@ -112,7 +114,7 @@ const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bu
           {/* Sizes */}
           <div>
             <p className="text-[10px] text-[#9aa3b2] uppercase tracking-widest mb-2 font-medium">
-              O'lcham
+              {t('bundleDetail.productCardSize')}
               {selectedSize && (
                 <span className="ml-2 text-white font-normal normal-case text-[10px]">{selectedSize}</span>
               )}
@@ -140,17 +142,17 @@ const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bu
               {(selectedColor || selectedSize) ? (
                 <span className="flex items-center gap-1 text-emerald-400 text-[10px] font-medium">
                   <Check className="w-3 h-3" />
-                  Tanlandi
+                  {t('bundleDetail.productCardSelected')}
                 </span>
               ) : (
-                <span className="text-[#9aa3b2] text-[10px]">Ixtiyoriy tanlov</span>
+                <span className="text-[#9aa3b2] text-[10px]">{t('bundleDetail.productCardPickColorSize')}</span>
               )}
             </div>
             <Link
               to={`/product/${product.id}`}
               className="flex items-center gap-0.5 text-[10px] text-[#d6b47c] font-medium"
             >
-              Batafsil
+              {t('bundleDetail.productCardDetails')}
               <ChevronRight className="w-3 h-3" />
             </Link>
           </div>

@@ -70,7 +70,7 @@ const MobileCheckout = () => {
     useEffect(() => {
         setMounted(true);
         if (!loading && !isAuthenticated) {
-            toast.error("Iltimos, ro'yxatdan o'ting");
+            toast.error(t('checkoutPage.toastLoginRequired'));
             navigate('/mobile/login');
         }
     }, [isAuthenticated, loading, navigate]);
@@ -149,7 +149,7 @@ const MobileCheckout = () => {
         if (!normalizedCode) return;
 
         setIsValidatingPromo(true);
-        let lastErrorMessage = "Promokod yoki kupon yaroqsiz";
+        let lastErrorMessage = t('checkoutPage.toastInvalidPromo');
 
         try {
             // 1. Try generic promo
@@ -162,7 +162,7 @@ const MobileCheckout = () => {
                     source: 'promo'
                 });
                 setPromoCode(result.code);
-                toast.success(`Promokod qo'llanildi: -${result.discountPercentage}% chegirma!`);
+                toast.success(t('checkoutPage.toastDiscountApplied').replace('{percent}', result.discountPercentage));
                 setIsValidatingPromo(false);
                 return;
             } else if (result.message && !result.message.includes('mavjud emas')) {
@@ -199,13 +199,13 @@ const MobileCheckout = () => {
                     source: 'coupon'
                 });
                 setPromoCode(couponResult.code);
-                toast.success("Kupon qo'llanildi!");
+                toast.success(t('checkoutPage.toastPromoApplied'));
             } else {
                 setAppliedPromo(null);
                 toast.error(couponResult.message || lastErrorMessage);
             }
         } catch (error) {
-            toast.error('Tekshirishda xatolik yuz berdi');
+            toast.error(t('checkoutPage.toastPromoCheckFailed'));
         } finally {
             setIsValidatingPromo(false);
         }
@@ -218,21 +218,21 @@ const MobileCheckout = () => {
 
     const handleSubmit = async () => {
         if (items.length === 0 && (!lookItems || lookItems.length === 0)) {
-            toast.error("Savatingiz bo'sh!");
+            toast.error(t('checkoutPage.toastCartEmpty'));
             return;
         }
 
         if (!formData.firstName || !formData.phone || !formData.region || !formData.street) {
-            toast.error("Iltimos, barcha maydonlarni to'ldiring");
+            toast.error(t('checkoutPage.toastFillFields'));
             return;
         }
         if (!/^(?:\+998|998)?\d{9}$/.test(formData.phone.replace(/[\s()-]/g, ''))) {
-            toast.error("Telefon raqami +998 formatida bo'lishi kerak");
+            toast.error(t('checkoutPage.phoneFormatError'));
             return;
         }
 
         if (scheduledDelivery && (!deliveryDate || !deliveryTimeSlot)) {
-            toast.error("Iltimos, yetkazib berish sanasi va vaqtini tanlang");
+            toast.error(t('checkoutPage.toastSelectDeliveryDateTimeMobile'));
             return;
         }
 
@@ -264,7 +264,7 @@ const MobileCheckout = () => {
                     const giftCardValidation = await validateGiftCard(appliedPromo.code);
                     if (!giftCardValidation.success) {
                         setAppliedPromo(null);
-                        toast.error("Sovg'a kartasi hozir yaroqsiz");
+                        toast.error(t('checkoutPage.toastGiftCardInvalid'));
                         setIsSubmitting(false);
                         return;
                     }
@@ -273,7 +273,7 @@ const MobileCheckout = () => {
                     const couponValidation = await validateCoupon(appliedPromo.code, summaryTotal, token);
                     if (!couponValidation.success) {
                         setAppliedPromo(null);
-                        toast.error("Kupon hozir yaroqsiz");
+                        toast.error(t('checkoutPage.toastCouponInvalid'));
                         setIsSubmitting(false);
                         return;
                     }
@@ -282,7 +282,7 @@ const MobileCheckout = () => {
                     const promoValidation = await validatePromo(appliedPromo.code);
                     if (!promoValidation.success) {
                         setAppliedPromo(null);
-                        toast.error("Promokod hozir yaroqsiz");
+                        toast.error(t('checkoutPage.toastPromoInvalid'));
                         setIsSubmitting(false);
                         return;
                     }
@@ -380,11 +380,15 @@ const MobileCheckout = () => {
                     const det = result.details;
                     const colorText = det.color ? ` (${det.color} rang)` : '';
                     const sizeText = det.size ? ` (${det.size} o'lcham)` : '';
-                    toast.error(`${det.name}${sizeText}${colorText} uchun zaxira yetarli emas. Omborda: ${det.availableStock} dona.`);
+                    toast.error(t('checkoutPage.toastInsufficientStock')
+                        .replace('{name}', det.name)
+                        .replace('{size}', sizeText)
+                        .replace('{color}', colorText)
+                        .replace('{stock}', det.availableStock));
                 } else {
-                    const errorMsg = result.errors 
+                    const errorMsg = result.errors
                         ? result.errors.map(e => e.message).join(', ')
-                        : (result.message || 'Xatolik yuz berdi');
+                        : (result.message || t('checkoutPage.toastGenericError'));
                     toast.error(errorMsg);
                 }
                 console.error('Order creation failed:', result);
@@ -392,16 +396,19 @@ const MobileCheckout = () => {
         } catch (error) {
             trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: error.message || 'network_error' });
             console.error('Checkout error:', error);
-            toast.error('Tizimda xatolik: ' + error.message);
+            toast.error(t('checkoutPage.toastSystemError') + ': ' + error.message);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const regions = [
-        'Bektemir', 'Chilanzar', 'Yashnobod', 'Mirobod',
-        "Mirzo Ulug'bek", 'Sergeli', 'Shayxontohur', 'Olmazor',
-        'Uchtepa', 'Yakkasaray', 'Yunusabad', 'Yangihayot'
+        t('checkoutPage.regions_0'), t('checkoutPage.regions_1'),
+        t('checkoutPage.regions_2'), t('checkoutPage.regions_3'),
+        t('checkoutPage.regions_4'), t('checkoutPage.regions_5'),
+        t('checkoutPage.regions_6'), t('checkoutPage.regions_7'),
+        t('checkoutPage.regions_8'), t('checkoutPage.regions_9'),
+        t('checkoutPage.regions_10'), t('checkoutPage.regions_11'),
     ];
 
     const orderPreviewItems = [
@@ -420,9 +427,9 @@ const MobileCheckout = () => {
     ];
 
     const stepMeta = [
-        { label: 'Contact', title: "Shaxsiy ma'lumotlar", icon: User },
-        { label: 'Delivery', title: 'Manzil va lokatsiya', icon: MapPin },
-        { label: 'Payment', title: "To'lov va tasdiqlash", icon: LockKeyhole }
+        { label: t('checkoutPage.stepLabelContact'), title: t('checkoutPage.personalInfoTitle'), icon: User },
+        { label: t('checkoutPage.stepLabelDelivery'), title: t('checkoutPage.addressTitle'), icon: MapPin },
+        { label: t('checkoutPage.stepLabelPayment'), title: t('checkoutPage.paymentTitle'), icon: LockKeyhole }
     ];
 
     const activeStep = stepMeta[currentStep - 1];
@@ -436,17 +443,17 @@ const MobileCheckout = () => {
                     <Gem className="relative w-16 h-16 text-amber-500" />
                 </div>
                 <h1 className="text-2xl font-light text-white mb-2 tracking-wide">
-                    Savatingiz <span className="font-serif italic text-amber-500">bo'sh</span>
+                    {t('cart.empty')} <span className="font-serif italic text-amber-500">{t('checkoutPage.emptyCartWord')}</span>
                 </h1>
                 <p className="text-gray-500 mb-8 text-center text-sm font-light">
-                    Premium kolleksiyamizdan o'zingizga mos libosni tanlang
+                    {t('checkoutPage.premiumShopHint')}
                 </p>
                 <button
                     onClick={() => navigate('/mobile/products')}
                     className="group relative px-8 py-3 bg-white text-black font-bold uppercase text-xs tracking-widest rounded-full overflow-hidden"
                 >
                     <span className="relative z-10 flex items-center gap-2">
-                        Xarid qilish <ArrowLeft className="w-4 h-4 rotate-180" />
+                        {t('checkoutPage.shopNowButton')} <ArrowLeft className="w-4 h-4 rotate-180" />
                     </span>
                     <div className="absolute inset-0 bg-amber-400 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                 </button>
@@ -465,7 +472,7 @@ const MobileCheckout = () => {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div className="text-center">
-                        <p className="text-[10px] uppercase tracking-[0.24em] text-[#d6b47c]">Luxe Checkout</p>
+                        <p className="text-[10px] uppercase tracking-[0.24em] text-[#d6b47c]">{t('checkoutPage.luxeCheckout')}</p>
                         <p className="text-sm font-semibold text-[#f6f1e8]">{activeStep.title}</p>
                     </div>
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/10 text-[#d6b47c]">
@@ -502,13 +509,13 @@ const MobileCheckout = () => {
                     <div className="border-b border-white/10 pb-5">
                         <div className="flex items-center gap-2 text-[#d6b47c]">
                             <Sparkles className="h-4 w-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.22em]">Concierge Order</span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.22em]">{t('checkoutPage.conciergeOrder')}</span>
                         </div>
                         <h1 className="mt-2 text-3xl font-light leading-tight text-[#f6f1e8]">
-                            Premium xaridni yakunlash
+                            {t('checkoutPage.premiumFinishTitle')}
                         </h1>
                         <p className="mt-2 text-sm leading-6 text-[#8e98a8]">
-                            Ma'lumotlaringiz tekshiriladi, lokatsiya aniqlanadi va buyurtma xavfsiz yuboriladi.
+                            {t('checkoutPage.premiumFinishDesc')}
                         </p>
                     </div>
                 </section>
@@ -517,17 +524,17 @@ const MobileCheckout = () => {
                     <section className="px-5 py-6 space-y-5 animate-fade-in-up">
                         <div className="flex items-end justify-between">
                             <div>
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">Step 01</p>
-                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">Aloqa ma'lumotlari</h2>
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.step01')}</p>
+                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">{t('checkoutPage.contactInfoTitle')}</h2>
                             </div>
-                            <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#9ba4b4]">Secure</span>
+                            <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#9ba4b4]">{t('checkoutPage.secure')}</span>
                         </div>
 
-                        <InputField label="ISM" icon={User} name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Ismingiz" />
-                        {showErrors && !formData.firstName && <p className="text-xs font-medium text-red-300">Iltimos, ismingizni kiriting</p>}
-                        <InputField label="FAMILIYA" icon={User} name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Familiyangiz" />
-                        <InputField label="TELEFON" icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+998 90 123 45 67" />
-                        {showErrors && !formData.phone && <p className="text-xs font-medium text-red-300">Iltimos, telefon raqamingizni kiriting</p>}
+                        <InputField label={t('checkoutPage.mobileInputFirstName')} icon={User} name="firstName" value={formData.firstName} onChange={handleChange} placeholder={t('checkoutPage.firstNamePlaceholder')} />
+                        {showErrors && !formData.firstName && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterFirstName')}</p>}
+                        <InputField label={t('checkoutPage.mobileInputLastName')} icon={User} name="lastName" value={formData.lastName} onChange={handleChange} placeholder={t('checkoutPage.lastNamePlaceholder')} />
+                        <InputField label={t('checkoutPage.mobileInputPhone')} icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+998 90 123 45 67" />
+                        {showErrors && !formData.phone && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterPhone')}</p>}
                     </section>
                 )}
 
@@ -535,10 +542,10 @@ const MobileCheckout = () => {
                     <section className="px-5 py-6 space-y-5 animate-fade-in-up">
                         <div className="flex items-end justify-between">
                             <div>
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">Step 02</p>
-                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">Yetkazib berish</h2>
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.step02')}</p>
+                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">{t('checkoutPage.deliveryTitle')}</h2>
                             </div>
-                            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-emerald-300">Free</span>
+                            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-emerald-300">{t('checkoutPage.freeLabel')}</span>
                         </div>
 
                         <div className="relative">
@@ -551,19 +558,19 @@ const MobileCheckout = () => {
                                 onChange={handleChange}
                                 className="h-14 w-full appearance-none rounded-2xl border border-white/10 bg-[#0e141f]/90 py-3.5 pl-12 pr-10 text-[16px] text-[#f6f1e8] focus:outline-none focus:border-[#d6b47c]/60 focus:ring-2 focus:ring-[#d6b47c]/10 transition-all font-sans"
                             >
-                                <option value="">Tuman tanlang</option>
+                                <option value="">{t('checkoutPage.selectRegionPlaceholder')}</option>
                                 {regions.map(r => <option key={r} value={r}>{r}</option>)}
                             </select>
                             <ChevronRight className="absolute right-4 top-5 w-4 h-4 rotate-90 text-[#777f8d]" />
                         </div>
-                        {showErrors && !formData.region && <p className="text-xs font-medium text-red-300">Iltimos, tumanni tanlang</p>}
+                        {showErrors && !formData.region && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterRegion')}</p>}
 
-                        <InputField label="KO'CHA VA UY" icon={Navigation} name="street" value={formData.street} onChange={handleChange} placeholder="Ko'cha, uy raqami" />
-                        {showErrors && !formData.street && <p className="text-xs font-medium text-red-300">Iltimos, ko'cha va uy raqamini kiriting</p>}
+                        <InputField label={t('checkoutPage.mobileInputStreet')} icon={Navigation} name="street" value={formData.street} onChange={handleChange} placeholder={t('checkoutPage.streetPlaceholder')} />
+                        {showErrors && !formData.street && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterStreet')}</p>}
 
                         <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e141f] shadow-[0_18px_44px_rgba(0,0,0,0.32)] relative h-[300px]">
                             <div className="absolute left-4 top-4 z-[401] rounded-full border border-white/10 bg-[#070b12]/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d6b47c] backdrop-blur-xl">
-                                Xaritadan belgilang
+                                {t('checkoutPage.markOnMap')}
                             </div>
                             <React.Suspense fallback={<div className="h-full w-full bg-[#0e141f]" />}>
                                 <CheckoutMap
@@ -576,7 +583,7 @@ const MobileCheckout = () => {
                             <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
                             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
                         </div>
-                        {showErrors && !formData.location && <p className="text-center text-xs font-medium text-red-300">Iltimos, xaritadan joylashuvni belgilang</p>}
+                        {showErrors && !formData.location && <p className="text-center text-xs font-medium text-red-300">{t('checkoutPage.selectMapLocation')}</p>}
 
                         <div className="rounded-2xl border border-white/10 bg-[#0e141f]/90 p-4">
                             <button
@@ -589,8 +596,8 @@ const MobileCheckout = () => {
                                         <Calendar className="h-4 w-4" />
                                     </span>
                                     <span>
-                                        <span className="block text-sm font-semibold text-[#f6f1e8]">Rejali yetkazib berish</span>
-                                        <span className="text-xs text-[#8e98a8]">Sana va vaqt oralig'ini tanlang</span>
+                                        <span className="block text-sm font-semibold text-[#f6f1e8]">{t('checkoutPage.scheduledDelivery')}</span>
+                                        <span className="text-xs text-[#8e98a8]">{t('checkoutPage.selectDateAndTime')}</span>
                                     </span>
                                 </span>
                                 <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${scheduledDelivery ? 'bg-[#d6b47c]' : 'bg-white/10'}`}>
@@ -639,15 +646,15 @@ const MobileCheckout = () => {
                     <section className="px-5 py-6 space-y-5 animate-fade-in-up">
                         <div className="flex items-end justify-between">
                             <div>
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">Step 03</p>
-                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">To'lov va receipt</h2>
+                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.step03')}</p>
+                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">{t('checkoutPage.receiptTitle')}</h2>
                             </div>
                             <ShieldCheck className="h-5 w-5 text-[#d6b47c]" />
                         </div>
 
                         <div className="grid gap-3">
                             {[
-                                { value: 'cash_on_delivery', label: 'Naqd pul orqali', icon: Truck, hint: 'Yetkazilganda', color: 'text-[#d6b47c]' }
+                                { value: 'cash_on_delivery', label: t('checkoutPage.cashLabel'), icon: Truck, hint: t('checkoutPage.cashHint'), color: 'text-[#d6b47c]' }
                             ].map((method) => (
                                 <button
                                     key={method.value}
@@ -673,7 +680,7 @@ const MobileCheckout = () => {
                             ))}
                         </div>
 
-                        <InputField label="IZOH" icon={MessageCircleIconFallback} name="comments" value={formData.comments} onChange={handleChange} placeholder="Buyurtma bo'yicha izoh" />
+                        <InputField label={t('checkoutPage.mobileInputComments')} icon={MessageCircleIconFallback} name="comments" value={formData.comments} onChange={handleChange} placeholder={t('checkoutPage.mobileCommentsPlaceholder')} />
 
                         <div className="rounded-2xl border border-white/10 bg-[#0e141f]/95 p-4">
                             <button
@@ -686,8 +693,8 @@ const MobileCheckout = () => {
                                         <Gift className="h-4 w-4" />
                                     </span>
                                     <span>
-                                        <span className="block text-sm font-semibold text-[#f6f1e8]">Sovg'a qadoqlash</span>
-                                        <span className="text-xs text-[#8e98a8]">Premium quti, lenta va tabrik xati</span>
+                                        <span className="block text-sm font-semibold text-[#f6f1e8]">{t('checkoutPage.giftWrapShort')}</span>
+                                        <span className="text-xs text-[#8e98a8]">{t('checkoutPage.giftWrapDesc')}</span>
                                     </span>
                                 </span>
                                 <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${giftWrap ? 'bg-[#d6b47c]' : 'bg-white/10'}`}>
@@ -706,7 +713,7 @@ const MobileCheckout = () => {
                                                 className={`rounded-2xl border p-3 text-left ${giftWrapType === key ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12' : 'border-white/10 bg-white/[0.03]'}`}
                                             >
                                                 <span className="block text-[11px] font-semibold text-[#f6f1e8]">{option.name}</span>
-                                                <span className="mt-1 block text-[10px] text-[#8e98a8]">{option.price.toLocaleString()} so'm</span>
+                                                <span className="mt-1 block text-[10px] text-[#8e98a8]">{option.price.toLocaleString()} {t('checkoutPage.soM')}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -714,7 +721,7 @@ const MobileCheckout = () => {
                                         value={giftMessage}
                                         onChange={(event) => setGiftMessage(event.target.value)}
                                         maxLength={200}
-                                        placeholder="Tabrik xati (ixtiyoriy)"
+                                        placeholder={t('checkoutPage.giftMessageLabel')}
                                         className="h-12 w-full rounded-2xl border border-white/10 bg-[#070b12] px-4 text-sm text-[#f6f1e8] placeholder:text-[#606979] outline-none focus:border-[#d6b47c]/60"
                                     />
                                 </div>
@@ -734,10 +741,10 @@ const MobileCheckout = () => {
                         <div className="rounded-2xl border border-white/10 bg-[#0e141f]/95 p-5 shadow-[0_20px_52px_rgba(0,0,0,0.34)]">
                             <div className="mb-4 flex items-center justify-between">
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8591]">Order Summary</p>
-                                    <h3 className="mt-1 text-lg font-semibold text-[#f6f1e8]">Sizning buyurtmangiz</h3>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.orderSummaryTitle')}</p>
+                                    <h3 className="mt-1 text-lg font-semibold text-[#f6f1e8]">{t('checkoutPage.yourOrder')}</h3>
                                 </div>
-                                <span className="rounded-full bg-[#d6b47c]/12 px-3 py-1 text-xs font-semibold text-[#d6b47c]">{orderPreviewItems.length} item</span>
+                                <span className="rounded-full bg-[#d6b47c]/12 px-3 py-1 text-xs font-semibold text-[#d6b47c]">{orderPreviewItems.length} {t('checkoutPage.itemsCount')}</span>
                             </div>
 
                             <div className="mb-4 border-b border-white/10 pb-4">
@@ -764,7 +771,7 @@ const MobileCheckout = () => {
                                             type="text"
                                             value={promoCode}
                                             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                                            placeholder="Promokod"
+                                            placeholder={t('checkoutPage.promoCode')}
                                             className="h-[52px] w-full rounded-2xl border border-white/10 bg-[#070b12] px-4 pr-24 text-sm uppercase text-[#f6f1e8] placeholder:text-[#606979] focus:outline-none focus:border-[#d6b47c]/60"
                                         />
                                         <button
@@ -772,7 +779,7 @@ const MobileCheckout = () => {
                                             disabled={isValidatingPromo || !promoCode.trim()}
                                             className="absolute bottom-1.5 right-1.5 top-1.5 rounded-xl bg-[#d6b47c] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[#070b12] transition disabled:opacity-45"
                                         >
-                                            {isValidatingPromo ? '...' : 'Apply'}
+                                            {isValidatingPromo ? '...' : t('checkoutPage.applyButton')}
                                         </button>
                                     </div>
                                 )}
@@ -790,7 +797,7 @@ const MobileCheckout = () => {
                                         </div>
                                     </div>
                                 ))}
-                                {orderPreviewItems.length > 3 && <p className="text-xs italic text-[#758092]">+ yana {orderPreviewItems.length - 3} ta mahsulot</p>}
+                                {orderPreviewItems.length > 3 && <p className="text-xs italic text-[#758092]">{t('checkoutPage.moreItems').replace('{count}', orderPreviewItems.length - 3)}</p>}
                             </div>
 
                             <div className="space-y-2 pt-4">
@@ -806,19 +813,19 @@ const MobileCheckout = () => {
                                 )}
                                 {tierDiscountAmount > 0 && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
-                                        <span>{userTier?.level} Member</span>
+                                        <span>{t('checkoutPage.memberDiscountShort').replace('{level}', userTier?.level || '')}</span>
                                         <span>-{tierDiscountAmount.toLocaleString()} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {giftWrap && giftWrapCost > 0 && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
-                                        <span>Sovg'a qadoqlash</span>
+                                        <span>{t('checkoutPage.giftWrapShort')}</span>
                                         <span>{giftWrapCost.toLocaleString()} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {expressDeliveryFee > 0 && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
-                                        <span>Tezkor yetkazib berish</span>
+                                        <span>{t('checkoutPage.expressDeliveryLabel')}</span>
                                         <span>{expressDeliveryFee.toLocaleString()} {t('common.sum')}</span>
                                     </div>
                                 )}
@@ -848,7 +855,7 @@ const MobileCheckout = () => {
                             if (currentStep === 1) {
                                 if (!validateField(formData.firstName) || !isUzbekPhone(formData.phone)) {
                                     setShowErrors(true);
-                                    toast.error("Iltimos, ism va telefon raqamingizni to'g'ri kiriting");
+                                    toast.error(t('checkoutPage.toastPhoneName'));
                                     return;
                                 }
                                 setShowErrors(false);
@@ -856,17 +863,17 @@ const MobileCheckout = () => {
                             } else if (currentStep === 2) {
                                 if (!validateField(formData.region) || !validateField(formData.street) || !validateField(formData.house, false) || !formData.location) {
                                     setShowErrors(true);
-                                    if (!validateField(formData.region)) toast.error("Iltimos, tumanni tanlang");
-                                    else if (!validateField(formData.street)) toast.error("Iltimos, ko'cha va uy raqamini to'g'ri kiriting");
-                                    else if (!validateField(formData.house, false)) toast.error("Iltimos, mo'ljalni to'g'ri kiriting");
-                                    else if (!formData.location) toast.error("Iltimos, lokatsiyangizni belgilang");
+                                    if (!validateField(formData.region)) toast.error(t('checkoutPage.toastSelectRegion'));
+                                    else if (!validateField(formData.street)) toast.error(t('checkoutPage.toastEnterStreet'));
+                                    else if (!validateField(formData.house, false)) toast.error(t('checkoutPage.toastEnterLandmark'));
+                                    else if (!formData.location) toast.error(t('checkoutPage.toastSelectLocation'));
                                     return;
                                 }
                                 setShowErrors(false);
                                 setCurrentStep(3);
                             } else {
                                 if (scheduledDelivery && (!deliveryDate || !deliveryTimeSlot)) {
-                                    toast.error("Iltimos, yetkazib berish sanasi va vaqtini tanlang");
+                                    toast.error(t('checkoutPage.toastSelectDeliveryDateTimeMobile'));
                                     return;
                                 }
                                 handleSubmit();
@@ -876,7 +883,7 @@ const MobileCheckout = () => {
                         className={`flex h-14 flex-1 items-center justify-center gap-3 rounded-full text-xs font-bold uppercase tracking-[0.16em] shadow-[0_18px_42px_rgba(0,0,0,0.35)] active:scale-[0.98] transition-all ${isSubmitting ? 'bg-[#1a2130] text-[#768092] cursor-wait' : 'bg-[#f6f1e8] text-[#070b12]'}`}
                     >
                         {isSubmitting ? (
-                            <span className="animate-pulse">Bajarilmoqda...</span>
+                            <span className="animate-pulse">{t('checkoutPage.processingButton')}</span>
                         ) : (
                             <>
                                 {currentStep === 3 ? t('checkoutPage.placeOrder') : t('checkoutPage.next')}

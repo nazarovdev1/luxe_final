@@ -1,0 +1,441 @@
+================================================================================
+TRANSLATION AUDIT - DETAILED
+================================================================================
+
+--- LOST KEYS DUE TO DUPLICATE NAMESPACES ---
+
+Language: uz
+  Namespace "cart" appears 2 times. Lost keys:
+    - cart.emptyDesc
+  Namespace "profile" appears 3 times. Lost keys:
+    - profile.title
+    - profile.trackOrder
+    - profile.returnOrder
+    - profile.badges
+    - profile.referral
+    - profile.settings
+    - profile.login
+    - profile.register
+    - profile.viewAll
+    - profile.orderHistoryShort
+  Namespace "installment" appears 2 times. Lost keys:
+    - installment.minAmount
+    - installment.perMonth
+    - installment.selectAtCheckout
+  Namespace "sizeGuide" appears 2 times. Lost keys:
+    (none lost — later block contains all earlier keys)
+
+Language: ru
+  Namespace "cart" appears 2 times. Lost keys:
+    - cart.emptyDesc
+  Namespace "profile" appears 3 times. Lost keys:
+    - profile.title
+    - profile.trackOrder
+    - profile.returnOrder
+    - profile.badges
+    - profile.referral
+    - profile.settings
+    - profile.login
+    - profile.register
+    - profile.viewAll
+    - profile.orderHistoryShort
+  Namespace "installment" appears 2 times. Lost keys:
+    - installment.minAmount
+    - installment.perMonth
+    - installment.selectAtCheckout
+  Namespace "sizeGuide" appears 2 times. Lost keys:
+    (none lost — later block contains all earlier keys)
+
+Language: en
+  Namespace "cart" appears 2 times. Lost keys:
+    - cart.emptyDesc
+  Namespace "profile" appears 3 times. Lost keys:
+    - profile.title
+    - profile.trackOrder
+    - profile.returnOrder
+    - profile.badges
+    - profile.referral
+    - profile.settings
+    - profile.login
+    - profile.register
+    - profile.viewAll
+    - profile.orderHistoryShort
+  Namespace "installment" appears 2 times. Lost keys:
+    - installment.minAmount
+    - installment.perMonth
+    - installment.selectAtCheckout
+  Namespace "sizeGuide" appears 2 times. Lost keys:
+    (none lost — later block contains all earlier keys)
+
+--- CROSS-LANGUAGE MISSING KEYS ---
+  All languages share the same key set.
+
+--- USED KEYS NOT FOUND IN TRANSLATIONS ---
+  ,
+    -> components\ProductForm.js
+    -> pages\mobile\MobileAdminEdit.js
+  ../../components/CheckoutMap
+    -> pages\mobile\MobileCheckout.js
+  ../components/CheckoutMap
+    -> pages\Checkout.js
+  ./components/About
+    -> App.js
+  ./components/AnnouncementBanner
+    -> App.js
+  ./components/CartDropdown
+    -> App.js
+  ./components/LoginForm
+    -> App.js
+    -> MobileApp.js
+  ./components/Navbar
+    -> App.js
+  ./components/RegisterForm
+    -> App.js
+    -> MobileApp.js
+  ./components/SearchModal
+    -> App.js
+  ./components/VisualSearch
+    -> App.js
+  ./MobileApp
+    -> App.js
+  ./pages/Admin
+    -> App.js
+  ./pages/AllProducts
+    -> App.js
+  ./pages/Blog
+    -> App.js
+    -> MobileApp.js
+  ./pages/BlogPost
+    -> App.js
+  ./pages/BundleDetail
+    -> App.js
+  ./pages/Challenges
+    -> App.js
+  ./pages/Checkout
+    -> App.js
+  ./pages/ContactPage
+    -> App.js
+  ./pages/EcoImpact
+    -> App.js
+  ./pages/FAQPage
+    -> App.js
+  ./pages/GiftCards
+    -> App.js
+    -> MobileApp.js
+  ./pages/Home
+    -> App.js
+  ./pages/LiveStreams
+    -> App.js
+  ./pages/LiveStreamView
+    -> App.js
+    -> MobileApp.js
+  ./pages/LookbookBuilder
+    -> App.js
+  ./pages/Lookbooks
+    -> App.js
+  ./pages/mobile/MobileAdmin
+    -> MobileApp.js
+  ./pages/mobile/MobileAdminEdit
+    -> MobileApp.js
+  ./pages/mobile/MobileBlogPost
+    -> MobileApp.js
+  ./pages/mobile/MobileBundleDetail
+    -> MobileApp.js
+  ./pages/mobile/MobileBundles
+    -> MobileApp.js
+  ./pages/mobile/MobileCart
+    -> MobileApp.js
+  ./pages/mobile/MobileChallenges
+    -> MobileApp.js
+  ./pages/mobile/MobileCheckout
+    -> MobileApp.js
+  ./pages/mobile/MobileEcoImpact
+    -> MobileApp.js
+  ./pages/mobile/MobileEvents
+    -> MobileApp.js
+  ./pages/mobile/MobileHome
+    -> MobileApp.js
+  ./pages/mobile/MobileLive
+    -> MobileApp.js
+  ./pages/mobile/MobileLookbooks
+    -> MobileApp.js
+  ./pages/mobile/MobileLookDetail
+    -> MobileApp.js
+  ./pages/mobile/MobileOrders
+    -> MobileApp.js
+  ./pages/mobile/MobilePrivacyPolicy
+    -> MobileApp.js
+  ./pages/mobile/MobileProducts
+    -> MobileApp.js
+  ./pages/mobile/MobileProductView
+    -> MobileApp.js
+  ./pages/mobile/MobileProfile
+    -> MobileApp.js
+  ./pages/mobile/MobileReels
+    -> MobileApp.js
+  ./pages/mobile/MobileSearch
+    -> MobileApp.js
+  ./pages/mobile/MobileStyleFeed
+    -> MobileApp.js
+  ./pages/mobile/MobileTermsOfService
+    -> MobileApp.js
+  ./pages/mobile/MobileVIPClub
+    -> MobileApp.js
+  ./pages/NotFound
+    -> App.js
+    -> MobileApp.js
+  ./pages/Orders
+    -> App.js
+  ./pages/PrivacyPolicy
+    -> App.js
+  ./pages/ProductView
+    -> App.js
+  ./pages/Profile
+    -> App.js
+  ./pages/Reels
+    -> App.js
+  ./pages/StyleFeed
+    -> App.js
+  ./pages/TermsOfService
+    -> App.js
+  ./pages/VIPClub
+    -> App.js
+  /api/admin-mgmt/stats
+    -> components\AdminDashboard.js
+  /api/badges
+    -> components\AdminBadges.js
+  /api/badges/my-badges
+    -> pages\mobile\MobileVIPClub.js
+    -> pages\Profile.js
+    -> pages\VIPClub.js
+  /api/blogs
+    -> pages\Blog.js
+  /api/blogs/${slug}
+    -> pages\BlogPost.js
+    -> pages\mobile\MobileBlogPost.js
+  /api/blogs/admin/all
+    -> components\admin\BlogManager.js
+  /api/challenges
+    -> components\AdminChallenges.js
+    -> pages\Challenges.js
+    -> pages\mobile\MobileChallenges.js
+  /api/challenges/${challenge._id}/submit
+    -> pages\Challenges.js
+  /api/challenges/${challengeId}/vote/${submissionId}
+    -> pages\Challenges.js
+    -> pages\mobile\MobileChallenges.js
+  /api/challenges/${selectedChallenge._id}/submit
+    -> pages\mobile\MobileChallenges.js
+  /api/comments/${post._id}
+    -> pages\StyleFeed.js
+  /api/comments/${postId}
+    -> pages\mobile\MobileStyleFeed.js
+  /api/comments/${selectedPost._id}
+    -> pages\mobile\MobileStyleFeed.js
+  /api/comments/${sub.post._id}
+    -> pages\Challenges.js
+  /api/coupons
+    -> components\AdminCoupons.js
+  /api/live-chat/${id}
+    -> pages\LiveStreamView.js
+  /api/livestreams
+    -> pages\LiveStreams.js
+    -> pages\mobile\MobileLive.js
+  /api/livestreams/${id}
+    -> pages\LiveStreamView.js
+  /api/livestreams/${id}/status
+    -> pages\LiveStreams.js
+  /api/lookbooks
+    -> pages\LookbookBuilder.js
+  /api/lookbooks/wardrobe
+    -> pages\LookbookBuilder.js
+  /api/points
+    -> pages\Checkout.js
+    -> pages\mobile\MobileCheckout.js
+    -> pages\mobile\MobileProfile.js
+    -> pages\mobile\MobileVIPClub.js
+    -> pages\Profile.js
+  /api/points/leaderboard
+    -> pages\mobile\MobileVIPClub.js
+    -> pages\VIPClub.js
+  /api/points/transactions
+    -> pages\mobile\MobileVIPClub.js
+    -> pages\Profile.js
+    -> pages\VIPClub.js
+  /api/posts
+    -> pages\Challenges.js
+    -> pages\mobile\MobileStyleFeed.js
+    -> pages\StyleFeed.js
+  /api/posts?page=${pageNum}&limit=12
+    -> pages\StyleFeed.js
+  /api/posts?page=1&limit=20
+    -> pages\mobile\MobileStyleFeed.js
+  /api/posts/${postId}/like
+    -> pages\mobile\MobileStyleFeed.js
+    -> pages\StyleFeed.js
+  /api/price-alerts
+    -> components\PriceDropAlert.js
+  /api/products?featured=true
+    -> pages\LookbookBuilder.js
+  /api/products?limit=100
+    -> components\AdminReels.js
+  /api/reels
+    -> components\AdminReels.js
+    -> pages\mobile\MobileReels.js
+  /api/reels?active=true&limit=50
+    -> pages\mobile\MobileReels.js
+    -> pages\Reels.js
+  /api/reels?limit=100
+    -> components\AdminReels.js
+  /api/reels/${editingReel._id}
+    -> components\AdminReels.js
+  /api/reels/${reelId}/comment
+    -> components\ReelComments.js
+  /api/reels/${reelId}/comments
+    -> components\ReelComments.js
+  /api/reels/${reelId}/like
+    -> pages\mobile\MobileReels.js
+    -> pages\Reels.js
+  /api/reels/${reelId}/share
+    -> pages\mobile\MobileReels.js
+    -> pages\Reels.js
+  /api/style-polls
+    -> components\AdminStylePolls.js
+    -> components\StylePolls.js
+  /api/style-polls/${editingId}
+    -> components\AdminStylePolls.js
+  /api/style-polls/${pollId}/vote
+    -> components\StylePolls.js
+  /api/style-polls/admin
+    -> components\AdminStylePolls.js
+  /api/sustainability/my-stats
+    -> pages\EcoImpact.js
+    -> pages\mobile\MobileEcoImpact.js
+  /api/visual-search/search
+    -> components\VisualSearch.js
+  /blogs
+    -> components\admin\BlogForm.js
+  /blogs/${blog._id}
+    -> components\admin\BlogForm.js
+  /imagekit-auth
+    -> components\admin\BlogForm.js
+  ${API_BASE}/bundles/${id}
+    -> pages\BundleDetail.js
+    -> pages\mobile\MobileBundleDetail.js
+  ${API_BASE}/posts
+    -> components\CustomerPhotoReviews.js
+  ${API_BASE}/visual-search/similar/${id}?limit=6
+    -> pages\mobile\MobileProductView.js
+    -> pages\ProductView.js
+  2d
+    -> components\Hero.js
+    -> components\LoginForm.js
+    -> components\ParticleCanvas.js
+    -> components\ProductForm.js
+    -> components\RegisterForm.js
+  69f2f7b0003de9dfaeea
+    -> utils\appwrite.js
+  a
+    -> pages\LookbookBuilder.js
+  add_payment_info
+    -> pages\Checkout.js
+    -> pages\mobile\MobileCheckout.js
+  add_to_cart
+    -> pages\mobile\MobileProductView.js
+    -> pages\ProductView.js
+  add_to_wishlist
+    -> pages\ProductView.js
+  begin_checkout
+    -> pages\Checkout.js
+    -> pages\mobile\MobileCheckout.js
+  canvas
+    -> components\ProductForm.js
+    -> components\VisualSearch.js
+    -> pages\mobile\MobileAdminEdit.js
+  cart.emptyDesc
+    -> pages\Checkout.js
+  category
+    -> pages\AllProducts.js
+    -> pages\mobile\MobileProducts.js
+  content-type
+    -> services\api.js
+  delete_message
+    -> pages\LiveStreamView.js
+  div
+    -> components\ui\GlassSurface.jsx
+  eco.error
+    -> pages\EcoImpact.js
+  filter
+    -> pages\AllProducts.js
+    -> pages\mobile\MobileProducts.js
+  html2canvas
+    -> pages\LookbookBuilder.js
+  https://fra.cloud.appwrite.io/v1
+    -> utils\appwrite.js
+  https://luxx.uz
+    -> components\MyGiftCards.js
+  https://upload.imagekit.io/api/v1/files/upload
+    -> components\admin\BlogForm.js
+  installment.minAmount
+    -> components\InstallmentBar.js
+    -> components\InstallmentCalculator.js
+  installment.perMonth
+    -> components\InstallmentBar.js
+    -> components\InstallmentCalculator.js
+  installment.selectAtCheckout
+    -> components\InstallmentBar.js
+  join_stream
+    -> pages\LiveStreamView.js
+  liveStreams.error
+    -> pages\LiveStreams.js
+  look
+    -> components\PremiumHomeSections.js
+    -> pages\mobile\MobileHome.js
+  luxx:chrome-visibility
+    -> pages\StyleFeed.js
+  mobileNav.ariaLabel
+    -> components\mobile\MobileNavbar.js
+  nav.shop
+    -> components\mobile\MobileNavbar.js
+  order_failed
+    -> pages\Checkout.js
+    -> pages\mobile\MobileCheckout.js
+  purchase
+    -> pages\Checkout.js
+    -> pages\mobile\MobileCheckout.js
+  Rasm ustiga bosing
+    -> components\ProductForm.js
+  react-hot-toast
+    -> components\ProductView\ProductInfoPanel.js
+  routes guests to login and authenticated users to profile
+    -> components\mobile\MobileNavbar.test.js
+  script
+    -> components\TelegramLoginButton.js
+  select_size
+    -> components\ProductView\ProductInfoPanel.js
+  send_message
+    -> pages\LiveStreamView.js
+  size_guide_open
+    -> components\SizeGuideModal.js
+  T
+    -> components\ProductForm.js
+  test
+    -> components\InstallPrompt.js
+  unknown mobile routes do not force an active tab
+    -> config\mobileNavigation.test.js
+  view_item
+    -> pages\mobile\MobileProductView.js
+    -> pages\ProductView.js
+  web-vitals
+    -> reportWebVitals.js
+  Xatolik: ${result.message || 
+    -> components\AdminOrders.js
+
+--- HARDCODED UI STRINGS (sample) ---
+  components\SEO.js:43  "Женская одежда"
+  components\SEO.js:45  "Пальто Ташкент"
+  contexts\LanguageContext.js:12  "🇷🇺 Русский"
+  data\translations.js:1259  "Персональные рекомендации товаров"
+  data\translations.js:1260  "Первыми узнавайте о лукбуках и новинках"
+  data\translations.js:1261  "Отслеживание заказов в одном месте"
+  Total hardcoded candidates: 24

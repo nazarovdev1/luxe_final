@@ -57,7 +57,7 @@ const MobileReels = () => {
   const handleCreateMuse = async (e) => {
     e.preventDefault();
     if (!newMuse.title || (!newMuse.videoUrl && !videoFile)) {
-      toast.error('Sarlavha va video kiritilishi shart');
+      toast.error(t('mobileReels.toast_title_required'));
       return;
     }
 
@@ -67,12 +67,12 @@ const MobileReels = () => {
 
       // If a file is selected, upload it to Appwrite first
       if (videoFile) {
-        toast.loading('Video Appwrite\'ga yuklanmoqda...', { id: 'upload-toast' });
+        toast.loading(t('mobileReels.toast_uploading'), { id: 'upload-toast' });
         try {
           finalVideoUrl = await uploadVideoToAppwrite(videoFile);
-          toast.success('Video yuklandi!', { id: 'upload-toast' });
+          toast.success(t('mobileReels.toast_uploaded'), { id: 'upload-toast' });
         } catch (uploadError) {
-          toast.error('Video yuklashda xatolik: ' + uploadError.message, { id: 'upload-toast' });
+          toast.error(t('mobileReels.toast_upload_error') + uploadError.message, { id: 'upload-toast' });
           setSubmitting(false);
           return;
         }
@@ -86,7 +86,7 @@ const MobileReels = () => {
       });
 
       if (response.data.success) {
-        toast.success('Yangi Muse muvaffaqiyatli qo\'shildi!');
+        toast.success(t('mobileReels.toast_success'));
         setCreateModalOpen(false);
         setNewMuse({ title: '', videoUrl: '', description: '' });
         setVideoFile(null);
@@ -94,7 +94,7 @@ const MobileReels = () => {
       }
     } catch (error) {
       console.error('Error creating muse:', error);
-      toast.error(error.response?.data?.message || 'Xatolik yuz berdi');
+      toast.error(error.response?.data?.message || t('mobileReels.toast_error'));
     } finally {
       setSubmitting(false);
     }
@@ -356,11 +356,11 @@ const MobileReels = () => {
       }
     } catch (error) {
       console.error('Error fetching reels:', error);
-      toast.error('Reellarni yuklashda xatolik');
+      toast.error(t('mobileReels.toast_load_error'));
     } finally {
       setLoading(false);
     }
-  }, [user, id]);
+  }, [user, id, t]);
 
   useEffect(() => {
     fetchReels();
@@ -369,7 +369,7 @@ const MobileReels = () => {
   // Handle like
   const handleLike = async (reelId) => {
     if (!user) {
-      toast.error('Layk qilish uchun tizimga kiring');
+      toast.error(t('mobileReels.toast_like_login'));
       return;
     }
 
@@ -389,7 +389,7 @@ const MobileReels = () => {
       }
     } catch (error) {
       console.error('Error liking reel:', error);
-      toast.error('Xatolik yuz berdi');
+      toast.error(t('mobileReels.toast_error_short'));
     }
   };
 
@@ -405,7 +405,7 @@ const MobileReels = () => {
           });
         } else {
           navigator.clipboard.writeText(response.data.data.shareUrl);
-          toast.success('Link nusxalandi!');
+          toast.success(t('mobileReels.toast_share_copied'));
         }
       }
     } catch (error) {
@@ -507,7 +507,7 @@ const MobileReels = () => {
             <Play size={24} className="text-amber-500 animate-pulse" />
           </div>
         </div>
-        <p className="mt-4 text-gray-400 font-medium animate-pulse">Yuklanmoqda...</p>
+        <p className="mt-4 text-gray-400 font-medium animate-pulse">{t('mobileReels.loading')}</p>
       </div>
     );
   }
@@ -522,15 +522,15 @@ const MobileReels = () => {
           <div className="w-24 h-24 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/5 shadow-2xl">
             <Play size={48} className="text-amber-500" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">Hozircha reellar yo'q</h2>
+          <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">{t('mobileReels.empty_title')}</h2>
           <p className="text-gray-400 mb-10 leading-relaxed">
-            Tez orada eng so'nggi trendlar va yangi kolleksiyalar haqida qiziqarli videolar qo'shiladi.
+            {t('mobileReels.empty_desc')}
           </p>
           <button
             onClick={() => navigate('/mobile')}
             className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-2xl transition-all active:scale-95 shadow-[0_8px_24px_rgba(214,180,124,0.3)]"
           >
-            Bosh sahifaga qaytish
+            {t('mobileReels.back_home')}
           </button>
         </div>
       </div>
@@ -552,7 +552,7 @@ const MobileReels = () => {
           </button>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <h1 className="text-white text-lg font-black tracking-tighter uppercase italic drop-shadow-lg">Muse</h1>
+            <h1 className="text-white text-lg font-black tracking-tighter uppercase italic drop-shadow-lg">{t('mobileReels.brand')}</h1>
           </div>
           {(user?.role === 'admin' || user?.role === 'manager') ? (
             <button
@@ -573,17 +573,17 @@ const MobileReels = () => {
           <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setCreateModalOpen(false)} />
           <div className="relative w-full max-w-sm bg-[#1a1a1f] rounded-[32px] p-8 border border-white/10 shadow-2xl animate-scale-up">
             <h2 className="text-white text-2xl font-black mb-6 flex items-center gap-2 italic uppercase">
-              Yangi Muse
+              {t('mobileReels.create_title')}
               <div className="w-2 h-2 rounded-full bg-amber-500" />
             </h2>
 
             <form onSubmit={handleCreateMuse} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Video Sarlavhasi</label>
+                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">{t('mobileReels.video_title_label')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Masalan: Yangi kolleksiya 2024"
+                  placeholder={t('mobileReels.video_title_placeholder')}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                   value={newMuse.title}
                   onChange={(e) => setNewMuse({ ...newMuse, title: e.target.value })}
@@ -591,7 +591,7 @@ const MobileReels = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Video Yuklash (Appwrite)</label>
+                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">{t('mobileReels.video_upload_label')}</label>
                 <input
                   type="file"
                   accept="video/*"
@@ -599,7 +599,7 @@ const MobileReels = () => {
                   onChange={(e) => setVideoFile(e.target.files[0])}
                 />
                 {videoFile && (
-                  <p className="text-[10px] text-amber-500 ml-1">Tanlandi: {videoFile.name}</p>
+                  <p className="text-[10px] text-amber-500 ml-1">{t('mobileReels.video_selected', 'Tanlandi:')} {videoFile.name}</p>
                 )}
               </div>
 
@@ -607,14 +607,14 @@ const MobileReels = () => {
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-white/5"></span>
                 </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-bold text-gray-700 bg-[#1a1a1f] px-2">yoki</div>
+                <div className="relative flex justify-center text-[10px] uppercase font-bold text-gray-700 bg-[#1a1a1f] px-2">{t('mobileReels.or')}</div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Video URL (ImageKit/YouTube)</label>
+                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">{t('mobileReels.video_url_label')}</label>
                 <input
                   type="url"
-                  placeholder="https://ik.imagekit.io/..."
+                  placeholder={t('mobileReels.video_url_placeholder')}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all"
                   value={newMuse.videoUrl}
                   onChange={(e) => setNewMuse({ ...newMuse, videoUrl: e.target.value })}
@@ -622,10 +622,10 @@ const MobileReels = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">Tavsif (ixtiyoriy)</label>
+                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-widest ml-1">{t('mobileReels.description_label')}</label>
                 <textarea
                   rows="3"
-                  placeholder="Video haqida qisqacha..."
+                  placeholder={t('mobileReels.description_placeholder')}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all resize-none"
                   value={newMuse.description}
                   onChange={(e) => setNewMuse({ ...newMuse, description: e.target.value })}
@@ -638,14 +638,14 @@ const MobileReels = () => {
                   onClick={() => setCreateModalOpen(false)}
                   className="flex-1 py-4 rounded-2xl bg-white/5 text-white font-bold text-sm active:scale-95 transition-all"
                 >
-                  Bekor qilish
+                  {t('mobileReels.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="flex-[2] py-4 rounded-2xl bg-amber-500 text-black font-black text-sm active:scale-95 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
                 >
-                  {submitting ? 'Yuklanmoqda...' : 'Saqlash'}
+                  {submitting ? t('mobileReels.loading') : t('mobileReels.save')}
                 </button>
               </div>
             </form>
@@ -669,8 +669,8 @@ const MobileReels = () => {
               <Play size={48} className="text-amber-500 ml-1" />
             </div>
             <div className="text-center">
-              <p className="text-white text-xl font-bold">Videoni boshlash</p>
-              <p className="text-gray-400 text-sm mt-1">Ekranga bosing</p>
+              <p className="text-white text-xl font-bold">{t('mobileReels.tap_to_play_title')}</p>
+              <p className="text-gray-400 text-sm mt-1">{t('mobileReels.tap_to_play_hint')}</p>
             </div>
           </div>
         </div>
@@ -844,7 +844,7 @@ const MobileReels = () => {
                         className={`transition-colors ${commentsOpen && selectedReel?._id === reel._id ? 'text-amber-500' : 'text-white'}`}
                       />
                     </div>
-                    <span className="text-[9px] font-bold text-white drop-shadow-md text-center">Izohlar</span>
+                    <span className="text-[9px] font-bold text-white drop-shadow-md text-center">{t('mobileReels.comments_label')}</span>
                   </button>
 
                   {/* Share */}

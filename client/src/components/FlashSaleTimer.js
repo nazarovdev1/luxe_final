@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Zap, AlertTriangle, ChevronDown } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -16,6 +17,7 @@ const TimeBlock = ({ value, label }) => (
 );
 
 const FlashSaleTimer = ({ endTime, originalPrice, salePrice, totalStock, soldCount, productName }) => {
+  const { t } = useLanguage();
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [isExpired, setIsExpired] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -63,7 +65,7 @@ const FlashSaleTimer = ({ endTime, originalPrice, salePrice, totalStock, soldCou
           <div className="p-1 rounded-md bg-red-500/20 animate-pulse">
             <Zap className="w-3.5 h-3.5 text-red-500 fill-current" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-red-400">Flash Sale</span>
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-red-400">{t('flashSale.title')}</span>
           {discountPercent > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-black tracking-wider">
               -{discountPercent}%
@@ -82,11 +84,11 @@ const FlashSaleTimer = ({ endTime, originalPrice, salePrice, totalStock, soldCou
         <div className="border-t border-red-500/10" />
         <div className="px-6 py-6 space-y-6">
           <div className="flex items-center justify-center gap-4">
-            <TimeBlock value={timeLeft.hours} label="soat" />
+            <TimeBlock value={timeLeft.hours} label={t('flashSale.hoursLabel')} />
             <span className="text-2xl font-black text-red-500/40 mt-[-24px] animate-pulse">:</span>
-            <TimeBlock value={timeLeft.minutes} label="daq" />
+            <TimeBlock value={timeLeft.minutes} label={t('flashSale.minutesLabel')} />
             <span className="text-2xl font-black text-red-500/40 mt-[-24px] animate-pulse">:</span>
-            <TimeBlock value={timeLeft.seconds} label="son" />
+            <TimeBlock value={timeLeft.seconds} label={t('flashSale.secondsLabel')} />
           </div>
 
           {totalStock > 0 && (
@@ -94,9 +96,9 @@ const FlashSaleTimer = ({ endTime, originalPrice, salePrice, totalStock, soldCou
               <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
                 <span className="text-red-400 flex items-center gap-2">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Faqat {remaining} ta qoldi
+                  {t('flashSale.remaining', { count: remaining })}
                 </span>
-                <span className="text-[#8a8a8d]">{soldCount} / {totalStock} sotildi</span>
+                <span className="text-[#8a8a8d]">{t('flashSale.sold', { sold: soldCount, total: totalStock })}</span>
               </div>
               <div className="h-1.5 bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/5">
                 <div

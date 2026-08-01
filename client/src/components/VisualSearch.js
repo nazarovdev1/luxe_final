@@ -227,8 +227,8 @@ const VisualSearch = ({ onClose }) => {
                 <div className="flex-1 flex flex-col justify-center gap-5">
                   {!results.length && !loading && (
                     <div>
-                      <h3 className="text-xl font-medium text-white mb-2">Rasm tayyor</h3>
-                      <p className="text-[#a0a0a0] text-sm mb-5">Biz ushbu rasmdagi ranglar va uslubga mos kiyimlarni qidiramiz.</p>
+                      <h3 className="text-xl font-medium text-white mb-2">{t('visualSearch.imageReady')}</h3>
+                      <p className="text-[#a0a0a0] text-sm mb-5">{t('visualSearch.imageReadyDesc')}</p>
                       <button
                         onClick={handleSearch}
                         className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#d6b47c] text-black rounded-lg font-medium hover:bg-[#c4a36b] transition-colors"

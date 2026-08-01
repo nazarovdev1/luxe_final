@@ -36,15 +36,15 @@ const MobileCart = () => {
                     <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-[32px] bg-white/[0.03] border border-white/10 backdrop-blur-xl shadow-2xl">
                         <ShoppingBag className="h-10 w-10 text-[#d6b47c]" />
                     </div>
-                    <h2 className="text-3xl font-brilliant text-white mb-3">Savatingiz bo'sh</h2>
+                    <h2 className="text-3xl font-brilliant text-white mb-3">{t('mobileCart.empty_title')}</h2>
                     <p className="text-gray-500 mb-10 font-medium max-w-[240px] mx-auto leading-relaxed">
-                        Eng so'nggi va eksklyuziv kolleksiyalarimiz hali sizni kutmoqda
+                        {t('mobileCart.empty_desc')}
                     </p>
                     <button
                         onClick={() => navigate('/mobile/products')}
                         className="group relative inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-xs font-black tracking-[0.2em] text-black transition-all active:scale-95 shadow-[0_10px_40px_rgba(255,255,255,0.2)]"
                     >
-                        SHOP COLLECTION
+                        {t('mobileCart.shop_collection')}
                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </button>
                 </div>
@@ -66,16 +66,16 @@ const MobileCart = () => {
             <div className="sticky top-0 z-40 bg-[#07090f]/60 backdrop-blur-2xl border-b border-white/5 px-6 py-5">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d6b47c] mb-0.5">Sizning tanlovingiz</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d6b47c] mb-0.5">{t('mobileCart.your_choice')}</p>
                         <h1 className="text-2xl font-brilliant text-white tracking-tight">
-                            Savat <span className="text-gray-600 font-sans font-medium text-sm ml-2">({cartItems.length + lookItems.length})</span>
+                            {t('mobileCart.cart_label')} <span className="text-gray-600 font-sans font-medium text-sm ml-2">({cartItems.length + lookItems.length})</span>
                         </h1>
                     </div>
                     <button
                         onClick={clearCart}
                         className="h-10 px-4 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-[10px] font-black text-gray-400 uppercase tracking-widest active:scale-90 transition-transform"
                     >
-                        Tozalash
+                        {t('mobileCart.clear')}
                     </button>
                 </div>
             </div>
@@ -84,8 +84,8 @@ const MobileCart = () => {
             <div className="px-6 py-8 space-y-6 relative z-10">
                 {/* Look Items (Bundles) */}
                 {lookItems.length > 0 && lookItems.map((look, index) => {
-                    const discountPercent = look.discountAmount > 0 
-                        ? Math.round((look.discountAmount / look.originalPrice) * 100) 
+                    const discountPercent = look.discountAmount > 0
+                        ? Math.round((look.discountAmount / look.originalPrice) * 100)
                         : 0;
                     return (
                         <div
@@ -129,10 +129,10 @@ const MobileCart = () => {
                                 <div className="flex justify-between items-start gap-3 mb-2">
                                     <div className="flex-1">
                                         <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[9px] font-bold uppercase tracking-widest text-[#d6b47c] mb-1">
-                                            To'plam
+                                            {t('mobileCart.bundle')}
                                         </div>
                                         <h3 className="text-sm font-bold text-white leading-tight">{look.title}</h3>
-                                        <p className="text-[10px] text-gray-500 mt-0.5">{look.products.length} mahsulot</p>
+                                        <p className="text-[10px] text-gray-500 mt-0.5">{look.products.length} {t('mobileCart.products_count')}</p>
                                     </div>
                                     <button
                                         onClick={() => removeLookFromCart(look.cartLookId)}
@@ -154,7 +154,7 @@ const MobileCart = () => {
                                             {formatPrice(look.discountedPrice)} <span className="text-[10px] uppercase">uzs</span>
                                         </span>
                                     </div>
-                                    
+
                                     {look.discountAmount > 0 && (
                                         <div className="px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                                             <span className="text-[10px] text-emerald-400 font-bold">
@@ -178,7 +178,7 @@ const MobileCart = () => {
                         {/* Item Glow */}
                         <div className="absolute top-0 right-0 w-24 h-24 bg-white/[0.02] rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
 
-                        <div 
+                        <div
                             onClick={() => navigate(`/mobile/product/${item.productId || item.id}`)}
                             className="shrink-0 relative w-28 h-36 rounded-2xl overflow-hidden bg-white/5 border border-white/10"
                         >
@@ -207,12 +207,12 @@ const MobileCart = () => {
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {item.selectedSize && (
                                         <div className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/10 text-[9px] font-black text-[#d6b47c] uppercase tracking-wider">
-                                            Size: {item.selectedSize}
+                                            {t('mobileCart.size_label')}: {item.selectedSize}
                                         </div>
                                     )}
                                     {item.selectedColor && (
                                         <div className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/10 text-[9px] font-black text-gray-400 uppercase tracking-wider">
-                                            Color: {item.selectedColor}
+                                            {t('mobileCart.color_label')}: {item.selectedColor}
                                         </div>
                                     )}
                                 </div>
@@ -251,7 +251,7 @@ const MobileCart = () => {
                 <div className="bg-[#0f1117]/80 backdrop-blur-3xl border border-white/10 rounded-[30px] p-4 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
                     <div className="space-y-2 mb-3.5">
                         <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">Mahsulotlar summasi</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-500">{t('mobileCart.products_subtotal')}</span>
                             <span className="text-xs font-bold text-white">{formatPrice(totalPrice)} UZS</span>
                         </div>
                         <div className="flex items-center justify-between">
@@ -267,14 +267,14 @@ const MobileCart = () => {
                             </div>
                         </div>
                     </div>
- 
+
                     <button
                         onClick={handleCheckout}
                         className="group relative w-full h-12 rounded-xl bg-white overflow-hidden active:scale-[0.98] transition-all shadow-[0_10px_25px_rgba(255,255,255,0.1)]"
                     >
                         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent,rgba(255,255,255,0.3),transparent)] -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                         <span className="relative z-10 flex items-center justify-center gap-3 text-xs font-black tracking-[0.2em] text-black">
-                            RASMIYLASHTIRISH
+                            {t('mobileCart.checkout')}
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </span>
                     </button>

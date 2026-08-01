@@ -80,7 +80,7 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
             <Calculator className="h-4 w-4 text-[#c9a96e]" />
           </div>
           <div className="text-left">
-            <p className="text-xs font-bold text-[#f5f5f3] uppercase tracking-wider">Bo'lib to'lash</p>
+            <p className="text-xs font-bold text-[#f5f5f3] uppercase tracking-wider">{t('installment.headerTitle')}</p>
             <p className="text-[10px] text-[#8a8a8d] font-medium">
               {formatPrice(Math.ceil(price / 3))} {t('common.sum')} / {t('installment.perMonth')}
             </p>
@@ -96,7 +96,7 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
         <div className="px-5 pb-6 space-y-6 animate-fade-in">
           {/* Provider Selection */}
           <div className="space-y-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a8a8d]">Hamkorlarimiz</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a8a8d]">{t('installment.partners')}</p>
             <div className="grid grid-cols-1 gap-2">
               {PROVIDERS.map((p) => (
                 <button
@@ -131,7 +131,7 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
           {/* Month Selection */}
           {provider && (
             <div className="space-y-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a8a8d]">To'lov muddati</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8a8a8d]">{t('installment.term')}</p>
               <div className="flex gap-2">
                 {provider.months.map((months) => {
                   const rate = provider.interestRates[months] || 0;
@@ -148,14 +148,14 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
                       <p className={`text-lg font-black ${selectedMonths === months ? 'text-[#0a0a0b]' : 'text-[#f5f5f3]'}`}>
                         {months}
                       </p>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest ${selectedMonths === months ? 'text-[#0a0a0b]/60' : 'text-[#8a8a8d]'}`}>oy</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest ${selectedMonths === months ? 'text-[#0a0a0b]/60' : 'text-[#8a8a8d]'}`}>{t('installment.months')}</p>
                       {rate === 0 ? (
                         <span className={`inline-block mt-2 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${selectedMonths === months ? 'bg-[#c9a96e]/20 text-[#c9a96e]' : 'bg-green-500/10 text-green-500'}`}>
-                          0% Komissiya
+                          {t('installment.commissionFree')}
                         </span>
                       ) : (
                         <span className={`inline-block mt-2 text-[9px] font-bold ${selectedMonths === months ? 'text-[#0a0a0b]/40' : 'text-[#8a8a8d]'}`}>
-                          {rate}% ustama
+                          {rate}% {t('installment.rate').replace('% ', '')}
                         </span>
                       )}
                     </button>
@@ -175,7 +175,7 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
               ) : (
                 <div className="space-y-4">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0b]/60 mb-1">Oylik to'lov</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0a0a0b]/60 mb-1">{t('installment.monthlyLabel')}</span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-black text-[#0a0a0b] tracking-tight">
                         {formatPrice(calculation.monthlyPayment)}
@@ -186,13 +186,13 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-xl bg-[#0a0a0b]/5 p-3 border border-[#0a0a0b]/5">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#0a0a0b]/50 mb-1">Jami summa</p>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#0a0a0b]/50 mb-1">{t('installment.totalAmountLabel')}</p>
                       <p className="text-sm font-black text-[#0a0a0b]">
                         {formatPrice(calculation.totalWithInterest)} {t('common.sum')}
                       </p>
                     </div>
                     <div className="rounded-xl bg-[#0a0a0b]/5 p-3 border border-[#0a0a0b]/5">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#0a0a0b]/50 mb-1">Xizmat haqi</p>
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#0a0a0b]/50 mb-1">{t('installment.serviceFeeLabel')}</p>
                       <p className={`text-sm font-black ${calculation.totalInterest > 0 ? 'text-[#0a0a0b]' : 'text-[#0a0a0b]'}`}>
                         {calculation.totalInterest > 0 ? `+${formatPrice(calculation.totalInterest)}` : '0'} {t('common.sum')}
                       </p>
@@ -202,7 +202,7 @@ const InstallmentCalculator = ({ price, isOpen: initialOpen = false }) => {
                   <div className="flex items-start gap-3 pt-2">
                     <Info className="h-4 w-4 text-[#0a0a0b]/40 mt-0.5 flex-shrink-0" />
                     <p className="text-[10px] font-medium text-[#0a0a0b]/70 leading-relaxed">
-                      To'lov shartlari provayder tomonidan buyurtmani tasdiqlash vaqtida belgilanadi.
+                      {t('installment.disclaimer')}
                     </p>
                   </div>
                 </div>

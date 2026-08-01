@@ -50,7 +50,7 @@ const MyGiftCards = () => {
       setTransferPhone('+998');
       fetchGiftCards();
     } else {
-      toast.error(result.message || 'Xatolik yuz berdi');
+      toast.error(result.message || t('myGiftCards.errorGeneric'));
     }
     setIsTransferring(false);
   };
@@ -110,7 +110,7 @@ const MyGiftCards = () => {
                 recipientName={card.recipientName}
                 message={card.message}
                 code={card.code}
-                status={card.isUsed ? 'Ishlatilgan' : 'Faol'}
+                status={card.isUsed ? t('myGiftCards.used') : t('myGiftCards.active')}
                 compact
                 className="h-auto w-full rounded-3xl shadow-xl ring-1 ring-white/10"
               />
@@ -123,7 +123,7 @@ const MyGiftCards = () => {
                 className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-2.5 text-xs font-medium text-white transition-all"
               >
                 <Copy className="w-3.5 h-3.5" />
-                Nusxalash
+                {t('myGiftCards.copy')}
               </button>
               {!card.isUsed && (
                 <>
@@ -132,7 +132,7 @@ const MyGiftCards = () => {
                     className="flex-1 flex items-center justify-center gap-2 bg-[#d6b47c]/10 hover:bg-[#d6b47c]/20 border border-[#d6b47c]/20 rounded-xl py-2.5 text-xs font-medium text-[#d6b47c] transition-all"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    O'tkazish
+                    {t('myGiftCards.transfer')}
                   </button>
                   <button
                     onClick={() => shareCard(card)}
