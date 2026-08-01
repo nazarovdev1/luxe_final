@@ -197,38 +197,39 @@ const AllProducts = () => {
         categoriesCount={categories.length - 1}
       />
 
-      <div className="relative glass-premium z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+      <div className="sticky top-16 z-30 backdrop-blur-2xl bg-[#09090b]/85 border-b border-[#d6b47c]/15 shadow-[0_12px_40px_rgba(0,0,0,0.6)] transition-all duration-300">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsFilterOpen(true)}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-[#f5f5f3] hover:bg-white/[0.08] hover:border-[#c9a96e]/20 transition-all duration-300"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.1] text-sm text-[#f7f1e8] hover:bg-[#d6b47c]/10 hover:border-[#d6b47c]/40 hover:text-[#d6b47c] transition-all duration-300 shadow-md group"
               >
-                <SlidersHorizontal className="w-4 h-4 text-[#c9a96e]" />
-                <span className="hidden sm:inline font-medium">{t('products.filters')}</span>
+                <SlidersHorizontal className="w-4 h-4 text-[#d6b47c] group-hover:rotate-90 transition-transform duration-300" />
+                <span className="hidden sm:inline font-medium tracking-wide">{t('products.filters')}</span>
                 {selectedCategory !== allLabel && (
-                  <span className="w-2 h-2 rounded-full bg-[#c9a96e] animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#d6b47c] shadow-[0_0_10px_rgba(214,180,124,0.8)] animate-pulse" />
                 )}
               </button>
 
               {searchText && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#c9a96e]/10 border border-[#c9a96e]/20 text-[11px] text-[#c9a96e] animate-fade-in">
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#d6b47c]/15 border border-[#d6b47c]/35 text-[11px] text-[#e8c87a] animate-fade-in shadow-sm">
                   <span>"{searchText}"</span>
-                  <button onClick={() => setSearchText('')}><X className="w-3 h-3" /></button>
+                  <button onClick={() => setSearchText('')} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                 </div>
               )}
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+              <div className="hidden sm:flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.08]">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-2 rounded-lg transition-all duration-300 ${
                     viewMode === 'grid'
-                      ? 'bg-[#c9a96e] text-[#0a0a0b] shadow-md shadow-[#c9a96e]/20'
-                      : 'text-[#6b6b6e] hover:text-[#f5f5f3]'
+                      ? 'bg-gradient-to-r from-[#d6b47c] to-[#c59b5f] text-black shadow-md shadow-[#d6b47c]/25'
+                      : 'text-[#8a8278] hover:text-[#f7f1e8]'
                   }`}
+                  title="Grid ko'rinishi"
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </button>
@@ -236,9 +237,10 @@ const AllProducts = () => {
                   onClick={() => setViewMode('masonry')}
                   className={`p-2 rounded-lg transition-all duration-300 ${
                     viewMode === 'masonry'
-                      ? 'bg-[#c9a96e] text-[#0a0a0b] shadow-md shadow-[#c9a96e]/20'
-                      : 'text-[#6b6b6e] hover:text-[#f5f5f3]'
+                      ? 'bg-gradient-to-r from-[#d6b47c] to-[#c59b5f] text-black shadow-md shadow-[#d6b47c]/25'
+                      : 'text-[#8a8278] hover:text-[#f7f1e8]'
                   }`}
+                  title="Masonry ko'rinishi"
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </button>
@@ -247,29 +249,29 @@ const AllProducts = () => {
               <div className="relative z-[100]" ref={sortRef}>
                 <button
                   onClick={() => setIsSortOpen(!isSortOpen)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-sm text-[#8a8a8d] hover:text-[#f5f5f3] hover:border-[#c9a96e]/20 transition-all duration-300"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.1] text-sm text-[#a2998f] hover:text-[#f7f1e8] hover:border-[#d6b47c]/40 transition-all duration-300"
                 >
-                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#d6b47c]" />
                   <span className="hidden md:inline font-medium">
                     {sortOptions.find(o => o.value === sortBy)?.label || t('products.sortFeatured')}
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isSortOpen ? 'rotate-180 text-[#d6b47c]' : ''}`} />
                 </button>
 
-{isSortOpen && (
-                   <div className="absolute right-0 top-full mt-2 w-44 py-2 rounded-xl bg-[#141416]/95 backdrop-blur-xl border border-white/10 shadow-2xl animate-fade-in-scale" style={{ zIndex: 9999 }}>
-                     {sortOptions.map((opt) => (
+                {isSortOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 py-2 rounded-2xl bg-[#121215]/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-fade-in-scale" style={{ zIndex: 9999 }}>
+                    {sortOptions.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => { setSortBy(opt.value); setIsSortOpen(false); }}
-                        className={`flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors ${
+                        className={`flex items-center justify-between w-full px-4 py-2.5 text-xs font-medium uppercase tracking-wider transition-colors ${
                           sortBy === opt.value
-                            ? 'text-[#c9a96e] bg-[#c9a96e]/5'
-                            : 'text-[#8a8a8d] hover:text-[#f5f5f3] hover:bg-white/[0.03]'
+                            ? 'text-[#e8c87a] bg-[#d6b47c]/10 font-bold'
+                            : 'text-[#a2998f] hover:text-[#f7f1e8] hover:bg-white/[0.04]'
                         }`}
                       >
-                        {sortBy === opt.value && <Sparkles className="w-3 h-3" />}
-                        {opt.label}
+                        <span>{opt.label}</span>
+                        {sortBy === opt.value && <Sparkles className="w-3 h-3 text-[#d6b47c]" />}
                       </button>
                     ))}
                   </div>
@@ -278,24 +280,21 @@ const AllProducts = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="mt-3.5 flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
             {categories.map((cat) => (
               <button
                 key={cat.name}
                 onClick={() => handleCategoryChange(cat.name)}
-                className={`relative whitespace-nowrap px-5 py-2 rounded-full text-[12px] font-medium tracking-wide transition-all duration-300 ${
+                className={`relative whitespace-nowrap px-5 py-2.5 rounded-full text-[12px] font-medium tracking-wider uppercase transition-all duration-300 ${
                   selectedCategory === cat.name
-                    ? 'bg-[#c9a96e]/[0.12] text-[#c9a96e] border border-[#c9a96e]/30 shadow-sm shadow-[#c9a96e]/10'
-                    : 'bg-white/[0.03] text-[#8a8a8d] border border-white/[0.06] hover:border-white/[0.12] hover:text-[#f5f5f3]'
+                    ? 'bg-gradient-to-r from-[#d6b47c]/20 via-[#f4efe6]/10 to-[#c59b5f]/20 text-[#f7f1e8] border border-[#d6b47c]/50 shadow-[0_0_20px_rgba(214,180,124,0.25)] font-semibold'
+                    : 'bg-white/[0.03] text-[#938b81] border border-white/[0.08] hover:border-white/[0.2] hover:text-[#f7f1e8]'
                 }`}
               >
                 <span>{cat.name}</span>
-                <span className={`ml-1.5 text-[10px] ${selectedCategory === cat.name ? 'text-[#c9a96e]/60' : 'text-[#6b6b6e]'}`}>
+                <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full ${selectedCategory === cat.name ? 'bg-[#d6b47c] text-black font-bold' : 'bg-white/10 text-[#a2998f]'}`}>
                   {cat.count}
                 </span>
-                {selectedCategory === cat.name && (
-                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-[#c9a96e]" />
-                )}
               </button>
             ))}
           </div>
