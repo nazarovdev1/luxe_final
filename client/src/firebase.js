@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
-const DEBUG_LOGS = process.env.NODE_ENV !== 'production';
+const DEBUG_LOGS = !import.meta.env.PROD;
 
 const firebaseConfig = {
     apiKey: "AIzaSyDWunJ1nkjfcI84ulgBHI2LYXHMlwAxgBU",

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="/logoweb2.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+  <meta name="theme-color" content="#2c114f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="LUXE" />
+  <meta name="application-name" content="LUXE" />
+  <meta name="msapplication-TileColor" content="#2c114f" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  <meta name="description"
+    content="Luxx.uz - premium ayollar kiyimlari do'koni. Luxury kiyimlar, paltolar va zamonaviy kolleksiyalar. Женская одежда премиум-класса в Ташкенте. Купить платье, пальто и стильные образы с доставкой." />
+  <meta name="keywords"
+    content="luxx.uz, luxx uz, luxe uz, luxury uz, luxe, luxury, luxury kiyimlar, ayollar kiyimlari, paltolar, premium kiyimlar, moda, onlayn kiyim do'kon, женская одежда ташкент, купить платье ташкент, брендовая одежда узбекистан" />
+  <meta name="author" content="Luxx Store" />
+  <meta name="robots" content="index, follow" />
+  <meta name="googlebot" content="index, follow" />
+  <link rel="canonical" href="https://luxx.uz/" />
+
+  <!-- Geo Tags for Uzbekistan -->
+  <meta name="geo.region" content="UZ-TK" />
+  <meta name="geo.placename" content="Toshkent" />
+  <meta name="geo.position" content="41.2995;69.2401" />
+  <meta name="ICBM" content="41.2995, 69.2401" />
+
+  <!-- Hreflang tags for multi-language support -->
+  <link rel="alternate" hreflang="uz" href="https://luxx.uz/" />
+  <link rel="alternate" hreflang="ru" href="https://luxx.uz/" />
+  <link rel="alternate" hreflang="en" href="https://luxx.uz/" />
+  <link rel="alternate" hreflang="x-default" href="https://luxx.uz/" />
+
+  <!-- Target country -->
+  <meta name="country" content="UZ" />
+  <meta name="language" content="uz" />
+
+  <script>
+    // Suppress ResizeObserver loop errors which are benign but trigger overlays in dev mode
+    (function() {
+      const isResizeObserverError = (err) => {
+        if (!err) return false;
+        const msg = typeof err === 'string' ? err : (err.message || (err.reason && err.reason.message) || '');
+        return (
+          msg.includes('ResizeObserver') &&
+          (msg.includes('loop') || msg.includes('limit') || msg.includes('undelivered notifications'))
+        );
+      };
+
+      const originalError = console.error;
+      console.error = function(...args) {
+        if (args[0] && isResizeObserverError(args[0])) return;
+        originalError.apply(console, args);
+      };
+
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && isResizeObserverError(args[0])) return;
+        originalWarn.apply(console, args);
+      };
+
+      window.addEventListener('error', function(e) {
+        if (isResizeObserverError(e.message) || isResizeObserverError(e.error)) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+
+      window.addEventListener('unhandledrejection', function(e) {
+        if (isResizeObserverError(e.reason)) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+    })();
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-M7GNV72M');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://luxx.uz" />
+  <meta property="og:site_name" content="Luxx.uz" />
+  <meta property="og:title" content="Luxx.uz - Premium ayollar kiyimlari | Женская одежда премиум-класса" />
+  <meta property="og:description"
+    content="O'zbekistondagi eng zamonaviy premium ayollar kiyimlari. Toshkent bo'ylab 3 soat ichida bepul yetkazib berish! Стильная женская одежда в Ташкенте." />
+  <meta property="og:image" content="https://luxx.uz/logoweb2.png" />
+  <meta property="og:locale" content="uz_UZ" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://luxx.uz" />
+  <meta name="twitter:title" content="Luxx.uz - Premium ayollar kiyimlari | Женская одежда" />
+  <meta name="twitter:description"
+    content="O'zbekistondagi eng zamonaviy premium ayollar kiyimlari. 3 soatda yetkazib berish! Купить женскую одежду в Ташкенте." />
+  <meta name="twitter:image" content="https://luxx.uz/logoweb2.png" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Luxx.uz",
+      "url": "https://luxx.uz/",
+      "description": "O'zbekistondagi premium ayollar kiyimlari onlayn do'koni - luxury fashion ecommerce in Uzbekistan",
+      "inLanguage": "uz",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://luxx.uz/products?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
+
+  <!-- Local Business Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ClothingStore",
+      "name": "Luxx.uz - Ayollar kiyimlari",
+      "alternateName": ["Luxe", "LUXX"],
+      "image": "https://luxx.uz/logoweb2.png",
+      "url": "https://luxx.uz",
+      "telephone": "+998884299969",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Toshkent",
+        "addressCountry": "UZ"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 41.2995,
+        "longitude": 69.2401
+      },
+      "areaServed": [
+        {
+          "@type": "Country",
+          "name": "O'zbekiston"
+        },
+        {
+          "@type": "City",
+          "name": "Toshkent"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/luxx.uz_/"
+      ],
+      "keywords": [
+        "ayollar kiyimlari",
+        "luxury kiyimlar",
+        "paltolar",
+        "ko'ylaklar",
+        "yozgi kiyimlar",
+        "qishki kiyimlar",
+        "moda",
+        "onlayn do'kon"
+      ],
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+        ],
+        "opens": "00:00",
+        "closes": "23:59"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Ayollar kiyimlari katalogi",
+        "itemListElement": [
+          {
+            "@type": "OfferCatalog",
+            "name": "Paltolar",
+            "url": "https://luxx.uz/products"
+          },
+          {
+            "@type": "OfferCatalog",
+            "name": "Ko'ylaklar",
+            "url": "https://luxx.uz/products"
+          },
+          {
+            "@type": "OfferCatalog",
+            "name": "Yozgi kiyimlar",
+            "url": "https://luxx.uz/products"
+          }
+        ]
+      }
+    }
+  </script>
+
+  <link rel="apple-touch-icon" href="/logoweb2.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/logoweb2.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://ik.imagekit.io" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <style>
+    /* Font-display swap for all text elements */
+    body, input, textarea, button, select {
+      font-display: swap;
+    }
+  </style>
+  <title>Luxx.uz - Luxury ayollar kiyimlari va seasonal kolleksiya</title>
+</head>
+
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M7GNV72M" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <script type="module" src="/src/index.js"></script>
+</body>
+
+</html>

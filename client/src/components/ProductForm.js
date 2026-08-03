@@ -140,7 +140,7 @@ const ProductForm = ({ product, onClose }) => {
 
     try {
       const uploadedUrls = [];
-      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
 
       if (!publicKey) {
         throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');

@@ -86,7 +86,7 @@ const About = () => {
   ];
 
   return (
-    <section id="about" ref={sectionRef} className="relative overflow-hidden bg-transparent py-20 md:py-24">
+    <section id="about" ref={sectionRef} className="premium-about relative overflow-hidden bg-transparent py-20 md:py-24">
       <div className="pointer-events-none absolute -top-28 left-1/2 h-72 w-[52rem] -translate-x-1/2 rounded-full bg-[#d6b47c]/14 blur-3xl" />
       <div className="pointer-events-none absolute top-60 -left-24 h-72 w-72 rounded-full bg-[#2a406c]/20 blur-3xl" />
       <div className="pointer-events-none absolute bottom-16 -right-20 h-80 w-80 rounded-full bg-[#7b4f71]/16 blur-3xl" />
@@ -107,7 +107,7 @@ const About = () => {
           <span className="font-brilliant block mt-10 text-[#d6b47c] text-5xl sm:text-6xl lg:text-7xl">
             {t('about.brandTitle')}
           </span>
-          <p className="mt-5 text-base sm:text-lg text-neutral-300 leading-relaxed">
+          <p className="mt-6 text-base sm:text-lg text-neutral-300 leading-relaxed">
             {t('about.description')}
           </p>
         </header>

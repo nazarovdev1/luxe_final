@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TrendingDown, Tag } from 'lucide-react';
+import { TrendingDown, Tag, ShieldCheck, Truck, Gem } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
@@ -137,13 +137,16 @@ const MobileBundleSavings = ({ originalPrice, discountedPrice, discountPercent, 
             { icon: '🛡️', label: t('bundleDetail.guarantee14'), sub: t('bundleDetail.guaranteeReturn') },
             { icon: '🚚', label: t('bundleDetail.guaranteeFree'), sub: t('bundleDetail.guaranteeShipping') },
             { icon: '✨', label: t('bundleDetail.guaranteeOriginal'), sub: t('bundleDetail.guaranteeBrands') },
-          ].map((item) => (
-            <div key={item.label} className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-              <div className="text-xl mb-0.5">{item.icon}</div>
-              <p className="text-white font-semibold text-xs">{item.label}</p>
-              <p className="text-[#9aa3b2] text-[9px]">{item.sub}</p>
-            </div>
-          ))}
+          ].map((item, index) => {
+            const Icon = [ShieldCheck, Truck, Gem][index];
+            return (
+              <div key={item.label} className="text-center p-3 rounded-xl bg-white/[0.02] border border-white/[0.05]">
+                <Icon className="w-4 h-4 mx-auto mb-1.5 text-[#d6b47c]" strokeWidth={1.7} />
+                <p className="text-white font-semibold text-xs">{item.label}</p>
+                <p className="text-[#9aa3b2] text-[9px]">{item.sub}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

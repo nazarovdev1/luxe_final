@@ -59,11 +59,11 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
 
   return (
     <article
-      className="group relative grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent transition-all duration-500 hover:border-[#d6b47c]/20"
+      className="bundle-product-card group relative grid grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden transition-all duration-500"
       style={{ animationDelay: `${index * 0.1}s` }}
     >
       {/* Left: Image Gallery */}
-      <div className="relative aspect-[3/4] lg:aspect-auto overflow-hidden bg-[#0e0e10]">
+      <div className="bundle-product-visual relative aspect-[3/4] lg:aspect-auto overflow-hidden bg-[#0e0e10]">
         {/* Main Image with Zoom */}
         <div
           className="relative h-full overflow-hidden cursor-zoom-in"
@@ -112,7 +112,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
       </div>
 
       {/* Right: Product Info */}
-      <div className="flex flex-col p-8 lg:p-10 justify-between">
+      <div className="bundle-product-details flex flex-col p-8 lg:p-10 justify-between">
         <div>
           {/* Category */}
           <p className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]/60 font-bold mb-3">
@@ -136,6 +136,10 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
             <div>
               <p className="text-[10px] text-[#9aa3b2] uppercase tracking-wider mb-1">{t('bundleDetail.productCardSeparatePrice')}</p>
               <p className="text-xl text-white/40 line-through">{formatPrice(originalPrice)} {currency}</p>
+            </div>
+            <div className="bundle-product-price">
+              <p>TO'PLAMDAGI NARX</p>
+              <strong>{formatPrice(bundleUnitPrice || originalPrice)} <span>{currency}</span></strong>
             </div>
             {savings > 0 && (
               <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">

@@ -11,7 +11,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const TYPES = ['info', 'success', 'warning'];
 

@@ -38,8 +38,8 @@ const RecentlyViewed = ({ items, onClear }) => {
   const displayItems = items.slice(0, 8);
 
   return (
-    <section ref={sectionRef} className="py-16 bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section ref={sectionRef} className="premium-recent py-16 bg-transparent">
+      <div className="premium-home-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
           className="flex items-center justify-between mb-8"
           style={{
@@ -48,7 +48,7 @@ const RecentlyViewed = ({ items, onClear }) => {
             transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         >
-          <div className="flex items-center gap-3">
+          <div className="premium-recent-heading flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20">
               <Clock className="h-5 w-5 text-[#d6b47c]" />
             </div>
@@ -66,7 +66,7 @@ const RecentlyViewed = ({ items, onClear }) => {
           </button>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-5">
+        <div className="premium-recent-grid flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-5">
           {displayItems.map((item, index) => (
             <Link
               key={item.id}

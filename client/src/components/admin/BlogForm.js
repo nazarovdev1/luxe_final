@@ -81,7 +81,7 @@ const BlogForm = ({ blog, onClose }) => {
     try {
       toast.loading('Rasm yuklanmoqda...', { id: 'img-upload' });
 
-      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
       if (!publicKey) {
         throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
       }

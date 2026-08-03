@@ -39,17 +39,18 @@ const AllProducts = () => {
     const displayProducts = products.slice(0, 8);
 
     return (
-        <section id="products" ref={sectionRef} className="py-20 bg-transparent">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="products" ref={sectionRef} className="premium-new-arrivals py-20 bg-transparent">
+            <div className="premium-home-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div 
-                    className="text-center mb-16"
+                    className="premium-arrivals-heading"
                     style={{
                         opacity: isVisible ? 1 : 0,
                         transform: isVisible ? 'translateY(0)' : 'translateY(25px)',
                         transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}
                 >
+                    <span>02 / NOW IN ATELIER</span>
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
                         {t('allProducts.title')}
                     </h2>
@@ -62,7 +63,7 @@ const AllProducts = () => {
                 {isLoading ? (
                     <ProductGridSkeleton count={8} />
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <div className="premium-arrivals-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                         {displayProducts.map((product, index) => (
                             <div
                                 key={product.id}
@@ -91,7 +92,7 @@ const AllProducts = () => {
                     >
                         <Link
                             to="/products"
-                            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold rounded-full transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
+                            className="premium-arrivals-link group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold rounded-full transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105"
                         >
                             Barcha mahsulotlarni ko'rish
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

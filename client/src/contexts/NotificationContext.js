@@ -68,7 +68,7 @@ export const NotificationProvider = ({ children }) => {
             const authToken = localStorage.getItem('token');
             if (!authToken) return;
 
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api'}/auth/fcm-token`, {
+            const response = await fetch(`${import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api'}/auth/fcm-token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

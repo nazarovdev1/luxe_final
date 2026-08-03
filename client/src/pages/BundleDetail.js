@@ -3,6 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingBag, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { showCartToast } from '../utils/toast';
@@ -13,7 +16,9 @@ import BundleSocialProof from '../components/BundleDetail/BundleSocialProof';
 import BundleStickyBar from '../components/BundleDetail/BundleStickyBar';
 import SEO from '../components/SEO';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -35,6 +40,12 @@ const localize = (value, lang) => {
   return '';
 };
 
+const toVariantList = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === 'string') return value.trim().split(/[\s,]+/).filter(Boolean);
+  return [];
+};
+
 // Normalize a single product from the bundle API response
 const normalizeProduct = (p) => {
   let image = '';
@@ -49,8 +60,8 @@ const normalizeProduct = (p) => {
     id: p.id || p._id,
     image,
     price: Number(p.price) || 0,
-    colors: Array.isArray(p.colors) ? p.colors : [],
-    sizes: Array.isArray(p.sizes) ? p.sizes : [],
+    colors: toVariantList(p.colors),
+    sizes: toVariantList(p.sizes),
   };
 };
 
@@ -59,6 +70,7 @@ export default function BundleDetail() {
   const { addLookToCart } = useCart();
   const { t, language } = useLanguage();
   const heroRef = useRef(null);
+  const pageRef = useRef(null);
 
   const [bundle, setBundle] = useState(null);
   const [products, setProducts] = useState([]);
@@ -67,6 +79,49 @@ export default function BundleDetail() {
   const [isAdding, setIsAdding] = useState(false);
   const [selectedVariants, setSelectedVariants] = useState({});
   // { [productId]: { color: string|null, size: string|null } }
+
+  useGSAP(() => {
+    if (loading || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    const cards = gsap.utils.toArray('.bundle-product-card');
+    gsap.from('.bundle-social-proof', {
+      y: 46,
+      clipPath: 'inset(0 0 18% 0)',
+      duration: 0.82,
+      ease: 'power4.out',
+      scrollTrigger: { trigger: '.bundle-social-proof', start: 'top 86%', once: true },
+    });
+    gsap.from('.bundle-selection-heading', {
+      y: 34,
+      autoAlpha: 0,
+      duration: 0.7,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: '.bundle-selection-section', start: 'top 74%', once: true },
+    });
+    cards.forEach((card) => {
+      const visual = card.querySelector('.bundle-product-visual');
+      const details = card.querySelector('.bundle-product-details');
+      const cardTimeline = gsap.timeline({
+        defaults: { ease: 'power4.out' },
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 82%',
+          toggleActions: 'restart none none reset',
+        },
+      });
+      cardTimeline
+        .from(visual, { y: 76, scale: 0.97, duration: 0.82 })
+        .from(details, { y: 48, x: 24, duration: 0.72 }, 0.13);
+    });
+    gsap.from('.bundle-savings-card, .bundle-final-cta > div', {
+      y: 44,
+      autoAlpha: 0,
+      duration: 0.7,
+      stagger: 0.12,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: '.bundle-savings-section', start: 'top 75%', once: true },
+    });
+  }, { scope: pageRef, dependencies: [loading], revertOnUpdate: true });
 
   useEffect(() => {
     const fetchBundle = async () => {
@@ -193,14 +248,14 @@ export default function BundleDetail() {
   const discountPercent = bundle.discountType === 'percentage'
     ? bundle.discountValue
     : originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0;
-  const bundleUnitPrice = products.length > 0 ? discountedPrice / products.length : 0;
+  const bundlePriceRatio = originalPrice > 0 ? discountedPrice / originalPrice : 1;
 
   // Localized title/description that follow the active UI language
   const localizedTitle = localize(bundle.title, language);
   const localizedDescription = localize(bundle.description, language);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] pb-32">
+    <div ref={pageRef} className="bundle-page min-h-screen pb-32">
       {/* SEO */}
       <SEO
         title={localizedTitle ? `${localizedTitle} | Luxx.uz` : t('bundleDetail.loading')}
@@ -222,7 +277,7 @@ export default function BundleDetail() {
       />
 
       {/* Back button */}
-      <div className="fixed top-20 left-4 sm:left-8 z-50">
+      <div className="bundle-back fixed top-20 left-4 sm:left-8 z-50">
         <Link
           to="/"
           className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#0a0a0b]/80 backdrop-blur-md border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-sm"
@@ -245,10 +300,10 @@ export default function BundleDetail() {
       <BundleSocialProof />
 
       {/* ── PRODUCTS SECTION ───────────────────────────── */}
-      <section className="py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bundle-selection-section py-10">
+        <div className="bundle-selection-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section header */}
-          <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="bundle-selection-heading mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <div className="h-px w-12 bg-[#d6b47c] mb-4" />
               <h2 className="text-3xl sm:text-4xl font-light text-white">
@@ -265,7 +320,7 @@ export default function BundleDetail() {
           </div>
 
           {/* Product cards */}
-          <div className="space-y-8">
+          <div className="bundle-selection-list space-y-8">
             {products.map((product, index) => (
               <BundleProductCard
                 key={product.id || index}
@@ -273,7 +328,7 @@ export default function BundleDetail() {
                 index={index}
                 selectedVariant={selectedVariants[product.id] || {}}
                 onVariantChange={handleVariantChange}
-                bundleUnitPrice={bundleUnitPrice}
+                bundleUnitPrice={Math.round(product.price * bundlePriceRatio)}
               />
             ))}
           </div>
@@ -289,7 +344,7 @@ export default function BundleDetail() {
       />
 
       {/* ── BOTTOM CTA (for mobile / no sticky) ────────── */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="bundle-final-cta max-w-5xl mx-auto px-6 py-8">
         <div className="rounded-3xl overflow-hidden border border-[#d6b47c]/20 bg-gradient-to-br from-[#d6b47c]/5 to-transparent p-8 sm:p-12 text-center">
           <h3 className="text-2xl sm:text-3xl font-light text-white mb-2">
             {t('bundleDetail.ctaTitle')}
@@ -313,7 +368,7 @@ export default function BundleDetail() {
 
             <button
               onClick={handleAddToCart}
-              disabled={isAdding || !canAddToCart}
+              disabled={isAdding}
               className="flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#d6b47c] to-[#c4985a] text-[#0a0a0b] font-bold text-base transition-all hover:shadow-2xl hover:shadow-[#d6b47c]/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
             >
               {isAdding ? (

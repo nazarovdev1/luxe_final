@@ -348,7 +348,7 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
 
         try {
             const uploadedUrls = [];
-            const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+            const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
             if (!publicKey) {
                 throw new Error(t('styleFeed.imagekitMissing'));
             }

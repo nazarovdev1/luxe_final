@@ -36,7 +36,7 @@ const Home = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-[#060a14] relative overflow-hidden">
+    <div className="premium-homepage min-h-screen bg-[#060a14] relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <SideRays
           speed={0.8}
@@ -76,7 +76,7 @@ const Home = () => {
         canonicalPath="/"
       />
       
-      <div className="relative z-10">
+      <div className="premium-homepage-content relative z-10">
         <Hero />
         <PremiumHomeSections />
       <AllProducts />

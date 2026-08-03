@@ -47,6 +47,12 @@ export const LanguageProvider = ({ children }) => {
   // Translation function: t('nav.login') => 'Kirish'
   // Uses i18next under the hood for proper pluralization, interpolation, etc.
   const t = (key, fallback) => {
+    const interpolate = (value) => {
+      if (typeof value !== 'string' || !fallback || typeof fallback !== 'object') return value;
+      return value.replace(/\{([^}]+)\}/g, (match, name) => (
+        Object.prototype.hasOwnProperty.call(fallback, name) ? fallback[name] : match
+      ));
+    };
     // Direct lookup for arrays in translations object
     const lang = i18n.language || 'uz';
     const resources = i18n.options && i18n.options.resources;
@@ -62,7 +68,7 @@ export const LanguageProvider = ({ children }) => {
         }
       }
       if (cur !== null && cur !== undefined) {
-        return cur;
+        return interpolate(cur);
       }
     }
     const value = i18n.t(key);
@@ -70,7 +76,7 @@ export const LanguageProvider = ({ children }) => {
     if (value === key && fallback) {
       return fallback;
     }
-    return value;
+    return interpolate(value);
   };
 
   // Get current language info

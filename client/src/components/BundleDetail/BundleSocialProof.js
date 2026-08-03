@@ -103,7 +103,7 @@ const BundleSocialProof = () => {
   ];
 
   return (
-    <section className="py-8 sm:py-10">
+    <section className="bundle-social-proof py-8 sm:py-10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#101116]/80 shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d6b47c]/45 to-transparent" />

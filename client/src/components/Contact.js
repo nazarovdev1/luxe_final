@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const Contact = () => {
   const { t } = useLanguage();

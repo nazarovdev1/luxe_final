@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TrendingDown, Coffee, Tag } from 'lucide-react';
+import { TrendingDown, Coffee, Tag, ShieldCheck, Truck, Gem } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const formatPrice = (price) => {
@@ -56,7 +56,7 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
   const progressWidth = Math.round((discountedPrice / originalPrice) * 100);
 
   return (
-    <section ref={sectionRef} className="py-20">
+    <section ref={sectionRef} className="bundle-savings-section py-20">
       <div className="max-w-5xl mx-auto px-6">
         {/* Section header */}
         <div className="text-center mb-16">
@@ -70,7 +70,7 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
         </div>
 
         {/* Comparison Table */}
-        <div className="rounded-3xl overflow-hidden border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-8 lg:p-12">
+        <div className="bundle-savings-card overflow-hidden p-8 lg:p-12">
           {/* Product breakdown */}
           <div className="space-y-4 mb-10">
             {localizedProducts.map((product, i) => (
@@ -159,13 +159,16 @@ const BundleSavingsBreakdown = ({ originalPrice, discountedPrice, discountPercen
             { icon: '🛡️', label: t('bundleDetail.guarantee14'), sub: t('bundleDetail.guaranteeReturn') },
             { icon: '🚚', label: t('bundleDetail.guaranteeFree'), sub: t('bundleDetail.guaranteeShipping') },
             { icon: '✨', label: t('bundleDetail.guaranteeOriginal'), sub: t('bundleDetail.guaranteeBrands') },
-          ].map((item) => (
-            <div key={item.label} className="text-center p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
-              <div className="text-2xl mb-1">{item.icon}</div>
-              <p className="text-white font-semibold text-sm">{item.label}</p>
-              <p className="text-[#9aa3b2] text-xs">{item.sub}</p>
-            </div>
-          ))}
+          ].map((item, index) => {
+            const Icon = [ShieldCheck, Truck, Gem][index];
+            return (
+              <div key={item.label} className="text-center p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                <Icon className="w-5 h-5 mx-auto mb-2 text-[#d6b47c]" strokeWidth={1.7} />
+                <p className="text-white font-semibold text-sm">{item.label}</p>
+                <p className="text-[#9aa3b2] text-xs">{item.sub}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

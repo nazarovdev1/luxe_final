@@ -39,7 +39,7 @@ import SEO from '../components/SEO';
 import CustomerPhotoReviews from '../components/CustomerPhotoReviews';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 // ── Loading Animation ──────────────────────────────────────
 const DotLoader = () => (

@@ -52,6 +52,6 @@ root.render(
   </React.StrictMode>
 );
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   reportWebVitals(console.log);
 }

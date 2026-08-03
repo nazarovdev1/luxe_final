@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const ReviewList = ({ reviews, onReviewDeleted }) => {
   const { user } = useAuth();

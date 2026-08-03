@@ -46,7 +46,7 @@ import { showCartToast } from '../../utils/toast';
 import { findVariant, getProductOptions } from '../../utils/productVariants';
 import { trackEvent, productAnalyticsPayload } from '../../utils/analytics';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const formatPrice = (value) => {
   const numeric = Number(value);

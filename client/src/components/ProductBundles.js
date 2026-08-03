@@ -225,8 +225,8 @@ const ProductBundles = () => {
   if (!isLoading && activeLooks.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="py-16 bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section ref={sectionRef} className="premium-bundles py-16 bg-transparent">
+      <div className="premium-home-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div 
           className="flex items-center justify-between mb-8"
           style={{
@@ -235,8 +235,8 @@ const ProductBundles = () => {
             transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         >
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#d6b47c] mb-3">
+          <div className="premium-bundles-heading">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#d6b47c] mb-8">
               <Percent className="w-3 h-3" />
               {t('productBundles.bundlesBadge')}
             </div>

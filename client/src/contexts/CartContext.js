@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useCallback, u
 import { useAuth } from './AuthContext';
 import useProductService from '../server/server';
 
-const DEBUG_LOGS = process.env.NODE_ENV !== 'production';
+const DEBUG_LOGS = !import.meta.env.PROD;
 
 // Cart reducer for state management
 const cartReducer = (state, action) => {

@@ -358,7 +358,7 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
     if (!file) return;
     setIsUploading(true);
     try {
-      const publicKey = process.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
       if (!publicKey) {
         throw new Error(t('challenges.imagekitMissing'));
       }

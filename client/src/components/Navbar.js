@@ -122,7 +122,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 pointer-events-auto ${isScrolled
+      className={`luxx-navbar ${isScrolled ? 'luxx-navbar-scrolled' : ''} fixed top-0 left-0 w-full z-40 transition-all duration-300 pointer-events-auto ${isScrolled
         ? 'bg-[#0a0a0a]/75 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]'
         : 'bg-transparent border-b border-transparent'
         }`}

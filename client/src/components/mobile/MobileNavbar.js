@@ -44,7 +44,7 @@ const MobileNavbar = () => {
       path: '/mobile/events',
       matchPrefixes: MOBILE_NAV_ROUTE_GROUPS.explore,
       icon: Compass,
-      label: t('mobileNav.explore'),
+      label: t('mobileNav.explore', 'Kashf et'),
     },
     {
       id: 'cart',
@@ -88,7 +88,11 @@ const MobileNavbar = () => {
         className="mobile-bottom-nav__pill"
         style={{ '--active-index': Math.max(activeIndex, 0) }}
       >
-
+        {/* Animated "active capsule" that slides behind the current nav item */}
+        <div
+          className={`mobile-bottom-nav__indicator${activeIndex >= 0 ? ' mobile-bottom-nav__indicator--visible' : ''}`}
+          aria-hidden="true"
+        />
 
         {navItems.map((item) => {
           const Icon = item.icon;

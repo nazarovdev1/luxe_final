@@ -1,7 +1,7 @@
 const canTrack = () => 
   typeof window !== 'undefined' && 
   Array.isArray(window.dataLayer) && 
-  process.env.NODE_ENV !== 'development';
+  !import.meta.env.DEV;
 
 export const trackEvent = (event, payload = {}) => {
   if (!canTrack()) return;

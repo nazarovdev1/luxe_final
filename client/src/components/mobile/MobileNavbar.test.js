@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -7,9 +8,9 @@ import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import MobileNavbar from './MobileNavbar';
 
-jest.mock('../../contexts/AuthContext', () => ({ useAuth: jest.fn() }));
-jest.mock('../../contexts/CartContext', () => ({ useCart: jest.fn() }));
-jest.mock('../../contexts/LanguageContext', () => ({ useLanguage: jest.fn() }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: vi.fn() }));
+vi.mock('../../contexts/CartContext', () => ({ useCart: vi.fn() }));
+vi.mock('../../contexts/LanguageContext', () => ({ useLanguage: vi.fn() }));
 
 const renderNavbar = ({
   route = '/mobile',

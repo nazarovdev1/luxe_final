@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Loader2, ChevronUp } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -31,7 +31,6 @@ const BundleStickyBar = ({
   canAddToCart = true,
 }) => {
   const { t, language } = useLanguage();
-  const [isVisible, setIsVisible] = useState(false);
   const [isScrolledDown, setIsScrolledDown] = useState(false);
 
   const currency = language === 'en' ? 'UZS' : "so'm";
@@ -39,11 +38,11 @@ const BundleStickyBar = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!heroRef?.current) return;
-      const heroBottom = heroRef.current.getBoundingClientRect().bottom;
-      setIsVisible(heroBottom < 0);
-      setIsScrolledDown(window.scrollY > 200);
+      // The dock should only join the page after the visitor has started
+      // exploring the editorial hero — never on the first viewport.
+      setIsScrolledDown(window.scrollY > 120);
     };
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [heroRef]);
@@ -52,14 +51,12 @@ const BundleStickyBar = ({
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-[9000] transition-all duration-500 ${isVisible
-        ? 'translate-y-0 opacity-100'
-        : 'translate-y-full opacity-0 pointer-events-none'
-      }`}
+      className={`bundle-sticky-dock fixed bottom-4 left-0 right-0 z-[9000] ${isScrolledDown ? 'bundle-sticky-dock--visible' : ''}`}
+      aria-hidden={!isScrolledDown}
     >
       {/* Glassmorphism bar */}
-      <div className="bg-[#0a0a0b]/90 backdrop-blur-2xl border-t border-white/[0.08] shadow-[0_-20px_60px_rgba(0,0,0,0.8)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <div className="bundle-sticky-dock-inner bg-[#0a0a0b]/90 backdrop-blur-2xl border border-white/[0.08] shadow-[0_18px_55px_rgba(0,0,0,0.48)]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center gap-4">
             {/* Product thumbnails (desktop) */}
             <div className="hidden sm:flex -space-x-3 shrink-0">
@@ -103,7 +100,7 @@ const BundleStickyBar = ({
             {/* CTA Button */}
             <button
               onClick={onAddToCart}
-              disabled={isAdding || !canAddToCart}
+              disabled={isAdding}
               className="flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-[#d6b47c] to-[#c4985a] text-[#0a0a0b] font-bold text-sm transition-all hover:shadow-xl hover:shadow-[#d6b47c]/25 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none shrink-0"
             >
               {isAdding ? (

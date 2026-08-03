@@ -209,8 +209,15 @@ const PremiumHomeSections = () => {
     <>
       {activeLookId && <LookDetailModal lookId={activeLookId} onClose={closeLook} />}
       <section id="premium-home" className="bg-transparent text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 space-y-16 md:space-y-20">
-          <div className="relative overflow-hidden rounded-[2rem] border border-white/10">
+        <div className="premium-home-flow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 space-y-16 md:space-y-20">
+          <div className="premium-home-index" aria-label="Luxx kolleksiya statistikasi">
+            <span>01 — 04</span>
+            <p>{t('premiumHome.editorialBadge')}</p>
+            <div><b>{products.length}+</b><small>{t('premiumHome.statsPremiumProducts')}</small></div>
+            <div><b>{categoryCards.length}+</b><small>{t('premiumHome.statsMainCategories')}</small></div>
+          </div>
+
+          <div className="premium-collection-cover relative overflow-hidden rounded-[2rem] border border-white/10">
             <img
               src="/second_pose.jpg"
               alt="Luxx editorial kolleksiya"
@@ -279,7 +286,7 @@ const PremiumHomeSections = () => {
             </div>
           </div>
 
-          <section id="home-categories" ref={categoriesRef} className="space-y-6">
+          <section id="home-categories" ref={categoriesRef} className="premium-categories space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div
                 style={{
@@ -338,7 +345,7 @@ const PremiumHomeSections = () => {
             </div>
           </section>
 
-          <section id="home-bestsellers" ref={bestsellersRef} className="space-y-6">
+          <section id="home-bestsellers" ref={bestsellersRef} className="premium-bestsellers space-y-6">
             <div
               className="max-w-3xl"
               style={{
@@ -409,7 +416,7 @@ const PremiumHomeSections = () => {
             )}
           </section>
 
-          <section id="home-lookbook" className="space-y-8">
+          <section id="home-lookbook" className="premium-lookbook space-y-8">
             <div className="max-w-3xl">
               <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Lookbook</p>
               <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.lookbookTitle')}</h3>
@@ -461,7 +468,7 @@ const PremiumHomeSections = () => {
               )}
             </div>
 
-            <div id="customer-voices" className="pt-2">
+            <div id="customer-voices" className="premium-voices pt-2">
               <div className="flex items-end justify-between flex-wrap gap-4 mb-5">
                 <h4 className="text-2xl md:text-3xl font-semibold text-[#f4f1eb]">{t('premiumHome.customerVoices')}</h4>
                 <p className="text-sm text-neutral-400">{t('premiumHome.customerSubtitle')}</p>
@@ -497,7 +504,7 @@ const PremiumHomeSections = () => {
             </div>
           </section>
 
-          <section id="home-journey" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          <section id="home-journey" className="premium-promise grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-7">
               <h4 className="text-2xl font-semibold text-[#f4f1eb]">{t('premiumHome.journeyTitle')}</h4>
               <div className="mt-6 space-y-4">

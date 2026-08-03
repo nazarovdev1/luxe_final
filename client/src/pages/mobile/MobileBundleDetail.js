@@ -15,7 +15,7 @@ import MobileBundleSocialProof from './BundleDetailComponents/MobileBundleSocial
 import MobileBundleStickyBar from './BundleDetailComponents/MobileBundleStickyBar';
 import MobileBundleSavings from './BundleDetailComponents/MobileBundleSavings';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
 
 const MobileBundleDetail = () => {
     const { id } = useParams();
