@@ -65,6 +65,7 @@ import { deleteReelComment as deleteReelCommentController } from './controllers/
 import { initSocket } from './services/socket.service.js'
 
 const app = express()
+app.set('trust proxy', 1)
 const server = http.createServer(app)
 const PORT = process.env.PORT || 3003
 
@@ -93,9 +94,15 @@ app.use(helmet({
 }))
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://luxx.uz', 'https://www.luxx.uz']
-    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001', 'http://localhost:3003', 'http://127.0.0.1:3003'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true)
+    if (process.env.NODE_ENV !== 'production') return callback(null, true)
+    const allowed = ['https://luxx.uz', 'https://www.luxx.uz', 'https://luxxuz.vercel.app']
+    if (allowed.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true)
+    }
+    return callback(new Error('Not allowed by CORS'))
+  },
   credentials: true
 }))
 

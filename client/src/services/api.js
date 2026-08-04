@@ -1,12 +1,20 @@
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.REACT_APP_API_URL || '/api';
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.REACT_APP_API_URL ||
+  'https://luxe-backend-355636248339.us-central1.run.app/api';
 
 const normalizeUrl = (path) => {
   if (!path) return API_BASE_URL;
   if (/^https?:\/\//i.test(path)) return path;
-  if (path.startsWith('/api')) return path;
-  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+
+  const base = API_BASE_URL.replace(/\/+$/, '');
+  let cleanPath = path;
+  if (base.endsWith('/api') && cleanPath.startsWith('/api')) {
+    cleanPath = cleanPath.substring(4);
+  }
+  return `${base}${cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`}`;
 };
 
 const isInternalUrl = (url = '') => !/^https?:\/\//i.test(url) || url.startsWith(window.location.origin);

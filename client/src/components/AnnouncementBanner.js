@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Info, CheckCircle, AlertTriangle, Bell } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+import { API_BASE_URL } from '../services/api';
+
+const API_BASE = API_BASE_URL;
 
 const AnnouncementBanner = () => {
     const [announcement, setAnnouncement] = useState(null);

@@ -18,7 +18,9 @@ import SEO from '../components/SEO';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const API_BASE = import.meta.env.REACT_APP_API_URL || 'http://127.0.0.1:3003/api';
+import { API_BASE_URL } from '../services/api';
+
+const API_BASE = API_BASE_URL;
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
