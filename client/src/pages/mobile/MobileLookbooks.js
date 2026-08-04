@@ -4,6 +4,8 @@ import { ShoppingBag, ArrowRight, Gem, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 
+import { apiFetch } from '../../services/api';
+
 const MobileLookbooks = () => {
     const navigate = useNavigate();
     const { t } = useLanguage();
@@ -19,10 +21,9 @@ const MobileLookbooks = () => {
     const fetchLooks = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/api/looks');
-            const result = await response.json();
+            const result = await apiFetch('/api/looks');
             if (result.success) {
-                setLooks(result.data);
+                setLooks(result.data || []);
             }
         } catch (err) {
             console.error('Failed to fetch looks:', err);

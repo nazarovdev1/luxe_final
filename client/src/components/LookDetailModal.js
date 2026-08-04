@@ -9,6 +9,7 @@ import { useProducts } from '../contexts/ProductContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
+import { apiFetch } from '../services/api';
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 const formatPrice = (price) => {
@@ -168,15 +169,13 @@ const LookDetailModal = ({ lookId, onClose }) => {
         document.body.style.overflow = 'hidden';
         return () => { document.body.style.overflow = 'unset'; };
     }, []);
-
     // Fetch look
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch('/api/looks');
-                const result = await res.json();
+                const result = await apiFetch('/api/looks');
                 if (result.success) {
-                    const found = result.data.find((l) => l._id === lookId || l.id === lookId);
+                    const found = (result.data || []).find((l) => l._id === lookId || l.id === lookId);
                     setLook(found);
                 }
             } catch (err) {

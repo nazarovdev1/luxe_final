@@ -5,7 +5,7 @@ export const API_BASE_URL =
   import.meta.env.REACT_APP_API_URL ||
   'https://luxe-backend-355636248339.us-central1.run.app/api';
 
-const normalizeUrl = (path) => {
+export const normalizeUrl = (path) => {
   if (!path) return API_BASE_URL;
   if (/^https?:\/\//i.test(path)) return path;
 
@@ -16,6 +16,20 @@ const normalizeUrl = (path) => {
   }
   return `${base}${cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`}`;
 };
+
+if (typeof window !== 'undefined' && window.fetch && !window.__api_fetch_patched__) {
+  const originalFetch = window.fetch;
+  window.fetch = function (input, init) {
+    let url = input;
+    if (typeof input === 'string' && input.startsWith('/api')) {
+      url = normalizeUrl(input);
+    } else if (input && typeof input === 'object' && typeof input.url === 'string' && input.url.startsWith('/api')) {
+      url = normalizeUrl(input.url);
+    }
+    return originalFetch.call(this, url, init);
+  };
+  window.__api_fetch_patched__ = true;
+}
 
 const isInternalUrl = (url = '') => !/^https?:\/\//i.test(url) || url.startsWith(window.location.origin);
 

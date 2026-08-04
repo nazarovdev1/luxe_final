@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import Masonry from '../components/ui/Masonry';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { apiFetch } from '../services/api';
 
 /* ─── helpers ──────────────────────────────────────────────────── */
 const SEASONS = ['lookbooks.season_0', 'lookbooks.season_1', 'lookbooks.season_2', 'lookbooks.season_3', 'lookbooks.season_4'];
@@ -334,8 +335,7 @@ const Lookbooks = () => {
         const fetchLooks = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch('/api/looks');
-                const result = await response.json();
+                const result = await apiFetch('/api/looks');
                 if (result.success) {
                     setLooks(result.data || []);
                 } else {
