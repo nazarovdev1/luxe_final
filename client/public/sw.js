@@ -1,10 +1,10 @@
 // Never cache Vite's hashed JS/CSS bundles. A new deployment removes the
 // previous hashes, so serving an old entry bundle here would make lazy routes
 // request CSS files that no longer exist.
-const CACHE_NAME = 'luxe-v7'
-const STATIC_CACHE = 'luxe-static-v7'
-const API_CACHE = 'luxe-api-v7'
-const IMAGE_CACHE = 'luxe-images-v7'
+const CACHE_NAME = 'luxe-v8'
+const STATIC_CACHE = 'luxe-static-v8'
+const API_CACHE = 'luxe-api-v8'
+const IMAGE_CACHE = 'luxe-images-v8'
 
 const STATIC_ASSETS = [
   '/',
@@ -32,14 +32,18 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((cacheNames) => {
         return Promise.all(
-        cacheNames
-          .filter((name) => name.startsWith('luxe-') && name !== CACHE_NAME && name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
-          .map((name) => caches.delete(name))
+          cacheNames
+            .filter((name) => name.startsWith('luxe-') && name !== CACHE_NAME && name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
+            .map((name) => caches.delete(name))
         )
       })
-      // clients.claim() is only legal after this worker becomes active.
-      // Keeping it inside waitUntil also makes activation deterministic.
-      .then(() => self.clients.claim())
+      .then(async () => {
+        try {
+          await self.clients.claim()
+        } catch (e) {
+          // Ignore claim errors if worker is not yet active in current context
+        }
+      })
   )
 })
 

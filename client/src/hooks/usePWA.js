@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 // Changing this query forces browsers still controlled by an older worker to
 // fetch a fresh worker script instead of receiving its cached `/sw.js` copy.
-const SERVICE_WORKER_URL = '/sw.js?v=2026-08-12-2'
+const SERVICE_WORKER_URL = '/sw.js?v=2026-08-12-3'
 
 export function usePWA() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)

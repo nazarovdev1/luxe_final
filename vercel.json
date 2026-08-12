@@ -5,7 +5,7 @@
   "outputDirectory": "client/build",
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/((?!assets/|sw.js|favicon.ico|manifest.json|logoweb2.png|logoweb3.png).*)",
       "destination": "/index.html"
     }
   ],
