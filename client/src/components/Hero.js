@@ -58,7 +58,7 @@ const Hero = () => {
             alt=""
             width="2304"
             height="1536"
-            fetchPriority="high"
+            fetchpriority="high"
             decoding="async"
           />
           <div className="luxx-hero-image-shade" />
