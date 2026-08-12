@@ -31,6 +31,8 @@ describe('mobile navigation route state', () => {
 
 describe('mobile navigation visibility', () => {
   test.each([
+    '/mobile/login',
+    '/mobile/register',
     '/mobile/checkout',
     '/mobile/product/123',
     '/mobile/reels',

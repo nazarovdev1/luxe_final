@@ -54,6 +54,8 @@ const PremiumProductCard = ({
             src={imageUrl}
             alt={product.name}
             loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
             onLoad={() => setImgLoaded(true)}
             className={`h-full w-full object-cover object-top transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${
               isHovered ? 'scale-108' : 'scale-100'

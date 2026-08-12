@@ -260,6 +260,7 @@ export default function ProductView() {
         description={product.description || `${product.name} — Luxx.uz internet do'konidan xarid qiling.`}
         keywords={`${product.name}, ${product.category || 'ayollar kiyimlari'}, luxury kiyimlar, premium kiyimlar, luxx.uz`}
         image={product.image}
+        type="product"
         breadcrumbSteps={[
           { name: 'Kiyimlar', url: '/products' },
           { name: product.category, url: `/products?category=${product.category}` },
@@ -286,12 +287,12 @@ export default function ProductView() {
               price: product.price,
               availability: Number(product.stock) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             },
-            ...(product.rating && {
+            ...(product.rating && reviews.length > 0 && {
               aggregateRating: {
                 '@type': 'AggregateRating',
                 ratingValue: product.rating,
                 bestRating: '5',
-                ratingCount: reviews.length || 1,
+                ratingCount: reviews.length,
               },
             }),
           })}

@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, ArrowRight, Tag, BookOpen, TrendingUp, Heart, Search, Loader2 } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, BookOpen, Search, Loader2, Sparkles } from 'lucide-react';
 import axios from 'axios';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
+import './Blog.css';
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const CATEGORIES = [
   { slug: 'Barchasi',        labelKey: 'blogPage.allCategories' },
@@ -25,6 +31,7 @@ const Blog = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const pageRef = useRef(null);
 
   const fetchBlogs = useCallback(async (pageNum = 1, append = false) => {
     try {
@@ -135,65 +142,86 @@ const Blog = () => {
     </div>
   );
 
+  useGSAP(() => {
+    const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    intro
+      .from('.blog-intro-eyebrow', { y: 18, opacity: 0, duration: 0.55 })
+      .from('.blog-intro-title span', { yPercent: 118, rotate: 2, stagger: 0.11, duration: 1.1 }, '-=0.18')
+      .from('.blog-intro-copy', { y: 20, opacity: 0, duration: 0.62 }, '-=0.66')
+      .from('.blog-intro-tools', { y: 18, opacity: 0, duration: 0.58 }, '-=0.38');
+
+    gsap.utils.toArray('.blog-reveal').forEach((element) => {
+      gsap.from(element, {
+        y: 46,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: element,
+          start: 'top 87%',
+          toggleActions: 'play none none reverse',
+        },
+      });
+    });
+  }, { scope: pageRef, dependencies: [loading, blogs.length], revertOnUpdate: true });
+
   return (
-    <div className="min-h-screen bg-[#07080c] pt-28 pb-16">
+    <div ref={pageRef} className="blog-page min-h-screen bg-[#07080c] pt-20 sm:pt-24 pb-24 overflow-hidden">
       <SEO
         title="Blog | Luxx.uz"
         description="Eng so'nggi moda yangiliklari, uslub maslahatlari, trendlar va kombinatsiyalar. Luxx.uz blogi — premium fashion haqida hamma narsa."
         keywords="moda blogi, fashion blog, uslub maslahatlari, trendlar, ayollar kiyimlari, luxx.uz blog"
         canonicalPath="/blog"
       />
-      {/* Background */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl opacity-20" />
-        <div className="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-white/5 blur-3xl opacity-20" />
-      </div>
+      <div className="blog-page-noise pointer-events-none fixed inset-0 z-0" />
+      <div className="blog-orb blog-orb-left pointer-events-none" />
+      <div className="blog-orb blog-orb-right pointer-events-none" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/[0.08] px-4 py-1.5 mb-4">
-            <BookOpen className="w-3.5 h-3.5 text-[#d6b47c]" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#d6b47c]">{t('blog.journalLabel')}</span>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+        <section className="blog-intro">
+          <div className="blog-intro-issue">ISSUE <span>01</span> — 2026</div>
+          <div className="blog-intro-eyebrow">
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>{t('blog.journalLabel')}</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-light text-white tracking-tight mb-4">
-            {t('blog.fashion')} <span className="font-brilliant bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent">{t('blog.blog')}</span>
+          <h1 className="blog-intro-title" aria-label={`${t('blog.fashion')} ${t('blog.blog')}`}>
+            <span>{t('blog.fashion')}</span>
+            <span className="blog-intro-gold">{t('blog.blog')}</span>
           </h1>
-          <p className="text-gray-400 font-light text-lg max-w-xl mx-auto">
-            {t('blog.subtitle')}
-          </p>
-        </div>
+          <p className="blog-intro-copy">{t('blog.subtitle')}</p>
+          <div className="blog-intro-bottom">
+            <p>Har bir obrazning o‘z hikoyasi bor. Uni o‘qish, his qilish va o‘zingizniki qilish uchun.</p>
+            <div className="blog-intro-count"><span>{String(total).padStart(2, '0')}</span> maqola</div>
+          </div>
+        </section>
 
-        {/* Search */}
-        <div className="max-w-md mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3f4658]" />
+        <section className="blog-intro-tools">
+          <div className="blog-search-wrap">
+            <Search className="w-4 h-4" />
             <input
               type="text"
               value={searchQuery}
               onChange={handleSearch}
               placeholder={t('blog.searchPlaceholder')}
-              className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#11131e] border border-white/5 text-white text-sm placeholder:text-[#3f4658] focus:outline-none focus:border-[#d6b47c]/30 transition-colors"
+              aria-label={t('blog.searchPlaceholder')}
             />
+            <Sparkles className="blog-search-sparkle w-4 h-4" />
           </div>
-        </div>
+          <div className="blog-category-list" aria-label="Blog categories">
+            {CATEGORIES.map((cat, index) => (
+              <button
+                key={cat.slug}
+                onClick={() => handleCategoryChange(cat.slug)}
+                className={activeCategory === cat.slug ? 'is-active' : ''}
+              >
+                <span className="blog-category-index">0{index + 1}</span>{t(cat.labelKey)}
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
 
-        {/* Categories */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.slug}
-              onClick={() => handleCategoryChange(cat.slug)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                activeCategory === cat.slug
-                  ? 'bg-[#d6b47c]/10 border border-[#d6b47c]/30 text-[#d6b47c]'
-                  : 'bg-white/[0.02] border border-white/5 text-[#9aa3b2] hover:border-white/10'
-              }`}
-            >
-              {t(cat.labelKey)}
-            </button>
-          ))}
-        </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Loading State */}
         {loading ? (
@@ -211,7 +239,7 @@ const Blog = () => {
             {featuredPost && activeCategory === 'Barchasi' && !searchQuery && (
               <Link
                 to={`/blog/${featuredPost.slug}`}
-                className="block mb-10 rounded-[2rem] overflow-hidden border border-white/5 bg-[#11131e]/50 hover:border-white/10 transition-all group"
+                className="blog-featured blog-reveal block mb-14 group"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   <div className="relative aspect-[16/10] lg:aspect-auto overflow-hidden">
@@ -220,13 +248,13 @@ const Blog = () => {
                       alt={featuredPost.title?.uz || featuredPost.title?.en || ''}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1.5 rounded-full bg-[#d6b47c] text-black text-xs font-semibold uppercase tracking-wider">
+                    <div className="absolute top-5 left-5">
+                      <span className="blog-featured-badge">
                         {t('blog.featured')}
                       </span>
                     </div>
                   </div>
-                  <div className="p-8 flex flex-col justify-center">
+                  <div className="blog-featured-copy p-8 flex flex-col justify-center">
                     <div className="flex items-center gap-3 mb-4">
                       <span className="px-3 py-1 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[#d6b47c] text-xs font-medium">
                         {featuredPost.category}
@@ -240,7 +268,7 @@ const Blog = () => {
                         <span className="text-xs">{featuredPost.readTime} {t('blog.minRead')}</span>
                       </div>
                     </div>
-                    <h2 className="text-2xl font-semibold text-[#f4f1eb] mb-3 group-hover:text-[#d6b47c] transition-colors">
+                    <h2 className="blog-featured-title text-2xl font-semibold text-[#f4f1eb] mb-3 group-hover:text-[#d6b47c] transition-colors">
                       {featuredPost.title?.uz || featuredPost.title?.en || ''}
                     </h2>
                     <p className="text-sm text-[#9aa3b2] leading-relaxed mb-6">
@@ -256,12 +284,12 @@ const Blog = () => {
 
             {/* Blog Grid */}
             {gridPosts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="blog-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {gridPosts.map((post) => (
                   <Link
                     key={post._id}
                     to={`/blog/${post.slug}`}
-                    className="group rounded-[2rem] overflow-hidden border border-white/5 bg-[#11131e]/50 hover:border-white/10 transition-all"
+                    className="blog-card blog-reveal group"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
@@ -298,10 +326,11 @@ const Blog = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20">
-                <BookOpen className="w-12 h-12 text-[#3f4658] mx-auto mb-4" />
-                <h3 className="text-xl text-[#f4f1eb] mb-2">{t('blog.noArticlesFound')}</h3>
-                <p className="text-sm text-[#9aa3b2]">{t('blog.noArticlesHint')}</p>
+              <div className="blog-empty blog-reveal text-center py-20">
+                <div className="blog-empty-icon"><BookOpen className="w-6 h-6" /></div>
+                <p className="blog-empty-kicker">LUXX JOURNAL</p>
+                <h3>{t('blog.noArticlesFound')}</h3>
+                <p>{t('blog.noArticlesHint')}</p>
               </div>
             )}
 

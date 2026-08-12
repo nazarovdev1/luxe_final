@@ -9,7 +9,7 @@ import SEO from '../components/SEO';
 const BlogPost = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [blog, setBlog] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,16 +98,18 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-[#07080c] pt-28 pb-16">
       <SEO
-        title={blog?.title?.uz || blog?.title?.en || blog?.title?.ru || 'Blog post | Luxx.uz'}
-        description={blog?.excerpt?.uz || blog?.excerpt?.en || blog?.excerpt?.ru || `${blog?.title?.uz || ''} — Luxx.uz blogi`}
+        title={blog?.seoTitle || blog?.title?.[language] || blog?.title?.uz || blog?.title?.en || blog?.title?.ru || 'Moda blogi'}
+        description={blog?.seoDescription || blog?.excerpt?.[language] || blog?.excerpt?.uz || blog?.excerpt?.en || blog?.excerpt?.ru || `${blog?.title?.uz || ''} — Luxx.uz blogi`}
         image={blog?.coverImage || ''}
         canonicalPath={`/blog/${slug}`}
+        type="article"
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',
-          headline: blog?.title?.uz || blog?.title?.en || '',
-          description: blog?.excerpt?.uz || blog?.excerpt?.en || '',
-          image: blog?.coverImage || '',
+          headline: blog?.seoTitle || blog?.title?.[language] || blog?.title?.uz || blog?.title?.en || '',
+          description: blog?.seoDescription || blog?.excerpt?.[language] || blog?.excerpt?.uz || blog?.excerpt?.en || '',
+          image: blog?.coverImage ? [blog.coverImage] : undefined,
+          inLanguage: language,
           datePublished: blog?.publishedAt || blog?.createdAt || '',
           dateModified: blog?.updatedAt || blog?.publishedAt || blog?.createdAt || '',
           author: {

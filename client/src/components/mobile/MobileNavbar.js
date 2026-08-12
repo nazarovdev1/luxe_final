@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Compass, Globe, Home, ShoppingBag, ShoppingCart, User } from 'lucide-react';
+import { Globe, Home, Navigation, ShoppingBag, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -23,6 +23,25 @@ const MobileNavbar = () => {
   const { t, language, setLanguage, availableLanguages } = useLanguage();
   const { pathname } = useLocation();
   const [langOpen, setLangOpen] = useState(false);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return undefined;
+
+    const syncKeyboardState = () => {
+      const heightGap = window.innerHeight - viewport.height;
+      setKeyboardOpen(heightGap > 120);
+    };
+
+    syncKeyboardState();
+    viewport.addEventListener('resize', syncKeyboardState);
+    viewport.addEventListener('scroll', syncKeyboardState);
+    return () => {
+      viewport.removeEventListener('resize', syncKeyboardState);
+      viewport.removeEventListener('scroll', syncKeyboardState);
+    };
+  }, []);
 
   const navItems = [
     {
@@ -43,7 +62,7 @@ const MobileNavbar = () => {
       id: 'explore',
       path: '/mobile/events',
       matchPrefixes: MOBILE_NAV_ROUTE_GROUPS.explore,
-      icon: Compass,
+      icon: Navigation,
       label: t('mobileNav.explore', 'Kashf et'),
     },
     {
@@ -69,7 +88,7 @@ const MobileNavbar = () => {
   const currentLang = (availableLanguages || LANGS).find((l) => l.code === language) || { code: language, label: (language || 'uz').toUpperCase() };
 
   return (
-    <nav className="mobile-bottom-nav border-none" aria-label={t('mobileNav.ariaLabel', 'Asosiy mobil navigatsiya')}>
+    <nav className={`mobile-bottom-nav border-none${keyboardOpen ? ' mobile-bottom-nav--keyboard-hidden' : ''}`} aria-label={t('mobileNav.ariaLabel', 'Asosiy mobil navigatsiya')}>
       <GlassSurface
         width="100%"
         height="auto"
@@ -121,22 +140,19 @@ const MobileNavbar = () => {
           );
         })}
 
-        {/* Language switcher */}
-        <div className="mobile-bottom-nav__item mobile-bottom-nav__lang">
+      </GlassSurface>
+
+      {/* Language control lives outside the primary navigation */}
+        <div className={`mobile-bottom-nav__language-orb${langOpen ? ' mobile-bottom-nav__language-orb--open' : ''}`}>
           <button
             type="button"
             onClick={() => setLangOpen((v) => !v)}
             aria-label={t('mobileNav.changeLanguage')}
             title={t('mobileNav.changeLanguage')}
-            className={`mobile-bottom-nav__content mobile-bottom-nav__lang-btn${langOpen ? ' mobile-bottom-nav__lang-btn--active' : ''}`}
+            className="mobile-bottom-nav__language-trigger"
           >
-            <span className="mobile-bottom-nav__content">
-              <span className="mobile-bottom-nav__icon-wrap">
-                <Globe className="mobile-bottom-nav__icon" aria-hidden="true" />
-                <span className="mobile-bottom-nav__active-dot mb-[6px]" aria-hidden="true" />
-              </span>
-              <span className="mobile-bottom-nav__label">{currentLang.label}</span>
-            </span>
+            <Globe className="mobile-bottom-nav__language-icon" aria-hidden="true" />
+            <span>{currentLang.label}</span>
           </button>
           {langOpen && (
             <div className="mobile-bottom-nav__lang-menu" role="menu">
@@ -158,7 +174,6 @@ const MobileNavbar = () => {
             </div>
           )}
         </div>
-      </GlassSurface>
     </nav>
   );
 };

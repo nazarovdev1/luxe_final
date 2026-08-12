@@ -6,10 +6,6 @@ const SITE_NAME = 'Luxx.uz';
 const SITE_URL = 'https://luxx.uz';
 const SITE_LOGO = `${SITE_URL}/logoweb2.png`;
 
-const DEFAULT_TITLE = '';
-const DEFAULT_DESCRIPTION = '';
-const DEFAULT_KEYWORDS = '';
-
 const toAbsoluteUrl = (value) => {
     if (!value) return SITE_LOGO;
     if (value.startsWith('http://') || value.startsWith('https://')) return value;
@@ -36,14 +32,6 @@ const buildCanonicalUrl = (pathCandidate) => {
     return path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}`;
 };
 
-const CATEGORY_KEYWORDS = [
-    'Luxury kiyimlar',
-    'Женская одежда',
-    'Paltolar',
-    'Пальто Ташкент',
-    'Stil obrazlar',
-];
-
 const LOCALE_MAP = {
   uz: 'uz_UZ',
   ru: 'ru_RU',
@@ -53,11 +41,11 @@ const LOCALE_MAP = {
 const SEO = ({
     title,
     description,
-    keywords,
     image,
     url,
     canonicalPath,
     noIndex = false,
+    type = 'website',
     structuredData,
     breadcrumbSteps = [], // New prop for breadcrumbs
 }) => {
@@ -65,10 +53,16 @@ const SEO = ({
     const locale = LOCALE_MAP[language] || 'uz_UZ';
     const defaultTitle = t('seo.defaultTitle');
     const defaultDescription = t('seo.defaultDescription');
-    const defaultKeywords = t('seo.defaultKeywords');
-    const pageTitle = title ? t('seo.pageTitleTemplate', { title }) : defaultTitle;
+    const normalizedTitle = typeof title === 'string'
+        ? title
+            .replace(/\s*(?:luxx\.uz|luxe)\s*$/i, '')
+            .replace(/\s*[|\-\u2014]\s*$/, '')
+            .trim()
+        : title;
+    const pageTitle = normalizedTitle
+        ? t('seo.pageTitleTemplate', { title: normalizedTitle })
+        : defaultTitle;
     const pageDescription = description || defaultDescription;
-    const pageKeywords = keywords || defaultKeywords;
     const pageImage = toAbsoluteUrl(image);
 
     const runtimePath =
@@ -79,50 +73,9 @@ const SEO = ({
     const shouldNoIndex = Boolean(noIndex || isMobilePath);
     const robots = shouldNoIndex ? 'noindex, nofollow' : 'index, follow';
 
-    const schemas = [
-        {
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: 'Luxx.uz',
-            alternateName: 'Luxe',
-            url: SITE_URL,
-            logo: SITE_LOGO,
-            sameAs: ['https://www.instagram.com/luxx.uz_/'],
-            contactPoint: {
-                '@type': 'ContactPoint',
-                telephone: '+998884299969',
-                contactType: 'customer service',
-                areaServed: 'UZ',
-                availableLanguage: ['uz', 'ru'],
-            },
-        },
-        {
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'Luxx.uz',
-            url: SITE_URL,
-            inLanguage: 'uz',
-            potentialAction: {
-                '@type': 'SearchAction',
-                target: `${SITE_URL}/products?search={search_term_string}`,
-                'query-input': 'required name=search_term_string',
-            },
-        },
-        {
-            '@context': 'https://schema.org',
-            '@type': 'ClothingStore',
-            name: 'Luxx.uz',
-            image: SITE_LOGO,
-            url: SITE_URL,
-            telephone: '+998884299969',
-            address: {
-                '@type': 'PostalAddress',
-                addressLocality: 'Toshkent',
-                addressCountry: 'UZ',
-            },
-            keywords: CATEGORY_KEYWORDS.join(', '),
-        }
-    ];
+    // Site-wide Organization/WebSite data lives in the static HTML shell.
+    // Page-level schemas stay here to avoid duplicate entities after hydration.
+    const schemas = [];
 
     // Add BreadcrumbList if steps provided
     if (breadcrumbSteps && breadcrumbSteps.length > 0) {
@@ -155,21 +108,25 @@ const SEO = ({
     }
 
     return (
-        <Helmet>
+        <Helmet htmlAttributes={{ lang: language }}>
             <title>{pageTitle}</title>
             <meta name="description" content={pageDescription} />
-            <meta name="keywords" content={pageKeywords} />
             <meta name="robots" content={robots} />
             <meta name="googlebot" content={robots} />
             <link rel="canonical" href={canonical} />
 
-            <meta property="og:type" content="website" />
+            <meta property="og:type" content={type} />
             <meta property="og:site_name" content={SITE_NAME} />
             <meta property="og:url" content={canonical} />
             <meta property="og:title" content={pageTitle} />
             <meta property="og:description" content={pageDescription} />
             <meta property="og:image" content={pageImage} />
             <meta property="og:locale" content={locale} />
+            {Object.values(LOCALE_MAP)
+                .filter((alternateLocale) => alternateLocale !== locale)
+                .map((alternateLocale) => (
+                    <meta key={alternateLocale} property="og:locale:alternate" content={alternateLocale} />
+                ))}
 
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:url" content={canonical} />

@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from './SEO';
 import TelegramLoginButton from './TelegramLoginButton';
+import './mobile/mobileAuth.css';
 
 /* ─── floating‑particle canvas ─────────────────────────────────── */
 const ParticleCanvas = () => {
@@ -102,7 +103,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#060a14]">
+    <div className={`relative min-h-screen overflow-hidden bg-[#060a14] ${isMobileRoute ? 'mobile-auth-shell mobile-auth-shell--login' : ''}`}>
       <SEO title={t('auth.loginTitle')} noIndex={true} />
 
       {/* ── inline keyframes ─────────────────────────────────────── */}
@@ -198,7 +199,7 @@ const LoginForm = () => {
             </section>
 
             {/* ─── RIGHT — login form ──────────────────────────────── */}
-            <section className="relative flex flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-16 xl:px-24">
+            <section className="mobile-auth-panel relative flex flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-16 xl:px-24">
               
               {/* ─── Back Button ──────────────────────────────── */}
               <div className={`absolute left-4 top-4 lg:left-10 lg:top-10 z-[100] ${mounted ? 'anim-fade-up' : 'opacity-0'}`}>
@@ -240,7 +241,7 @@ const LoginForm = () => {
                 </div>
 
                 {/* mobile WOW header */}
-                <div className="lg:hidden text-center mb-10 mt-4 relative">
+                <div className="mobile-auth-header lg:hidden text-center mb-10 mt-4 relative">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#d6b47c]/10 rounded-full blur-[40px] pointer-events-none"></div>
                   <h1 className="relative text-4xl font-brilliant tracking-wide bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(214,180,124,0.25)]">
                     {t('auth.loginTitle')}
@@ -251,7 +252,7 @@ const LoginForm = () => {
                 </div>
 
                 {/* form */}
-                <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+                <form onSubmit={handleSubmit} className="mobile-auth-form mt-8 flex flex-col gap-5">
                   {/* identifier */}
                   <div className={`anim-fade-up delay-2 ${mounted ? '' : 'opacity-0'}`}>
                     <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">

@@ -72,6 +72,8 @@ export const getActiveMobileNavId = (
 export const shouldHideMobileBottomNav = (pathname = '') => {
   const normalizedPathname = normalizePathname(pathname);
 
+  // Authentication has its own focused, keyboard-safe mobile layout.
+  if (normalizedPathname === '/mobile/login' || normalizedPathname === '/mobile/register') return true;
   if (normalizedPathname === '/mobile/checkout') return true;
   if (normalizedPathname === '/mobile/reels' || normalizedPathname.startsWith('/mobile/reels/')) return true;
   if (normalizedPathname.startsWith('/mobile/product/')) return true;

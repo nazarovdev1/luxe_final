@@ -1,0 +1,110 @@
+/* Mobile auth: a quiet atelier card over the existing particle canvas. */
+.mobile-auth-shell {
+  background:
+    radial-gradient(circle at 50% 13%, rgba(226, 187, 105, .14), transparent 26%),
+    linear-gradient(160deg, #0b0d14 0%, #070910 56%, #0d0a13 100%) !important;
+}
+
+@media (max-width: 1023px) {
+  .mobile-auth-shell .mobile-auth-panel {
+    min-height: 100svh;
+    justify-content: flex-start;
+    padding: 78px 20px 42px;
+  }
+
+  .mobile-auth-shell .mobile-auth-panel > .absolute.left-4 {
+    top: 18px;
+    left: 20px;
+  }
+
+  .mobile-auth-shell .mobile-auth-panel > .absolute.left-4 a {
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    padding: 0;
+    border-color: rgba(226, 187, 105, .35);
+    background: rgba(12, 14, 21, .66);
+  }
+
+  .mobile-auth-shell .mobile-auth-panel > .absolute.left-4 a svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .mobile-auth-shell .mobile-auth-panel > div:last-child {
+    position: relative;
+    z-index: 2;
+    max-width: 430px;
+  }
+
+  .mobile-auth-shell .mobile-auth-header {
+    width: 100%;
+    margin: 6px 0 32px;
+    text-align: left;
+  }
+
+  .mobile-auth-shell .mobile-auth-header::before {
+    content: 'LUXX ATELIER  /  PRIVATE ACCESS';
+    display: block;
+    margin-bottom: 18px;
+    color: #d8b56d;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .22em;
+  }
+
+  .mobile-auth-shell .mobile-auth-header > div:first-child {
+    width: 190px;
+    height: 190px;
+    top: 55%;
+    left: 37%;
+    background: rgba(214, 180, 124, .12);
+    filter: blur(58px);
+  }
+
+  .mobile-auth-shell .mobile-auth-header h1 {
+    max-width: 290px;
+    color: #f6f1e8;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(3.1rem, 14vw, 4.8rem);
+    font-weight: 400;
+    letter-spacing: -.07em;
+    line-height: .86;
+    text-align: left;
+    text-shadow: 0 10px 32px rgba(0, 0, 0, .38);
+  }
+
+  .mobile-auth-shell .mobile-auth-header h1::after {
+    content: '';
+    display: block;
+    width: 58px;
+    height: 1px;
+    margin-top: 21px;
+    background: linear-gradient(90deg, #e2bb69, transparent);
+  }
+
+  .mobile-auth-shell .mobile-auth-header > div:last-child { display: none; }
+  .mobile-auth-shell .mobile-auth-form { width: 100%; margin-top: 0; gap: 17px; }
+  .mobile-auth-shell .mobile-auth-form > div > label,
+  .mobile-auth-shell .mobile-auth-form label { margin: 0 0 7px 4px; color: rgba(236, 225, 202, .58); font-size: 9px; letter-spacing: .2em; }
+  .mobile-auth-shell .mobile-auth-form .group.relative { border-color: rgba(255,255,255,.1); border-radius: 13px; background: rgba(255,255,255,.035); box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+  .mobile-auth-shell .mobile-auth-form .group.relative:focus-within { border-color: rgba(226,187,105,.72); background: rgba(226,187,105,.055); box-shadow: 0 0 0 3px rgba(226,187,105,.08), 0 14px 28px rgba(0,0,0,.2); }
+  .mobile-auth-shell .mobile-auth-form .group.relative > div { padding: 14px 15px; }
+  .mobile-auth-shell .mobile-auth-form input { color: #f6f1e8; font-size: 15px; letter-spacing: .04em; }
+  .mobile-auth-shell .mobile-auth-form input::placeholder { color: rgba(180,190,210,.42); }
+  .mobile-auth-shell .mobile-auth-form .mt-6 button[type='submit'] { min-height: 56px; border-radius: 13px; font-size: 11px; letter-spacing: .25em; box-shadow: 0 17px 32px rgba(214,180,124,.18); }
+  .mobile-auth-shell .mobile-auth-form + div { margin-top: 22px; }
+  .mobile-auth-shell .mobile-auth-panel .text-center { color: rgba(180,190,210,.58); }
+  .mobile-auth-shell .mobile-auth-panel a { color: #e3bd72; }
+}
+
+@media (max-width: 390px) {
+  .mobile-auth-shell .mobile-auth-panel { padding-inline: 17px; }
+  .mobile-auth-shell .mobile-auth-header { margin-bottom: 27px; }
+  .mobile-auth-shell .mobile-auth-header h1 { font-size: 3.2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-auth-shell .anim-fade-up,
+  .mobile-auth-shell .anim-fade-in { animation: none !important; opacity: 1 !important; }
+}

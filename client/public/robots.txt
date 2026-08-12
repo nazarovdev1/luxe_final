@@ -6,6 +6,10 @@ Disallow: /register
 Disallow: /checkout
 Disallow: /cart
 Disallow: /profile
+Disallow: /orders
+Disallow: /lookbook-builder
+Disallow: /mobile/
+Disallow: /api/
 Disallow: /mobile/admin
 Disallow: /mobile/checkout
 Disallow: /mobile/cart
@@ -14,12 +18,22 @@ Disallow: /mobile/profile
 User-agent: Googlebot
 Allow: /
 Disallow: /admin
+Disallow: /login
+Disallow: /register
 Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /mobile/
+Disallow: /api/
 
 User-agent: Yandex
 Allow: /
 Disallow: /admin
-Clean-param: token /api/imagekit-auth
-
-Crawl-delay: 1
+Disallow: /login
+Disallow: /register
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /mobile/
+Disallow: /api/
 Sitemap: https://luxx.uz/sitemap.xml

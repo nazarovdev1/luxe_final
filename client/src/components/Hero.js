@@ -52,7 +52,15 @@ const Hero = () => {
       <div className="luxx-hero-stage">
         <div className="luxx-hero-image-shell" aria-hidden="true">
           <div className="luxx-hero-image-fill" />
-          <img className="luxx-hero-image" src="/heroimg.jpg" alt="" />
+          <img
+            className="luxx-hero-image"
+            src="/heroimg.jpg"
+            alt=""
+            width="2304"
+            height="1536"
+            fetchPriority="high"
+            decoding="async"
+          />
           <div className="luxx-hero-image-shade" />
           <div className="luxx-hero-glow" />
         </div>
