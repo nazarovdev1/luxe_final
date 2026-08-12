@@ -42,6 +42,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
+    cssCodeSplit: false,
   },
   test: {
     globals: true,

@@ -31,7 +31,7 @@
   <meta name="language" content="uz" />
 
   <script>
-    // Suppress ResizeObserver loop errors which are benign but trigger overlays in dev mode
+    // Suppress ResizeObserver loop errors & auto-recover from deployment chunk loading errors
     (function() {
       const isResizeObserverError = (err) => {
         if (!err) return false;
@@ -42,19 +42,47 @@
         );
       };
 
+      const isChunkLoadError = (err) => {
+        if (!err) return false;
+        const msg = typeof err === 'string' ? err : (err.message || (err.reason && err.reason.message) || '');
+        return (
+          msg.includes('Unable to preload CSS') ||
+          msg.includes('Failed to fetch dynamically imported module') ||
+          msg.includes('error loading dynamically imported module') ||
+          msg.includes('Importing a module script failed')
+        );
+      };
+
+      const handleChunkError = () => {
+        const lastReload = sessionStorage.getItem('luxe_chunk_reload');
+        const now = Date.now();
+        if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+          sessionStorage.setItem('luxe_chunk_reload', now.toString());
+          window.location.reload();
+        }
+      };
+
+      window.addEventListener('vite:preload-error', function(event) {
+        event.preventDefault();
+        handleChunkError();
+      });
+
       const originalError = console.error;
       console.error = function(...args) {
-        if (args[0] && isResizeObserverError(args[0])) return;
+        if (args[0] && (isResizeObserverError(args[0]) || isChunkLoadError(args[0]))) return;
         originalError.apply(console, args);
       };
 
       const originalWarn = console.warn;
       console.warn = function(...args) {
-        if (args[0] && isResizeObserverError(args[0])) return;
+        if (args[0] && (isResizeObserverError(args[0]) || isChunkLoadError(args[0]))) return;
         originalWarn.apply(console, args);
       };
 
       window.addEventListener('error', function(e) {
+        if (isChunkLoadError(e.error) || isChunkLoadError(e.message) || (e.target && e.target.tagName === 'LINK' && e.target.rel === 'preload')) {
+          handleChunkError();
+        }
         if (isResizeObserverError(e.message) || isResizeObserverError(e.error)) {
           e.stopImmediatePropagation();
           e.preventDefault();
@@ -62,6 +90,9 @@
       }, true);
 
       window.addEventListener('unhandledrejection', function(e) {
+        if (isChunkLoadError(e.reason)) {
+          handleChunkError();
+        }
         if (isResizeObserverError(e.reason)) {
           e.stopImmediatePropagation();
           e.preventDefault();
