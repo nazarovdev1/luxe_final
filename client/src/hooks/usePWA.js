@@ -37,7 +37,17 @@ export function usePWA() {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
+    let handleControllerChange
+
     if ('serviceWorker' in navigator) {
+      handleControllerChange = () => {
+        // A newly activated worker has just cleared the old app-shell cache.
+        // Reload once so the current tab also receives the matching build.
+        window.location.reload()
+      }
+
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
+
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
@@ -61,6 +71,9 @@ export function usePWA() {
       window.removeEventListener('beforeinstallprompt', handler)
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
+      if (handleControllerChange) {
+        navigator.serviceWorker?.removeEventListener('controllerchange', handleControllerChange)
+      }
     }
   }, [])
 

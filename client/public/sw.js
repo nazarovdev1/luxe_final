@@ -1,7 +1,10 @@
-const CACHE_NAME = 'luxe-v5'
-const STATIC_CACHE = 'luxe-static-v5'
-const API_CACHE = 'luxe-api-v5'
-const IMAGE_CACHE = 'luxe-images-v5'
+// Never cache Vite's hashed JS/CSS bundles. A new deployment removes the
+// previous hashes, so serving an old entry bundle here would make lazy routes
+// request CSS files that no longer exist.
+const CACHE_NAME = 'luxe-v6'
+const STATIC_CACHE = 'luxe-static-v6'
+const API_CACHE = 'luxe-api-v6'
+const IMAGE_CACHE = 'luxe-images-v6'
 
 const STATIC_ASSETS = [
   '/',
@@ -26,15 +29,18 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME && name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
           .map((name) => caches.delete(name))
-      )
-    })
+        )
+      })
+      // clients.claim() is only legal after this worker becomes active.
+      // Keeping it inside waitUntil also makes activation deterministic.
+      .then(() => self.clients.claim())
   )
-  self.clients.claim()
 })
 
 self.addEventListener('fetch', (event) => {
@@ -65,6 +71,17 @@ self.addEventListener('fetch', (event) => {
   // 4. Skip ALL cross-origin requests — ImageKit, Google, Firebase, CDN etc.
   //    This is essential for iOS PWA where cross-origin video/media fetches through SW get corrupted.
   if (url.origin !== self.location.origin) {
+    return
+  }
+
+  // Deployment-critical files must always come from the network. In
+  // particular, lazy-loaded route CSS has a content hash in its filename.
+  // Caching an old entry chunk can otherwise make it preload a deleted hash.
+  if (
+    url.pathname === '/sw.js' ||
+    url.pathname === '/index.html' ||
+    url.pathname.startsWith('/assets/')
+  ) {
     return
   }
 
