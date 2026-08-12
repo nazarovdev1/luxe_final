@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react'
 
+// Changing this query forces browsers still controlled by an older worker to
+// fetch a fresh worker script instead of receiving its cached `/sw.js` copy.
+const SERVICE_WORKER_URL = '/sw.js?v=2026-08-12-2'
+
 export function usePWA() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [isInstallable, setIsInstallable] = useState(false)
@@ -49,7 +53,7 @@ export function usePWA() {
       navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
 
       navigator.serviceWorker
-        .register('/sw.js')
+        .register(SERVICE_WORKER_URL)
         .then((registration) => {
           setSwRegistration(registration)
 

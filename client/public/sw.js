@@ -1,10 +1,10 @@
 // Never cache Vite's hashed JS/CSS bundles. A new deployment removes the
 // previous hashes, so serving an old entry bundle here would make lazy routes
 // request CSS files that no longer exist.
-const CACHE_NAME = 'luxe-v6'
-const STATIC_CACHE = 'luxe-static-v6'
-const API_CACHE = 'luxe-api-v6'
-const IMAGE_CACHE = 'luxe-images-v6'
+const CACHE_NAME = 'luxe-v7'
+const STATIC_CACHE = 'luxe-static-v7'
+const API_CACHE = 'luxe-api-v7'
+const IMAGE_CACHE = 'luxe-images-v7'
 
 const STATIC_ASSETS = [
   '/',
@@ -33,7 +33,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
+          .filter((name) => name.startsWith('luxe-') && name !== CACHE_NAME && name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
           .map((name) => caches.delete(name))
         )
       })
@@ -74,9 +74,8 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Deployment-critical files must always come from the network. In
-  // particular, lazy-loaded route CSS has a content hash in its filename.
-  // Caching an old entry chunk can otherwise make it preload a deleted hash.
+  // Deployment-critical files must never be handled by this worker. Vite
+  // filenames contain a content hash, and a previous deploy can remove them.
   if (
     url.pathname === '/sw.js' ||
     url.pathname === '/index.html' ||
@@ -105,14 +104,9 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          const cloned = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned))
-          return response
-        })
         .catch(() => {
           return caches.match(request).then((cached) => {
-            return cached || caches.match('/')
+            return cached || caches.match('/').then((shell) => shell || new Response('Offline', { status: 503 }))
           })
         })
     )
@@ -124,7 +118,9 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  event.respondWith(staleWhileRevalidate(request, CACHE_NAME))
+  // Do not provide a generic cache fallback. Returning undefined from a fetch
+  // handler produces a network error and breaks lazy-loaded route CSS.
+  return
 })
 
 async function cacheFirst(request, cacheName, maxAge) {
@@ -165,22 +161,6 @@ async function networkFirst(request, cacheName, maxAge) {
       status: 200
     })
   }
-}
-
-async function staleWhileRevalidate(request, cacheName) {
-  const cache = await caches.open(cacheName)
-  const cached = await cache.match(request)
-
-  const fetchPromise = fetch(request)
-    .then((response) => {
-      if (response.ok) {
-        cache.put(request, response.clone())
-      }
-      return response
-    })
-    .catch(() => cached)
-
-  return cached || fetchPromise
 }
 
 self.addEventListener('message', (event) => {
