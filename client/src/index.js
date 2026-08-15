@@ -8,6 +8,13 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
+// Prevent iOS Safari pinch zoom and multi-finger zoom
+if (typeof window !== 'undefined') {
+  document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+  document.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+}
+
 // Suppress ResizeObserver loop errors which are benign but trigger overlays in dev mode
 const isResizeObserverError = (err) => {
   if (!err) return false;

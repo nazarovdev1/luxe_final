@@ -132,19 +132,42 @@ const PriceDropAlert = ({ product }) => {
     }
   }, [prodId, isAuthenticated, user]);
 
-  // Lock background body scroll when modal is open
+  // Complete iOS Safari + Android scroll lock
   useEffect(() => {
     if (!isOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
-    const originalTouchAction = document.body.style.touchAction;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    const originalStyles = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+      touchAction: document.body.style.touchAction,
+    };
 
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     document.body.style.touchAction = 'none';
 
+    const handleTouchMove = (e) => {
+      if (!e.target.closest('[data-modal-scroll]')) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
     return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.touchAction = originalTouchAction;
+      document.body.style.overflow = originalStyles.overflow;
+      document.body.style.position = originalStyles.position;
+      document.body.style.top = originalStyles.top;
+      document.body.style.width = originalStyles.width;
+      document.body.style.touchAction = originalStyles.touchAction;
+      document.removeEventListener('touchmove', handleTouchMove);
+      if (typeof window.scrollTo === 'function') {
+        window.scrollTo(0, scrollY);
+      }
     };
   }, [isOpen]);
 
@@ -253,9 +276,12 @@ const PriceDropAlert = ({ product }) => {
     { pct: 0.30, label: '-30%' },
   ];
 
+  const methodLabel = notifyMethod === 'telegram' ? 'Telegram' : notifyMethod === 'sms' ? 'SMS' : 'Push';
+  const targetFormatted = formatSum(targetPrice || suggestedTarget);
+
   const modalContent = isOpen ? (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="pda-modal-title"
@@ -269,18 +295,18 @@ const PriceDropAlert = ({ product }) => {
 
       {/* Centered Luxury Card */}
       <div
-        className="relative z-10 w-full max-w-[440px] max-h-[92svh] overflow-y-auto rounded-none border border-[#d5ae68]/30 bg-[#0d0c0a] text-[#f7f2ea] shadow-[0_25px_70px_rgba(0,0,0,0.92)] scrollbar-none"
+        className="relative z-10 w-full max-w-[420px] max-h-[90svh] flex flex-col rounded-none border border-[#d5ae68]/30 bg-[#0d0c0a] text-[#f7f2ea] shadow-[0_25px_70px_rgba(0,0,0,0.92)] overflow-hidden"
         style={{
           backgroundImage:
             'radial-gradient(circle at 90% 0%, rgba(213,174,104,0.12), transparent 38%), radial-gradient(circle at 10% 100%, rgba(130,90,45,0.08), transparent 45%)',
         }}
       >
         {/* Top Gold Accent Line */}
-        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#d5ae68] to-transparent" />
+        <div className="h-[2px] w-full flex-none bg-gradient-to-r from-transparent via-[#d5ae68] to-transparent" />
 
         {/* Header */}
-        <div className="flex items-start justify-between p-5 pb-4 border-b border-white/10">
-          <div>
+        <div className="flex items-start justify-between p-5 pb-4 border-b border-white/10 flex-none">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-block w-3.5 h-[1px] bg-[#d5ae68]" />
               <span className="text-[8px] font-black uppercase tracking-[0.24em] text-[#d5ae68]">
@@ -289,7 +315,7 @@ const PriceDropAlert = ({ product }) => {
             </div>
             <h2
               id="pda-modal-title"
-              className="text-2xl sm:text-3xl font-serif text-[#f7f2ea] tracking-tight leading-none"
+              className="text-xl sm:text-2xl font-serif text-[#f7f2ea] tracking-tight leading-tight"
             >
               Narx tushganda <em className="italic text-[#d5ae68] font-serif">xabar oling</em>
             </h2>
@@ -298,237 +324,244 @@ const PriceDropAlert = ({ product }) => {
             type="button"
             onClick={() => setIsOpen(false)}
             aria-label="Yopish"
-            className="flex h-8 w-8 items-center justify-center border border-white/15 text-white/70 hover:border-[#d5ae68] hover:text-[#d5ae68] transition-colors"
+            className="flex h-8 w-8 items-center justify-center flex-shrink-0 border border-white/15 text-white/70 hover:border-[#d5ae68] hover:text-[#d5ae68] transition-colors ml-3"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {submitted ? (
-          /* Success Screen */
-          <div className="p-6 text-center">
-            <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[#d5ae68]/40 bg-[#d5ae68]/10 text-[#d5ae68]">
-              <CheckCircle2 className="w-8 h-8 stroke-[1.5]" />
-              <span className="absolute inset-0 rounded-full animate-ping bg-[#d5ae68]/15 pointer-events-none" />
-            </div>
-
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#d5ae68]">
-              {t('priceDropAlert.activated', 'Kuzatuv faollashtirildi')}
-            </span>
-            <h3 className="mt-1.5 text-xl font-serif text-[#f7f2ea]">
-              {product?.name || 'Mahsulot'}
-            </h3>
-            <p className="mt-2 text-xs text-[#b8b3a8] leading-relaxed max-w-xs mx-auto">
-              {t(
-                'priceDropAlert.alertDesc',
-                `Mahsulot narxi ${formatSum(targetPrice || suggestedTarget)} ga tushishi bilan sizga darhol xabar yuboriladi.`
-              )}
-            </p>
-
-            {/* Summary Box */}
-            <div className="mt-5 border border-white/10 bg-white/[0.02] p-4 text-left">
-              <div className="flex justify-between items-center text-xs pb-2 border-b border-white/5">
-                <span className="text-white/50">{t('priceDropAlert.currentPrice', 'Hozirgi narx')}:</span>
-                <span className="font-semibold text-white/80">{formatSum(currentPrice)}</span>
+        {/* Modal Scrollable Body */}
+        <div
+          data-modal-scroll="true"
+          className="overflow-y-auto overscroll-contain flex-1 p-5 scrollbar-none"
+        >
+          {submitted ? (
+            /* Success Screen */
+            <div className="text-center py-2">
+              <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[#d5ae68]/40 bg-[#d5ae68]/10 text-[#d5ae68]">
+                <CheckCircle2 className="w-8 h-8 stroke-[1.5]" />
+                <span className="absolute inset-0 rounded-full animate-ping bg-[#d5ae68]/15 pointer-events-none" />
               </div>
-              <div className="flex justify-between items-center text-xs pt-2">
-                <span className="text-[#d5ae68] font-bold">{t('priceDropAlert.targetPrice', 'Kutilayotgan narx')}:</span>
-                <span className="font-serif text-base font-semibold text-[#d5ae68]">
-                  {formatSum(targetPrice || suggestedTarget)}
-                </span>
-              </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="mt-6 w-full py-3.5 border border-[#d5ae68] bg-[#d5ae68] text-[#0d0c0a] text-xs font-black uppercase tracking-[0.18em] hover:bg-[#e4be77] transition-colors"
-            >
-              {t('priceDropAlert.understand', 'Tushundim')}
-            </button>
-          </div>
-        ) : (
-          /* Form */
-          <form onSubmit={handleSubmit} className="p-5 space-y-5">
-            {/* Product Summary Row */}
-            <div className="flex items-center gap-3 border border-white/10 bg-white/[0.02] p-3">
-              <img
-                src={getProductImage()}
-                alt={product?.name || ''}
-                className="w-12 h-14 object-cover border border-white/10 flex-none"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-serif text-[#f7f2ea] truncate">{product?.name}</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-[10px] uppercase tracking-wider text-white/50">
-                    {t('priceDropAlert.currentPrice', 'Hozirgi narx')}:
-                  </span>
-                  <span className="text-xs font-semibold text-[#d5ae68]">
-                    {formatSum(currentPrice)}
+              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#d5ae68]">
+                {t('priceDropAlert.activated', 'Kuzatuv faollashtirildi')}
+              </span>
+              <h3 className="mt-1.5 text-lg sm:text-xl font-serif text-[#f7f2ea]">
+                {product?.name || 'Mahsulot'}
+              </h3>
+              <p className="mt-2 text-xs text-[#b8b3a8] leading-relaxed max-w-xs mx-auto">
+                {t('priceDropAlert.alertDesc', {
+                  price: targetFormatted,
+                  method: methodLabel,
+                  defaultValue: `Mahsulot narxi ${targetFormatted} ga tushganda sizga ${methodLabel} orqali xabar yuboramiz.`,
+                })}
+              </p>
+
+              {/* Summary Box */}
+              <div className="mt-5 border border-white/10 bg-white/[0.02] p-4 text-left">
+                <div className="flex justify-between items-center text-xs pb-2 border-b border-white/5">
+                  <span className="text-white/50">{t('priceDropAlert.currentPrice', 'Hozirgi narx')}:</span>
+                  <span className="font-semibold text-white/80">{formatSum(currentPrice)}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs pt-2">
+                  <span className="text-[#d5ae68] font-bold">{t('priceDropAlert.targetPrice', 'Kutilayotgan narx')}:</span>
+                  <span className="font-serif text-base font-semibold text-[#d5ae68]">
+                    {targetFormatted}
                   </span>
                 </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="mt-6 w-full py-3.5 border border-[#d5ae68] bg-[#d5ae68] text-[#0d0c0a] text-xs font-black uppercase tracking-[0.18em] hover:bg-[#e4be77] transition-colors"
+              >
+                {t('priceDropAlert.understand', 'Tushundim')}
+              </button>
             </div>
-
-            {/* Target Price Section */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#d5ae68]">
-                  {t('priceDropAlert.targetPrice', 'Qaysi narxga tushsa xabar bersin?')}
-                </label>
-              </div>
-
-              {/* Discount Percentage Chips */}
-              <div className="grid grid-cols-4 gap-1.5 mb-2.5">
-                {discountPercentages.map(({ pct, label }) => {
-                  const calculated = Math.round((currentPrice * (1 - pct)) / 1000) * 1000;
-                  const isSelected = targetPrice === calculated.toString();
-                  return (
-                    <button
-                      key={pct}
-                      type="button"
-                      onClick={() => setTargetPrice(calculated.toString())}
-                      className={`py-2 px-1 text-center border transition-all ${
-                        isSelected
-                          ? 'border-[#d5ae68] bg-[#d5ae68]/15 text-[#d5ae68] font-bold shadow-[0_0_12px_rgba(213,174,104,0.2)]'
-                          : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20'
-                      }`}
-                    >
-                      <span className="block text-xs font-bold">{label}</span>
-                      <span className="block text-[8px] text-white/40 mt-0.5 tracking-tight truncate">
-                        {(calculated / 1000).toLocaleString()}k
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Custom Input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={targetPrice}
-                  onChange={(e) => setTargetPrice(e.target.value.replace(/\D/g, ''))}
-                  placeholder={suggestedTarget.toString()}
-                  className="w-full bg-[#141311] border border-white/15 pl-3.5 pr-16 py-3 text-sm text-[#f7f2ea] placeholder-white/25 focus:border-[#d5ae68] focus:outline-none transition-colors font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          ) : (
+            /* Form */
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Product Summary Row */}
+              <div className="flex items-center gap-3 border border-white/10 bg-white/[0.02] p-3">
+                <img
+                  src={getProductImage()}
+                  alt={product?.name || ''}
+                  className="w-12 h-14 object-cover border border-white/10 flex-none"
                 />
-                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-white/40 pointer-events-none">
-                  {t('common.sum', "so'm")}
-                </span>
-              </div>
-            </div>
-
-            {/* Notification Channel Cards */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#d5ae68] mb-2">
-                {t('priceDropAlert.notifyMethod', 'Xabar olish usuli')}
-              </label>
-
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'telegram', label: 'Telegram', icon: Send },
-                  { id: 'sms', label: 'SMS', icon: Smartphone },
-                  { id: 'push', label: 'Push', icon: Bell },
-                ].map(({ id, label, icon: Icon }) => {
-                  const isSelected = notifyMethod === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => setNotifyMethod(id)}
-                      className={`flex flex-col items-center justify-center p-3 border transition-all ${
-                        isSelected
-                          ? 'border-[#d5ae68] bg-[#d5ae68]/15 text-[#d5ae68]'
-                          : 'border-white/10 bg-white/[0.02] text-white/60 hover:border-white/20'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 mb-1.5" />
-                      <span className="text-[11px] font-bold tracking-wider">{label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* If Telegram method AND user logged in via Telegram: Show connected account badge instead of phone input */}
-            {notifyMethod === 'telegram' && isTelegramUser ? (
-              <div className="flex items-center justify-between border border-[#d5ae68]/30 bg-[#d5ae68]/10 p-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d5ae68]/20 text-[#d5ae68]">
-                    <Send className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-[#f7f2ea]">Telegram hisobingiz ulangan</p>
-                    <p className="text-[10px] text-[#d5ae68]">
-                      @{user?.telegramUsername || user?.username || 'Telegram'}
-                    </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-serif text-[#f7f2ea] truncate">{product?.name}</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-[10px] uppercase tracking-wider text-white/50">
+                      {t('priceDropAlert.currentPrice', 'Hozirgi narx')}:
+                    </span>
+                    <span className="text-xs font-semibold text-[#d5ae68]">
+                      {formatSum(currentPrice)}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5">
-                  <UserCheck className="w-3 h-3" />
-                  <span>Tayyor</span>
-                </div>
               </div>
-            ) : (notifyMethod === 'sms' || notifyMethod === 'telegram') ? (
-              /* If normal login / register or SMS: Show phone input with +998 prefilled */
+
+              {/* Target Price Section */}
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
-                    {notifyMethod === 'telegram'
-                      ? 'Telegram telefon raqamingiz'
-                      : t('priceDropAlert.phoneNumber', 'Telefon raqamingiz')}
+                  <label className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#d5ae68]">
+                    {t('priceDropAlert.targetPrice', 'Qaysi narxga tushsa xabar bersin?')}
                   </label>
-                  {isAuthenticated && user?.phone && (
-                    <span className="text-[9px] text-[#d5ae68]">Akkaunt raqami</span>
-                  )}
                 </div>
+
+                {/* Discount Percentage Chips */}
+                <div className="grid grid-cols-4 gap-1.5 mb-2">
+                  {discountPercentages.map(({ pct, label }) => {
+                    const calculated = Math.round((currentPrice * (1 - pct)) / 1000) * 1000;
+                    const isSelected = targetPrice === calculated.toString();
+                    return (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setTargetPrice(calculated.toString())}
+                        className={`py-2 px-1 text-center border transition-all ${
+                          isSelected
+                            ? 'border-[#d5ae68] bg-[#d5ae68]/15 text-[#d5ae68] font-bold shadow-[0_0_12px_rgba(213,174,104,0.2)]'
+                            : 'border-white/10 bg-white/[0.02] text-white/70 hover:border-white/20'
+                        }`}
+                      >
+                        <span className="block text-xs font-bold">{label}</span>
+                        <span className="block text-[8px] text-white/40 mt-0.5 tracking-tight truncate">
+                          {(calculated / 1000).toLocaleString()}k
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom Input */}
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#d5ae68]" />
                   <input
-                    type="tel"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    placeholder="+998 90 123 45 67"
-                    required
-                    className="w-full bg-[#141311] border border-white/15 pl-10 pr-3.5 py-3 text-sm text-[#f7f2ea] placeholder-white/25 focus:border-[#d5ae68] focus:outline-none transition-colors font-mono"
+                    type="text"
+                    inputMode="numeric"
+                    value={targetPrice}
+                    onChange={(e) => setTargetPrice(e.target.value.replace(/\D/g, ''))}
+                    placeholder={suggestedTarget.toString()}
+                    className="w-full bg-[#141311] border border-white/15 pl-3.5 pr-16 py-2.5 text-sm text-[#f7f2ea] placeholder-white/25 focus:border-[#d5ae68] focus:outline-none transition-colors font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-white/40 pointer-events-none">
+                    {t('common.sum', "so'm")}
+                  </span>
                 </div>
               </div>
-            ) : null}
 
-            {/* Atelier Tip / Guarantee Note */}
-            <div className="flex items-start gap-2.5 border border-[#d5ae68]/20 bg-[#d5ae68]/5 p-3 text-left">
-              <ShieldCheck className="w-4 h-4 text-[#d5ae68] flex-none mt-0.5" />
-              <p className="text-[10px] text-[#cfc8bc] leading-relaxed">
-                {t(
-                  'priceDropAlert.tip',
-                  'Narx belgilangan darajaga tushganda sizga darhol xabar yuboriladi. Obunani istalgan vaqtda bekor qilishingiz mumkin.'
+              {/* Notification Channel Cards */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#d5ae68] mb-1.5">
+                  {t('priceDropAlert.notifyMethod', 'Xabar olish usuli')}
+                </label>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'telegram', label: 'Telegram', icon: Send },
+                    { id: 'sms', label: 'SMS', icon: Smartphone },
+                    { id: 'push', label: 'Push', icon: Bell },
+                  ].map(({ id, label, icon: Icon }) => {
+                    const isSelected = notifyMethod === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setNotifyMethod(id)}
+                        className={`flex flex-col items-center justify-center p-2.5 border transition-all ${
+                          isSelected
+                            ? 'border-[#d5ae68] bg-[#d5ae68]/15 text-[#d5ae68]'
+                            : 'border-white/10 bg-white/[0.02] text-white/60 hover:border-white/20'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 mb-1" />
+                        <span className="text-[11px] font-bold tracking-wider">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* If Telegram method AND user logged in via Telegram: Show connected account badge instead of phone input */}
+              {notifyMethod === 'telegram' && isTelegramUser ? (
+                <div className="flex items-center justify-between border border-[#d5ae68]/30 bg-[#d5ae68]/10 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d5ae68]/20 text-[#d5ae68]">
+                      <Send className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-[#f7f2ea]">Telegram hisobingiz ulangan</p>
+                      <p className="text-[10px] text-[#d5ae68]">
+                        @{user?.telegramUsername || user?.username || 'Telegram'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2 py-0.5">
+                    <UserCheck className="w-3 h-3" />
+                    <span>Tayyor</span>
+                  </div>
+                </div>
+              ) : (notifyMethod === 'sms' || notifyMethod === 'telegram') ? (
+                /* If normal login / register or SMS: Show phone input with +998 prefilled */
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
+                      {notifyMethod === 'telegram'
+                        ? 'Telegram telefon raqamingiz'
+                        : t('priceDropAlert.phoneNumber', 'Telefon raqamingiz')}
+                    </label>
+                    {isAuthenticated && user?.phone && (
+                      <span className="text-[9px] text-[#d5ae68]">Akkaunt raqami</span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#d5ae68]" />
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      placeholder="+998 90 123 45 67"
+                      required
+                      className="w-full bg-[#141311] border border-white/15 pl-10 pr-3.5 py-2.5 text-sm text-[#f7f2ea] placeholder-white/25 focus:border-[#d5ae68] focus:outline-none transition-colors font-mono"
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Atelier Tip / Guarantee Note */}
+              <div className="flex items-start gap-2.5 border border-[#d5ae68]/20 bg-[#d5ae68]/5 p-2.5 text-left">
+                <ShieldCheck className="w-4 h-4 text-[#d5ae68] flex-none mt-0.5" />
+                <p className="text-[10px] text-[#cfc8bc] leading-relaxed">
+                  {t(
+                    'priceDropAlert.tip',
+                    'Narx belgilangan darajaga tushganda sizga darhol xabar yuboriladi. Obunani istalgan vaqtda bekor qilishingiz mumkin.'
+                  )}
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 border border-[#d5ae68] bg-gradient-to-r from-[#b88a43] via-[#efd08b] to-[#b88a43] text-[#0f0d09] text-xs font-black uppercase tracking-[0.18em] shadow-[0_8px_24px_rgba(213,174,104,0.2)] hover:brightness-110 active:scale-[0.99] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Saqlanmoqda...</span>
+                  </>
+                ) : (
+                  <>
+                    <Bell className="w-4 h-4" />
+                    <span>{t('priceDropAlert.enable', 'Kuzatishni yoqish')}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
                 )}
-              </p>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 border border-[#d5ae68] bg-gradient-to-r from-[#b88a43] via-[#efd08b] to-[#b88a43] text-[#0f0d09] text-xs font-black uppercase tracking-[0.18em] shadow-[0_8px_24px_rgba(213,174,104,0.2)] hover:brightness-110 active:scale-[0.99] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Saqlanmoqda...</span>
-                </>
-              ) : (
-                <>
-                  <Bell className="w-4 h-4" />
-                  <span>{t('priceDropAlert.enable', 'Kuzatishni yoqish')}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   ) : null;

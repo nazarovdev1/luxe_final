@@ -29,7 +29,15 @@ describe('PriceDropAlert Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useLanguage.mockReturnValue({
-      t: (key, fallback) => fallback || key,
+      t: (key, options) => {
+        if (options && typeof options === 'object') {
+          if (key === 'priceDropAlert.alertDesc') {
+            return `Mahsulot narxi ${options.price} ga tushganda sizga ${options.method} orqali xabar yuboramiz.`;
+          }
+          return options.defaultValue || key;
+        }
+        return options || key;
+      },
     });
   });
 
@@ -56,6 +64,27 @@ describe('PriceDropAlert Component', () => {
 
     expect(screen.getByText('Printli Jaket SET')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('+998 90 123 45 67')).toBeInTheDocument();
+  });
+
+  it('locks body scrolling with fixed position when modal is open', () => {
+    useAuth.mockReturnValue({ isAuthenticated: false, user: null });
+    const { unmount } = render(<PriceDropAlert product={dummyProduct} />);
+
+    const openBtn = screen.getByRole('button', { name: /ochish/i });
+    fireEvent.click(openBtn);
+
+    expect(document.body.style.position).toBe('fixed');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.body.style.touchAction).toBe('none');
+
+    // Close modal
+    const closeBtn = screen.getByLabelText('Yopish');
+    fireEvent.click(closeBtn);
+
+    expect(document.body.style.position).toBe('');
+    expect(document.body.style.overflow).toBe('');
+
+    unmount();
   });
 
   it('hides phone input and shows Telegram connected badge when user is logged in via Telegram', () => {
