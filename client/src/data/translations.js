@@ -991,6 +991,8 @@ const translations = {
       notifyMethod: 'Xabar olish usuli',
       phoneNumber: 'Telefon raqamingiz',
       tip: "💡 Maslahat: Narx kuzatish 30 kun davomida faol bo'lib, narx belgilangan darajaga tushganda darhol xabar yuboramiz.",
+      enable: 'Kuzatishni yoqish',
+      understand: 'Tushundim',
     },
     wishlistShare: {
       title: 'Sevimlilarim',
@@ -1786,12 +1788,7 @@ const translations = {
       serviceFeeLabel: 'Xizmat haqi',
       disclaimer: 'To\'lov shartlari provayder tomonidan buyurtmani tasdiqlash vaqtida belgilanadi.',
     },
-    priceDropAlert: {
-      tracking: 'Kuzatilmoqda',
-      cancel: 'Obunani bekor qilish',
-      enable: 'Kuzatishni yoqish',
-      understand: 'Tushundim',
-    },
+
     flashSale: {
       title: 'Flash Sale',
       hoursLabel: 'soat',
@@ -3649,6 +3646,8 @@ const translations = {
       notifyMethod: 'Способ уведомления',
       phoneNumber: 'Ваш номер телефона',
       tip: '💡 Совет: Отслеживание цены действует 30 дней. Мы сразу уведомим вас, когда цена снизится до заданного уровня.',
+      enable: 'Включить отслеживание',
+      understand: 'Понятно',
     },
     wishlistShare: {
       title: 'Мои избранные',
@@ -4444,12 +4443,7 @@ const translations = {
       serviceFeeLabel: 'Плата за услугу',
       disclaimer: 'Условия оплаты определяются провайдером при подтверждении заказа.',
     },
-    priceDropAlert: {
-      tracking: 'Отслеживается',
-      cancel: 'Отменить подписку',
-      enable: 'Включить отслеживание',
-      understand: 'Понятно',
-    },
+
     flashSale: {
       title: 'Flash Sale',
       hoursLabel: 'час',
@@ -6307,6 +6301,8 @@ const translations = {
       notifyMethod: 'Notification method',
       phoneNumber: 'Your phone number',
       tip: '💡 Tip: Price tracking is active for 30 days. We will notify you immediately when the price drops to the set level.',
+      enable: 'Enable tracking',
+      understand: 'Got it',
     },
     wishlistShare: {
       title: 'My Favorites',
@@ -7102,12 +7098,7 @@ const translations = {
       serviceFeeLabel: 'Service fee',
       disclaimer: 'Payment terms are determined by the provider when confirming the order.',
     },
-    priceDropAlert: {
-      tracking: 'Tracking',
-      cancel: 'Unsubscribe',
-      enable: 'Enable tracking',
-      understand: 'Got it',
-    },
+
     flashSale: {
       title: 'Flash Sale',
       hoursLabel: 'hours',

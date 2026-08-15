@@ -60,6 +60,7 @@ import giftCardRoutes from './routes/giftCard.routes.js'
 import blogRoutes from './routes/blog.routes.js'
 import bundleRoutes from './routes/bundle.route.js'
 import stylePollRoutes from './routes/stylePoll.routes.js'
+import priceAlertRoutes from './routes/priceAlert.route.js'
 import { deleteReelComment as deleteReelCommentController } from './controllers/reel.controller.js'
 
 import { initSocket } from './services/socket.service.js'
@@ -186,6 +187,7 @@ app.use('/api/gift-cards', giftCardRoutes)
 app.use('/api/blogs', blogRoutes)
 app.use('/api/bundles', bundleRoutes)
 app.use('/api/style-polls', stylePollRoutes)
+app.use('/api/price-alerts', priceAlertRoutes)
 app.delete('/api/delete-reel-comment/:id', protect, (req, res, next) => {
   req.params.commentId = req.params.id
   return deleteReelCommentController(req, res, next)

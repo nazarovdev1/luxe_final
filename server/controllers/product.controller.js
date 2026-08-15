@@ -283,6 +283,12 @@ export const putProduct = async (req, res) => {
   }
 
   try {
+    const existing = await Product.findById(id).select('name price images').lean()
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Product not found' })
+    }
+
+    const oldPrice = Number(existing.price || 0)
     const updated = await Product.findByIdAndUpdate(id, product, { new: true, runValidators: true }).lean()
 
     if (!updated) {
@@ -292,6 +298,15 @@ export const putProduct = async (req, res) => {
     clearProductsCache()
 
     logger.info(`Product updated: ${id}`)
+
+    const newPrice = Number(updated.price || 0)
+    if (oldPrice > 0 && newPrice > 0 && newPrice < oldPrice) {
+      import('../services/priceAlert.service.js')
+        .then(({ checkAndTriggerPriceAlerts }) => {
+          checkAndTriggerPriceAlerts(updated, oldPrice, newPrice)
+        })
+        .catch((err) => logger.error('Error importing priceAlert.service:', err))
+    }
 
     res.status(200).json({ success: true, data: normalizeProductResponse(updated) })
   } catch (error) {

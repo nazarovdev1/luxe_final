@@ -121,8 +121,6 @@ const MobileProducts = () => {
     allLabel: t('common.all'),
     categoryFromUrl: searchParams.get('category'),
     filterFromUrl: searchParams.get('filter'),
-    // Filter tanlovi URL'ni almashtirmaydi: aks holda mobil route qayta
-    // hisoblanib, filter oynasi foydalanuvchiga yana paydo bo'lib ko'rinadi.
     setSearchParams: undefined,
     initialSort: 'featured',
     pageSize: 10,
@@ -143,8 +141,6 @@ const MobileProducts = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Do not restore a stale scroll position after data/infinite-list changes.
-  // Native history restoration handles returning from a product detail page.
   useEffect(() => {
     document.documentElement.classList.toggle('mobile-products-sheet-open', showFilters);
     document.body.classList.toggle('mobile-products-sheet-open', showFilters);
@@ -248,21 +244,34 @@ const MobileProducts = () => {
       </header>
 
       <main>
-        {isLoading ? <div className="mcp-loading"><i /><span>{t('mobileProducts.loading')}</span></div> : sortedProducts.length === 0 ? (
-          <div className="mcp-empty"><span>0{editorialNumber}</span><h2>{t('mobileProducts.no_results')}</h2><button onClick={resetFilters}>{t('mobileProducts.clear_filters')}</button></div>
-        ) : <>
-          <section className="mcp-intro">
-            <p>SIZ UCHUN SARALANDI</p>
-            <h2>{selectedCategory === t('common.all') ? 'Sizga yarashadigan liboslar.' : selectedCategory}</h2>
-            <span>{sortedProducts.length} {t('mobileProducts.items_count')} / nafis tanlovlar</span>
-          </section>
-          {lead && <section className="mcp-lead-stage"><ProductCard product={lead} index={0} /></section>}
-          <section className="mcp-collection-head"><span>YANGI TANLOVLAR / {editorialNumber}</span><h2>Har kuningiz<br /><em>o‘zgacha.</em></h2></section>
-          <section className="mcp-grid">
-            {gridProducts.map((product, index) => <ProductCard key={productId(product)} product={product} index={index + 1} />)}
-          </section>
-          {hasMore && <button type="button" onClick={loadMore} className="mcp-more"><span>YANA LIBOSLARNI KO‘RISH</span><ArrowDownRight /></button>}
-        </>}
+        {isLoading ? (
+          <div className="mcp-loading"><i /><span>{t('mobileProducts.loading')}</span></div>
+        ) : sortedProducts.length === 0 ? (
+          <div className="mcp-empty">
+            <span>0{editorialNumber}</span>
+            <h2>{t('mobileProducts.no_results')}</h2>
+            <button onClick={resetFilters}>{t('mobileProducts.clear_filters')}</button>
+          </div>
+        ) : (
+          <>
+            {lead && <section className="mcp-lead-stage"><ProductCard product={lead} index={0} /></section>}
+            <section className="mcp-collection-head">
+              <span>YANGI TANLOVLAR / {editorialNumber}</span>
+              <h2>Har kuningiz<br /><em>o‘zgacha.</em></h2>
+            </section>
+            <section className="mcp-grid">
+              {gridProducts.map((product, index) => (
+                <ProductCard key={productId(product)} product={product} index={index + 1} />
+              ))}
+            </section>
+            {hasMore && (
+              <button type="button" onClick={loadMore} className="mcp-more">
+                <span>YANA LIBOSLARNI KO‘RISH</span>
+                <ArrowDownRight />
+              </button>
+            )}
+          </>
+        )}
       </main>
 
       {compareList.length > 0 && !showComparison && (
