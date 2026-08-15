@@ -11,9 +11,9 @@ const blogCreateSchema = Joi.object({
     en: Joi.string().min(3).max(200).allow('', null)
   }).required(),
   excerpt: Joi.object({
-    uz: Joi.string().max(500).allow('', null),
-    ru: Joi.string().max(500).allow('', null),
-    en: Joi.string().max(500).allow('', null)
+    uz: Joi.string().max(1000).allow('', null),
+    ru: Joi.string().max(1000).allow('', null),
+    en: Joi.string().max(1000).allow('', null)
   }),
   content: Joi.object({
     uz: Joi.string().min(50).allow('', null).messages({
@@ -34,7 +34,7 @@ const blogCreateSchema = Joi.object({
   status: Joi.string().valid('draft', 'published', 'archived').default('draft'),
   featured: Joi.boolean().default(false),
   seoTitle: Joi.string().max(200).allow('', null),
-  seoDescription: Joi.string().max(500).allow('', null)
+  seoDescription: Joi.string().max(1000).allow('', null)
 })
 
 const blogUpdateSchema = Joi.object({
@@ -44,9 +44,9 @@ const blogUpdateSchema = Joi.object({
     en: Joi.string().min(3).max(200).allow('', null)
   }),
   excerpt: Joi.object({
-    uz: Joi.string().max(500).allow('', null),
-    ru: Joi.string().max(500).allow('', null),
-    en: Joi.string().max(500).allow('', null)
+    uz: Joi.string().max(1000).allow('', null),
+    ru: Joi.string().max(1000).allow('', null),
+    en: Joi.string().max(1000).allow('', null)
   }),
   content: Joi.object({
     uz: Joi.string().min(50).allow('', null),
@@ -60,7 +60,7 @@ const blogUpdateSchema = Joi.object({
   status: Joi.string().valid('draft', 'published', 'archived'),
   featured: Joi.boolean(),
   seoTitle: Joi.string().max(200).allow('', null),
-  seoDescription: Joi.string().max(500).allow('', null)
+  seoDescription: Joi.string().max(1000).allow('', null)
 })
 
 export { blogCreateSchema, blogUpdateSchema }

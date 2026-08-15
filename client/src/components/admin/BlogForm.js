@@ -119,12 +119,30 @@ const BlogForm = ({ blog, onClose }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const prepareFormData = () => {
+    const data = { ...form };
+    // If title is missing in all languages, but seoTitle is provided, auto-fill active language title
+    if (!data.title.uz && !data.title.en && !data.title.ru && data.seoTitle) {
+      data.title = { ...data.title, [activeLang]: data.seoTitle };
+    }
+    // If excerpt is missing in all languages, but seoDescription is provided, auto-fill active language excerpt
+    if (!data.excerpt.uz && !data.excerpt.en && !data.excerpt.ru && data.seoDescription) {
+      data.excerpt = { ...data.excerpt, [activeLang]: data.seoDescription.slice(0, 1000) };
+    }
+    return data;
+  };
+
+  const saveBlog = async (statusOverride) => {
+    const dataToSend = prepareFormData();
+    if (statusOverride) {
+      dataToSend.status = statusOverride;
+      setForm(prev => ({ ...prev, status: statusOverride }));
+    }
 
     // Validate required fields
-    if (!form.title.uz && !form.title.en && !form.title.ru) {
-      toast.error('Kamida bitta tilida sarlavha kiriting');
+    if (!dataToSend.title.uz && !dataToSend.title.en && !dataToSend.title.ru) {
+      setActiveSection('content');
+      toast.error("Kontent bo'limida kamida bitta tilda (Sarlavha) kiriting!");
       return;
     }
 
@@ -134,12 +152,24 @@ const BlogForm = ({ blog, onClose }) => {
 
       if (blog) {
         // Update
-        await apiClient.put(`/blogs/${blog._id}`, form, config);
-        toast.success('Maqola yangilandi');
+        await apiClient.put(`/blogs/${blog._id}`, dataToSend, config);
+        if (statusOverride === 'published') {
+          toast.success('Maqola chop etildi');
+        } else if (statusOverride === 'draft') {
+          toast.success('Qoralama yangilandi');
+        } else {
+          toast.success('Maqola yangilandi');
+        }
       } else {
         // Create
-        await apiClient.post('/blogs', form, config);
-        toast.success('Maqola yaratildi');
+        await apiClient.post('/blogs', dataToSend, config);
+        if (statusOverride === 'published') {
+          toast.success('Maqola chop etildi');
+        } else if (statusOverride === 'draft') {
+          toast.success('Qoralama saqlandi');
+        } else {
+          toast.success('Maqola yaratildi');
+        }
       }
 
       onClose(true);
@@ -150,30 +180,11 @@ const BlogForm = ({ blog, onClose }) => {
     }
   };
 
-  const handleSaveDraft = async (draftData) => {
-    if (!draftData.title.uz && !draftData.title.en && !draftData.title.ru) {
-      toast.error('Kamida bitta tilida sarlavha kiriting');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      if (blog) {
-        // Update existing blog as draft
-        await apiClient.put(`/blogs/${blog._id}`, draftData, config);
-        toast.success('Qoralama yangilandi');
-      } else {
-        // Create new blog as draft
-        await apiClient.post('/blogs', draftData, config);
-        toast.success('Qoralama saqlandi');
-      }
-      onClose(true);
-    } catch (err) {
-      toast.error(err.message || err.response?.data?.message || 'Saqlashda xato yuz berdi');
-    } finally {
-      setSaving(false);
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Default to 'published' for new blogs on form submit (e.g. pressing enter), or use current status
+    const statusOverride = !blog && form.status === 'draft' ? 'published' : undefined;
+    await saveBlog(statusOverride);
   };
 
   // Simple rich text toolbar actions
@@ -199,13 +210,13 @@ const BlogForm = ({ blog, onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Language Tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5">
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 overflow-x-auto whitespace-nowrap scrollbar-none">
         {LANGUAGES.map((lang) => (
           <button
             key={lang.code}
             type="button"
             onClick={() => setActiveLang(lang.code)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-shrink-0 ${
               activeLang === lang.code
                 ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
                 : 'text-gray-400 hover:text-white'
@@ -218,7 +229,7 @@ const BlogForm = ({ blog, onClose }) => {
       </div>
 
       {/* Section Tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5">
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 overflow-x-auto whitespace-nowrap scrollbar-none">
         {[
           { id: 'content', label: 'Kontent', icon: Type },
           { id: 'media', label: 'Rasmlar', icon: ImagePlus },
@@ -231,7 +242,7 @@ const BlogForm = ({ blog, onClose }) => {
               key={section.id}
               type="button"
               onClick={() => setActiveSection(section.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all flex-shrink-0 ${
                 activeSection === section.id
                   ? 'bg-white/10 text-white border border-white/10'
                   : 'text-gray-500 hover:text-gray-300'
@@ -270,9 +281,11 @@ const BlogForm = ({ blog, onClose }) => {
               value={form.excerpt[activeLang] || ''}
               onChange={(e) => handleNestedChange('excerpt', activeLang, e.target.value)}
               placeholder={`Qisqa ta'rif (${activeLang.toUpperCase()})`}
+              maxLength={1000}
               rows={3}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-amber-400/30 resize-none"
             />
+            <p className="text-[10px] text-gray-600 mt-1">{(form.excerpt[activeLang] || '').length}/1000 belgi</p>
           </div>
 
           {/* Content with formatting toolbar */}
@@ -281,7 +294,7 @@ const BlogForm = ({ blog, onClose }) => {
               To'liq maqola (HTML)
             </label>
             {/* Formatting toolbar */}
-            <div className="flex items-center gap-1 p-2 rounded-t-xl bg-white/[0.03] border border-b-0 border-white/10">
+            <div className="flex flex-wrap items-center gap-1 p-2 rounded-t-xl bg-white/[0.03] border border-b-0 border-white/10">
               <button type="button" onClick={() => insertFormatting('<h2>', '</h2>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors font-bold">H2</button>
               <button type="button" onClick={() => insertFormatting('<h3>', '</h3>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors font-bold">H3</button>
               <button type="button" onClick={() => insertFormatting('<p>', '</p>')} className="px-2 py-1 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors">P</button>
@@ -503,12 +516,12 @@ const BlogForm = ({ blog, onClose }) => {
             <textarea
               value={form.seoDescription}
               onChange={(e) => handleChange('seoDescription', e.target.value)}
-              placeholder="SEO ta'rif (150-160 belgi)"
-              maxLength={500}
+              placeholder="SEO ta'rif (150-160 belgi tavsiya etiladi)"
+              maxLength={1000}
               rows={3}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-amber-400/30 resize-none"
             />
-            <p className="text-[10px] text-gray-600 mt-1">{form.seoDescription.length}/500 belgi</p>
+            <p className="text-[10px] text-gray-600 mt-1">{form.seoDescription.length}/1000 belgi (Google uchun 150-160 ta belgi tavsiya etiladi)</p>
           </div>
         </div>
       )}
@@ -523,21 +536,19 @@ const BlogForm = ({ blog, onClose }) => {
           Bekor qilish
         </button>
         <div className="flex items-center gap-3">
-          {!blog && (
+          {(!blog || form.status === 'draft') && (
             <button
               type="button"
-              onClick={() => {
-                const draftForm = { ...form, status: 'draft' };
-                handleSaveDraft(draftForm);
-              }}
+              onClick={() => saveBlog('draft')}
               className="admin-btn-secondary px-5 py-2.5"
               disabled={saving}
             >
-              Qoralama saqlash
+              {blog ? 'Qoralama sifatida saqlash' : 'Qoralama saqlash'}
             </button>
           )}
           <button
-            type="submit"
+            type="button"
+            onClick={() => saveBlog(form.status === 'draft' ? 'published' : form.status)}
             disabled={saving}
             className="admin-btn-primary px-5 py-2.5 disabled:opacity-50"
           >
@@ -549,7 +560,7 @@ const BlogForm = ({ blog, onClose }) => {
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>{blog ? 'Yangilash' : 'Chop etish'}</span>
+                <span>{form.status === 'draft' ? 'Chop etish' : 'Yangilash'}</span>
               </>
             )}
           </button>

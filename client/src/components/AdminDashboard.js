@@ -1,4 +1,5 @@
-﻿import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProducts } from '../contexts/ProductContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -18,6 +19,11 @@ import {
   BookOpen,
   PackagePlus,
   Vote,
+  Menu,
+  X,
+  ChevronRight,
+  Circle,
+  ArrowUpRight,
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 import AdminOrders from './AdminOrders';
@@ -126,6 +132,7 @@ const tabs = [
 ];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { products, removeProduct, isLoading: productsLoading } = useProducts();
   const { logout, token } = useAuth();
@@ -135,6 +142,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [adminStats, setAdminStats] = useState(null);
   const [isStatsLoading, setIsStatsLoading] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -200,137 +208,98 @@ const AdminDashboard = () => {
 
   const tabsWithOverview = [{ id: 'overview', label: 'Umumiy', description: 'Statistika va hisobotlar', icon: BarChart3 }, ...tabs];
 
+  const selectTab = (id) => {
+    setActiveTab(id);
+    setShowForm(false);
+    setNavOpen(false);
+  };
+
   return (
-    <div className="admin-shell min-h-screen pt-16 pb-14">
+    <div className="admin-shell min-h-screen pb-10">
       <div className="admin-orb admin-orb-orange" />
       <div className="admin-orb admin-orb-cyan" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-7 space-y-6">
-        <header className="admin-card admin-gradient-card p-5 sm:p-7">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200">
-                <Package className="w-4 h-4" />
-                LUXE CONTROL CENTER
-              </div>
+      <div className="relative z-10 mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[244px_minmax(0,1fr)] lg:gap-8">
+        {/* Mobile Backdrop Overlay */}
+        {navOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden transition-opacity"
+            onClick={() => setNavOpen(false)}
+          />
+        )}
 
-              <div>
-                <h1 className="admin-title text-2xl sm:text-3xl leading-tight">Admin Dashboard</h1>
-                <p className="admin-muted mt-2 max-w-2xl text-sm sm:text-base">
-                  Platformaning barcha qismlarini boshqarish va tahlil qilish uchun asosiy markaz.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <button
-                type="button"
-                onClick={handleAddNew}
-                className="admin-btn-primary px-4 py-2.5 w-full sm:w-auto"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Yangi mahsulot</span>
+        <aside className={`admin-commandbar fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full overflow-y-auto bg-[#121214] border-r border-white/10 shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:w-auto lg:h-[calc(100vh-40px)] lg:border-r-0 lg:bg-transparent lg:shadow-none lg:sticky lg:top-5 lg:m-5 ${navOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+          <div className="border-b border-white/10 px-5 py-5">
+            <div className="flex items-center justify-between">
+              <button type="button" onClick={() => navigate('/')} className="text-left group cursor-pointer" title="Asosiy sahifaga o'tish">
+                <span className="text-[9px] font-bold tracking-[.22em] text-[#e0ba72] group-hover:underline">LUXX</span>
+                <strong className="block font-['Playfair_Display'] text-[26px] leading-none tracking-[-.08em] text-[#f3eee5]">Atelier</strong>
               </button>
-
-              <button
-                type="button"
-                onClick={logout}
-                className="admin-btn-secondary px-4 py-2.5 w-full sm:w-auto"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Chiqish</span>
-              </button>
+              <button type="button" onClick={() => navigate('/')} className="admin-btn-soft p-2 cursor-pointer hover:bg-white/10" aria-label="Asosiy sahifaga o'tish" title="Asosiy sahifaga qaytish"><X size={16} /></button>
             </div>
+            <p className="mt-4 flex items-center gap-2 text-[9px] font-medium tracking-[.12em] text-[#999890]"><Circle size={7} className="fill-[#89d3ad] text-[#89d3ad]" /> SYSTEM ONLINE</p>
           </div>
-        </header>
 
-        <section className="admin-card sticky top-16 z-20 px-3 py-3">
-          <div className="flex items-center gap-2 overflow-x-auto admin-scroll">
+          <nav className="p-3" aria-label="Admin bo'limlari">
+            <p className="px-3 pb-2 pt-1 text-[9px] font-bold tracking-[.17em] text-[#77756f]">ATELIER INDEX</p>
             {tabsWithOverview.map((tab) => {
               const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setShowForm(false);
-                  }}
-                  className={`admin-tab whitespace-nowrap ${isActive ? 'admin-tab-active' : ''}`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              );
+              return <button key={tab.id} type="button" onClick={() => selectTab(tab.id)} className={`admin-tab ${activeTab === tab.id ? 'admin-tab-active' : ''}`}><Icon size={16} /><span className="flex-1">{tab.label}</span>{activeTab === tab.id && <ChevronRight size={14} />}</button>;
             })}
+          </nav>
+          <div className="mt-auto border-t border-white/10 p-4">
+            <button type="button" onClick={logout} className="admin-tab w-full"><LogOut size={16} /><span>Atelierdan chiqish</span></button>
           </div>
-        </section>
+        </aside>
 
-        <main className="space-y-6">
+        <div className="min-w-0 px-4 pb-10 pt-4 sm:px-6 lg:px-0 lg:py-5">
+          <header className="admin-card admin-gradient-card overflow-hidden p-5 sm:p-7">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => setNavOpen(true)} className="admin-btn-soft p-2.5 lg:hidden" aria-label="Menuni ochish"><Menu size={18} /></button>
+                  <span className="inline-flex items-center gap-2 border border-[#e0ba72]/35 bg-[#e0ba72]/10 px-3 py-1 text-[9px] font-bold tracking-[.15em] text-[#edce8c]"><Gem size={13} /> LUXX CONTROL ROOM</span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-semibold tracking-[.16em] text-[#999890]">{activeTab === 'overview' ? 'THE DAILY EDIT' : (activeTabConfig?.description || 'ATELIER MANAGEMENT').toUpperCase()}</p>
+                  <h1 className="admin-title mt-2 text-[38px] leading-[.86] sm:text-[54px]">{activeTab === 'overview' ? <>Atelier <em className="font-normal text-[#e0ba72]">Console</em></> : activeTabConfig?.label}</h1>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={handleAddNew} className="admin-btn-primary px-4 py-3"><Plus size={17} /> Yangi mahsulot</button>
+                <button type="button" onClick={logout} className="admin-btn-secondary px-4 py-3"><LogOut size={17} /> Chiqish</button>
+              </div>
+            </div>
+          </header>
+
+          <main className="mt-6 space-y-6">
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {isStatsLoading ? (
                 <div className="flex justify-center py-20"><Loader2 className="animate-spin" /></div>
               ) : adminStats && (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="admin-card p-6 border-l-4 border-amber-400">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Jami daromad</p>
-                          <h3 className="text-2xl font-bold text-white">{adminStats.totalRevenue.toLocaleString()} <span className="text-xs font-normal">{t('common.sum')}</span></h3>
-                        </div>
-                        <div className="p-3 bg-amber-400/10 rounded-2xl text-amber-400">
-                          <DollarSign className="w-6 h-6" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="admin-card p-6 border-l-4 border-blue-400">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Buyurtmalar</p>
-                          <h3 className="text-2xl font-bold text-white">{adminStats.ordersCount}</h3>
-                        </div>
-                        <div className="p-3 bg-blue-400/10 rounded-2xl text-blue-400">
-                          <ShoppingCart className="w-6 h-6" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="admin-card p-6 border-l-4 border-green-400">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Mijozlar</p>
-                          <h3 className="text-2xl font-bold text-white">{adminStats.usersCount}</h3>
-                        </div>
-                        <div className="p-3 bg-green-400/10 rounded-2xl text-green-400">
-                          <Users className="w-6 h-6" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="admin-card p-6 border-l-4 border-purple-400">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">Mahsulotlar</p>
-                          <h3 className="text-2xl font-bold text-white">{adminStats.productsCount}</h3>
-                        </div>
-                        <div className="p-3 bg-purple-400/10 rounded-2xl text-purple-400">
-                          <Package className="w-6 h-6" />
-                        </div>
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {[
+                      { label: 'Jami daromad', value: adminStats.totalRevenue.toLocaleString(), suffix: t('common.sum'), icon: DollarSign, note: 'ATELIER REVENUE', tone: '#e0ba72' },
+                      { label: 'Buyurtmalar', value: adminStats.ordersCount, icon: ShoppingCart, note: 'ORDER FLOW', tone: '#a8c6db' },
+                      { label: 'Mijozlar', value: adminStats.usersCount, icon: Users, note: 'PRIVATE CLIENTS', tone: '#89d3ad' },
+                      { label: 'Mahsulotlar', value: adminStats.productsCount, icon: Package, note: 'CURATED PIECES', tone: '#d9a8be' },
+                    ].map(({ label, value, suffix, icon: Icon, note, tone }) => (
+                      <article key={label} className="admin-card group overflow-hidden p-5" style={{ '--stat-tone': tone }}>
+                        <div className="mb-8 flex items-start justify-between"><p className="text-[9px] font-bold tracking-[.15em] text-[#999890]">{note}</p><span className="grid h-9 w-9 place-items-center border border-white/10 bg-white/[.025]" style={{ color: tone }}><Icon size={17} /></span></div>
+                        <p className="text-[11px] font-semibold text-[#c6c1b7]">{label}</p><p className="admin-stat-value mt-2">{value} {suffix && <span className="text-[11px] tracking-normal text-[#999890]">{suffix}</span>}</p>
+                        <div className="mt-5 h-px w-full bg-white/10"><i className="block h-px w-1/3 bg-[var(--stat-tone)] transition-all duration-500 group-hover:w-full" /></div>
+                      </article>
+                    ))}
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="admin-card p-6">
-                      <h3 className="font-bold mb-6 flex items-center gap-2">
-                        <ShoppingBag className="w-5 h-5 text-amber-300" />
-                        Oxirgi buyurtmalar
-                      </h3>
+                    <div className="admin-card p-5 sm:p-6">
+                      <div className="mb-6 flex items-end justify-between"><div><p className="text-[9px] font-bold tracking-[.16em] text-[#e0ba72]">LIVE ORDERS</p><h3 className="admin-section-title mt-2">So‘nggi buyurtmalar</h3></div><button type="button" onClick={() => selectTab('orders')} className="admin-btn-soft p-2"><ArrowUpRight size={16} /></button></div>
                       <div className="space-y-4">
                         {adminStats.recentOrders.map(order => (
-                          <div key={order._id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                          <div key={order._id} className="flex items-center justify-between border-b border-white/10 py-4 last:border-0">
                             <div>
                               <p className="font-bold text-sm text-white">#{order._id.slice(-6).toUpperCase()}</p>
                               <p className="text-xs text-gray-500">{order.user?.username || 'Noma\'lum'}</p>
@@ -344,12 +313,9 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="admin-card p-6">
-                      <h3 className="font-bold mb-6 flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-amber-300" />
-                        Oylik savdo
-                      </h3>
-                      <div className="h-64 flex items-end gap-2 px-4 pb-4">
+                    <div className="admin-card p-5 sm:p-6">
+                      <div className="mb-6"><p className="text-[9px] font-bold tracking-[.16em] text-[#e0ba72]">SALES RHYTHM</p><h3 className="admin-section-title mt-2">Oylik savdo</h3></div>
+                      <div className="flex h-64 items-end gap-2 border-b border-white/10 px-4 pb-4">
                         {adminStats.salesByMonth.map((month, i) => (
                           <div key={i} className="flex-1 bg-amber-400/20 hover:bg-amber-400/40 transition-all rounded-t-lg relative group" style={{ height: `${(month.total / Math.max(...adminStats.salesByMonth.map(m => m.total), 1)) * 100}%` }}>
                             <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-[10px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
@@ -612,6 +578,7 @@ const AdminDashboard = () => {
             </section>
           ) : null}
         </main>
+      </div>
       </div>
     </div>
   );

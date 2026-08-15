@@ -5,6 +5,7 @@ import { Radio, Clock, Users, PlayCircle, CalendarClock, Tv2, Plus, X, Trash2, A
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import './mobileExperiences.css';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -14,6 +15,11 @@ const extractYouTubeId = (url) => {
 
 const StreamCard = ({ stream, isAdmin, onDelete, onNavigate, t }) => {
   const videoId = extractYouTubeId(stream.videoUrl);
+  const STATUS_CONFIG = {
+    live: { label: t('mobileLive.statusLabels.live'), color: '#ef4444', bg: 'bg-red-500/10', border: 'border-red-500/30' },
+    scheduled: { label: t('mobileLive.statusLabels.scheduled'), color: '#d6b47c', bg: 'bg-[#d6b47c]/10', border: 'border-[#d6b47c]/30' },
+    ended: { label: t('mobileLive.statusLabels.ended'), color: '#6b7280', bg: 'bg-gray-500/10', border: 'border-gray-500/20' },
+  };
   const cfg = STATUS_CONFIG[stream.status] || STATUS_CONFIG.ended;
 
   return (
@@ -156,12 +162,6 @@ export default function MobileLive() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
 
-  const STATUS_CONFIG = {
-    live: { label: t('mobileLive.statusLabels.live'), color: '#ef4444', bg: 'bg-red-500/10', border: 'border-red-500/30' },
-    scheduled: { label: t('mobileLive.statusLabels.scheduled'), color: '#d6b47c', bg: 'bg-[#d6b47c]/10', border: 'border-[#d6b47c]/30' },
-    ended: { label: t('mobileLive.statusLabels.ended'), color: '#6b7280', bg: 'bg-gray-500/10', border: 'border-gray-500/20' },
-  };
-
   const fetchStreams = async () => {
     try {
       const res = await axios.get('/api/livestreams');
@@ -223,17 +223,12 @@ export default function MobileLive() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#07090f] text-white pb-24 relative overflow-hidden">
-      {/* Cinematic Background Glows */}
-      <div className="absolute top-0 left-1/2 w-80 h-80 bg-red-600/15 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/2" />
-      <div className="absolute top-[20%] right-0 w-64 h-64 bg-[#d6b47c]/5 rounded-full blur-[80px] translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-900/5 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/4" />
-
+    <div className="mexp mexp--live min-h-screen bg-[#07090f] text-white pb-24 relative overflow-hidden">
       {isCreateOpen && <CreateStreamModal onClose={() => setIsCreateOpen(false)} onSubmit={handleCreate} t={t} />}
 
       <div className="relative z-10">
         {/* Header */}
-        <div className="px-5 pt-10 pb-6">
+        <div className="mexp-head px-5 pt-10 pb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-10 active:scale-90 transition-transform">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium uppercase tracking-widest">{t('mobileLive.back')}</span>
@@ -266,15 +261,16 @@ export default function MobileLive() {
         </div>
 
         {/* Live indicator */}
+        <div className="mexp-content px-5">
         {liveStreams.length > 0 && (
-          <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-2xl">
+          <div className="mexp-status flex items-center gap-2 mb-4 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-2xl">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             <span className="text-xs text-red-400 font-black uppercase tracking-wider">{liveStreams.length} {t('mobileLive.liveCountSuffix')}</span>
           </div>
         )}
 
         {/* Filters */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-5 pb-1">
+        <div className="mexp-filters flex gap-2 overflow-x-auto scrollbar-hide mb-5 pb-1">
           {FILTERS.map(f => (
             <button
               key={f.id}
@@ -321,6 +317,7 @@ export default function MobileLive() {
             ))}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

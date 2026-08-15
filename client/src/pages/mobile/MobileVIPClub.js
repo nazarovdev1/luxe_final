@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/LoginForm';
 import { useLanguage } from '../../contexts/LanguageContext';
+import './mobileExperiences.css';
 
 const VIP_TIER_DEFS = [
   {
@@ -142,15 +143,10 @@ export default function MobileVIPClub() {
     : 100;
 
   return (
-    <div className="min-h-screen bg-[#07090f] text-white pb-24 relative overflow-hidden">
-      {/* Cinematic Background Glows */}
-      <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 opacity-40" style={{ background: `${currentTier.color}40` }} />
-      <div className="absolute top-[30%] left-0 w-64 h-64 rounded-full blur-[100px] -translate-x-1/2 opacity-20" style={{ background: `${currentTier.color}30` }} />
-      <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-[150px] translate-y-1/3 opacity-30" style={{ background: `${currentTier.color}20` }} />
-
+    <div className="mexp mexp--vip min-h-screen bg-[#07090f] text-white pb-24 relative overflow-hidden">
       <div className="relative z-10">
         {/* Header */}
-        <div className="px-5 pt-10 pb-6">
+        <div className="mexp-head px-5 pt-10 pb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-10 active:scale-90 transition-transform">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium uppercase tracking-widest">{t('mobileVip.back')}</span>
@@ -171,7 +167,7 @@ export default function MobileVIPClub() {
         </div>
 
         {/* Tab Bar */}
-        <div className="px-5 mb-8">
+        <div className="mexp-tabs px-5 mb-8">
           <div className="flex gap-1.5 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[24px] p-1.5 overflow-x-auto scrollbar-hide">
             {TABS.map(tab => (
               <button
@@ -195,7 +191,7 @@ export default function MobileVIPClub() {
             <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: currentTier.color }} />
           </div>
         ) : (
-          <div className="px-4">
+          <div className="mexp-content px-5">
 
             {/* ── OVERVIEW TAB ── */}
             {activeTab === 'overview' && (

@@ -1,22 +1,20 @@
 .mobile-admin-shell {
-  --ma-bg-1: #06101b;
-  --ma-bg-2: #0e1a2b;
-  --ma-card: rgba(13, 24, 39, 0.86);
-  --ma-soft: rgba(16, 29, 47, 0.68);
-  --ma-border: rgba(124, 145, 177, 0.25);
-  --ma-text: #f2f6ff;
-  --ma-muted: #95a6c0;
-  --ma-accent: #f6b73a;
-  --ma-accent-2: #f2853f;
-  --ma-info: #5eb7f5;
-  --ma-danger: #ff6f81;
-  --ma-success: #42d79f;
+  --ma-card: rgba(25, 26, 29, .9);
+  --ma-soft: rgba(255,255,255,.035);
+  --ma-border: rgba(246,235,214,.13);
+  --ma-text: #f3eee5;
+  --ma-muted: #999890;
+  --ma-accent: #e0ba72;
+  --ma-accent-2: #ba8338;
+  --ma-info: #a8c6db;
+  --ma-danger: #ed8792;
+  --ma-success: #89d3ad;
   min-height: 100vh;
   color: var(--ma-text);
   background:
-    radial-gradient(460px circle at 8% -4%, rgba(246, 183, 58, 0.22), transparent 50%),
-    radial-gradient(360px circle at 98% 8%, rgba(94, 183, 245, 0.2), transparent 54%),
-    linear-gradient(162deg, var(--ma-bg-1), var(--ma-bg-2));
+    radial-gradient(460px circle at 8% -4%, rgba(224,186,114,.18), transparent 50%),
+    radial-gradient(360px circle at 98% 8%, rgba(83,120,113,.15), transparent 54%),
+    #090a0c;
 }
 
 .mobile-admin-shell::before {
@@ -34,15 +32,14 @@
   position: sticky;
   top: 0;
   z-index: 35;
-  backdrop-filter: blur(14px);
-  background: rgba(5, 12, 21, 0.78);
-  border-bottom: 1px solid rgba(140, 160, 188, 0.22);
+  backdrop-filter: blur(18px);
+  background: rgba(9, 10, 12, .78);
+  border-bottom: 1px solid rgba(246,235,214,.12);
 }
 
 .mobile-admin-title {
-  font-family: 'Brilliant', 'Trebuchet MS', sans-serif;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: -.04em;
 }
 
 .mobile-admin-card {
@@ -77,10 +74,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  border: 1px solid rgba(124, 145, 177, 0.3);
-  background: rgba(14, 24, 39, 0.8);
+  border: 1px solid rgba(255,255,255,.11);
+  background: rgba(255,255,255,.025);
   color: var(--ma-muted);
-  border-radius: 999px;
+  border-radius: 9px;
   padding: 0.6rem 0.9rem;
   font-size: 0.78rem;
   font-weight: 600;
@@ -89,10 +86,10 @@
 }
 
 .mobile-admin-tab-active {
-  color: #0d1624;
-  border-color: rgba(246, 183, 58, 0.55);
-  background: linear-gradient(122deg, var(--ma-accent), var(--ma-accent-2));
-  box-shadow: 0 10px 24px rgba(246, 183, 58, 0.34);
+  color: #17130d;
+  border-color: rgba(224,186,114,.6);
+  background: linear-gradient(122deg, #d3a557, #efcc88, #bd853b);
+  box-shadow: 0 10px 24px rgba(205,151,64,.24);
 }
 
 .mobile-admin-pill {

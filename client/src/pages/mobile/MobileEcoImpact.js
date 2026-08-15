@@ -5,6 +5,7 @@ import { Leaf, Droplets, Wind, TreeDeciduous, Award, BarChart3, ShoppingBag, Shi
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import './mobileExperiences.css';
 
 const ECO_TIP_DEFS = [
   { icon: <Shirt className="w-6 h-6" />, tipKey: 'durable', color: '#d6b47c' },
@@ -63,15 +64,10 @@ export default function MobileEcoImpact() {
   const scoreColor = ecoScore >= 8 ? '#4ade80' : ecoScore >= 6 ? '#86efac' : ecoScore >= 4 ? '#d6b47c' : '#f87171';
 
   return (
-    <div className="min-h-screen bg-[#07090f] text-white pb-24 relative overflow-hidden">
-      {/* Cinematic Background Glows */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-green-600/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4" />
-      <div className="absolute top-[20%] left-0 w-64 h-64 bg-green-900/5 rounded-full blur-[80px] -translate-x-1/2" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#d6b47c]/5 rounded-full blur-[120px] translate-y-1/3" />
-
+    <div className="mexp mexp--eco min-h-screen bg-[#07090f] text-white pb-24 relative overflow-hidden">
       <div className="relative z-10">
         {/* Header */}
-        <div className="px-5 pt-10 pb-8">
+        <div className="mexp-head px-5 pt-10 pb-8">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-10 active:scale-90 transition-transform">
             <ArrowLeft className="w-5 h-5" />
             <span className="text-sm font-medium uppercase tracking-widest">{t('mobileEco.back')}</span>
@@ -92,6 +88,7 @@ export default function MobileEcoImpact() {
         </div>
 
         {/* Content */}
+        <div className="mexp-content px-5">
         {!isAuthenticated ? (
           <div className="rounded-[28px] border border-white/5 bg-white/[0.02] p-8 text-center">
             <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-green-500/20">
@@ -208,6 +205,7 @@ export default function MobileEcoImpact() {
             </button>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

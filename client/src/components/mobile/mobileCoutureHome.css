@@ -124,8 +124,11 @@
 .mch-editorial { padding-inline: 0; }
 .mch-editorial .mch-heading { padding-inline: 16px; }
 .mch-film { position: relative; padding-block: 25px; background: #15130f; border-block: 1px solid rgba(255,255,255,.13); }
-.mch-film__holes { position: absolute; inset: 7px 0 auto; height: 7px; background: repeating-linear-gradient(90deg, transparent 0 12px, #050505 12px 22px); }
-.mch-film__holes::after { content: ''; position: absolute; top: calc(100% + 436px); left: 0; width: 100%; height: 7px; background: inherit; }
+.mch-film__holes { position: absolute; inset: 7px 0; pointer-events: none; }
+.mch-film__holes::before,
+.mch-film__holes::after { content: ''; position: absolute; left: 0; width: 100%; height: 7px; background: repeating-linear-gradient(90deg, transparent 0 12px, #050505 12px 22px); }
+.mch-film__holes::before { top: 0; }
+.mch-film__holes::after { bottom: 0; }
 .mch-film__track { display: flex; gap: 9px; overflow-x: auto; padding: 0 16px 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .mch-film__track::-webkit-scrollbar { display: none; }
 .mch-film__frame { width: min(76vw, 320px); flex: 0 0 auto; padding: 0; border: 0; color: white; background: transparent; text-align: left; scroll-snap-align: center; }

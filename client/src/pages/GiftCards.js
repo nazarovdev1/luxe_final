@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
-import { Gift, Copy, Sparkles } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ArrowRight, Check, Copy, Gift, Heart, LockKeyhole, Phone, Send, Sparkles, UserRound } from 'lucide-react';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import GiftCardSvg from '../components/GiftCardSvg';
 import { GIFT_CARD_DESIGNS, getGiftCardDesign } from '../data/giftCardDesigns';
+import './GiftCards.css';
 
 const GIFT_CARD_AMOUNTS = [100000, 200000, 300000, 500000, 750000, 1000000];
-
-const formatPrice = (value) => {
-  return Number(value || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-};
-
+const formatPrice = (value) => Number(value || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const getDigits = (value) => value.toString().replace(/\D/g, '');
 
 const GiftCards = () => {
@@ -28,247 +25,95 @@ const GiftCards = () => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [generatedCode, setGeneratedCode] = useState(null);
 
-  const customAmountValue = customAmount ? Number(getDigits(customAmount)) : 0;
-  const activeAmount = customAmount ? customAmountValue : selectedAmount;
-  const activeDesign = getGiftCardDesign(selectedDesign);
+  const activeAmount = customAmount ? Number(getDigits(customAmount)) : selectedAmount;
+  const activeDesign = useMemo(() => getGiftCardDesign(selectedDesign), [selectedDesign]);
 
-  const handleCustomAmountChange = (e) => {
-    const digits = getDigits(e.target.value).slice(0, 9);
+  const handleCustomAmountChange = (event) => {
+    const digits = getDigits(event.target.value).slice(0, 9);
     setCustomAmount(digits ? formatPrice(digits) : '');
   };
 
-  const handleRecipientPhoneChange = (e) => {
-    const value = e.target.value;
-    if (value.startsWith('+998')) {
-      const digits = value.slice(4).replace(/\D/g, '').slice(0, 9);
-      setRecipientPhone('+998' + digits);
-    } else if (value.length < 4) {
-      setRecipientPhone('+998');
-    }
+  const handleRecipientPhoneChange = (event) => {
+    const value = event.target.value;
+    if (value.startsWith('+998')) setRecipientPhone(`+998${value.slice(4).replace(/\D/g, '').slice(0, 9)}`);
+    else if (value.length < 4) setRecipientPhone('+998');
   };
 
   const handlePurchase = () => {
-    if (!isAuthenticated) {
-      toast.error(t('giftCards.loginRequired'));
-      return;
-    }
-    if (activeAmount < 50000) {
-      toast.error(t('giftCards.minAmount'));
-      return;
-    }
-    if (!recipientName.trim() || recipientPhone.length < 13) {
-      toast.error(t('giftCards.fillInfo'));
-      return;
-    }
+    if (!isAuthenticated) return toast.error(t('giftCards.loginRequired'));
+    if (activeAmount < 50000) return toast.error(t('giftCards.minAmount'));
+    if (!recipientName.trim() || recipientPhone.length < 13) return toast.error(t('giftCards.fillInfo'));
 
     setIsPurchasing(true);
-
     const code = `LUXE-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-
-    const token = localStorage.getItem('token');
     fetch('/api/gift-cards', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        code,
-        amount: activeAmount,
-        designId: selectedDesign,
-        recipientName: recipientName.trim(),
-        recipientPhone: recipientPhone.trim(),
-        senderName: senderName.trim(),
-        message: message.trim()
-      })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify({ code, amount: activeAmount, designId: selectedDesign, recipientName: recipientName.trim(), recipientPhone: recipientPhone.trim(), senderName: senderName.trim(), message: message.trim() }),
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setGeneratedCode(code);
-          toast.success(t('giftCards.created'));
-        } else {
-          toast.error(data.message || t('giftCards.error'));
-        }
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) { setGeneratedCode(code); toast.success(t('giftCards.created')); }
+        else toast.error(data.message || t('giftCards.error'));
       })
-      .catch(err => {
-        console.error('Gift card creation error:', err);
-        toast.error(t('giftCards.error'));
-      })
-      .finally(() => {
-        setIsPurchasing(false);
-      });
+      .catch(() => toast.error(t('giftCards.error')))
+      .finally(() => setIsPurchasing(false));
   };
 
-  const copyCode = () => {
-    if (generatedCode) {
-      navigator.clipboard.writeText(generatedCode);
-      toast.success(t('giftCards.codeCopied'));
-    }
+  const copyCode = async () => {
+    if (!generatedCode) return;
+    await navigator.clipboard.writeText(generatedCode);
+    toast.success(t('giftCards.codeCopied'));
   };
 
   return (
-    <div className="min-h-screen bg-[#07080c] pt-24 pb-16">
-      <SEO
-        title="Sovg'a kartalari | Luxx.uz"
-        description="Luxx.uz sovg'a kartalari - sevgan insoningizga premium kiyim sovg'a qiling."
-        canonicalPath="/gift-cards"
-      />
+    <main className="gift-atelier">
+      <SEO title="Sovg'a kartalari | Luxx.uz" description="Luxx.uz sovg'a kartalari - sevgan insoningizga premium kiyim sovg'a qiling." canonicalPath="/gift-cards" />
+      <div className="gift-atelier__glow gift-atelier__glow--one" /><div className="gift-atelier__glow gift-atelier__glow--two" />
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[#d6b47c]">
-            <Gift className="h-4 w-4" />
-            {t('giftCards.title')}
+      <section className="gift-atelier__hero">
+        <div className="gift-atelier__eyebrow"><Gift size={14} /> LUXX GIFT ATELIER</div>
+        <span className="gift-atelier__edition">EDITION / 2026</span>
+        <h1>Unutilmas <em>sovg‘a</em><br />bir lahzadan boshlanadi.</h1>
+        <p>Uning didiga mos keladigan tanlov erkinligini bering. LUXX sovg‘a kartasi — nozik e’tibor, erkin tanlov.</p>
+        <div className="gift-atelier__promises"><span><Heart size={14} /> Bir lahzada yuboriladi</span><span><LockKeyhole size={14} /> Xavfsiz to‘lov</span></div>
+      </section>
+
+      <section className="gift-atelier__workspace">
+        <div className="gift-atelier__form">
+          <div className="gift-step"><span>01</span><div><p>QIYMATNI TANLANG</p><h2>Unga qancha erkinlik hadya qilasiz?</h2></div></div>
+          <div className="gift-amounts">
+            {GIFT_CARD_AMOUNTS.map((amount) => <button type="button" key={amount} onClick={() => { setSelectedAmount(amount); setCustomAmount(''); }} className={selectedAmount === amount && !customAmount ? 'is-selected' : ''}><b>{formatPrice(amount)}</b><small>SO‘M</small></button>)}
           </div>
-          <h1 className="text-3xl font-semibold text-[#f4f1eb] sm:text-4xl">
-            {t('giftCards.premiumGift')} <span className="text-[#d6b47c]">{t('giftCards.card')}</span>
-          </h1>
-          <p className="mx-auto mt-3 max-w-lg text-[#9aa3b2]">
-            {t('giftCards.subtitle')}
-          </p>
-        </div>
+          <label className="gift-field gift-field--amount"><span>YOKI O‘Z QIYMATINGIZNI KIRITING</span><input type="text" inputMode="numeric" value={customAmount} onChange={handleCustomAmountChange} placeholder="Masalan: 1.500.000" /><i>SO‘M</i></label>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-white/10 bg-[#11131e]/95 p-5">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#9aa3b2]">{t('giftCards.selectAmount')}</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {GIFT_CARD_AMOUNTS.map((amount) => (
-                  <button
-                    key={amount}
-                    onClick={() => { setSelectedAmount(amount); setCustomAmount(''); }}
-                    className={`rounded-xl border p-3 text-center transition-all ${
-                      selectedAmount === amount && !customAmount
-                        ? 'border-[#d6b47c]/40 bg-[#d6b47c]/15 text-[#f4f1eb] shadow-[0_10px_24px_rgba(214,180,124,0.12)]'
-                        : 'border-white/10 bg-white/[0.03] text-[#9aa3b2] hover:bg-white/[0.06]'
-                    }`}
-                  >
-                    <p className="text-sm font-bold">{formatPrice(amount)}</p>
-                    <p className="text-[10px]">so'm</p>
-                  </button>
-                ))}
-              </div>
-              <div className="mt-3">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={customAmount}
-                  onChange={handleCustomAmountChange}
-                  placeholder={t('giftCards.customAmount')}
-                  className="w-full rounded-xl border border-white/10 bg-[#0d1423] px-4 py-2.5 text-sm text-[#f4f1eb] outline-none transition-colors placeholder:text-[#6f7c90] focus:border-[#d6b47c]"
-                />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-[#11131e]/95 p-5">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#9aa3b2]">{t('giftCards.selectDesign')}</h3>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 lg:grid-cols-2 xl:grid-cols-5">
-                {GIFT_CARD_DESIGNS.map((design) => (
-                  <button
-                    key={design.id}
-                    onClick={() => setSelectedDesign(design.id)}
-                    className={`rounded-2xl p-1.5 transition-all ${
-                      selectedDesign === design.id
-                        ? 'bg-[#d6b47c] shadow-[0_0_0_3px_rgba(214,180,124,0.18)]'
-                        : 'bg-white/[0.04] hover:bg-white/[0.08]'
-                    }`}
-                    title={design.name}
-                  >
-                    <div className="relative aspect-[1.6/1] overflow-hidden rounded-xl">
-                      <GiftCardSvg
-                        design={design}
-                        amount={1000000}
-                        recipientName="Luxx"
-                        compact
-                        className="h-full w-full"
-                      />
-                    </div>
-                    <p className={`mt-1 truncate text-center text-[10px] ${selectedDesign === design.id ? 'text-[#0f1014]' : 'text-[#9aa3b2]'}`}>
-                      {design.name}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3 rounded-2xl border border-white/10 bg-[#11131e]/95 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#9aa3b2]">{t('giftCards.sendTo')}</h3>
-              <input
-                type="text"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder={t('giftCards.recipientName')}
-                className="w-full rounded-xl border border-white/10 bg-[#0d1423] px-4 py-2.5 text-sm text-[#f4f1eb] outline-none placeholder:text-[#6f7c90] focus:border-[#d6b47c]"
-              />
-              <input
-                type="tel"
-                value={recipientPhone}
-                onChange={handleRecipientPhoneChange}
-                placeholder="+998 90 123 45 67"
-                className="w-full rounded-xl border border-white/10 bg-[#0d1423] px-4 py-2.5 text-sm text-[#f4f1eb] outline-none placeholder:text-[#6f7c90] focus:border-[#d6b47c]"
-              />
-              <input
-                type="text"
-                value={senderName}
-                onChange={(e) => setSenderName(e.target.value)}
-                placeholder={t('giftCards.senderName')}
-                className="w-full rounded-xl border border-white/10 bg-[#0d1423] px-4 py-2.5 text-sm text-[#f4f1eb] outline-none placeholder:text-[#6f7c90] focus:border-[#d6b47c]"
-              />
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder={t('giftCards.message')}
-                rows={2}
-                className="w-full resize-none rounded-xl border border-white/10 bg-[#0d1423] px-4 py-2.5 text-sm text-[#f4f1eb] outline-none placeholder:text-[#6f7c90] focus:border-[#d6b47c]"
-              />
-            </div>
+          <div className="gift-step gift-step--spaced"><span>02</span><div><p>KARTA KAYFIYATI</p><h2>Har sovg‘aning o‘z ohangi bor.</h2></div></div>
+          <div className="gift-designs">
+            {GIFT_CARD_DESIGNS.map((design, index) => <button type="button" key={design.id} onClick={() => setSelectedDesign(design.id)} className={selectedDesign === design.id ? 'is-selected' : ''} aria-pressed={selectedDesign === design.id}>
+              <span className="gift-designs__number">0{index + 1}</span><GiftCardSvg design={design} amount={300000} recipientName="" compact /><b>{design.name}</b>
+            </button>)}
           </div>
 
-          <div className="space-y-6">
-            <div className="sticky top-24">
-              <GiftCardSvg
-                design={activeDesign}
-                amount={activeAmount}
-                recipientName={recipientName}
-                message={message}
-                className="h-auto w-full drop-shadow-[0_28px_70px_rgba(0,0,0,0.55)]"
-              />
-
-              {!generatedCode ? (
-                <button
-                  onClick={handlePurchase}
-                  disabled={isPurchasing}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#f4f1eb] px-6 py-4 text-base font-semibold text-[#0f1014] transition-all hover:bg-white active:scale-[0.98] disabled:opacity-60"
-                >
-                  {isPurchasing ? (
-                    <span>{t('giftCards.processing')}</span>
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5" />
-                      {t('giftCards.purchase')} - {formatPrice(activeAmount)} so'm
-                    </>
-                  )}
-                </button>
-              ) : (
-                <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5 text-center">
-                  <p className="mb-2 text-sm text-emerald-400">{t('giftCards.cardReady')}</p>
-                  <div className="flex items-center justify-center gap-2 rounded-xl bg-[#0d1423] px-4 py-3">
-                    <code className="text-lg font-bold tracking-wider text-[#f4f1eb]">{generatedCode}</code>
-                    <button onClick={copyCode} className="text-[#9aa3b2] transition-colors hover:text-[#f4f1eb]">
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <p className="mt-2 text-xs text-[#9aa3b2]">
-                    {t('giftCards.useCodeHint')}
-                  </p>
-                </div>
-              )}
-            </div>
+          <div className="gift-step gift-step--spaced"><span>03</span><div><p>KIM UCHUN?</p><h2>Sovg‘angizni shaxsiy qiling.</h2></div></div>
+          <div className="gift-recipient">
+            <label className="gift-field"><span>OLUVCHI ISMI</span><UserRound size={15} /><input value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder={t('giftCards.recipientName')} /></label>
+            <label className="gift-field"><span>TELEFON RAQAMI</span><Phone size={15} /><input type="tel" value={recipientPhone} onChange={handleRecipientPhoneChange} placeholder="+998 90 123 45 67" /></label>
+            <label className="gift-field"><span>SIZNING ISMINGIZ <i>(ixtiyoriy)</i></span><input value={senderName} onChange={(e) => setSenderName(e.target.value)} placeholder={t('giftCards.senderName')} /></label>
+            <label className="gift-field gift-field--message"><span>QISQA TILAK <i>(ixtiyoriy)</i></span><textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t('giftCards.message')} rows={3} /></label>
           </div>
         </div>
-      </div>
-    </div>
+
+        <aside className="gift-preview">
+          <div className="gift-preview__top"><span>LIVE PREVIEW</span><span>{activeDesign.name}</span></div>
+          <div className="gift-preview__card"><GiftCardSvg design={activeDesign} amount={activeAmount} recipientName={recipientName} message={message} /></div>
+          <p className="gift-preview__recipient">{recipientName ? `Aziz ${recipientName}, siz uchun.` : 'Kimnidir xursand qilishga tayyormisiz?'}</p>
+          {!generatedCode ? <button type="button" onClick={handlePurchase} disabled={isPurchasing} className="gift-preview__purchase"><span>{isPurchasing ? t('giftCards.processing') : 'SOVG‘A KARTASINI OLISH'}</span><b>{formatPrice(activeAmount)} SO‘M</b><ArrowRight size={19} /></button> : (
+            <div className="gift-preview__complete"><Check size={21} /><span>KARTANGIZ TAYYOR</span><code>{generatedCode}</code><button type="button" onClick={copyCode}><Copy size={14} /> Kodni nusxalash</button></div>
+          )}
+          <div className="gift-preview__fine"><Sparkles size={14} /> Karta kodi xariddan so‘ng sizga va oluvchiga yetkaziladi.</div>
+        </aside>
+      </section>
+    </main>
   );
 };
 

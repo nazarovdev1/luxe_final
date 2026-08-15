@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { eventNavItems, resolveNavLabel } from '../../config/navigation';
 import { useLanguage } from '../../contexts/LanguageContext';
+import './mobileExperiences.css';
 
 const ICONS = {
   reels: Play,
@@ -157,7 +158,7 @@ const MobileEvents = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#030406] px-4 pb-[calc(7.25rem+env(safe-area-inset-bottom))] pt-[max(.9rem,env(safe-area-inset-top))] text-[#f7f1e8]">
+    <div className="mexp mexp--community min-h-screen overflow-x-hidden bg-[#030406] px-4 pb-[calc(7.25rem+env(safe-area-inset-bottom))] pt-[max(.9rem,env(safe-area-inset-top))] text-[#f7f1e8]">
       <div className="mx-auto w-full max-w-[430px]">
         <header className="flex items-center justify-between px-1">
           <Link to="/mobile" className="font-brilliant text-[21px] leading-none text-[#d6b47c] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#d6b47c]">

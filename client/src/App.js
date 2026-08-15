@@ -72,7 +72,7 @@ function MainContent() {
   const navigate = useNavigate();
   const isMobile = location.pathname.startsWith('/mobile');
   const isAboutPage = location.pathname === '/about';
-  const showDesktopChrome = !isMobile && !['/login', '/register', '/checkout', '/reels', '/live/'].some(path => location.pathname.startsWith(path));
+  const showDesktopChrome = !isMobile && !['/login', '/register', '/checkout', '/reels', '/live/', '/admin'].some(path => location.pathname.startsWith(path));
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);

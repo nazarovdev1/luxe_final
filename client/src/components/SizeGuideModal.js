@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Ruler, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Ruler, Info, ChevronDown, ChevronUp, Target, Lightbulb } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 import { getProductOptions } from '../utils/productVariants';
 import { useLanguage } from '../contexts/LanguageContext';
+import './sizeGuideModal.css';
 
 const getInitialCharts = (t) => ({
   default: {
@@ -173,7 +174,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
   const currentChart = SIZE_CHARTS[activeChart];
 
   return (
-    <div className="fixed inset-0 z-[100] grid place-items-center p-4">
+    <div className="size-guide-atlier fixed inset-0 z-[100] grid place-items-center p-3 sm:p-6">
       {/* ── Liquid Glass Backdrop ─────────────────────── */}
       <div
         className="absolute inset-0 cursor-pointer"
@@ -238,7 +239,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
       </div>
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] shadow-[0_32px_64px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in-scale">
+      <div className="size-guide-atlier__dialog relative w-full max-w-3xl max-h-[92svh] overflow-y-auto animate-fade-in-scale">
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-white/10 bg-[#151b27]/95 backdrop-blur-xl rounded-t-[2rem]">
           <div className="flex items-center gap-3">
@@ -268,7 +269,8 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                 : 'bg-white/5 text-[#9aa3b2] border border-white/10 hover:bg-white/10'
             }`}
           >
-            📏 {t('sizeGuideModal.chartTab')}
+            <Ruler className="mr-1 inline-block" size={14} aria-hidden="true" />
+            {t('sizeGuideModal.chartTab')}
           </button>
           <button
             onClick={() => setActiveTab('calculator')}
@@ -278,7 +280,8 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                 : 'bg-white/5 text-[#9aa3b2] border border-white/10 hover:bg-white/10'
             }`}
           >
-            🎯 {t('sizeGuideModal.findSizeTab')}
+            <Target className="mr-1 inline-block" size={14} aria-hidden="true" />
+            {t('sizeGuideModal.findSizeTab')}
           </button>
         </div>
 
@@ -396,7 +399,8 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
               {/* Tip */}
               <div className="rounded-2xl bg-gradient-to-r from-[#d6b47c]/10 to-transparent border border-[#d6b47c]/20 p-4">
                 <p className="text-sm text-[#f4f1eb]">
-                  💡 <strong>{t('sizeGuideModal.tipTitle')}</strong> {t('sizeGuideModal.tipText')}
+                  <Lightbulb className="mr-2 inline-block text-[#d6b47c]" size={16} aria-hidden="true" />
+                  <strong>{t('sizeGuideModal.tipTitle')}</strong> {t('sizeGuideModal.tipText')}
                 </p>
               </div>
             </div>

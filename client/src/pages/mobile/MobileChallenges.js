@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import './mobileExperiences.css';
 
 const getDaysLeft = (endDate) => {
   if (!endDate) return null;
@@ -176,7 +177,7 @@ export default function MobileChallenges() {
     const sortedSubmissions = [...(selectedChallenge.submissions || [])].sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));
 
     return (
-      <div className="min-h-screen bg-[#07090f] text-white pb-24">
+      <div className="mexp mexp--challenges min-h-screen bg-[#07090f] text-white pb-24">
         {/* Submit bottom sheet */}
         {isSubmitOpen && (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-end">
@@ -218,7 +219,7 @@ export default function MobileChallenges() {
           </div>
         )}
 
-        <div className="px-4 pt-6">
+        <div className="mexp-content px-5 pt-6">
           <button onClick={() => setSelectedChallenge(null)} className="flex items-center gap-2 text-gray-400 mb-5">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">{t('mobileChallenges.back')}</span>
@@ -319,11 +320,9 @@ export default function MobileChallenges() {
 
   // Main Challenges List
   return (
-    <div className="min-h-screen bg-[#07090f] text-white pb-24">
-      <div className="absolute top-0 left-1/4 w-48 h-48 bg-[#d6b47c]/8 rounded-full blur-[80px] -translate-y-1/2" />
-
-      <div className="relative z-10 px-4">
-        <div className="pt-6 pb-5">
+    <div className="mexp mexp--challenges min-h-screen bg-[#07090f] text-white pb-24">
+      <div className="relative z-10 mexp-content px-5">
+        <div className="mexp-head pt-8 pb-8">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 mb-5">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">{t('mobileChallenges.back')}</span>
