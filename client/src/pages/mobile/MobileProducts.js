@@ -1,17 +1,9 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-  ArrowUpRight,
-  BarChart3,
-  Check,
-  Eye,
-  Heart,
-  Search,
-  ShoppingBag,
-  SlidersHorizontal,
-  Sparkles,
-  X,
+  ArrowDownRight, ArrowUpRight, BarChart3, Check, Heart, Search,
+  ShoppingBag, SlidersHorizontal, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useProducts } from '../../contexts/ProductContext';
@@ -22,6 +14,8 @@ import useProductListing from '../../hooks/useProductListing';
 import { showCartToast } from '../../utils/toast';
 import QuickViewModal from '../../components/QuickViewModal';
 import MobileProductComparison from '../../components/MobileProductComparison';
+import './mobileProducts.css';
+import './mobileProductsFilter.css';
 
 const SORT_OPTIONS = [
   { id: 'featured', key: 'sort_recommended' },
@@ -32,21 +26,84 @@ const SORT_OPTIONS = [
   { id: 'price-high', key: 'sort_price_high' },
 ];
 
-const parsePrice = (value) => {
-  if (typeof value === 'string') return Number((value.match(/\d+/g) || []).join('')) || 0;
-  return Number(value || 0);
-};
-
-const formatPrice = (value) => `${parsePrice(value).toLocaleString()}`;
-
+const productId = (product) => product?._id || product?.id;
+const parsePrice = (value) => typeof value === 'string'
+  ? Number((value.match(/\d+/g) || []).join('')) || 0
+  : Number(value || 0);
+const formatPrice = (value) => parsePrice(value).toLocaleString();
 const getProductImage = (product) => {
-  if (!product) return '/placeholder.jpg';
-  if (product.image) return product.image;
-  if (Array.isArray(product.images) && product.images.length > 0) {
+  if (product?.image) return product.image;
+  if (Array.isArray(product?.images) && product.images.length) {
     const first = product.images[0];
     return typeof first === 'object' ? first.url : first;
   }
   return '/placeholder.jpg';
+};
+
+const MobileProductFilter = ({
+  t,
+  categories,
+  initialSearch,
+  initialSort,
+  initialCategory,
+  initialNewOnly,
+  onClose,
+  onApply,
+}) => {
+  const [draft, setDraft] = useState(() => ({
+    search: initialSearch,
+    sort: initialSort,
+    category: initialCategory,
+    newOnly: initialNewOnly,
+  }));
+
+  const clearDraft = () => setDraft({
+    search: '',
+    sort: 'featured',
+    category: t('common.all'),
+    newOnly: false,
+  });
+
+  return createPortal(
+    <div className="mcpf" role="dialog" aria-modal="true" aria-label="Mahsulotlarni saralash">
+      <button className="mcpf__backdrop" onClick={onClose} aria-label="Yopish" />
+      <section className="mcpf__panel">
+        <header className="mcpf__header">
+          <div><span>LUXX TANLOVI</span><h2>Mahsulotlarni<br /><em>saralash</em></h2></div>
+          <button type="button" onClick={onClose} aria-label="Yopish"><X /></button>
+        </header>
+
+        <div className="mcpf__body">
+          <label className="mcpf__search">
+            <Search aria-hidden="true" />
+            <input value={draft.search} onChange={(event) => setDraft((current) => ({ ...current, search: event.target.value }))} placeholder="Mahsulot yoki kategoriya qidiring" />
+          </label>
+
+          <section className="mcpf__section">
+            <div className="mcpf__section-title"><span>01</span><h3>Qanday tartibda?</h3></div>
+            <div className="mcpf__sort-list">
+              {SORT_OPTIONS.map((option) => {
+                const selected = draft.sort === option.id;
+                return <button type="button" key={option.id} onClick={() => setDraft((current) => ({ ...current, sort: option.id }))} className={selected ? 'is-selected' : ''}><span>{t(`mobileProducts.${option.key}`)}</span><i>{selected && <Check aria-hidden="true" />}</i></button>;
+              })}
+            </div>
+          </section>
+
+          <section className="mcpf__section">
+            <div className="mcpf__section-title"><span>02</span><h3>Kategoriyani tanlang</h3></div>
+            <div className="mcpf__categories">
+              {categories.map((category) => <button type="button" key={category} onClick={() => setDraft((current) => ({ ...current, category }))} className={draft.category === category ? 'is-selected' : ''}><span>{category}</span>{draft.category === category && <Check aria-hidden="true" />}</button>)}
+            </div>
+          </section>
+
+          <button type="button" className={`mcpf__new ${draft.newOnly ? 'is-selected' : ''}`} onClick={() => setDraft((current) => ({ ...current, newOnly: !current.newOnly }))}><span><b>Faqat yangi kolleksiya</b><small>Eng so‘nggi qo‘shilgan liboslar</small></span><i>{draft.newOnly && <Check aria-hidden="true" />}</i></button>
+        </div>
+
+        <footer className="mcpf__footer"><button type="button" onClick={clearDraft}>Tozalash</button><button type="button" onClick={() => onApply(draft)}>Natijalarni ko‘rish <ArrowDownRight /></button></footer>
+      </section>
+    </div>,
+    document.body,
+  );
 };
 
 const MobileProducts = () => {
@@ -54,376 +111,183 @@ const MobileProducts = () => {
   const { products, isLoading, categories } = useProducts();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const loadMoreRef = useRef(null);
 
-  const {
-    selectedCategory,
-    isNewOnly,
-    searchText,
-    sortBy,
-    quickViewProduct,
-    compareList,
-    showComparison,
-    derivedCategories,
-    sortedProducts,
-    displayedProducts,
-    hasMore,
-    setSearchText,
-    setSortBy,
-    setQuickViewProduct,
-    setCompareList,
-    setShowComparison,
-    handleCategoryChange,
-    handleNewOnlyChange,
-    loadMore,
-    resetFilters,
-    toggleCompare,
-    isCompareSelected,
-  } = useProductListing({
+  const listing = useProductListing({
     products,
     categories,
     allLabel: t('common.all'),
     categoryFromUrl: searchParams.get('category'),
     filterFromUrl: searchParams.get('filter'),
-    setSearchParams,
+    // Filter tanlovi URL'ni almashtirmaydi: aks holda mobil route qayta
+    // hisoblanib, filter oynasi foydalanuvchiga yana paydo bo'lib ko'rinadi.
+    setSearchParams: undefined,
     initialSort: 'featured',
     pageSize: 10,
   });
 
+  const {
+    selectedCategory, isNewOnly, searchText, sortBy, quickViewProduct,
+    compareList, showComparison, derivedCategories, sortedProducts,
+    displayedProducts, hasMore, setSearchText, setSortBy, setQuickViewProduct,
+    setCompareList, setShowComparison, handleCategoryChange, handleNewOnlyChange,
+    loadMore, resetFilters, toggleCompare, isCompareSelected,
+  } = listing;
+
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 32);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Do not restore a stale scroll position after data/infinite-list changes.
+  // Native history restoration handles returning from a product detail page.
   useEffect(() => {
+    document.documentElement.classList.toggle('mobile-products-sheet-open', showFilters);
+    document.body.classList.toggle('mobile-products-sheet-open', showFilters);
     return () => {
-      if (window.scrollY > 0) {
-        sessionStorage.setItem('mobileProductsScroll', window.scrollY.toString());
-      }
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!isLoading && products.length > 0) {
-      const savedScroll = sessionStorage.getItem('mobileProductsScroll');
-      if (savedScroll) {
-        setTimeout(() => window.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'instant' }), 0);
-      }
-    }
-  }, [isLoading, products.length]);
-
-  useEffect(() => {
-    const overflow = showFilters ? 'hidden' : '';
-    document.body.style.overflow = overflow;
-    document.documentElement.style.overflow = overflow;
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
+      document.documentElement.classList.remove('mobile-products-sheet-open');
+      document.body.classList.remove('mobile-products-sheet-open');
     };
   }, [showFilters]);
 
-  useEffect(() => {
-    if (!loadMoreRef.current || isLoading || !hasMore) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) loadMore();
-    }, { threshold: 0.2 });
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasMore, isLoading, loadMore]);
+  const lead = displayedProducts[0];
+  const gridProducts = displayedProducts.slice(1);
+  const editorialNumber = useMemo(() => String(sortedProducts.length).padStart(2, '0'), [sortedProducts.length]);
 
-  const handleFavoriteToggle = (event, productId) => {
+  const favorite = (event, id) => {
     event.preventDefault();
     event.stopPropagation();
-    toggleFavorite(productId);
+    toggleFavorite(id);
   };
-
-  const handleQuickAdd = async (event, product) => {
+  const compare = (event, product) => {
     event.preventDefault();
     event.stopPropagation();
-
-    if ((product.colors || []).length > 0 || (product.sizes || []).length > 0) {
+    toggleCompare(product);
+  };
+  const quickAdd = async (event, product) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if ((product.colors || []).length || (product.sizes || []).length) {
       setQuickViewProduct(product);
       return;
     }
-
     try {
       await addToCart(product, '', '', 1);
-      showCartToast({
-        itemName: product.name,
-      });
+      showCartToast({ itemName: product.name });
     } catch {
       toast.error(t('mobileProducts.error_generic'));
     }
   };
 
-  const handleCompareClick = (event, product) => {
-    event.preventDefault();
-    event.stopPropagation();
-    toggleCompare(product);
+  const openFilters = () => {
+    setShowFilters(true);
   };
 
-  const ProductBadge = ({ badge }) => {
-    if (!badge) return null;
-    const isNew = (badge || '').toUpperCase() === 'NEW';
-    return (
-      <span className={`absolute left-3 top-3 z-10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${isNew ? 'bg-white text-black' : 'bg-black/60 text-white backdrop-blur-sm'}`}>
-        {badge}
-      </span>
-    );
+  const closeFilters = () => {
+    setShowFilters(false);
   };
 
-  const ProductTile = ({ product, lead = false }) => {
-    const selectedForCompare = isCompareSelected(product);
-    return (
-      <Link
-        to={`/mobile/product/${product.id}`}
-        state={{ fromMobileList: true }}
-        onClick={() => sessionStorage.setItem('mobileProductsScroll', window.scrollY.toString())}
-        className={`group block ${lead ? 'mb-6' : 'mb-6'}`}
-      >
-        <div className={`relative overflow-hidden bg-[#0a0a0a] ${lead ? 'aspect-[4/5]' : 'aspect-[3/4]'}`}>
-          <img
-            src={getProductImage(product)}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-700 group-active:scale-105"
-            loading={lead ? 'eager' : 'lazy'}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10" />
-          <ProductBadge badge={product.badge} />
+  const applyFilters = (nextFilters) => {
+    setSearchText(nextFilters.search);
+    setSortBy(nextFilters.sort);
+    handleCategoryChange(nextFilters.category);
+    handleNewOnlyChange(nextFilters.newOnly);
+    closeFilters();
+  };
 
-          <button
-            onClick={(event) => handleFavoriteToggle(event, product.id)}
-            className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/35 backdrop-blur-md active:scale-95"
-            aria-label={t('mobileProducts.wishlist_label')}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite(product.id) ? 'fill-white text-white' : 'text-white'}`} />
+  const ProductCard = ({ product, index }) => {
+    const id = productId(product);
+    const isLead = index === 0;
+    const isCompared = isCompareSelected(product);
+    return (
+      <article className={`mcp-card ${isLead ? 'mcp-card--lead' : ''}`}>
+        <Link to={`/mobile/product/${id}`} className="mcp-card__link" aria-label={product.name}>
+          <div className="mcp-card__image-wrap">
+            <img src={getProductImage(product)} alt={product.name} loading={isLead ? 'eager' : 'lazy'} />
+            <div className="mcp-card__shade" />
+            <span className="mcp-card__index">{String(index + 1).padStart(2, '0')}</span>
+            {product.badge && <span className="mcp-card__badge">{product.badge}</span>}
+            <button type="button" onClick={(event) => favorite(event, id)} className="mcp-card__heart" aria-label={t('mobileProducts.wishlist_label')}>
+              <Heart className={isFavorite(id) ? 'fill-current' : ''} />
+            </button>
+            {isLead && <span className="mcp-card__hero-mark">eng ko‘p<br />tanlangan</span>}
+          </div>
+          <div className="mcp-card__copy">
+            <p>{product.category || 'LUXX to‘plami'}</p>
+            <h2>{product.name}</h2>
+            <div className="mcp-card__price-line">
+              <strong>{formatPrice(product.price)} <small>{t('common.sum')}</small></strong>
+              {product.rating > 0 && <span>★ {Number(product.rating).toFixed(1)}</span>}
+            </div>
+          </div>
+        </Link>
+        <div className="mcp-card__actions">
+          <button type="button" onClick={(event) => compare(event, product)} className={isCompared ? 'is-active' : ''} aria-label={t('mobileProducts.compare_label')}>
+            {isCompared ? <Check /> : <BarChart3 />}
           </button>
-
-          <div className={`absolute right-3 z-10 flex gap-2 ${lead ? 'bottom-[88px] flex-col' : 'bottom-3'}`}>
-            <button
-              onClick={(event) => handleCompareClick(event, product)}
-              className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${selectedForCompare ? 'border-[#d6b47c]/50 bg-[#d6b47c] text-black' : 'border-white/10 bg-black/45 text-white'}`}
-              aria-label={t('mobileProducts.compare_label')}
-            >
-              {selectedForCompare ? <Check className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
-            </button>
-          </div>
-
-          {lead && (
-            <div className="absolute bottom-0 left-0 w-full p-5">
-              <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.2em] text-white/70">{product.category}</p>
-              <h2 className="mb-2 text-2xl font-light leading-tight text-white">{product.name}</h2>
-              <div className="flex items-center justify-between">
-                <p className="text-lg font-medium text-white">{formatPrice(product.price)} {t('common.sum')}</p>
-                <button className="flex h-10 w-10 items-center justify-center bg-white text-black active:scale-95">
-                  <ArrowUpRight className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          )}
+          <button type="button" onClick={(event) => quickAdd(event, product)} aria-label={t('mobileProducts.add_to_cart_label')}>
+            {isLead ? <ArrowUpRight /> : <ShoppingBag />}
+          </button>
         </div>
-
-        {!lead && (
-          <div className="px-1 pt-3">
-            <p className="truncate pr-2 text-[10px] font-medium uppercase tracking-widest text-gray-500">{product.category}</p>
-            <h3 className="mb-1.5 mt-1 min-h-[3em] text-sm font-normal leading-normal text-white line-clamp-3">{product.name}</h3>
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium text-white">{formatPrice(product.price)} {t('common.sum')}</p>
-              <button
-                onClick={(event) => handleQuickAdd(event, product)}
-                className="bg-white/10 p-2 active:bg-white/20"
-                aria-label={t('mobileProducts.add_to_cart_label')}
-              >
-                <ShoppingBag className="h-4 w-4 text-white" />
-              </button>
-            </div>
-          </div>
-        )}
-      </Link>
+      </article>
     );
   };
-
-  const FilterSheet = () => {
-    if (!showFilters) return null;
-
-    return createPortal(
-      <div className="fixed inset-0 z-[100] flex items-end justify-center">
-        <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
-        <div className="relative max-h-[88vh] w-full overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#0a0a0a] p-6 pb-8">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-light tracking-wide text-white">{t('mobileProducts.filter_title')}</h2>
-            <button onClick={() => setShowFilters(false)} className="p-2 text-white/50 hover:text-white">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          <div className="relative mb-6">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <input
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder={t('mobileProducts.search_placeholder')}
-              className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-10 pr-4 text-[16px] text-white placeholder:text-gray-500 outline-none focus:border-[#d6b47c]/50"
-            />
-          </div>
-
-          <div className="space-y-8">
-            <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-widest text-white/40">{t('mobileProducts.sort_heading')}</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {SORT_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setSortBy(option.id)}
-                    className={`border px-4 py-3 text-left text-sm ${sortBy === option.id ? 'border-white bg-white/5 text-white' : 'border-white/10 text-white/60'}`}
-                  >
-                    {t(`mobileProducts.${option.key}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-widest text-white/40">{t('mobileProducts.category_heading')}</h3>
-              <div className="flex flex-wrap gap-2">
-                {derivedCategories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => handleCategoryChange(category)}
-                    className={`border px-4 py-2 text-xs uppercase tracking-wide ${selectedCategory === category ? 'border-white bg-white text-black' : 'border-white/10 text-white/60'}`}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleNewOnlyChange(!isNewOnly)}
-              className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm ${isNewOnly ? 'border-[#d6b47c]/40 bg-[#d6b47c]/10 text-[#d6b47c]' : 'border-white/10 bg-white/[0.03] text-white/70'}`}
-            >
-              <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> {t('mobileProducts.only_new_collection')}</span>
-              {isNewOnly && <Check className="h-4 w-4" />}
-            </button>
-          </div>
-
-          <div className="mt-8 flex gap-4 border-t border-white/10 pt-6">
-            <button onClick={resetFilters} className="flex-1 py-4 text-xs font-medium uppercase tracking-widest text-white/60">
-              {t('mobileProducts.clear')}
-            </button>
-            <button onClick={() => setShowFilters(false)} className="flex-1 bg-white py-4 text-xs font-bold uppercase tracking-widest text-black">
-              {t('mobileProducts.view_results')}
-            </button>
-          </div>
-        </div>
-      </div>,
-      document.body
-    );
-  };
-
-  const lead = displayedProducts[0] || null;
-  const feedProducts = displayedProducts.slice(1);
 
   return (
-    <div className="min-h-screen bg-black pb-28 text-white">
-      <header className={`sticky top-0 z-40 border-b bg-black/85 backdrop-blur-md transition-colors ${isScrolled ? 'border-white/10' : 'border-transparent'}`}>
-        <div className="flex items-center justify-between px-5 py-4">
-          <div>
-            <h1 className="text-xl font-light uppercase tracking-widest">{t('mobileProducts.header_title_main')} <span className="font-serif text-lg italic lowercase text-white/70">{t('mobileProducts.header_title_sub')}</span></h1>
-            <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-white/40">{sortedProducts.length} {t('mobileProducts.items_count')}</p>
-          </div>
-          <button onClick={() => setShowFilters(true)} className="flex h-10 w-10 items-center justify-center border border-white/10">
-            <SlidersHorizontal className="h-4 w-4 text-white" />
-          </button>
-        </div>
-
-        <div className="flex gap-6 overflow-x-auto px-5 pb-4 scrollbar-hide">
-          {derivedCategories.map((category) => (
-            <button
-              key={category}
-              onClick={() => handleCategoryChange(category)}
-              className={`whitespace-nowrap border-b pb-1 text-xs uppercase tracking-widest ${selectedCategory === category ? 'border-white text-white' : 'border-transparent text-white/40'}`}
-            >
-              {category}
-            </button>
-          ))}
+    <div className="mcp-page">
+      <header className={`mcp-topbar ${isScrolled ? 'is-scrolled' : ''}`}>
+        <div className="mcp-topbar__line"><span>LUXX / SARALANGAN LIBOSLAR</span><span>{editorialNumber} TA MAHSULOT</span></div>
+        <div className="mcp-topbar__title-row"><h1>Uslubingizni <em>tanlang</em></h1><button onClick={openFilters} aria-label={t('mobileProducts.filter_title')}><SlidersHorizontal /></button></div>
+        <div className="mcp-category-rail" aria-label={t('mobileProducts.category_heading')}>
+          {derivedCategories.map((category) => <button key={category} onClick={() => handleCategoryChange(category)} className={selectedCategory === category ? 'is-current' : ''}>{category}</button>)}
         </div>
       </header>
 
-      <main className="pt-2">
-        {isLoading ? (
-          <div className="px-4 py-8 text-center">
-            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-white border-r-transparent" />
-            <p className="mt-4 text-xs uppercase tracking-widest text-white/40">{t('mobileProducts.loading')}</p>
-          </div>
-        ) : sortedProducts.length === 0 ? (
-          <div className="px-8 py-20 text-center">
-            <p className="mb-4 text-2xl font-serif italic text-white/20">{t('mobileProducts.no_results')}</p>
-            <button onClick={resetFilters} className="border-b border-white pb-0.5 text-xs uppercase tracking-widest">{t('mobileProducts.clear_filters')}</button>
-          </div>
-        ) : (
-          <>
-            {lead && <ProductTile product={lead} lead />}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 px-4">
-              {feedProducts.map((product) => (
-                <ProductTile key={product.id} product={product} />
-              ))}
-            </div>
-            {hasMore && (
-              <div ref={loadMoreRef} className="flex justify-center py-10">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#d6b47c]/30 border-t-[#d6b47c]" />
-              </div>
-            )}
-          </>
-        )}
+      <main>
+        {isLoading ? <div className="mcp-loading"><i /><span>{t('mobileProducts.loading')}</span></div> : sortedProducts.length === 0 ? (
+          <div className="mcp-empty"><span>0{editorialNumber}</span><h2>{t('mobileProducts.no_results')}</h2><button onClick={resetFilters}>{t('mobileProducts.clear_filters')}</button></div>
+        ) : <>
+          <section className="mcp-intro">
+            <p>SIZ UCHUN SARALANDI</p>
+            <h2>{selectedCategory === t('common.all') ? 'Sizga yarashadigan liboslar.' : selectedCategory}</h2>
+            <span>{sortedProducts.length} {t('mobileProducts.items_count')} / nafis tanlovlar</span>
+          </section>
+          {lead && <section className="mcp-lead-stage"><ProductCard product={lead} index={0} /></section>}
+          <section className="mcp-collection-head"><span>YANGI TANLOVLAR / {editorialNumber}</span><h2>Har kuningiz<br /><em>o‘zgacha.</em></h2></section>
+          <section className="mcp-grid">
+            {gridProducts.map((product, index) => <ProductCard key={productId(product)} product={product} index={index + 1} />)}
+          </section>
+          {hasMore && <button type="button" onClick={loadMore} className="mcp-more"><span>YANA LIBOSLARNI KO‘RISH</span><ArrowDownRight /></button>}
+        </>}
       </main>
 
       {compareList.length > 0 && !showComparison && (
-        <div className="fixed bottom-24 left-3 right-3 z-50 rounded-3xl border border-white/10 bg-[#0f0f0f]/95 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {compareList.map((product) => (
-                  <img key={product.id} src={getProductImage(product)} alt="" className="h-10 w-10 rounded-full border-2 border-[#0f0f0f] object-cover" />
-                ))}
-              </div>
-              <p className="text-xs font-semibold text-white">{compareList.length} {t('mobileProducts.comparing_count')}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setCompareList([])} className="px-2 text-xs text-white/50">{t('mobileProducts.clear_short')}</button>
-              <button
-                onClick={() => setShowComparison(true)}
-                disabled={compareList.length < 2}
-                className="rounded-2xl bg-[#d6b47c] px-4 py-2 text-xs font-bold uppercase text-black disabled:opacity-40"
-              >
-                {t('mobileProducts.compare')}
-              </button>
-            </div>
-          </div>
-        </div>
+        <aside className="mcp-compare-dock">
+          <div className="mcp-compare-dock__faces">{compareList.map((product) => <img key={productId(product)} src={getProductImage(product)} alt="" />)}</div>
+          <p><span>TAQQOSLASH UCHUN</span>{compareList.length} {t('mobileProducts.comparing_count')}</p>
+          <button onClick={() => setCompareList([])}>{t('mobileProducts.clear_short')}</button>
+          <button onClick={() => setShowComparison(true)} disabled={compareList.length < 2}>{t('mobileProducts.compare')} <ArrowUpRight /></button>
+        </aside>
       )}
 
-      <FilterSheet />
-      <QuickViewModal
-        isOpen={!!quickViewProduct}
-        onClose={() => setQuickViewProduct(null)}
-        product={quickViewProduct}
-        productPathPrefix="/mobile"
-      />
-      {showComparison && (
-        <MobileProductComparison
-          products={compareList}
-          productPathPrefix="/mobile"
-          onClose={() => {
-            setShowComparison(false);
-            setCompareList([]);
-          }}
+      {showFilters && (
+        <MobileProductFilter
+          t={t}
+          categories={derivedCategories}
+          initialSearch={searchText}
+          initialSort={sortBy}
+          initialCategory={selectedCategory}
+          initialNewOnly={isNewOnly}
+          onClose={closeFilters}
+          onApply={applyFilters}
         />
       )}
+      <QuickViewModal isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} product={quickViewProduct} productPathPrefix="/mobile" />
+      {showComparison && <MobileProductComparison products={compareList} productPathPrefix="/mobile" onClose={() => { setShowComparison(false); setCompareList([]); }} />}
     </div>
   );
 };
