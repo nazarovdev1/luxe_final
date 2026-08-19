@@ -35,7 +35,7 @@
 .mch-hero__light::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 76% 37%, rgba(250,209,129,.23), transparent 32%); filter: blur(24px); }
 .mch-hero__edition { position: absolute; z-index: 2; top: max(24px, env(safe-area-inset-top)); left: 18px; display: flex; align-items: center; gap: 9px; color: #e5c27d; font: 500 8px/1 var(--mch-mono); letter-spacing: .18em; }
 .mch-hero__rail { display: block; width: 34px; height: 1px; background: #e5c27d; transform-origin: left; }
-.mch-hero__copy { position: relative; z-index: 2; width: 100%; padding: 0 18px 73px; }
+.mch-hero__copy { position: relative; z-index: 2; width: 100%; padding: 0 18px clamp(122px, 18svh, 148px); }
 .mch-hero__copy h1 { margin: 0; padding: 0; font: inherit; }
 .mch-hero__word { display: block; height: clamp(65px, 20vw, 91px); overflow: visible; }
 .mch-hero__word span { display: block; width: max-content; font: 500 clamp(70px, 20vw, 96px)/.73 var(--mch-display); letter-spacing: -.09em; }
@@ -170,7 +170,7 @@
   .mch-hero__word span { font-size: 68px; }
   .mch-hero__word--accent { margin-left: 6vw; }
   .mch-hero__actions { grid-template-columns: 1fr; }
-  .mch-hero__copy { padding-bottom: 59px; }
+  .mch-hero__copy { padding-bottom: clamp(112px, 16svh, 128px); }
   .mch-heading h2, .mch-universe__intro h2, .mch-finale__copy h2 { font-size: 42px; }
   .mch-curated__images { height: 360px; }
 }
