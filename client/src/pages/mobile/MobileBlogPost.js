@@ -4,6 +4,7 @@ import { Calendar, Clock, Eye, ArrowLeft, Share2, ChevronRight, BookOpen, Tag, S
 import axios from 'axios';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
 import { useLanguage } from '../../contexts/LanguageContext';
+import SEO from '../../components/SEO';
 
 const MobileBlogPost = () => {
   const { slug } = useParams();
@@ -94,6 +95,14 @@ const MobileBlogPost = () => {
 
   return (
     <div className="min-h-screen bg-[#07080c] pt-4 pb-24">
+      <SEO
+        title={blog.seoTitle || blog.title?.uz || blog.title?.en || 'Moda blogi'}
+        description={blog.seoDescription || blog.excerpt?.uz || blog.excerpt?.en || ''}
+        image={blog.coverImage}
+        canonicalPath={`/blog/${slug}`}
+        type="article"
+        noIndex={!String(blog.content?.uz || blog.content?.en || blog.content?.ru || '').trim()}
+      />
       {/* Cover Image */}
       {blog.coverImage && (
         <div className="relative w-full h-56 overflow-hidden">

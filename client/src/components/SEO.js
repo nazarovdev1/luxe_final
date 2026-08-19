@@ -47,6 +47,7 @@ const SEO = ({
     noIndex = false,
     type = 'website',
     structuredData,
+    keywords,
     breadcrumbSteps = [], // New prop for breadcrumbs
 }) => {
     const { language, t } = useLanguage();
@@ -69,7 +70,10 @@ const SEO = ({
         typeof window !== 'undefined' ? window.location.pathname : '/';
     const isMobilePath =
         typeof window !== 'undefined' && window.location.pathname.startsWith('/mobile');
-    const canonical = buildCanonicalUrl(canonicalPath || url || runtimePath);
+    const canonicalRuntimePath = isMobilePath
+        ? (runtimePath.replace(/^\/mobile(?=\/|$)/, '') || '/')
+        : runtimePath;
+    const canonical = buildCanonicalUrl(canonicalPath || url || canonicalRuntimePath);
     const shouldNoIndex = Boolean(noIndex || isMobilePath);
     const robots = shouldNoIndex ? 'noindex, nofollow' : 'index, follow';
 
@@ -82,6 +86,7 @@ const SEO = ({
         schemas.push({
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
+            '@id': `${canonical}#breadcrumb`,
             itemListElement: [
                 {
                     '@type': 'ListItem',
@@ -111,6 +116,7 @@ const SEO = ({
         <Helmet htmlAttributes={{ lang: language }}>
             <title>{pageTitle}</title>
             <meta name="description" content={pageDescription} />
+            {keywords && <meta name="keywords" content={keywords} />}
             <meta name="robots" content={robots} />
             <meta name="googlebot" content={robots} />
             <link rel="canonical" href={canonical} />

@@ -61,8 +61,10 @@ const CoutureHero = ({ product, returning }) => {
       </div>
       <div className="mch-hero__edition"><span className="mch-hero__rail" />LUXX / 2026 EDITION</div>
       <div className="mch-hero__copy">
-        <div className="mch-hero__word"><span data-hero-reveal>LUXX</span></div>
-        <div className="mch-hero__word mch-hero__word--accent"><span data-hero-reveal>COUTURE</span></div>
+        <h1 aria-label="Toshkentdagi premium ayollar kiyimlari">
+          <span className="mch-hero__word"><span data-hero-reveal>LUXX</span></span>
+          <span className="mch-hero__word mch-hero__word--accent"><span data-hero-reveal>COUTURE</span></span>
+        </h1>
         <p className="mch-hero__lead"><span data-hero-reveal>Nafislik shovqin qilmaydi.<br />U xonaga sizdan oldin kiradi.</span></p>
         <div className="mch-hero__actions">
           <Link to="/mobile/products" className="mch-button mch-button--gold">Kolleksiyani kashf etish<ArrowRight size={16} /></Link>

@@ -40,7 +40,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const MobileApp = () => {
     return (
         <MobileLayout>
-            <SEO title="Premium Fashion Store" noIndex={true} canonicalPath="/" />
+            <SEO />
             <Suspense fallback={<Loading />}>
                 <Routes>
                     <Route path="/" element={<MobileHome />} />

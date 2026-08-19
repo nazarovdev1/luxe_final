@@ -274,13 +274,13 @@ const MobileProductView = () => {
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify({
-            "@context": "https://schema.org", "@type": "Product",
+            "@context": "https://schema.org", "@type": "Product", "@id": `https://luxx.uz/product/${id}#product`,
             "name": product.name,
             "image": images,
             "description": product.description,
             "sku": product.sku || product._id,
             "brand": { "@type": "Brand", "name": "Luxx.uz" },
-            "offers": { "@type": "Offer", "priceCurrency": "UZS", "price": product.price, "availability": Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }
+            "offers": { "@type": "Offer", "url": `https://luxx.uz/product/${id}`, "priceCurrency": "UZS", "price": product.price, "availability": product.stock == null || Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }
           })}
         </script>
       </Helmet>

@@ -5,6 +5,7 @@ import { eventNavItems, resolveNavLabel } from '../../config/navigation';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useProducts } from '../../contexts/ProductContext';
 import useProductService from '../../server/server';
+import SEO from '../../components/SEO';
 
 const imageOf = (product) => product?.image || product?.images?.[0] || '/mobile.jpg';
 const idOf = (item) => item?._id || item?.id;
@@ -101,6 +102,11 @@ export default function MobileHome() {
 
   return (
     <>
+      <SEO
+        title="Premium ayollar kiyimlari Toshkentda"
+        description="Luxx.uz — Toshkentdagi premium ayollar kiyimlari do‘koni. Zamonaviy kostyum, jaket, palto va tayyor obrazlarni kashf eting."
+        canonicalPath="/"
+      />
       {activeLookId && <LookDetailModal lookId={activeLookId} onClose={closeLook} />}
       <MobileCoutureHome
         products={products}

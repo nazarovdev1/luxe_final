@@ -14,7 +14,7 @@
   <meta name="msapplication-TileColor" content="#2c114f" />
   <meta name="msapplication-tap-highlight" content="no" />
   <meta name="description"
-    content="Luxx.uz — Toshkentdagi premium ayollar kiyimlari onlayn do'koni. Zamonaviy ko'ylak, palto va tayyor obrazlarni tez yetkazib berish bilan xarid qiling." />
+    content="Luxx.uz — Toshkentdagi premium ayollar kiyimlari onlayn do'koni. Zamonaviy kostyum, jaket, palto va tayyor obrazlarni tez yetkazib berish bilan xarid qiling." />
   <meta name="author" content="Luxx Store" />
   <meta name="robots" content="index, follow" />
   <meta name="googlebot" content="index, follow" />
@@ -119,7 +119,10 @@
   <meta property="og:title" content="Luxx.uz — Toshkentda premium ayollar kiyimlari" />
   <meta property="og:description"
     content="Premium ko'ylak, palto va tayyor obrazlarni Luxx.uz onlayn do'konidan xarid qiling. Toshkent bo'ylab tez yetkazib berish mavjud." />
-  <meta property="og:image" content="https://luxx.uz/logoweb2.png" />
+  <meta property="og:image" content="https://luxx.uz/hero.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="675" />
+  <meta property="og:image:alt" content="Luxx.uz premium ayollar kiyimlari kolleksiyasi" />
   <meta property="og:locale" content="uz_UZ" />
 
   <!-- Twitter Card -->
@@ -128,44 +131,38 @@
   <meta name="twitter:title" content="Luxx.uz — Toshkentda premium ayollar kiyimlari" />
   <meta name="twitter:description"
     content="Premium ko'ylak, palto va tayyor obrazlarni onlayn xarid qiling. Toshkent bo'ylab tez yetkazib berish mavjud." />
-  <meta name="twitter:image" content="https://luxx.uz/logoweb2.png" />
+  <meta name="twitter:image" content="https://luxx.uz/hero.jpg" />
 
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
+      "@id": "https://luxx.uz/#website",
       "name": "Luxx.uz",
       "url": "https://luxx.uz/",
-      "description": "O'zbekistondagi premium ayollar kiyimlari onlayn do'koni - luxury fashion ecommerce in Uzbekistan",
-      "inLanguage": "uz",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://luxx.uz/products?search={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "description": "O'zbekistondagi premium ayollar kiyimlari onlayn do'koni",
+      "inLanguage": "uz-UZ",
+      "publisher": { "@id": "https://luxx.uz/#organization" }
     }
   </script>
 
-  <!-- Local Business Structured Data -->
+  <!-- Online store / Organization structured data -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ClothingStore",
-      "name": "Luxx.uz - Ayollar kiyimlari",
-      "alternateName": ["Luxe", "LUXX"],
+      "@type": ["Organization", "OnlineStore"],
+      "@id": "https://luxx.uz/#organization",
+      "name": "Luxx.uz",
+      "alternateName": ["LUXX", "Luxx uz", "Luxe uz"],
       "image": "https://luxx.uz/logoweb2.png",
-      "url": "https://luxx.uz",
+      "logo": "https://luxx.uz/logoweb2.png",
+      "url": "https://luxx.uz/",
       "telephone": "+998884299969",
       "priceRange": "$$",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Toshkent",
         "addressCountry": "UZ"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": 41.2995,
-        "longitude": 69.2401
       },
       "areaServed": [
         {
@@ -180,23 +177,14 @@
       "sameAs": [
         "https://www.instagram.com/luxx.uz_/"
       ],
-      "keywords": [
-        "ayollar kiyimlari",
-        "luxury kiyimlar",
-        "paltolar",
-        "ko'ylaklar",
-        "yozgi kiyimlar",
-        "qishki kiyimlar",
-        "moda",
-        "onlayn do'kon"
-      ],
-      "openingHoursSpecification": {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": [
-          "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
-        ],
-        "opens": "00:00",
-        "closes": "23:59"
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "applicableCountry": "UZ",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 14,
+        "returnMethod": "https://schema.org/ReturnByMail",
+        "returnFees": "https://schema.org/FreeReturn",
+        "merchantReturnLink": "https://luxx.uz/terms"
       },
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
@@ -229,7 +217,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <title>Luxx.uz - Luxury ayollar kiyimlari va seasonal kolleksiya</title>
+  <title>Premium ayollar kiyimlari Toshkentda | Luxx.uz</title>
 </head>
 
 <body>
@@ -238,7 +226,7 @@
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
 
-  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <noscript>Luxx.uz mahsulotlarini ko‘rish uchun brauzeringizda JavaScript’ni yoqing.</noscript>
   <div id="root"></div>
   <script type="module" src="/src/index.js"></script>
 </body>

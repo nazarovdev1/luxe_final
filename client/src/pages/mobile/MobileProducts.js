@@ -14,6 +14,7 @@ import useProductListing from '../../hooks/useProductListing';
 import { showCartToast } from '../../utils/toast';
 import QuickViewModal from '../../components/QuickViewModal';
 import MobileProductComparison from '../../components/MobileProductComparison';
+import SEO from '../../components/SEO';
 import './mobileProducts.css';
 import './mobileProductsFilter.css';
 
@@ -235,6 +236,11 @@ const MobileProducts = () => {
 
   return (
     <div className="mcp-page">
+      <SEO
+        title="Premium ayollar kiyimlari katalogi"
+        description="Luxx.uz ayollar kiyimlari katalogi: premium kostyumlar, jaketlar, paltolar va zamonaviy to‘plamlarni Toshkent bo‘ylab yetkazib berish bilan xarid qiling."
+        canonicalPath="/products"
+      />
       <header className={`mcp-topbar ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="mcp-topbar__line"><span>LUXX / SARALANGAN LIBOSLAR</span><span>{editorialNumber} TA MAHSULOT</span></div>
         <div className="mcp-topbar__title-row"><h1>Uslubingizni <em>tanlang</em></h1><button onClick={openFilters} aria-label={t('mobileProducts.filter_title')}><SlidersHorizontal /></button></div>

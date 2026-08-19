@@ -36,7 +36,8 @@
 .mch-hero__edition { position: absolute; z-index: 2; top: max(24px, env(safe-area-inset-top)); left: 18px; display: flex; align-items: center; gap: 9px; color: #e5c27d; font: 500 8px/1 var(--mch-mono); letter-spacing: .18em; }
 .mch-hero__rail { display: block; width: 34px; height: 1px; background: #e5c27d; transform-origin: left; }
 .mch-hero__copy { position: relative; z-index: 2; width: 100%; padding: 0 18px 73px; }
-.mch-hero__word { height: clamp(65px, 20vw, 91px); overflow: visible; }
+.mch-hero__copy h1 { margin: 0; padding: 0; font: inherit; }
+.mch-hero__word { display: block; height: clamp(65px, 20vw, 91px); overflow: visible; }
 .mch-hero__word span { display: block; width: max-content; font: 500 clamp(70px, 20vw, 96px)/.73 var(--mch-display); letter-spacing: -.09em; }
 .mch-hero__word--accent { margin-left: 8vw; color: var(--mch-gold); }
 .mch-hero__lead { width: 78%; margin: 21px 0 20px; overflow: hidden; color: #dedad3; font: 500 18px/1.12 var(--mch-editorial); letter-spacing: -.015em; }

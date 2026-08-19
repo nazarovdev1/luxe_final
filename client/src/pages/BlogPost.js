@@ -96,6 +96,7 @@ const BlogPost = () => {
         image={blog.coverImage || ''}
         canonicalPath={`/blog/${slug}`}
         type="article"
+        noIndex={!articleSource}
         structuredData={{
           '@context': 'https://schema.org', '@type': 'BlogPosting', headline: title,
           description: blog.seoDescription || excerpt, image: blog.coverImage ? [blog.coverImage] : undefined,

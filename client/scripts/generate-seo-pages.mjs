@@ -7,6 +7,7 @@ const buildDir = path.join(rootDir, 'build');
 const siteUrl = 'https://luxx.uz';
 const apiUrl = (process.env.VITE_API_URL || process.env.REACT_APP_API_URL ||
   'https://luxe-backend-355636248339.us-central1.run.app/api').replace(/\/$/, '');
+const defaultSocialImage = `${siteUrl}/hero.jpg`;
 
 const staticPages = [
   ['/', 'Premium ayollar kiyimlari Toshkentda | Luxx.uz', "Toshkentdagi premium ayollar kiyimlari do'koni. Paltolar, kostyumlar va zamonaviy kolleksiyalarni tez yetkazib berish bilan xarid qiling."],
@@ -27,8 +28,56 @@ const escapeHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;').replaceAll('"', '&quot;')
   .replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
+const localizedValue = (value) => {
+  if (typeof value === 'string') return value.trim();
+  return value?.uz?.trim?.() || value?.ru?.trim?.() || value?.en?.trim?.() || '';
+};
+
+const stripHtml = (value = '') => String(value)
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const formatPrice = (value) => Number(value || 0).toLocaleString('uz-UZ');
+
+const productImage = (product) => product.image || product.images?.[0]?.url || product.images?.[0] || '';
+
+const productUrl = (product) => `/product/${product._id || product.id}`;
+
+const renderProductLinks = (products) => products.map((product) => `
+  <article>
+    <h2><a href="${escapeHtml(productUrl(product))}">${escapeHtml(product.name)}</a></h2>
+    <p>${escapeHtml(product.category || 'Ayollar kiyimlari')} · ${escapeHtml(formatPrice(product.price))} so‘m</p>
+    ${product.description ? `<p>${escapeHtml(stripHtml(product.description))}</p>` : ''}
+  </article>`).join('');
+
+const seoShell = (content) => `<div data-seo-shell="true" style="min-height:100vh;background:#08090b;color:#f7f2e8;padding:clamp(24px,5vw,72px);font-family:Arial,sans-serif">
+  <main style="max-width:1120px;margin:0 auto;line-height:1.65">${content}</main>
+</div>`;
+
+const staticContent = (route, title, description, products, blogs) => {
+  if (route === '/') {
+    return seoShell(`<h1>Toshkentdagi premium ayollar kiyimlari</h1>
+      <p>${escapeHtml(description)}</p>
+      <p>Luxx.uz katalogida ayollar kostyumlari, jaketlar, paltolar va tayyor obrazlar saralangan. Har bir mahsulot sahifasida narx, o‘lcham va tavsifni tekshirishingiz mumkin.</p>
+      <p><a href="/products">Premium ayollar kiyimlari katalogini ko‘rish</a> · <a href="/blog">Moda va uslub blogi</a> · <a href="/about">Luxx.uz haqida</a></p>
+      <section aria-labelledby="featured-products"><h2 id="featured-products">Saralangan mahsulotlar</h2>${renderProductLinks(products.slice(0, 8))}</section>`);
+  }
+  if (route === '/products') {
+    return seoShell(`<h1>Premium ayollar kiyimlari</h1>
+      <p>Luxx.uz katalogida Toshkent uchun saralangan premium ayollar kiyimlari — kostyum, blazer, jaket, palto va tayyor obrazlarni topasiz. O‘lcham, narx va model tavsifini tekshirib, uslubingizga mos variantni tanlang.</p>
+      <section aria-label="Mahsulotlar">${renderProductLinks(products)}</section>
+      <p><a href="/faq">Yetkazib berish va qaytarish savollari</a></p>`);
+  }
+  if (route === '/blog') {
+    const articleLinks = blogs.map((blog) => `<article><h2><a href="/blog/${escapeHtml(blog.slug)}">${escapeHtml(localizedValue(blog.title))}</a></h2><p>${escapeHtml(stripHtml(localizedValue(blog.excerpt)))}</p></article>`).join('');
+    return seoShell(`<h1>Ayollar modasi va uslub bo‘yicha maslahatlar</h1><p>${escapeHtml(description)}</p>${articleLinks || '<p>Yangi maqolalar tayyorlanmoqda.</p>'}`);
+  }
+  return seoShell(`<h1>${escapeHtml(title.replace(/\s*\|.*$/, ''))}</h1><p>${escapeHtml(description)}</p><p><a href="/products">Ayollar kiyimlari katalogi</a> · <a href="/">Bosh sahifa</a></p>`);
+};
+
 const absoluteImage = (value) => {
-  if (!value) return `${siteUrl}/logoweb2.png`;
+  if (!value) return defaultSocialImage;
   return /^https?:\/\//i.test(value) ? value : `${siteUrl}${value.startsWith('/') ? '' : '/'}${value}`;
 };
 
@@ -57,6 +106,17 @@ const renderHtml = (template, page) => {
   html = replaceTag(html, /<meta\s+name="twitter:title"[\s\S]*?\/>/i, `<meta name="twitter:title" content="${title}" />`);
   html = replaceTag(html, /<meta\s+name="twitter:description"[\s\S]*?\/>/i, `<meta name="twitter:description" content="${description}" />`);
   html = replaceTag(html, /<meta\s+name="twitter:image"[\s\S]*?\/>/i, `<meta name="twitter:image" content="${image}" />`);
+  if (page.structuredData) {
+    const schemas = Array.isArray(page.structuredData) ? page.structuredData : [page.structuredData];
+    const scripts = schemas.map((schema) => `  <script type="application/ld+json">${JSON.stringify(schema).replaceAll('<', '\\u003c')}</script>`).join('\n');
+    html = html.replace('</head>', `${scripts}\n</head>`);
+  }
+  if (page.contentHtml) {
+    html = html.replace(
+      /<div id="root"[^>]*>[\s\S]*<\/div>\s*(?=<\/body>)/i,
+      `<div id="root">${page.contentHtml}</div>\n  `,
+    );
+  }
   return html;
 };
 
@@ -74,18 +134,55 @@ const fetchData = async (endpoint) => {
 
 const template = await fs.readFile(path.join(buildDir, 'index.html'), 'utf8');
 const [products, blogs] = await Promise.all([fetchData('/products?limit=500'), fetchData('/blogs?limit=500')]);
+if ((process.env.VERCEL === '1' || process.env.SEO_STRICT === 'true') && products.length === 0) {
+  throw new Error('[seo] Mahsulot API bo‘sh qaytdi. Noto‘liq sitemap bilan deploy bekor qilindi.');
+}
 const dynamicPages = [
   ...products.map((product) => ({
     route: `/product/${product._id || product.id}`,
     title: `${product.name} | Luxx.uz`,
     description: product.description || `${product.name}ni Luxx.uz premium ayollar kiyimlari do'konidan Toshkent bo'ylab yetkazib berish bilan xarid qiling.`,
-    image: product.image || product.images?.[0]?.url || product.images?.[0],
+    image: productImage(product),
+    contentHtml: seoShell(`<nav><a href="/">Bosh sahifa</a> / <a href="/products">Ayollar kiyimlari</a></nav><article><h1>${escapeHtml(product.name)}</h1>${productImage(product) ? `<img src="${escapeHtml(productImage(product))}" alt="${escapeHtml(product.name)}" width="800" height="1000" />` : ''}<p>${escapeHtml(stripHtml(product.description || 'Luxx.uz premium ayollar kiyimlari kolleksiyasi.'))}</p><p><strong>${escapeHtml(formatPrice(product.price))} so‘m</strong></p><p>Kategoriya: ${escapeHtml(product.category || 'Ayollar kiyimlari')}</p></article>`),
+    structuredData: [
+      {
+        '@context': 'https://schema.org', '@type': 'Product', '@id': `${siteUrl}${productUrl(product)}#product`,
+        name: product.name, image: productImage(product) ? [absoluteImage(productImage(product))] : undefined,
+        description: product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari`,
+        sku: product.sku || product._id || product.id,
+        category: product.category,
+        ...(product.brand ? { brand: { '@type': 'Brand', name: product.brand } } : {}),
+        offers: {
+          '@type': 'Offer', url: `${siteUrl}${productUrl(product)}`, priceCurrency: 'UZS', price: product.price,
+          availability: product.stock == null || Number(product.stock) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          itemCondition: 'https://schema.org/NewCondition',
+          seller: { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'Luxx.uz' },
+        },
+      },
+      {
+        '@context': 'https://schema.org', '@type': 'BreadcrumbList', '@id': `${siteUrl}${productUrl(product)}#breadcrumb`, itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Bosh sahifa', item: `${siteUrl}/` },
+          { '@type': 'ListItem', position: 2, name: 'Ayollar kiyimlari', item: `${siteUrl}/products` },
+          { '@type': 'ListItem', position: 3, name: product.name, item: `${siteUrl}${productUrl(product)}` },
+        ],
+      },
+    ],
   })),
   ...blogs.filter((blog) => blog.slug).map((blog) => ({
     route: `/blog/${blog.slug}`,
     title: blog.seoTitle || blog.title?.uz || blog.title?.ru || blog.title?.en || 'Luxx.uz Blog',
     description: blog.seoDescription || blog.excerpt?.uz || blog.excerpt?.ru || blog.excerpt?.en || 'Luxx.uz moda va uslub blogi.',
     image: blog.coverImage,
+    noindex: !localizedValue(blog.content),
+    contentHtml: seoShell(`<nav><a href="/">Bosh sahifa</a> / <a href="/blog">Moda blogi</a></nav><article><h1>${escapeHtml(localizedValue(blog.title))}</h1><p>${escapeHtml(stripHtml(localizedValue(blog.excerpt)))}</p>${localizedValue(blog.content) ? localizedValue(blog.content) : '<p>Maqolaning to‘liq matni tayyorlanmoqda.</p>'}</article>`),
+    structuredData: localizedValue(blog.content) ? {
+      '@context': 'https://schema.org', '@type': 'BlogPosting', headline: localizedValue(blog.title),
+      description: stripHtml(localizedValue(blog.excerpt)), image: blog.coverImage ? [absoluteImage(blog.coverImage)] : undefined,
+      datePublished: blog.publishedAt || blog.createdAt, dateModified: blog.updatedAt || blog.publishedAt || blog.createdAt,
+      author: { '@type': 'Person', name: blog.author?.username || 'Luxx.uz Editorial' },
+      publisher: { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'Luxx.uz' },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/blog/${blog.slug}` },
+    } : undefined,
   })),
 ];
 
@@ -93,7 +190,14 @@ const privatePages = ['/login', '/register', '/checkout', '/profile', '/orders',
   .map((route) => ({ route, title: 'Luxx.uz', description: 'Luxx.uz xizmat sahifasi.', noindex: true }));
 
 for (const [route, title, description] of staticPages) {
-  const page = { route, title, description };
+  const page = { route, title, description, contentHtml: staticContent(route, title, description, products, blogs) };
+  if (route === '/products') {
+    page.structuredData = {
+      '@context': 'https://schema.org', '@type': 'ItemList', '@id': `${siteUrl}/products#item-list`, name: 'Premium ayollar kiyimlari',
+      numberOfItems: products.length,
+      itemListElement: products.map((product, index) => ({ '@type': 'ListItem', position: index + 1, name: product.name, url: `${siteUrl}${productUrl(product)}` })),
+    };
+  }
   if (route === '/') {
     await fs.writeFile(path.join(buildDir, 'index.html'), renderHtml(template, page));
     continue;
@@ -121,7 +225,7 @@ const sitemapPages = [
     priority: '0.8',
     lastmod: product.updatedAt,
   })),
-  ...blogs.filter((blog) => blog.slug).map((blog) => ({
+  ...blogs.filter((blog) => blog.slug && localizedValue(blog.content)).map((blog) => ({
     route: `/blog/${blog.slug}`,
     changefreq: 'monthly',
     priority: '0.7',

@@ -97,6 +97,16 @@ const Footer = ({ variant = 'default' }) => {
                 </Link>
               </li>
               <li>
+                <Link to="/products" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
+                  Premium ayollar kiyimlari
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
+                  Moda va uslub blogi
+                </Link>
+              </li>
+              <li>
                 <Link to="/#new-collection" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
                   {t('footer.newCollection')}
                 </Link>

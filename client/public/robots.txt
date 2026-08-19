@@ -8,12 +8,14 @@ Disallow: /cart
 Disallow: /profile
 Disallow: /orders
 Disallow: /lookbook-builder
-Disallow: /mobile/
 Disallow: /api/
 Disallow: /mobile/admin
+Disallow: /mobile/login
+Disallow: /mobile/register
 Disallow: /mobile/checkout
 Disallow: /mobile/cart
 Disallow: /mobile/profile
+Disallow: /mobile/orders
 
 User-agent: Googlebot
 Allow: /
@@ -23,8 +25,16 @@ Disallow: /register
 Disallow: /checkout
 Disallow: /profile
 Disallow: /orders
-Disallow: /mobile/
 Disallow: /api/
+Disallow: /cart
+Disallow: /lookbook-builder
+Disallow: /mobile/admin
+Disallow: /mobile/login
+Disallow: /mobile/register
+Disallow: /mobile/checkout
+Disallow: /mobile/cart
+Disallow: /mobile/profile
+Disallow: /mobile/orders
 
 User-agent: Yandex
 Allow: /
@@ -34,6 +44,14 @@ Disallow: /register
 Disallow: /checkout
 Disallow: /profile
 Disallow: /orders
-Disallow: /mobile/
 Disallow: /api/
+Disallow: /cart
+Disallow: /lookbook-builder
+Disallow: /mobile/admin
+Disallow: /mobile/login
+Disallow: /mobile/register
+Disallow: /mobile/checkout
+Disallow: /mobile/cart
+Disallow: /mobile/profile
+Disallow: /mobile/orders
 Sitemap: https://luxx.uz/sitemap.xml

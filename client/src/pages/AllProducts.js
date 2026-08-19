@@ -178,6 +178,7 @@ const AllProducts = () => {
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'ItemList',
+          '@id': 'https://luxx.uz/products#item-list',
           name: selectedCategory === allLabel ? 'Barcha mahsulotlar' : `${selectedCategory} mahsulotlari`,
           url: 'https://luxx.uz/products',
           numberOfItems: sortedProducts.length,

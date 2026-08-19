@@ -274,6 +274,7 @@ export default function ProductView() {
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Product',
+            '@id': `https://luxx.uz/product/${id}#product`,
             name: product.name,
             image: images,
             description: product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari`,
@@ -285,7 +286,9 @@ export default function ProductView() {
               url: `https://luxx.uz/product/${id}`,
               priceCurrency: 'UZS',
               price: product.price,
-              availability: Number(product.stock) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+              availability: product.stock == null || Number(product.stock) > 0
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
             },
             ...(product.rating && reviews.length > 0 && {
               aggregateRating: {
