@@ -52,8 +52,9 @@ const SideRays = ({
 
       if (!containerRef.current) return;
 
+      const maxDpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25);
       const renderer = new Renderer({
-        dpr: Math.min(window.devicePixelRatio, 2),
+        dpr: maxDpr,
         alpha: true
       });
       rendererRef.current = renderer;
@@ -160,22 +161,50 @@ void main() {
 
       const updateSize = () => {
         if (!containerRef.current || !renderer) return;
-        renderer.dpr = Math.min(window.devicePixelRatio, 2);
+        const currentDpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25);
+        renderer.dpr = currentDpr;
         const { clientWidth: w, clientHeight: h } = containerRef.current;
         renderer.setSize(w, h);
-        uniforms.iResolution.value = [w * renderer.dpr, h * renderer.dpr];
+        uniforms.iResolution.value = [w * currentDpr, h * currentDpr];
       };
 
+      let isVisible = true;
+      let isTabActive = true;
+
       const loop = t => {
-        if (!rendererRef.current || !uniformsRef.current || !meshRef.current) return;
-        uniforms.iTime.value = t * 0.001;
-        try {
-          renderer.render({ scene: mesh });
-          animationIdRef.current = requestAnimationFrame(loop);
-        } catch (e) {
+        if (!rendererRef.current || !uniformsRef.current || !meshRef.current || !isVisible || !isTabActive) {
+          animationIdRef.current = null;
           return;
         }
+        uniformsRef.current.iTime.value = t * 0.001;
+        try {
+          rendererRef.current.render({ scene: meshRef.current });
+          animationIdRef.current = requestAnimationFrame(loop);
+        } catch (e) {
+          animationIdRef.current = null;
+        }
       };
+
+      const resume = () => {
+        if (!animationIdRef.current && isVisible && isTabActive && rendererRef.current) {
+          animationIdRef.current = requestAnimationFrame(loop);
+        }
+      };
+
+      let observer = null;
+      if (typeof IntersectionObserver !== 'undefined' && containerRef.current) {
+        observer = new IntersectionObserver(([entry]) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible) resume();
+        }, { threshold: 0.01 });
+        observer.observe(containerRef.current);
+      }
+
+      const handleVisibility = () => {
+        isTabActive = !document.hidden;
+        if (isTabActive) resume();
+      };
+      document.addEventListener('visibilitychange', handleVisibility);
 
       window.addEventListener('resize', updateSize);
       updateSize();
@@ -186,6 +215,8 @@ void main() {
           cancelAnimationFrame(animationIdRef.current);
           animationIdRef.current = null;
         }
+        if (observer) observer.disconnect();
+        document.removeEventListener('visibilitychange', handleVisibility);
         window.removeEventListener('resize', updateSize);
         if (renderer) {
           try {

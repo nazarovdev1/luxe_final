@@ -1,361 +1,563 @@
-.mobile-admin-shell {
-  --ma-card: rgba(25, 26, 29, .9);
-  --ma-soft: rgba(255,255,255,.035);
-  --ma-border: rgba(246,235,214,.13);
-  --ma-text: #f3eee5;
-  --ma-muted: #999890;
-  --ma-accent: #e0ba72;
-  --ma-accent-2: #ba8338;
-  --ma-info: #a8c6db;
-  --ma-danger: #ed8792;
-  --ma-success: #89d3ad;
-  min-height: 100vh;
-  color: var(--ma-text);
-  background:
-    radial-gradient(460px circle at 8% -4%, rgba(224,186,114,.18), transparent 50%),
-    radial-gradient(360px circle at 98% 8%, rgba(83,120,113,.15), transparent 54%),
-    #090a0c;
+/* ═══════════════════════════════════════════════════════════════════════════
+   LUXX ATELIER — Mobile Admin Studio Theme (Apple Luxury Editorial)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --lux-bg: #050608;
+  --lux-bg-elevated: #0b0d12;
+  --lux-surface: rgba(16, 18, 24, 0.75);
+  --lux-surface-hover: rgba(26, 29, 38, 0.85);
+  --lux-surface-soft: rgba(255, 255, 255, 0.035);
+  --lux-surface-glass: rgba(18, 20, 28, 0.65);
+  --lux-surface-gold: linear-gradient(135deg, rgba(230, 202, 146, 0.12) 0%, rgba(197, 160, 89, 0.04) 100%);
+  
+  --lux-border: rgba(255, 255, 255, 0.08);
+  --lux-border-subtle: rgba(255, 255, 255, 0.04);
+  --lux-border-gold: rgba(230, 202, 146, 0.35);
+  --lux-border-gold-glow: rgba(230, 202, 146, 0.6);
+  
+  --lux-gold-100: #faf3e0;
+  --lux-gold-200: #f5e2be;
+  --lux-gold-300: #e6ca92;
+  --lux-gold-400: #d4af62;
+  --lux-gold-500: #c5a059;
+  --lux-gold-gradient: linear-gradient(135deg, #faf3e0 0%, #e6ca92 50%, #c5a059 100%);
+  --lux-gold-btn: linear-gradient(135deg, #f5e2be 0%, #e6ca92 45%, #bfa054 100%);
+  --lux-gold-glow: 0 10px 30px -5px rgba(230, 202, 146, 0.32);
+  
+  --lux-text-primary: #fbf9f5;
+  --lux-text-secondary: #9fa1ad;
+  --lux-text-muted: #656773;
+  
+  --lux-radius-sm: 12px;
+  --lux-radius-md: 18px;
+  --lux-radius-lg: 24px;
+  --lux-radius-xl: 32px;
 }
 
-.mobile-admin-shell::before {
+/* Base Mobile Admin Shell */
+.lux-admin-shell {
+  min-height: 100vh;
+  background: var(--lux-bg);
+  color: var(--lux-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', system-ui, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  padding-bottom: 120px;
+}
+
+/* Ambient Runway Spotlight Glow */
+.lux-admin-shell::before {
+  content: '';
+  position: fixed;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140vw;
+  height: 500px;
+  background: radial-gradient(ellipse at 50% 20%, rgba(230, 202, 146, 0.15), rgba(197, 160, 89, 0.05) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Micro Grid Noise Accent */
+.lux-admin-shell::after {
   content: '';
   position: fixed;
   inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: linear-gradient(to bottom, black 20%, transparent 80%);
   pointer-events: none;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 30px 30px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), transparent 70%);
+  z-index: 0;
 }
 
-.mobile-admin-header {
-  position: sticky;
+/* Studio Glass Card */
+.lux-card {
+  background: var(--lux-surface);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+/* Bento Hero Metric Widget */
+.lux-bento-hero {
+  background: linear-gradient(145deg, rgba(28, 31, 42, 0.85) 0%, rgba(14, 16, 22, 0.95) 100%);
+  border: 1px solid var(--lux-border-gold);
+  border-radius: var(--lux-radius-xl);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.7), 0 0 35px -10px rgba(230, 202, 146, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.lux-bento-hero::after {
+  content: '';
+  position: absolute;
   top: 0;
-  z-index: 35;
-  backdrop-filter: blur(18px);
-  background: rgba(9, 10, 12, .78);
-  border-bottom: 1px solid rgba(246,235,214,.12);
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle at top right, rgba(230, 202, 146, 0.25), transparent 70%);
+  pointer-events: none;
 }
 
-.mobile-admin-title {
-  font-family: 'Playfair Display', Georgia, serif;
-  letter-spacing: -.04em;
-}
-
-.mobile-admin-card {
-  background: var(--ma-card);
-  border: 1px solid var(--ma-border);
-  border-radius: 18px;
-  box-shadow: 0 14px 35px rgba(4, 8, 16, 0.42);
-}
-
-.mobile-admin-card-soft {
-  background: var(--ma-soft);
-  border: 1px solid rgba(124, 145, 177, 0.2);
-  border-radius: 14px;
-}
-
-.mobile-admin-muted {
-  color: var(--ma-muted);
-}
-
-.mobile-admin-tabs {
+.lux-bento-sub {
+  background: linear-gradient(145deg, rgba(20, 22, 30, 0.85) 0%, rgba(12, 14, 18, 0.9) 100%);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  padding: 14px;
   display: flex;
-  gap: 0.55rem;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 96px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lux-bento-sub:active {
+  transform: scale(0.965);
+  border-color: var(--lux-gold-300);
+}
+
+/* Luxury Segmented Bar (Apple Style) */
+.lux-segmented-container {
+  background: rgba(12, 14, 19, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--lux-border);
+  border-radius: 9999px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.mobile-admin-tabs::-webkit-scrollbar {
+.lux-segmented-container::-webkit-scrollbar {
   display: none;
 }
 
-.mobile-admin-tab {
+.lux-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  border: 1px solid rgba(255,255,255,.11);
-  background: rgba(255,255,255,.025);
-  color: var(--ma-muted);
-  border-radius: 9px;
-  padding: 0.6rem 0.9rem;
-  font-size: 0.78rem;
+  gap: 6px;
+  padding: 9px 15px;
+  border-radius: 9999px;
+  font-size: 12.5px;
   font-weight: 600;
+  color: var(--lux-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
   white-space: nowrap;
-  transition: all 0.22s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
-.mobile-admin-tab-active {
-  color: #17130d;
-  border-color: rgba(224,186,114,.6);
-  background: linear-gradient(122deg, #d3a557, #efcc88, #bd853b);
-  box-shadow: 0 10px 24px rgba(205,151,64,.24);
+.lux-tab-btn:active {
+  transform: scale(0.95);
 }
 
-.mobile-admin-pill {
+.lux-tab-btn.is-active {
+  background: var(--lux-gold-btn);
+  color: #0a0907;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(230, 202, 146, 0.4);
+}
+
+.lux-tab-counter {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1.5px 6.5px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.lux-tab-btn.is-active .lux-tab-counter {
+  background: rgba(0, 0, 0, 0.22);
+  color: #0a0907;
+}
+
+/* 2-Column Luxury Fashion Product Card */
+.lux-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lux-product-card {
+  background: var(--lux-surface);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.5);
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.lux-product-card:active {
+  transform: scale(0.975);
+  border-color: var(--lux-border-gold);
+}
+
+.lux-product-cover-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #111319;
+  overflow: hidden;
+}
+
+.lux-product-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.lux-product-card:active .lux-product-cover {
+  transform: scale(1.04);
+}
+
+.lux-product-actions-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 5;
+}
+
+.lux-action-pill-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(10, 11, 15, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--lux-text-primary);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lux-action-pill-btn:active {
+  transform: scale(0.9);
+  background: var(--lux-gold-btn);
+  color: #0a0907;
+  border-color: transparent;
+}
+
+.lux-action-pill-btn-danger {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.lux-action-pill-btn-danger:active {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+}
+
+/* 1-Column Editorial Row Card */
+.lux-row-card {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  background: var(--lux-surface);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  align-items: center;
+}
+
+.lux-row-thumb {
+  width: 76px;
+  height: 98px;
+  border-radius: 14px;
+  object-fit: cover;
+  background: #111319;
+  border: 1px solid var(--lux-border-subtle);
+  flex-shrink: 0;
+}
+
+/* Luxury Status Badges */
+.lux-badge {
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  padding: 0.2rem 0.58rem;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.mobile-admin-pill-info {
-  background: rgba(94, 183, 245, 0.15);
-  border: 1px solid rgba(94, 183, 245, 0.35);
-  color: #9ad3fa;
+.lux-badge-gold {
+  background: linear-gradient(135deg, rgba(230, 202, 146, 0.2) 0%, rgba(197, 160, 89, 0.1) 100%);
+  border: 1px solid rgba(230, 202, 146, 0.45);
+  color: #f5e2be;
+  box-shadow: 0 2px 8px rgba(230, 202, 146, 0.15);
 }
 
-.mobile-admin-pill-success {
-  background: rgba(66, 215, 159, 0.15);
-  border: 1px solid rgba(66, 215, 159, 0.34);
-  color: #9ef0ca;
+.lux-badge-green {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #86efac;
 }
 
-.mobile-admin-pill-danger {
-  background: rgba(255, 111, 129, 0.15);
-  border: 1px solid rgba(255, 111, 129, 0.34);
-  color: #ffafba;
+.lux-badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
 }
 
-.mobile-admin-pill-warning {
-  background: rgba(246, 183, 58, 0.15);
-  border: 1px solid rgba(246, 183, 58, 0.34);
-  color: #ffd98c;
+.lux-badge-purple {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
 }
 
-.mobile-admin-input,
-.mobile-admin-select,
-.mobile-admin-textarea {
-  width: 100%;
-  background: rgba(9, 18, 31, 0.78);
-  border: 1px solid rgba(124, 145, 177, 0.38);
-  border-radius: 12px;
-  padding: 0.72rem 0.86rem;
-  color: var(--ma-text);
-  font-size: 0.95rem;
+.lux-badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
 }
 
-.mobile-admin-input::placeholder,
-.mobile-admin-textarea::placeholder {
-  color: #7e8fab;
+.lux-badge-amber {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fde68a;
 }
 
-.mobile-admin-input:focus,
-.mobile-admin-select:focus,
-.mobile-admin-textarea:focus {
-  outline: none;
-  border-color: rgba(246, 183, 58, 0.74);
-  box-shadow: 0 0 0 3px rgba(246, 183, 58, 0.16);
-}
-
-.mobile-admin-btn-primary,
-.mobile-admin-btn-secondary,
-.mobile-admin-btn-danger,
-.mobile-admin-icon-btn {
-  display: inline-flex;
+/* Primary Gold Action Button */
+.lux-btn-gold {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  border-radius: 12px;
+  gap: 8px;
+  background: var(--lux-gold-btn);
+  color: #0c0b08;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  padding: 13px 20px;
+  border-radius: var(--lux-radius-md);
+  border: none;
+  box-shadow: var(--lux-gold-glow);
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease;
+}
+
+.lux-btn-gold:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 14px rgba(230, 202, 146, 0.2);
+}
+
+/* Secondary Frosted Glass Button */
+.lux-btn-glass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--lux-border);
+  color: var(--lux-text-primary);
   font-weight: 600;
-  transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: var(--lux-radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.mobile-admin-btn-primary {
-  background: linear-gradient(122deg, var(--ma-accent), var(--ma-accent-2));
-  color: #0e1726;
-  box-shadow: 0 10px 24px rgba(246, 183, 58, 0.33);
+.lux-btn-glass:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.09);
 }
 
-.mobile-admin-btn-secondary {
-  background: rgba(12, 23, 37, 0.76);
-  border: 1px solid rgba(124, 145, 177, 0.34);
-  color: var(--ma-text);
+/* Search Bar */
+.lux-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-md);
+  padding: 0 14px;
+  height: 44px;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
-.mobile-admin-btn-danger {
-  background: rgba(55, 17, 25, 0.82);
-  border: 1px solid rgba(255, 111, 129, 0.38);
-  color: #ffafba;
+.lux-search-bar:focus-within {
+  border-color: var(--lux-gold-300);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(230, 202, 146, 0.12);
 }
 
-.mobile-admin-icon-btn {
-  width: 2.2rem;
-  height: 2.2rem;
-  background: rgba(13, 24, 39, 0.72);
-  border: 1px solid rgba(124, 145, 177, 0.3);
-  color: var(--ma-muted);
+.lux-search-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--lux-text-primary);
+  font-size: 13.5px;
+  width: 100%;
 }
 
-.mobile-admin-icon-btn-active {
-  border-color: rgba(246, 183, 58, 0.5);
-  color: var(--ma-accent);
+.lux-search-bar input::placeholder {
+  color: var(--lux-text-muted);
 }
 
-.mobile-admin-empty {
-  border: 1px dashed rgba(124, 145, 177, 0.35);
-  border-radius: 15px;
-  background: rgba(9, 18, 31, 0.6);
+/* Concierge Order Pass (Apple Wallet VIP Style) */
+.lux-order-pass {
+  background: linear-gradient(160deg, rgba(22, 25, 34, 0.85) 0%, rgba(14, 16, 22, 0.95) 100%);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  padding: 16px;
+  position: relative;
+  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.mobile-admin-loading {
-  border-width: 3px;
-  border-style: solid;
-  border-color: rgba(246, 183, 58, 0.25);
-  border-top-color: var(--ma-accent);
-  border-radius: 999px;
-  animation: mobile-admin-spin 0.92s linear infinite;
+.lux-order-pass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--lux-gold-gradient);
+  border-top-left-radius: var(--lux-radius-lg);
+  border-bottom-left-radius: var(--lux-radius-lg);
 }
 
-@keyframes mobile-admin-spin {
+/* Promocode Passbook Ticket */
+.lux-ticket-pass {
+  position: relative;
+  background: linear-gradient(135deg, rgba(26, 29, 40, 0.92) 0%, rgba(16, 18, 24, 0.98) 100%);
+  border: 1px solid var(--lux-border-gold);
+  border-radius: var(--lux-radius-lg);
+  padding: 18px;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.lux-ticket-pass::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10px;
+  width: 20px;
+  height: 20px;
+  background: var(--lux-bg);
+  border-radius: 50%;
+  border-right: 1px solid var(--lux-border-gold);
+  transform: translateY(-50%);
+}
+
+.lux-ticket-pass::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  background: var(--lux-bg);
+  border-radius: 50%;
+  border-left: 1px solid var(--lux-border-gold);
+  transform: translateY(-50%);
+}
+
+/* User VIP Card */
+.lux-user-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--lux-surface);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-lg);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Form Styling */
+.lux-input,
+.lux-select,
+.lux-textarea {
+  width: 100%;
+  background: rgba(18, 20, 28, 0.85);
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius-md);
+  padding: 12px 14px;
+  color: var(--lux-text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.18s ease;
+  -webkit-appearance: none;
+}
+
+.lux-input:focus,
+.lux-select:focus,
+.lux-textarea:focus {
+  border-color: var(--lux-gold-300);
+  background: rgba(24, 27, 38, 0.95);
+  box-shadow: 0 0 0 3px rgba(230, 202, 146, 0.14);
+}
+
+.lux-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+/* Empty State */
+.lux-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 50px 20px;
+  background: var(--lux-surface-soft);
+  border: 1px dashed var(--lux-border);
+  border-radius: var(--lux-radius-xl);
+}
+
+/* Spinner */
+.lux-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(230, 202, 146, 0.2);
+  border-top-color: var(--lux-gold-300);
+  animation: lux-spin 0.75s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+@keyframes lux-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* LookbookManager (admin-* classes) in mobile admin shell */
-.mobile-admin-shell .admin-section-title {
-  color: var(--ma-text);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
 
-.mobile-admin-shell .admin-muted {
-  color: var(--ma-muted);
-}
-
-.mobile-admin-shell .admin-card-soft {
-  background: var(--ma-soft);
-  border: 1px solid rgba(124, 145, 177, 0.2);
-  border-radius: 14px;
-}
-
-.mobile-admin-shell .admin-input,
-.mobile-admin-shell .admin-select,
-.mobile-admin-shell .admin-textarea {
-  width: 100%;
-  background: rgba(9, 18, 31, 0.78);
-  border: 1px solid rgba(124, 145, 177, 0.38);
-  border-radius: 12px;
-  padding: 0.72rem 0.86rem;
-  color: var(--ma-text);
-  font-size: 0.95rem;
-}
-
-.mobile-admin-shell .admin-input::placeholder,
-.mobile-admin-shell .admin-textarea::placeholder {
-  color: #7e8fab;
-}
-
-.mobile-admin-shell .admin-input:focus,
-.mobile-admin-shell .admin-select:focus,
-.mobile-admin-shell .admin-textarea:focus {
-  outline: none;
-  border-color: rgba(246, 183, 58, 0.74);
-  box-shadow: 0 0 0 3px rgba(246, 183, 58, 0.16);
-}
-
-.mobile-admin-shell .admin-btn-primary,
-.mobile-admin-shell .admin-btn-secondary,
-.mobile-admin-shell .admin-btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-}
-
-.mobile-admin-shell .admin-btn-primary {
-  background: linear-gradient(122deg, var(--ma-accent), var(--ma-accent-2));
-  color: #0e1726;
-  box-shadow: 0 10px 24px rgba(246, 183, 58, 0.33);
-}
-
-.mobile-admin-shell .admin-btn-secondary {
-  background: rgba(12, 23, 37, 0.76);
-  border: 1px solid rgba(124, 145, 177, 0.34);
-  color: var(--ma-text);
-}
-
-.mobile-admin-shell .admin-btn-danger {
-  background: rgba(55, 17, 25, 0.82);
-  border: 1px solid rgba(255, 111, 129, 0.38);
-  color: #ffafba;
-}
-
-.mobile-admin-shell .admin-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.2rem 0.58rem;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.mobile-admin-shell .admin-pill-info {
-  background: rgba(94, 183, 245, 0.15);
-  border: 1px solid rgba(94, 183, 245, 0.35);
-  color: #9ad3fa;
-}
-
-.mobile-admin-shell .admin-pill-best,
-.mobile-admin-shell .admin-pill-warning {
-  background: rgba(246, 183, 58, 0.15);
-  border: 1px solid rgba(246, 183, 58, 0.34);
-  color: #ffd98c;
-}
-
-.mobile-admin-shell .admin-pill-success,
-.mobile-admin-shell .admin-pill-new {
-  background: rgba(66, 215, 159, 0.15);
-  border: 1px solid rgba(66, 215, 159, 0.34);
-  color: #9ef0ca;
-}
-
-.mobile-admin-shell .admin-pill-danger {
-  background: rgba(255, 111, 129, 0.15);
-  border: 1px solid rgba(255, 111, 129, 0.34);
-  color: #ffafba;
-}
-
-.mobile-admin-shell .admin-empty-state {
-  border: 1px dashed rgba(124, 145, 177, 0.35);
-  border-radius: 15px;
-  background: rgba(9, 18, 31, 0.6);
-}
-
-.mobile-admin-shell .admin-loading-ring {
-  border-width: 3px;
-  border-style: solid;
-  border-color: rgba(246, 183, 58, 0.25);
-  border-top-color: var(--ma-accent);
-  border-radius: 999px;
-  animation: mobile-admin-spin 0.92s linear infinite;
-}
-
-.mobile-admin-shell .admin-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(157, 174, 199, 0.45) rgba(9, 18, 31, 0.35);
-}
-
-.mobile-admin-shell .admin-scroll::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.mobile-admin-shell .admin-scroll::-webkit-scrollbar-track {
-  background: rgba(9, 18, 31, 0.35);
-}
-
-.mobile-admin-shell .admin-scroll::-webkit-scrollbar-thumb {
-  background: rgba(157, 174, 199, 0.45);
-  border-radius: 999px;
-}

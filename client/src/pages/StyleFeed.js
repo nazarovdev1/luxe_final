@@ -347,11 +347,10 @@ const CreatePostModal = ({ onClose, onSuccess, token, products, getImageKitAuth,
         const loadingToast = toast.loading(t('styleFeed.uploadingImages'));
 
         try {
-            const uploadedUrls = [];
-            const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
-            if (!publicKey) {
-                throw new Error(t('styleFeed.imagekitMissing'));
-            }
+            const publicKey =
+                import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+                import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+                'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
             for (const file of files) {
                 const auth = await getImageKitAuth();

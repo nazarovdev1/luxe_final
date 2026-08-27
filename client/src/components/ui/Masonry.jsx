@@ -200,9 +200,10 @@ const Masonry = ({
           opacity: 0,
           x: initialPos.x,
           y: initialPos.y,
+          scale: 0.95,
           width: item.w,
           height: item.h,
-          ...(blurToFocus && { filter: 'blur(10px)' }),
+          willChange: 'transform, opacity',
         });
       });
       return;
@@ -213,6 +214,7 @@ const Masonry = ({
       const animationProps = {
         x: item.x,
         y: item.y,
+        scale: 1,
         width: item.w,
         height: item.h,
       };
@@ -221,11 +223,12 @@ const Masonry = ({
         const initialPos = getInitialPosition(item);
         const initialState = {
           opacity: 0,
+          scale: 0.95,
           x: initialPos.x,
           y: initialPos.y,
           width: item.w,
           height: item.h,
-          ...(blurToFocus && { filter: 'blur(10px)' }),
+          willChange: 'transform, opacity',
         };
 
         gsap.fromTo(
@@ -234,10 +237,12 @@ const Masonry = ({
           {
             opacity: 1,
             ...animationProps,
-            ...(blurToFocus && { filter: 'blur(0px)' }),
-            duration: 0.8,
+            duration: 0.75,
             ease: 'power3.out',
             delay: index * stagger,
+            onComplete: () => {
+              gsap.set(selector, { clearProps: 'willChange' });
+            }
           }
         );
       } else {

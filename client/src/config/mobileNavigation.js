@@ -83,6 +83,10 @@ export const shouldHideMobileBottomNav = (pathname = '') => {
     normalizedPathname.startsWith('/mobile/lookbooks/') &&
     normalizedPathname !== '/mobile/lookbooks'
   ) return true;
+  if (
+    normalizedPathname.startsWith('/mobile/admin/new') ||
+    normalizedPathname.startsWith('/mobile/admin/edit')
+  ) return true;
 
   return false;
 };

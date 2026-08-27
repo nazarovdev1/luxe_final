@@ -356,12 +356,11 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setIsUploading(true);
     try {
-      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
-      if (!publicKey) {
-        throw new Error(t('challenges.imagekitMissing'));
-      }
+      const publicKey =
+        import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+        import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+        'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
       const auth = await getImageKitAuth();
       const fd = new FormData();

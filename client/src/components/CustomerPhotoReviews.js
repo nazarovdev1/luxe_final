@@ -9,8 +9,10 @@ import useProductService from '../server/server';
 
 import { API_BASE_URL } from '../services/api';
 
-const API_BASE = API_BASE_URL;
-const IMAGEKIT_PUBLIC_KEY = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
+const IMAGEKIT_PUBLIC_KEY =
+  import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+  import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+  'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
 const getUserName = (post) => post?.user?.username || 'LUXX mijoz';
 const getUserAvatar = (post) => post?.user?.profileImage || post?.user?.photoUrl || '';

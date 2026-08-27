@@ -67,10 +67,10 @@ const LookbookManager = () => {
       if (!auth || !auth.signature) {
         throw new Error('Auth signature failed');
       }
-      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
-      if (!publicKey) {
-        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
-      }
+      const publicKey =
+        import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+        import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+        'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
       const data = new FormData();
       data.append('file', file);

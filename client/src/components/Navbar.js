@@ -29,10 +29,15 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    let prevScrolled = typeof window !== 'undefined' && window.scrollY > 20;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const scrolled = window.scrollY > 20;
+      if (scrolled !== prevScrolled) {
+        prevScrolled = scrolled;
+        setIsScrolled(scrolled);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   const { isAuthenticated, isAdmin, user, logout } = useAuth();

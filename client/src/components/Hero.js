@@ -33,17 +33,20 @@ const Hero = () => {
     const moveGlowX = glow ? gsap.quickTo(glow, 'x', { duration: 1.1, ease: 'power3.out' }) : null;
     const moveGlowY = glow ? gsap.quickTo(glow, 'y', { duration: 1.1, ease: 'power3.out' }) : null;
 
-    const onMove = event => {
-      const x = (event.clientX / window.innerWidth - 0.5) * 20;
-      const y = (event.clientY / window.innerHeight - 0.5) * 14;
-      moveImageX?.(x);
-      moveImageY?.(y);
-      moveGlowX?.(-x * 1.5);
-      moveGlowY?.(-y * 1.5);
-    };
+    if (typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches) {
+      const onMove = event => {
+        const x = (event.clientX / (window.innerWidth || 1) - 0.5) * 20;
+        const y = (event.clientY / (window.innerHeight || 1) - 0.5) * 14;
+        moveImageX?.(x);
+        moveImageY?.(y);
+        moveGlowX?.(-x * 1.5);
+        moveGlowY?.(-y * 1.5);
+      };
 
-    root.current?.addEventListener('pointermove', onMove, { passive: true });
-    return () => root.current?.removeEventListener('pointermove', onMove);
+      const el = root.current;
+      el?.addEventListener('pointermove', onMove, { passive: true });
+      return () => el?.removeEventListener('pointermove', onMove);
+    }
   }, { scope: root });
 
   return (

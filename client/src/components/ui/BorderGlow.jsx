@@ -92,20 +92,37 @@ const BorderGlow = ({
     return degrees;
   }, [getCenterOfElement]);
 
+  const rafId = useRef(null);
+
   const handlePointerMove = useCallback((e) => {
     const card = cardRef.current;
     if (!card) return;
 
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
 
-    const edge = getEdgeProximity(card, x, y);
-    const angle = getCursorAngle(card, x, y);
+    if (rafId.current) return;
+    rafId.current = requestAnimationFrame(() => {
+      rafId.current = null;
+      if (!cardRef.current) return;
+      const cardEl = cardRef.current;
+      const rect = cardEl.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
-    card.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
-    card.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
+      const edge = getEdgeProximity(cardEl, x, y);
+      const angle = getCursorAngle(cardEl, x, y);
+
+      cardEl.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(2)}`);
+      cardEl.style.setProperty('--cursor-angle', `${angle.toFixed(1)}deg`);
+    });
   }, [getEdgeProximity, getCursorAngle]);
+
+  useEffect(() => {
+    return () => {
+      if (rafId.current) cancelAnimationFrame(rafId.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!animated || !cardRef.current) return;

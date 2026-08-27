@@ -175,9 +175,8 @@ const AdminDashboard = () => {
     };
   }, [products]);
 
-  const activeTabConfig = tabs.find((tab) => tab.id === activeTab);
-
   const handleAddNew = () => {
+    setActiveTab('products');
     setEditingProduct(null);
     setShowForm(true);
   };

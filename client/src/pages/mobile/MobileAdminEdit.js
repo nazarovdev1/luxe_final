@@ -13,6 +13,10 @@ import {
   Image as ImageIcon,
   Pipette,
   Gem,
+  Sparkles,
+  Layers,
+  Star,
+  Check,
 } from 'lucide-react';
 import LoginForm from '../../components/LoginForm';
 import './mobileAdminTheme.css';
@@ -29,6 +33,8 @@ const CATEGORIES = [
   'Sumka',
   'Oyoq kiyimlar',
 ];
+
+const PRESET_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Standard'];
 
 const EMPTY_FORM = {
   name: '',
@@ -117,20 +123,18 @@ const MobileAdminEdit = () => {
       return;
     }
 
-    const loadingToast = toast.loading(t('mobileAdmin.imagesUploading'));
+    const loadingToast = toast.loading(t('mobileAdmin.imagesUploading', 'Rasmlar yuklanmoqda...'));
 
     try {
-      const uploadedUrls = [];
-      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
-
-      if (!publicKey) {
-        throw new Error(t('mobileAdmin.imagekitKeyMissing'));
-      }
+      const publicKey =
+        import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+        import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+        'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
       for (const file of files) {
         const auth = await getImageKitAuth();
         if (!auth || !auth.signature) {
-          throw new Error(t('mobileAdmin.imagekitAuthError'));
+          throw new Error(t('mobileAdmin.imagekitAuthError', 'ImageKit autentifikatsiya xatosi'));
         }
 
         const data = new FormData();
@@ -151,7 +155,7 @@ const MobileAdminEdit = () => {
         if (result.url) {
           uploadedUrls.push(result.url);
         } else {
-          throw new Error(t('mobileAdmin.imageUploadError'));
+          throw new Error(t('mobileAdmin.imageUploadError', 'Rasm yuklashda xatolik'));
         }
       }
 
@@ -160,10 +164,10 @@ const MobileAdminEdit = () => {
         images: [...prev.images, ...uploadedUrls],
       }));
 
-      toast.success(t('mobileAdmin.imageUploaded'), { id: loadingToast });
+      toast.success(t('mobileAdmin.imageUploaded', 'Rasm muvaffaqiyatli yuklandi!'), { id: loadingToast });
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(error.message || t('mobileAdmin.imageUploadFailed'), { id: loadingToast });
+      toast.error(error.message || t('mobileAdmin.imageUploadFailed', 'Rasm yuklanmadi'), { id: loadingToast });
     }
   };
 
@@ -207,12 +211,12 @@ const MobileAdminEdit = () => {
         setColorDraft(hexColor);
         setIsPipetteActive(false);
         document.body.style.cursor = 'default';
-        toast.success(`${t('mobileAdmin.colorPicked')} ${hexColor}`);
+        toast.success(`${t('mobileAdmin.colorPicked', 'Rang tanlandi:')} ${hexColor}`);
       } catch (error) {
         console.error('Pipette error:', error);
         setIsPipetteActive(false);
         document.body.style.cursor = 'default';
-        toast.error(t('mobileAdmin.colorPickFailed'));
+        toast.error(t('mobileAdmin.colorPickFailed', 'Rang tanlash amalga oshmadi'));
       }
     };
   };
@@ -238,14 +242,30 @@ const MobileAdminEdit = () => {
     setColorDraft('');
   };
 
+  const togglePresetSize = (size) => {
+    const currentSizes = (formData.sizes || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    let updated;
+    if (currentSizes.includes(size)) {
+      updated = currentSizes.filter((s) => s !== size);
+    } else {
+      updated = [...currentSizes, size];
+    }
+
+    setFormData((prev) => ({ ...prev, sizes: updated.join(', ') }));
+  };
+
   const handleSubmit = async () => {
     if (!formData.name || !formData.category || !formData.price) {
-      toast.error(t('mobileAdmin.requiredFields'));
+      toast.error(t('mobileAdmin.requiredFields', 'Iltimos, barcha majburiy maydonlarni to‘ldiring'));
       return;
     }
 
     if (formData.images.length === 0) {
-      toast.error(t('mobileAdmin.needAtLeastOneImage'));
+      toast.error(t('mobileAdmin.needAtLeastOneImage', 'Kamida bitta rasm yuklashingiz shart'));
       return;
     }
 
@@ -272,14 +292,14 @@ const MobileAdminEdit = () => {
       const result = id ? await updateProduct(id, payload) : await addProduct(payload);
 
       if (result) {
-        toast.success(id ? t('mobileAdmin.productUpdated') : t('mobileAdmin.productAdded'));
+        toast.success(id ? t('mobileAdmin.productUpdated', 'Mahsulot yangilandi!') : t('mobileAdmin.productAdded', 'Yangi mahsulot qo‘shildi!'));
         navigate('/mobile/admin');
       } else {
-        toast.error(t('mobileAdmin.saveFailed'));
+        toast.error(t('mobileAdmin.saveFailed', 'Saqlashda xatolik'));
       }
     } catch (error) {
       console.error('Save error:', error);
-      toast.error(t('mobileAdmin.genericError'));
+      toast.error(t('mobileAdmin.genericError', 'Kutilmagan xatolik'));
     } finally {
       setIsSubmitting(false);
     }
@@ -291,146 +311,73 @@ const MobileAdminEdit = () => {
 
   if (!user?.isAdmin) {
     return (
-      <div className="mobile-admin-shell flex items-center justify-center px-4">
-        <div className="mobile-admin-card w-full max-w-sm p-6 text-center space-y-4">
-          <h1 className="text-xl font-semibold">{t('mobileAdmin.accessDenied')}</h1>
-          <p className="mobile-admin-muted text-sm">{t('mobileAdmin.accessDeniedDesc')}</p>
+      <div className="lux-admin-shell flex items-center justify-center px-4 min-h-[90vh]">
+        <div className="lux-card w-full max-w-sm p-7 text-center space-y-4">
+          <h1 className="text-xl font-bold text-white tracking-tight">{t('mobileAdmin.accessDenied', 'Kirish taqiqlandi')}</h1>
+          <p className="text-sm text-neutral-400">{t('mobileAdmin.accessDeniedDesc', 'Sizda admin huquqi yo‘q')}</p>
           <button
             type="button"
             onClick={() => navigate('/mobile')}
-            className="mobile-admin-btn-primary w-full py-3"
+            className="lux-btn-gold"
           >
-            {t('mobileAdmin.backToHome')}
+            {t('mobileAdmin.backToHome', 'Bosh sahifaga')}
           </button>
         </div>
       </div>
     );
   }
 
+  const selectedSizesList = (formData.sizes || '').split(',').map((s) => s.trim());
+
   return (
-    <div className="mobile-admin-shell pb-36">
-      <header className="mobile-admin-header px-4 py-3">
+    <div className="lux-admin-shell pb-36">
+      {/* ─── Luxury Header ─── */}
+      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-[#050608]/85 border-b border-white/5 px-4 pt-3 pb-3">
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => navigate('/mobile/admin')}
-            className="mobile-admin-btn-secondary px-3 py-2 text-sm"
+            className="lux-btn-glass py-2 px-3 text-xs"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {t('mobileAdmin.back')}
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>{t('mobileAdmin.back', 'Orqaga')}</span>
           </button>
 
-          <h1 className="mobile-admin-title text-[12px] text-center">
-            {id ? t('mobileAdmin.editTitle') : t('mobileAdmin.newTitle')}
+          <h1 className="text-sm font-bold text-white tracking-tight truncate font-serif">
+            {id ? t('mobileAdmin.editTitle', 'Modelni tahrirlash') : t('mobileAdmin.newTitle', 'Yangi Atelier Modeli')}
           </h1>
 
-          <div className="w-20" />
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="text-xs font-bold text-amber-300 px-2 py-1 hover:text-amber-200"
+          >
+            {isSubmitting ? '...' : t('mobileAdmin.save', 'Saqlash')}
+          </button>
         </div>
       </header>
 
-      <div className="px-4 py-4 space-y-4">
-        <section className="mobile-admin-card p-3.5 space-y-3">
-          <h2 className="text-sm font-semibold text-white inline-flex items-center gap-1.5">
-            <Gem className="w-4 h-4 text-amber-300" />
-            {t('mobileAdmin.basicInfo')}
-          </h2>
-
-          <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.productName')}</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="mobile-admin-input"
-              placeholder={t('mobileAdmin.productNamePlaceholder')}
-            />
+      <div className="px-4 py-4 space-y-4 relative z-10">
+        {/* ─── Section 1: Media Gallery ─── */}
+        <section className="lux-card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5" />
+              {t('mobileAdmin.images', 'Mahsulot rasmlari')}
+            </h2>
+            <span className="text-[11px] text-neutral-400 font-medium">
+              {formData.images.length} ta rasm
+            </span>
           </div>
 
-          <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.category')}</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="mobile-admin-select"
-            >
-              <option value="">{t('mobileAdmin.selectCategory')}</option>
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.price')}</label>
-              <input
-                type="text"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                className="mobile-admin-input"
-                placeholder="299000"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.originalPrice')}</label>
-              <input
-                type="text"
-                name="originalPrice"
-                value={formData.originalPrice}
-                onChange={handleChange}
-                className="mobile-admin-input"
-                placeholder="399000"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.badge')}</label>
-              <select
-                name="badge"
-                value={formData.badge}
-                onChange={handleChange}
-                className="mobile-admin-select"
-              >
-                <option value="">{t('mobileAdmin.badgeNone')}</option>
-                <option value="NEW">{t('mobileAdmin.badgeNew')}</option>
-                <option value="BESTSELLER">{t('mobileAdmin.badgeBestseller')}</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.rating')}</label>
-              <input
-                type="number"
-                name="rating"
-                min="0"
-                max="5"
-                step="0.1"
-                value={formData.rating}
-                onChange={handleChange}
-                className="mobile-admin-input"
-                placeholder="4.5"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="mobile-admin-card p-3.5 space-y-3">
-          <h2 className="text-sm font-semibold text-white inline-flex items-center gap-1.5">
-            <ImageIcon className="w-4 h-4 text-amber-300" />
-            {t('mobileAdmin.images')}
-          </h2>
-
-          <label className="mobile-admin-empty p-4 block text-center cursor-pointer">
-            <div className="inline-flex items-center gap-2 text-slate-200 text-sm">
-              <Upload className="w-4 h-4 text-amber-300" />
-              {t('mobileAdmin.uploadImage')}
+          <label className="border-2 border-dashed border-white/10 hover:border-amber-400/50 rounded-2xl p-5 block text-center cursor-pointer transition-all bg-white/[0.02]">
+            <div className="flex flex-col items-center gap-2 text-neutral-300 text-xs">
+              <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-300">
+                <Upload className="w-4 h-4" />
+              </div>
+              <span className="font-semibold text-white">{t('mobileAdmin.uploadImage', 'Rasm yuklash')}</span>
+              <span className="text-[10px] text-neutral-500">PNG, JPG, WEBP (ImageKit orqali)</span>
             </div>
             <input
               ref={fileInputRef}
@@ -442,85 +389,245 @@ const MobileAdminEdit = () => {
             />
           </label>
 
-          {formData.images.length > 0 ? (
-            <div className="grid grid-cols-3 gap-2">
+          {formData.images.length > 0 && (
+            <div className="grid grid-cols-3 gap-2.5 pt-1">
               {formData.images.map((image, index) => (
-                <div key={`${image}-${index}`} className="relative aspect-square">
+                <div key={`${image}-${index}`} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-white/10 group shadow-md">
                   <img
                     src={image}
                     alt={`Preview ${index + 1}`}
                     crossOrigin="anonymous"
                     onClick={(event) => handleImageColorPick(event, image)}
-                    className={`w-full h-full object-cover rounded-xl border border-slate-600/55 ${
-                      isPipetteActive ? 'ring-2 ring-amber-300/60 cursor-crosshair' : ''
+                    className={`w-full h-full object-cover ${
+                      isPipetteActive ? 'ring-2 ring-amber-300 cursor-crosshair' : ''
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500/90 text-white flex items-center justify-center"
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-md text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
-                  {index === 0 ? (
-                    <span className="mobile-admin-pill mobile-admin-pill-warning absolute bottom-1 left-1">{t('mobileAdmin.mainImageBadge')}</span>
-                  ) : null}
+                  {index === 0 && (
+                    <span className="lux-badge lux-badge-gold absolute bottom-1.5 left-1.5 text-[8.5px]">
+                      {t('mobileAdmin.mainImageBadge', 'Asosiy')}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
-          ) : null}
+          )}
         </section>
 
-        <section className="mobile-admin-card p-3.5 space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t('mobileAdmin.colorsAndSizes')}</h2>
+        {/* ─── Section 2: Basic Information ─── */}
+        <section className="lux-card p-4 space-y-3.5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+            <Gem className="w-3.5 h-3.5" />
+            {t('mobileAdmin.basicInfo', 'Asosiy maʼlumotlar')}
+          </h2>
 
-          <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.colors')}</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {formData.colors.map((color, index) => (
-                <span
-                  key={`${color}-${index}`}
-                  className="inline-flex items-center gap-1 rounded-full bg-slate-900/75 border border-slate-600/60 px-2.5 py-1"
-                >
-                  <span
-                    className="w-3.5 h-3.5 rounded-full border border-slate-400/50"
-                    style={{ backgroundColor: color.startsWith('#') ? color : '#7d8da6' }}
-                  />
-                  <span className="text-[11px] text-slate-100">{color}</span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        colors: prev.colors.filter((_, itemIndex) => itemIndex !== index),
-                      }))
-                    }
-                  >
-                    <X className="w-3.5 h-3.5 text-slate-400" />
-                  </button>
-                </span>
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.productName', 'Mahsulot nomi *')}</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="lux-input font-medium"
+              placeholder={t('mobileAdmin.productNamePlaceholder', 'Masalan: Double-breasted Palto')}
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.category', 'Kategoriya *')}</label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="lux-select font-medium"
+              required
+            >
+              <option value="">{t('mobileAdmin.selectCategory', 'Kategoriyani tanlang')}</option>
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.price', 'Narx (so‘m) *')}</label>
+              <input
+                type="text"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                className="lux-input font-bold text-amber-300 font-serif"
+                placeholder="299000"
+                required
+              />
             </div>
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.originalPrice', 'Eski narx (so‘m)')}</label>
+              <input
+                type="text"
+                name="originalPrice"
+                value={formData.originalPrice}
+                onChange={handleChange}
+                className="lux-input line-through text-neutral-400"
+                placeholder="399000"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Section 3: Badges, Rating & Lookbook ─── */}
+        <section className="lux-card p-4 space-y-3.5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5" />
+            Belgilar va Reyting
+          </h2>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.badge', 'Belgi (Badge)')}</label>
+              <select
+                name="badge"
+                value={formData.badge}
+                onChange={handleChange}
+                className="lux-select font-semibold"
+              >
+                <option value="">{t('mobileAdmin.badgeNone', 'Belgisiz')}</option>
+                <option value="NEW">{t('mobileAdmin.badgeNew', 'Yangi (NEW)')}</option>
+                <option value="BESTSELLER">{t('mobileAdmin.badgeBestseller', 'Bestseller (TOP)')}</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.rating', 'Reyting (0 - 5)')}</label>
+              <input
+                type="number"
+                name="rating"
+                min="0"
+                max="5"
+                step="0.1"
+                value={formData.rating}
+                onChange={handleChange}
+                className="lux-input font-bold"
+                placeholder="4.8"
+              />
+            </div>
+          </div>
+
+          <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 cursor-pointer">
+            <div className="space-y-0.5">
+              <span className="text-xs font-bold text-white">{t('mobileAdmin.showInLookbook', 'Lookbook kolleksiyasiga kiritish')}</span>
+              <p className="text-[10px] text-neutral-400">Mahsulot Lookbook sahifasida ko‘rsatiladi</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={formData.isLookbook}
+              onChange={(e) => setFormData((prev) => ({ ...prev, isLookbook: e.target.checked }))}
+              className="w-5 h-5 accent-amber-400 rounded cursor-pointer"
+            />
+          </label>
+        </section>
+
+        {/* ─── Section 4: Colors & Sizes ─── */}
+        <section className="lux-card p-4 space-y-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5" />
+            {t('mobileAdmin.colorsAndSizes', 'Ranglar va O‘lchamlar')}
+          </h2>
+
+          {/* Preset Sizes */}
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.sizes', 'O‘lchamlar')}</label>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_SIZES.map((sz) => {
+                const isSelected = selectedSizesList.includes(sz);
+                return (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => togglePresetSize(sz)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      isSelected
+                        ? 'bg-amber-300 text-black shadow-md'
+                        : 'bg-white/5 border border-white/10 text-neutral-300 hover:bg-white/10'
+                    }`}
+                  >
+                    {sz} {isSelected && '✓'}
+                  </button>
+                );
+              })}
+            </div>
+            <input
+              type="text"
+              name="sizes"
+              value={formData.sizes}
+              onChange={handleChange}
+              className="lux-input text-xs mt-1"
+              placeholder="Masalan: XS, S, M, L, XL"
+            />
+          </div>
+
+          {/* Colors Palette */}
+          <div className="space-y-2 pt-2 border-t border-white/5">
+            <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.colors', 'Ranglar palitrasi (HEX)')}</label>
+
+            {formData.colors.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {formData.colors.map((color, index) => (
+                  <span
+                    key={`${color}-${index}`}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 border border-white/10 px-2.5 py-1 text-xs text-white shadow-sm"
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-inner"
+                      style={{ backgroundColor: color.startsWith('#') ? color : '#777' }}
+                    />
+                    <span className="font-mono text-[11px] font-semibold">{color}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          colors: prev.colors.filter((_, itemIndex) => itemIndex !== index),
+                        }))
+                      }
+                      className="text-neutral-400 hover:text-white p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex gap-2">
               <input
                 type="color"
-                value={isValidHexColor(colorDraft) ? colorDraft : '#f6b73a'}
-                onChange={(event) => setColorDraft(event.target.value)}
-                className="w-11 h-11 rounded-lg border border-slate-600/55 bg-transparent"
+                value={isValidHexColor(colorDraft) ? colorDraft : '#d6b47c'}
+                onChange={(e) => setColorDraft(e.target.value)}
+                className="w-11 h-11 rounded-xl border border-white/10 bg-transparent cursor-pointer flex-shrink-0"
               />
               <input
                 type="text"
                 value={colorDraft}
-                onChange={(event) => setColorDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
+                onChange={(e) => setColorDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
                     addColor();
                   }
                 }}
-                className="mobile-admin-input"
-                placeholder={t('mobileAdmin.colorPlaceholder')}
+                className="lux-input font-mono text-xs uppercase"
+                placeholder={t('mobileAdmin.colorPlaceholder', '#000000 yoki Pipetka')}
               />
               <button
                 type="button"
@@ -528,72 +635,54 @@ const MobileAdminEdit = () => {
                   setIsPipetteActive((prev) => !prev);
                   document.body.style.cursor = isPipetteActive ? 'default' : 'crosshair';
                 }}
-                className={isPipetteActive ? 'mobile-admin-btn-primary px-3' : 'mobile-admin-btn-secondary px-3'}
+                className={`lux-action-pill-btn w-11 h-11 ${isPipetteActive ? 'border-amber-400 bg-amber-400/20 text-amber-300' : ''}`}
+                title="Rasmdan rang tanlash"
               >
                 <Pipette className="w-4 h-4" />
               </button>
-              <button type="button" onClick={addColor} className="mobile-admin-btn-secondary px-3">
+              <button
+                type="button"
+                onClick={addColor}
+                className="lux-action-pill-btn w-11 h-11"
+                title="Rang qo‘shish"
+              >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
+        </section>
 
-          <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.sizes')}</label>
-            <input
-              type="text"
-              name="sizes"
-              value={formData.sizes}
-              onChange={handleChange}
-              className="mobile-admin-input"
-              placeholder="S, M, L, XL"
-            />
-          </div>
-
-          <label className="inline-flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.isLookbook}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  isLookbook: event.target.checked,
-                }))
-              }
-            />
-            {t('mobileAdmin.showInLookbook')}
-          </label>
-
-          <div>
-            <label className="block text-[11px] mobile-admin-muted mb-1">{t('mobileAdmin.description')}</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              className="mobile-admin-textarea"
-              placeholder={t('mobileAdmin.descriptionPlaceholder')}
-            />
-          </div>
+        {/* ─── Section 5: Description ─── */}
+        <section className="lux-card p-4 space-y-2">
+          <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.description', 'Tavsif')}</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+            className="lux-textarea text-xs leading-relaxed"
+            placeholder={t('mobileAdmin.descriptionPlaceholder', 'Mahsulot haqida batafsil maʼlumot, mato tarkibi...')}
+          />
         </section>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-[#06101bcc] backdrop-blur-xl border-t border-white/10 z-30">
+      {/* ─── Bottom Sticky Action Bar ─── */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] bg-[#050608]/90 backdrop-blur-2xl border-t border-amber-400/20 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         <button
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="mobile-admin-btn-primary w-full py-3.5 disabled:opacity-60"
+          className="lux-btn-gold py-4 shadow-xl text-sm font-bold flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
-              <div className="mobile-admin-loading w-4 h-4" />
-              {t('mobileAdmin.saving')}
+              <div className="lux-spinner w-4 h-4 border-2" />
+              <span>{t('mobileAdmin.saving', 'Saqlanmoqda...')}</span>
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
-              {id ? t('mobileAdmin.save') : t('mobileAdmin.add')}
+              <Save className="w-4 h-4 stroke-[2.5]" />
+              <span>{id ? t('mobileAdmin.save', 'O‘zgarishlarni saqlash') : t('mobileAdmin.add', 'Mahsulotni joylash')}</span>
             </>
           )}
         </button>
@@ -603,3 +692,5 @@ const MobileAdminEdit = () => {
 };
 
 export default MobileAdminEdit;
+
+

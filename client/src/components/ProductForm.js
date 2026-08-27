@@ -139,12 +139,10 @@ const ProductForm = ({ product, onClose }) => {
     const loadingToast = toast.loading('Rasmlar yuklanmoqda...');
 
     try {
-      const uploadedUrls = [];
-      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
-
-      if (!publicKey) {
-        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
-      }
+      const publicKey =
+        import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+        import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+        'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
       for (const file of files) {
         const auth = await getImageKitAuth();

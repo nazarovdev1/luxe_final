@@ -81,10 +81,10 @@ const BlogForm = ({ blog, onClose }) => {
     try {
       toast.loading('Rasm yuklanmoqda...', { id: 'img-upload' });
 
-      const publicKey = import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY;
-      if (!publicKey) {
-        throw new Error('REACT_APP_IMAGEKIT_PUBLIC_KEY sozlanmagan');
-      }
+      const publicKey =
+        import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
+        import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
+        'public_mnemyo/d2OAPyIzzxUa3mXisNc0=';
 
       // Get ImageKit auth params
       const authRes = await apiClient.get('/imagekit-auth');

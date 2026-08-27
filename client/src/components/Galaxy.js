@@ -38,7 +38,7 @@ uniform bool uTransparent;
 
 varying vec2 vUv;
 
-#define NUM_LAYER 4.0
+#define NUM_LAYER 3.0
 #define STAR_COLOR_CUTOFF 0.2
 #define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
 #define PERIOD 3.0
@@ -198,7 +198,9 @@ export default function Galaxy({
   useEffect(() => {
     if (!ctnDom.current) return;
     const ctn = ctnDom.current;
+    const maxDpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25);
     const renderer = new Renderer({
+      dpr: maxDpr,
       alpha: transparent,
       premultipliedAlpha: false
     });
@@ -215,13 +217,14 @@ export default function Galaxy({
     let program;
 
     function resize() {
-      const scale = 1;
-      renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
+      if (!ctnDom.current) return;
+      renderer.dpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 1.25);
+      renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
       if (program) {
         program.uniforms.uResolution.value = new Color(
           gl.canvas.width,
           gl.canvas.height,
-          gl.canvas.width / gl.canvas.height
+          gl.canvas.width / (gl.canvas.height || 1)
         );
       }
     }
@@ -235,7 +238,7 @@ export default function Galaxy({
       uniforms: {
         uTime: { value: 0 },
         uResolution: {
-          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height)
+          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / (gl.canvas.height || 1))
         },
         uFocal: { value: new Float32Array(focal) },
         uRotation: { value: new Float32Array(rotation) },
@@ -259,9 +262,15 @@ export default function Galaxy({
     });
 
     const mesh = new Mesh(gl, { geometry, program });
-    let animateId;
+    let animateId = null;
+    let isVisible = true;
+    let isTabActive = true;
 
     function update(t) {
+      if (!isVisible || !isTabActive) {
+        animateId = null;
+        return;
+      }
       animateId = requestAnimationFrame(update);
       if (!disableAnimation) {
         program.uniforms.uTime.value = t * 0.001;
@@ -280,8 +289,36 @@ export default function Galaxy({
 
       renderer.render({ scene: mesh });
     }
+
+    function resume() {
+      if (!animateId && isVisible && isTabActive) {
+        animateId = requestAnimationFrame(update);
+      }
+    }
+
     animateId = requestAnimationFrame(update);
     ctn.appendChild(gl.canvas);
+
+    // Pause when scrolled out of view
+    let observer = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          resume();
+        }
+      }, { threshold: 0.01 });
+      observer.observe(ctn);
+    }
+
+    // Pause when tab is not active
+    const handleVisibilityChange = () => {
+      isTabActive = !document.hidden;
+      if (isTabActive) {
+        resume();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     function handleMouseMove(e) {
       const rect = ctn.getBoundingClientRect();
@@ -296,12 +333,14 @@ export default function Galaxy({
     }
 
     if (mouseInteraction) {
-      ctn.addEventListener('mousemove', handleMouseMove);
-      ctn.addEventListener('mouseleave', handleMouseLeave);
+      ctn.addEventListener('mousemove', handleMouseMove, { passive: true });
+      ctn.addEventListener('mouseleave', handleMouseLeave, { passive: true });
     }
 
     return () => {
-      cancelAnimationFrame(animateId);
+      if (animateId) cancelAnimationFrame(animateId);
+      if (observer) observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
       if (mouseInteraction) {
         ctn.removeEventListener('mousemove', handleMouseMove);
