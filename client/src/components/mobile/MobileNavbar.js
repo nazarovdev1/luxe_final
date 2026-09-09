@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Globe, Home, Navigation, ShoppingBag, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
@@ -8,7 +8,6 @@ import {
   getActiveMobileNavId,
   MOBILE_NAV_ROUTE_GROUPS,
 } from '../../config/mobileNavigation';
-import { GlassSurface } from '../ui';
 import './MobileNavbar.css';
 
 const LANGS = [
@@ -24,6 +23,7 @@ const MobileNavbar = () => {
   const { pathname } = useLocation();
   const [langOpen, setLangOpen] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const languageRef = useRef(null);
 
   useEffect(() => {
     const viewport = window.visualViewport;
@@ -42,6 +42,27 @@ const MobileNavbar = () => {
       viewport.removeEventListener('scroll', syncKeyboardState);
     };
   }, []);
+
+  useEffect(() => {
+    if (!langOpen) return undefined;
+
+    const closeLanguageMenu = (event) => {
+      if (event.key === 'Escape' || !languageRef.current?.contains(event.target)) {
+        setLangOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', closeLanguageMenu);
+    document.addEventListener('keydown', closeLanguageMenu);
+    return () => {
+      document.removeEventListener('pointerdown', closeLanguageMenu);
+      document.removeEventListener('keydown', closeLanguageMenu);
+    };
+  }, [langOpen]);
+
+  useEffect(() => {
+    setLangOpen(false);
+  }, [pathname]);
 
   const navItems = [
     {
@@ -89,24 +110,12 @@ const MobileNavbar = () => {
 
   return (
     <nav className={`mobile-bottom-nav border-none${keyboardOpen ? ' mobile-bottom-nav--keyboard-hidden' : ''}`} aria-label={t('mobileNav.ariaLabel', 'Asosiy mobil navigatsiya')}>
-      <GlassSurface
-        width="100%"
-        height="auto"
-        borderRadius={999}
-        borderWidth={0}
-        brightness={35}
-        opacity={0.95}
-        blur={12}
-        displace={3.2}
-        backgroundOpacity={0.05}
-        saturation={1.8}
-        distortionScale={-180}
-        redOffset={0}
-        greenOffset={10}
-        blueOffset={16}
+      <div
         className="mobile-bottom-nav__pill"
         style={{ '--active-index': Math.max(activeIndex, 0) }}
       >
+        <span className="mobile-bottom-nav__shine" aria-hidden="true" />
+
         {/* Animated "active capsule" that slides behind the current nav item */}
         <div
           className={`mobile-bottom-nav__indicator${activeIndex >= 0 ? ' mobile-bottom-nav__indicator--visible' : ''}`}
@@ -140,22 +149,25 @@ const MobileNavbar = () => {
           );
         })}
 
-      </GlassSurface>
+      </div>
 
       {/* Language control lives outside the primary navigation */}
-        <div className={`mobile-bottom-nav__language-orb${langOpen ? ' mobile-bottom-nav__language-orb--open' : ''}`}>
+        <div ref={languageRef} className={`mobile-bottom-nav__language-orb${langOpen ? ' mobile-bottom-nav__language-orb--open' : ''}`}>
           <button
             type="button"
             onClick={() => setLangOpen((v) => !v)}
-            aria-label={t('mobileNav.changeLanguage')}
-            title={t('mobileNav.changeLanguage')}
+            aria-label={t('mobileNav.changeLanguage', "Tilni o'zgartirish")}
+            title={t('mobileNav.changeLanguage', "Tilni o'zgartirish")}
+            aria-expanded={langOpen}
+            aria-controls="mobile-language-menu"
+            aria-haspopup="menu"
             className="mobile-bottom-nav__language-trigger"
           >
             <Globe className="mobile-bottom-nav__language-icon" aria-hidden="true" />
             <span>{currentLang.label}</span>
           </button>
           {langOpen && (
-            <div className="mobile-bottom-nav__lang-menu" role="menu">
+            <div id="mobile-language-menu" className="mobile-bottom-nav__lang-menu" role="menu">
               {(availableLanguages || LANGS).map((lng) => (
                 <button
                   key={lng.code}

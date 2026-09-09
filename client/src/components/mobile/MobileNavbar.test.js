@@ -1,7 +1,7 @@
 import React from 'react';
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
@@ -12,6 +12,8 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('../../contexts/CartContext', () => ({ useCart: vi.fn() }));
 vi.mock('../../contexts/LanguageContext', () => ({ useLanguage: vi.fn() }));
 
+const setLanguage = vi.fn();
+
 const renderNavbar = ({
   route = '/mobile',
   isAuthenticated = false,
@@ -19,7 +21,16 @@ const renderNavbar = ({
 } = {}) => {
   useAuth.mockReturnValue({ isAuthenticated });
   useCart.mockReturnValue({ totalItems });
-  useLanguage.mockReturnValue({ t: (_key, fallback) => fallback });
+  useLanguage.mockReturnValue({
+    t: (_key, fallback) => fallback,
+    language: 'uz',
+    setLanguage,
+    availableLanguages: [
+      { code: 'uz', label: 'UZ' },
+      { code: 'ru', label: 'RU' },
+      { code: 'en', label: 'EN' },
+    ],
+  });
 
   return render(
     <MemoryRouter initialEntries={[route]}>
@@ -67,5 +78,18 @@ describe('MobileNavbar', () => {
     } else {
       expect(badge).toHaveTextContent(expected);
     }
+  });
+
+  test('opens the detached language menu and changes language', () => {
+    renderNavbar();
+    const trigger = screen.getByRole('button', { name: "Tilni o'zgartirish" });
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'RU' }));
+    expect(setLanguage).toHaveBeenCalledWith('ru');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

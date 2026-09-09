@@ -22,7 +22,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import ReviewForm from '../ReviewForm';
 import SEO from '../SEO';
 import SizeGuideModal from '../SizeGuideModal';
-import InstallmentCalculator from '../InstallmentCalculator';
 import FlashSaleTimer from '../FlashSaleTimer';
 import { Button, Badge, Card } from './ui';
 import { useProducts } from '../../contexts/ProductContext';
@@ -426,11 +425,6 @@ export default function ProductView() {
               />
             )}
 
-            {product.price >= 50000 && (
-              <div className="border-t border-[rgba(255,255,255,0.08)] pt-4">
-                <InstallmentCalculator price={product.price} />
-              </div>
-            )}
           </div>
         </div>
 

@@ -569,7 +569,8 @@
   right: 9px;
   bottom: 93px;
   left: 9px;
-  z-index: 50;
+  /* Keep compare actions above the floating language control in MobileNavbar. */
+  z-index: 10001;
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   align-items: center;

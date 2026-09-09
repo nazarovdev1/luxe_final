@@ -36,7 +36,6 @@ import {
 import ReviewForm from '../../components/ReviewForm';
 import ReviewList from '../../components/ReviewList';
 import SEO from '../../components/SEO';
-import InstallmentCalculator from '../../components/InstallmentCalculator';
 import FlashSaleTimer from '../../components/FlashSaleTimer';
 import BackInStockButton from '../../components/BackInStockButton';
 import PriceDropAlert from '../../components/PriceDropAlert';
@@ -475,7 +474,6 @@ const MobileProductView = () => {
                   productName={product.name}
                 />
               )}
-              {product.price >= 50000 && <InstallmentCalculator price={product.price} />}
               <PriceDropAlert product={product} />
             </div>
 

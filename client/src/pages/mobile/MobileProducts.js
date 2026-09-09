@@ -151,6 +151,15 @@ const MobileProducts = () => {
     };
   }, [showFilters]);
 
+  useEffect(() => {
+    const compareIsActive = compareList.length > 0;
+    document.body.classList.toggle('mobile-compare-active', compareIsActive);
+
+    return () => {
+      document.body.classList.remove('mobile-compare-active');
+    };
+  }, [compareList.length]);
+
   const lead = displayedProducts[0];
   const gridProducts = displayedProducts.slice(1);
   const editorialNumber = useMemo(() => String(sortedProducts.length).padStart(2, '0'), [sortedProducts.length]);
