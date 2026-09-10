@@ -36,6 +36,7 @@ const EMPTY_FORM = {
   modelInfo: { height: '', bust: '', waist: '', hips: '', wearingSize: '' },
   measurements: { unit: 'cm', bust: '', waist: '', hips: '', length: '', sleeve: '' },
   sizeGuide: [],
+  sizeConversions: { US: '', EU: '', UK: '', RU: '' },
   description: '',
   isLookbook: false,
   earlyAccessTier: 'none',
@@ -108,6 +109,10 @@ const ProductForm = ({ product, onClose }) => {
         size: row.size || '', bust: row.bust ?? '', waist: row.waist ?? '',
         hips: row.hips ?? '', length: row.length ?? '',
       })) : [],
+      sizeConversions: {
+        US: product.sizeConversions?.US || '', EU: product.sizeConversions?.EU || '',
+        UK: product.sizeConversions?.UK || '', RU: product.sizeConversions?.RU || '',
+      },
       description: product.description || '',
       isLookbook: Boolean(product.isLookbook),
       earlyAccessTier: product.earlyAccessTier || 'none',
@@ -352,6 +357,7 @@ const ProductForm = ({ product, onClose }) => {
           size: row.size.trim(), bust: row.bust === '' ? null : Number(row.bust), waist: row.waist === '' ? null : Number(row.waist),
           hips: row.hips === '' ? null : Number(row.hips), length: row.length === '' ? null : Number(row.length),
         })),
+        sizeConversions: Object.fromEntries(Object.entries(formData.sizeConversions).map(([key, value]) => [key, value.trim()])),
         image: formData.images[0]?.url || '',
       };
 
@@ -631,6 +637,12 @@ const ProductForm = ({ product, onClose }) => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">{[['bust', "Ko'krak"], ['waist', 'Bel'], ['hips', 'Son'], ['length', 'Uzunlik'], ['sleeve', 'Yeng']].map(([field, label]) => <label key={field}><span className="block text-xs text-slate-300 mb-1">{label}</span><input type="number" min="0" value={formData.measurements[field]} onChange={(event) => updateNested('measurements', field, event.target.value)} className="admin-input" /></label>)}</div>
           <div className="flex items-center justify-between border-t border-white/5 pt-3"><p className="text-sm text-slate-200">O'lcham jadvali (ixtiyoriy)</p><button type="button" onClick={addSizeGuideRow} className="admin-btn-secondary px-3 py-2 text-sm"><Plus className="w-4 h-4" /> Qator</button></div>
           {formData.sizeGuide.map((row, index) => <div key={index} className="grid grid-cols-2 md:grid-cols-[.8fr_repeat(4,1fr)_auto] gap-2 items-end">{[['size', "O'lcham"], ['bust', "Ko'krak"], ['waist', 'Bel'], ['hips', 'Son'], ['length', 'Uzunlik']].map(([field, label]) => <label key={field}><span className="block text-xs text-slate-300 mb-1">{label}</span><input type={field === 'size' ? 'text' : 'number'} min={field === 'size' ? undefined : '0'} value={row[field]} onChange={(event) => updateSizeGuideRow(index, field, event.target.value)} className="admin-input" /></label>)}<button type="button" onClick={() => removeSizeGuideRow(index)} className="admin-btn-secondary p-3"><X className="w-4 h-4" /></button></div>)}
+          <div className="border-t border-white/5 pt-3">
+            <p className="text-sm text-slate-200 mb-3">O'lcham konvertatsiyasi (ixtiyoriy)</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {['US', 'EU', 'UK', 'RU'].map((region) => <label key={region}><span className="block text-xs text-slate-300 mb-1">{region}</span><input value={formData.sizeConversions[region]} onChange={(event) => updateNested('sizeConversions', region, event.target.value)} className="admin-input" placeholder="Masalan: M / 38" /></label>)}
+            </div>
+          </div>
         </section>
 
         <div className="flex items-center gap-6">

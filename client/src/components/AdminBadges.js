@@ -1,28 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Medal, Plus, Trash2, Shield, Target, Loader2 } from 'lucide-react';
+import { Medal, Plus, Trash2, Loader2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import BadgeIcon, { BADGE_ICON_OPTIONS } from './BadgeIcon';
+
+const EMPTY_BADGE = {
+  name: '',
+  description: '',
+  icon: 'Trophy',
+  criteria: 'purchase_amount',
+  threshold: '',
+  reward: {
+    points: 0,
+    discountPercentage: 0,
+    freeShipping: false,
+    earlyAccess: false,
+  },
+  isActive: true,
+};
 
 const AdminBadges = () => {
   const { token } = useAuth();
   const [badges, setBadges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [newBadge, setNewBadge] = useState({
-    name: '',
-    description: '',
-    icon: '',
-    criteria: 'purchase_amount',
-    threshold: '',
-    reward: {
-      points: 0,
-      discountPercentage: 0,
-      freeShipping: false,
-      earlyAccess: false
-    },
-    isActive: true
-  });
+  const [newBadge, setNewBadge] = useState(EMPTY_BADGE);
 
   const fetchBadges = async () => {
     try {
@@ -49,15 +52,7 @@ const AdminBadges = () => {
       if (res.data.success) {
         toast.success('Nishon yaratildi');
         setShowForm(false);
-        setNewBadge({
-          name: '',
-          description: '',
-          icon: '',
-          criteria: 'purchase_amount',
-          threshold: '',
-          reward: { points: 0, discountPercentage: 0, freeShipping: false, earlyAccess: false },
-          isActive: true
-        });
+        setNewBadge(EMPTY_BADGE);
         fetchBadges();
       }
     } catch (err) {
@@ -116,15 +111,27 @@ const AdminBadges = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Ikonka (Emoji)</label>
-            <input
-              type="text"
-              value={newBadge.icon}
-              onChange={e => setNewBadge({...newBadge, icon: e.target.value})}
-              placeholder="Masalan: 🏆"
-              className="admin-input"
-              required
-            />
+            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase">Ikonkani tanlang</label>
+            <div className="grid grid-cols-5 gap-2 rounded-xl border border-white/10 bg-black/10 p-2 sm:grid-cols-8">
+              {BADGE_ICON_OPTIONS.map(({ value, label, Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  title={label}
+                  aria-label={label}
+                  aria-pressed={newBadge.icon === value}
+                  onClick={() => setNewBadge({ ...newBadge, icon: value })}
+                  className={`relative flex h-11 items-center justify-center rounded-lg border transition-all ${newBadge.icon === value ? 'border-amber-300 bg-amber-300/15 text-amber-200 shadow-[0_0_18px_rgba(224,186,114,0.18)]' : 'border-white/10 bg-white/[0.03] text-slate-400 hover:border-amber-300/40 hover:text-amber-100'}`}
+                >
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                  {newBadge.icon === value && <Check className="absolute right-1 top-1 h-3 w-3" />}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+              <BadgeIcon icon={newBadge.icon} className="h-4 w-4 text-amber-300" />
+              {BADGE_ICON_OPTIONS.find(({ value }) => value === newBadge.icon)?.label || 'Tanlangan ikonka'}
+            </p>
           </div>
           <div className="col-span-full">
             <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Tavsif</label>
@@ -177,7 +184,9 @@ const AdminBadges = () => {
               >
                 <Trash2 className="w-4 h-4" />
               </button>
-              <div className="text-5xl mb-4">{badge.icon}</div>
+              <div className="mb-4 flex h-16 items-center justify-center text-amber-200">
+                <BadgeIcon icon={badge.icon} className="h-14 w-14" imageClassName="h-14 w-14 object-contain" />
+              </div>
               <h3 className="font-bold text-white mb-1">{badge.name}</h3>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-3">{badge.criteria.replace(/_/g, ' ')}</p>
               <div className="px-3 py-1 bg-white/5 rounded-full text-[10px] text-gray-400">

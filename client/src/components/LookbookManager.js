@@ -36,6 +36,46 @@ const LookbookManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState(INITIAL_FORM);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadLookbooks = async () => {
+      setIsLoading(true);
+
+      try {
+        const [looksResult, productsResult] = await Promise.all([
+          getAllLooks(),
+          getAllProducts(),
+        ]);
+
+        if (!isMounted) return;
+
+        if (looksResult?.success) {
+          setLooks(Array.isArray(looksResult.data) ? looksResult.data : []);
+        } else {
+          setLooks([]);
+          toast.error(looksResult?.message || 'Lookbooklarni yuklashda xatolik');
+        }
+
+        setAllProducts(Array.isArray(productsResult) ? productsResult : []);
+      } catch (error) {
+        if (!isMounted) return;
+        console.error('Lookbooklarni yuklashda xatolik:', error);
+        setLooks([]);
+        setAllProducts([]);
+        toast.error('Lookbooklarni yuklashda xatolik');
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadLookbooks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filteredProducts = useMemo(
     () =>
       allProducts.filter((product) =>

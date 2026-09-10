@@ -45,6 +45,19 @@ const getInitialCharts = (t) => ({
 const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
   const { t } = useLanguage();
   const SIZE_CHARTS = getInitialCharts(t);
+  const hasProductSizeGuide = Array.isArray(product?.sizeGuide) && product.sizeGuide.length > 0;
+  const charts = hasProductSizeGuide
+    ? {
+        product: {
+          name: product?.name ? `${product.name} — o'lchamlar` : "Mahsulot o'lchamlari",
+          headers: ["O'lcham", "Ko'krak", 'Bel', 'Son', 'Uzunlik'],
+          rows: product.sizeGuide.map((row) => [
+            row.size || '—', row.bust ?? '—', row.waist ?? '—', row.hips ?? '—', row.length ?? '—',
+          ]),
+        },
+        ...SIZE_CHARTS,
+      }
+    : SIZE_CHARTS;
   const [activeTab, setActiveTab] = useState('chart');
   const [activeChart, setActiveChart] = useState('default');
   const [expandedChart, setExpandedChart] = useState(null);
@@ -85,6 +98,10 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose, product]);
+
+  useEffect(() => {
+    if (isOpen) setActiveChart(hasProductSizeGuide ? 'product' : 'default');
+  }, [isOpen, hasProductSizeGuide]);
 
   if (!isOpen) return null;
 
@@ -171,7 +188,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
     setRecommendedSize(null);
   };
 
-  const currentChart = SIZE_CHARTS[activeChart];
+  const currentChart = charts[activeChart] || charts.product || charts.default;
 
   return (
     <div className="size-guide-atlier fixed inset-0 z-[100] grid place-items-center p-3 sm:p-6">
@@ -291,7 +308,7 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
             <div className="space-y-4">
               {/* Chart Type Selector */}
               <div className="flex flex-wrap gap-2">
-                {Object.entries(SIZE_CHARTS).map(([key, chart]) => (
+                {Object.entries(charts).map(([key, chart]) => (
                   <button
                     key={key}
                     onClick={() => setActiveChart(key)}
@@ -344,6 +361,17 @@ const SizeGuideModal = ({ isOpen, onClose, productCategory, product }) => {
                   </tbody>
                 </table>
               </div>
+
+              {Object.values(product?.sizeConversions || {}).some(Boolean) && (
+                <div className="rounded-2xl border border-white/10 bg-[#0d1423]/80 p-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#d6b47c]">Xalqaro o'lchamlar</p>
+                  <div className="flex flex-wrap gap-2 text-xs text-[#9aa3b2]">
+                    {Object.entries(product.sizeConversions).filter(([, value]) => value).map(([region, value]) => (
+                      <span key={region} className="rounded-full border border-white/10 px-2.5 py-1">{region}: {value}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* How to Measure */}
               <div className="rounded-2xl border border-white/10 bg-[#0d1423]/80 p-4">

@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import ReferralProgram from '../components/ReferralProgram';
 import MyGiftCards from '../components/MyGiftCards';
+import BadgeIcon from '../components/BadgeIcon';
 
 const Profile = () => {
     const [badges, setBadges] = useState([]);
@@ -187,7 +188,7 @@ const Profile = () => {
                         {badges.map(b => (
                             <div key={b._id} className="group relative flex flex-col items-center gap-2 shrink-0">
                                 <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl group-hover:bg-white/10 group-hover:border-white/20 transition-all cursor-help">
-                                    {b.badge.icon}
+                                <BadgeIcon icon={b.badge.icon} className="h-7 w-7 text-[#d6b47c]" imageClassName="h-7 w-7 object-contain" />
                                 </div>
                                 <span className="text-[10px] text-gray-400 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">{b.badge.name}</span>
                             </div>

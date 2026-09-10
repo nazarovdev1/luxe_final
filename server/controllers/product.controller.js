@@ -44,6 +44,14 @@ const normalizeProductPayload = (payload = {}) => {
     product.earlyAccessUntil = null
   }
 
+  if (product.earlyAccessTier === 'none') {
+    product.earlyAccessUntil = null
+  }
+
+  if (product.measurements) {
+    product.garmentMeasurements = product.measurements
+  }
+
   delete product.ratings
   return product
 }
@@ -69,10 +77,28 @@ const getUserLevelFromAuth = async (authHeader) => {
   }
 }
 
-const canSeeEarlyAccessProduct = (product, userLevel) => {
+export const canSeeEarlyAccessProduct = (product, userLevel) => {
   if (!product?.earlyAccessUntil) return true
   if (new Date(product.earlyAccessUntil).getTime() <= Date.now()) return true
-  return ['Gold', 'Diamond'].includes(userLevel)
+  if (product.earlyAccessTier === 'Diamond') return userLevel === 'Diamond'
+  if (product.earlyAccessTier === 'Gold') return ['Gold', 'Diamond'].includes(userLevel)
+  return true
+}
+
+export const earlyAccessVisibilityQuery = (userLevel, now = new Date()) => {
+  if (userLevel === 'Diamond') return {}
+
+  const publiclyVisible = [
+    { earlyAccessUntil: null },
+    { earlyAccessUntil: { $lte: now } },
+    { earlyAccessTier: 'none' }
+  ]
+
+  if (userLevel === 'Gold') {
+    return { $or: [...publiclyVisible, { earlyAccessTier: { $ne: 'Diamond' } }] }
+  }
+
+  return { $or: publiclyVisible }
 }
 
 export const getProduct = async (req, res) => {
@@ -106,13 +132,7 @@ export const getProduct = async (req, res) => {
     const authHeader = req.headers.authorization;
     const userLevel = await getUserLevelFromAuth(authHeader)
 
-    const canSeeEarlyAccess = ['Gold', 'Diamond'].includes(userLevel);
-    if (!canSeeEarlyAccess) {
-      query.$or = [
-        { earlyAccessUntil: null },
-        { earlyAccessUntil: { $lte: new Date() } }
-      ];
-    }
+    Object.assign(query, earlyAccessVisibilityQuery(userLevel, new Date()))
     // -------------------------------------
 
     const [products, total] = await Promise.all([
@@ -134,7 +154,9 @@ export const getProduct = async (req, res) => {
           fit: 1,
           fitType: 1,
           modelInfo: 1,
+          measurements: 1,
           garmentMeasurements: 1,
+          sizeGuide: 1,
           sizeConversions: 1,
           createdAt: 1,
           earlyAccessTier: 1,
@@ -213,15 +235,7 @@ export const getRelatedProducts = async (req, res) => {
     }
 
     const userLevel = await getUserLevelFromAuth(req.headers.authorization)
-    const canSeeEarlyAccess = ['Gold', 'Diamond'].includes(userLevel)
-    const visibilityQuery = canSeeEarlyAccess
-      ? {}
-      : {
-          $or: [
-            { earlyAccessUntil: null },
-            { earlyAccessUntil: { $lte: new Date() } }
-          ]
-        }
+    const visibilityQuery = earlyAccessVisibilityQuery(userLevel, new Date())
 
     const relatedProducts = await Product.find({
       category: product.category,
@@ -252,6 +266,10 @@ export const getRelatedProducts = async (req, res) => {
 export const postProduct = async (req, res) => {
   const product = normalizeProductPayload(req.validatedBody || req.body)
 
+  if (product.earlyAccessTier !== 'none' && !product.earlyAccessUntil) {
+    return res.status(400).json({ success: false, message: 'VIP Early Access uchun tugash sanasi majburiy' })
+  }
+
   if (!product.name || !product.price || !product.category || !product.images || product.images.length === 0) {
     return res.status(400).json({
       success: false,
@@ -277,6 +295,10 @@ export const postProduct = async (req, res) => {
 export const putProduct = async (req, res) => {
   const { id } = req.params
   const product = normalizeProductPayload(req.validatedBody || req.body)
+
+  if (product.earlyAccessTier !== 'none' && !product.earlyAccessUntil) {
+    return res.status(400).json({ success: false, message: 'VIP Early Access uchun tugash sanasi majburiy' })
+  }
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ success: false, message: 'Invalid Product ID' })

@@ -35,6 +35,14 @@ export default function ProductInfoPanel({
   const colors = getProductOptions(product, 'color');
   const sizes = getProductOptions(product, 'size');
   const hasDiscount = Number(product.originalPrice) > Number(product.price);
+  const fitLabels = { small: 'Kichik keladi', 'true-to-size': 'Aynan mos', large: 'Katta keladi' };
+  const modelDetails = [
+    product.modelInfo?.height && `Bo'yi ${product.modelInfo.height} sm`,
+    product.modelInfo?.bust && `Ko'krak ${product.modelInfo.bust} sm`,
+    product.modelInfo?.waist && `Bel ${product.modelInfo.waist} sm`,
+    product.modelInfo?.hips && `Son ${product.modelInfo.hips} sm`,
+    product.modelInfo?.wearingSize && `Kiygan razmer ${product.modelInfo.wearingSize}`,
+  ].filter(Boolean).join(' · ');
 
   const addToBag = () => {
     if (colors.length && !selectedColor) return window.alert('Iltimos, rangni tanlang.');
@@ -57,6 +65,11 @@ export default function ProductInfoPanel({
 
   const details = [
     { id: 'description', label: 'Model haqida', content: product.description || "Kundalik va maxsus lahzalar uchun yaratilgan nafis, qulay model." },
+    ...(product.fit?.note || modelDetails ? [{
+      id: 'fit',
+      label: 'Fit va model ma’lumotlari',
+      content: [fitLabels[product.fit?.type] || '', product.fit?.note, modelDetails].filter(Boolean).join('. '),
+    }] : []),
     { id: 'material', label: 'Material va parvarish', content: product.materials?.join(', ') || "Sifatli mato. Shaklini saqlashi uchun ehtiyotkor parvarish tavsiya qilinadi." },
     { id: 'delivery', label: 'Yetkazib berish', content: "Toshkent bo'ylab tezkor yetkazib berish mavjud. Buyurtma tafsilotlari checkout paytida tasdiqlanadi." },
   ];

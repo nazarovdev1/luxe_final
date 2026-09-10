@@ -315,10 +315,11 @@ const AdminOrders = () => {
 
                           <div className="admin-card-soft p-3 md:col-span-2 xl:col-span-1">
                             <p className="admin-muted text-xs mb-1">Manzil</p>
-                            <div className="text-sm text-white font-medium inline-flex items-start gap-2">
-                              <MapPin className="w-4 h-4 mt-0.5 text-amber-300" />
-                              <span>{customer.address || 'Manzil kiritilmagan'}</span>
-                            </div>
+                            <div className="flex flex-col items-start gap-1">
+                              <div className="text-sm text-white font-medium inline-flex items-start gap-2">
+                                <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-amber-300" />
+                                <span className="break-words">{customer.address || 'Manzil kiritilmagan'}</span>
+                              </div>
                             {(customer.location || customer.address) && (
                               <a
                                 href={
@@ -328,12 +329,13 @@ const AdminOrders = () => {
                                 }
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center mt-2 text-xs text-amber-200 hover:text-amber-100"
+                                className="inline-flex items-center self-start text-xs text-amber-200 hover:text-amber-100"
                               >
                                 <MapPin className="w-3 h-3 mr-1" />
                                 Xaritada ochish
                               </a>
                             )}
+                            </div>
                           </div>
 
                           {order.scheduledDelivery && (

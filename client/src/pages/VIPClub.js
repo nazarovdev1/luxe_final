@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import { useNavigate } from 'react-router-dom';
+import BadgeIcon from '../components/BadgeIcon';
 
 const VIP_TIERS = [
   {
@@ -353,7 +354,7 @@ const VIPClub = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
               {badges.map(userBadge => (
                 <div key={userBadge._id} className="relative group flex flex-col items-center p-6 rounded-[32px] border border-[#d6b47c]/20 bg-gradient-to-b from-[#d6b47c]/10 to-transparent hover:border-[#d6b47c]/40 transition-all text-center overflow-hidden">
-                  <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-500">{userBadge.badge.icon}</div>
+<div className="mb-4 flex h-16 items-center justify-center text-[#d6b47c] group-hover:scale-110 transition-transform duration-500"><BadgeIcon icon={userBadge.badge.icon} className="h-16 w-16" imageClassName="h-16 w-16 object-contain" /></div>
                   <h3 className="font-bold text-base mb-1 text-white">{userBadge.badge.name}</h3>
                   <p className="text-[11px] text-gray-400 mb-3">{userBadge.badge.description}</p>
                   

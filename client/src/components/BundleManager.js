@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2, Image as ImageIcon, Loader2, X, Search, DollarSign, Percent, Check } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, Loader2, X, Search, DollarSign, Percent, Check, Pencil } from 'lucide-react';
 import useProductService from '../server/server';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'react-hot-toast';
@@ -16,11 +16,12 @@ const INITIAL_FORM = {
 
 const BundleManager = () => {
   const { t } = useLanguage();
-  const { getAllBundles, createBundle, deleteBundle, getAllProducts } = useProductService();
+  const { getAllBundles, createBundle, updateBundle, deleteBundle, getAllProducts } = useProductService();
 
   const [bundles, setBundles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingBundleId, setEditingBundleId] = useState(null);
   const [allProducts, setAllProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState(INITIAL_FORM);
@@ -95,6 +96,35 @@ const BundleManager = () => {
     }
   };
 
+  const openCreateForm = () => {
+    setEditingBundleId(null);
+    setFormData(INITIAL_FORM);
+    setSearchTerm('');
+    setIsCreating(true);
+  };
+
+  const openEditForm = (bundle) => {
+    setEditingBundleId(bundle._id);
+    setFormData({
+      title: bundle.title || '',
+      description: bundle.description || '',
+      heroImage: bundle.heroImage || '',
+      products: (bundle.products || []).map((product) => product._id || product.id || product),
+      discountType: bundle.discountType || 'percentage',
+      discountValue: Number(bundle.discountValue) || 0,
+      isActive: bundle.isActive !== false,
+    });
+    setSearchTerm('');
+    setIsCreating(true);
+  };
+
+  const closeForm = () => {
+    setIsCreating(false);
+    setEditingBundleId(null);
+    setFormData(INITIAL_FORM);
+    setSearchTerm('');
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!formData.title || formData.products.length === 0) {
@@ -103,14 +133,16 @@ const BundleManager = () => {
     }
 
     const token = localStorage.getItem('token');
-    const result = await createBundle(formData, token);
+    const result = editingBundleId
+      ? await updateBundle(editingBundleId, formData, token)
+      : await createBundle(formData, token);
 
     if (result.success) {
-      toast.success("To'plam yaratildi");
-      setBundles((prev) => [result.data, ...prev]);
-      setIsCreating(false);
-      setFormData(INITIAL_FORM);
-      setSearchTerm('');
+      toast.success(editingBundleId ? "To'plam yangilandi" : "To'plam yaratildi");
+      setBundles((prev) => editingBundleId
+        ? prev.map((bundle) => (bundle._id === editingBundleId ? result.data : bundle))
+        : [result.data, ...prev]);
+      closeForm();
     } else {
       toast.error(result.message || 'Xatolik yuz berdi');
     }
@@ -122,9 +154,9 @@ const BundleManager = () => {
         <div className="flex items-center justify-between gap-3">
           <h2 className="admin-section-title text-xl inline-flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-amber-300" />
-            Yangi to'plam yaratish
+            {editingBundleId ? "To'plamni tahrirlash" : "Yangi to'plam yaratish"}
           </h2>
-          <button type="button" onClick={() => setIsCreating(false)} className="admin-btn-secondary p-2.5">
+          <button type="button" onClick={closeForm} className="admin-btn-secondary p-2.5">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -160,13 +192,14 @@ const BundleManager = () => {
             <label className="block text-sm text-slate-200">Mahsulotlarni tanlash *</label>
 
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Mahsulot nomini qidiring"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="admin-input pl-9"
+                style={{ paddingLeft: '2.5rem' }}
               />
             </div>
 
@@ -270,11 +303,11 @@ const BundleManager = () => {
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-            <button type="button" onClick={() => setIsCreating(false)} className="admin-btn-secondary px-5 py-2.5">
+            <button type="button" onClick={closeForm} className="admin-btn-secondary px-5 py-2.5">
               Bekor qilish
             </button>
             <button type="submit" className="admin-btn-primary px-5 py-2.5">
-              To'plamni saqlash
+              {editingBundleId ? "O'zgarishlarni saqlash" : "To'plamni saqlash"}
             </button>
           </div>
         </form>
@@ -289,7 +322,7 @@ const BundleManager = () => {
           <h2 className="admin-section-title text-xl">To'plamlar boshqaruvi</h2>
           <p className="admin-muted text-sm mt-1">Mahsulot to'plamlari va chegirmalar</p>
         </div>
-        <button type="button" onClick={() => setIsCreating(true)} className="admin-btn-primary px-4 py-2.5 w-full sm:w-auto">
+        <button type="button" onClick={openCreateForm} className="admin-btn-primary px-4 py-2.5 w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           Yangi to'plam
         </button>
@@ -326,6 +359,15 @@ const BundleManager = () => {
                       -{discountPercent}%
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(bundle)}
+                    className="admin-btn-secondary p-2 absolute top-3 right-14"
+                    title="To'plamni tahrirlash"
+                    aria-label={`${bundle.title} to'plamini tahrirlash`}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(bundle._id)}

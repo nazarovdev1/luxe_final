@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/LoginForm';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './mobileExperiences.css';
+import BadgeIcon from '../../components/BadgeIcon';
 
 const VIP_TIER_DEFS = [
   {
@@ -265,11 +266,7 @@ export default function MobileVIPClub() {
                           {badges.slice(0, 6).map((badge, i) => (
                             <div key={i} className="rounded-2xl bg-white/5 p-3 text-center border border-white/5">
                               <div className="text-2xl mb-1 flex justify-center">
-                                {badge.badge?.icon?.startsWith('http') || badge.badge?.icon?.startsWith('/') ? (
-                                  <img src={badge.badge.icon} alt="" className="w-8 h-8 object-contain" onError={(e) => { e.target.style.display = 'none' }} />
-                                ) : (
-                                  badge.badge?.icon || '🏅'
-                                )}
+                                <BadgeIcon icon={badge.badge?.icon} className="h-8 w-8 text-[#d6b47c]" imageClassName="h-8 w-8 object-contain" />
                               </div>
                               <p className="text-[9px] text-gray-400 font-black uppercase tracking-wider leading-tight">{badge.badge?.name}</p>
                             </div>
@@ -321,7 +318,7 @@ export default function MobileVIPClub() {
                 <div className="grid grid-cols-2 gap-3">
                   {badges.map((userBadge, i) => (
                     <div key={i} className="relative rounded-[28px] p-5 border border-[#d6b47c]/20 bg-[#d6b47c]/5 text-center overflow-hidden">
-                      <div className="text-4xl mb-3">{userBadge.badge.icon}</div>
+                      <div className="mb-3 flex h-12 items-center justify-center text-[#d6b47c]"><BadgeIcon icon={userBadge.badge.icon} className="h-12 w-12" imageClassName="h-12 w-12 object-contain" /></div>
                       <h3 className="text-xs font-black text-white uppercase tracking-wider mb-1 truncate">{userBadge.badge.name}</h3>
                       <p className="text-[9px] text-gray-500 leading-tight mb-2">{userBadge.badge.description}</p>
                       {userBadge.badge.reward?.points > 0 && (
