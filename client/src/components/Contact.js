@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { API_BASE_URL } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const API_BASE = API_BASE_URL;
 

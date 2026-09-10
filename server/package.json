@@ -6,9 +6,10 @@
 	"scripts": {
 		"dev": "nodemon server.js",
 		"start": "node server.js",
+		"lint": "eslint .",
 		"check:syntax": "node scripts/check-syntax.js",
 		"test": "node --test tests/*.test.js",
-		"verify": "npm run check:syntax && npm test",
+		"verify": "npm run lint && npm run check:syntax && npm test",
 		"create-admin": "node create_admin.js",
 		"debug-users": "node debug_users.js",
 		"check-telegram": "node check_telegram.js"
@@ -34,8 +35,12 @@
 		"prerender-node": "^3.8.3",
 		"qs": "^6.15.0",
 		"redis": "^4.6.0",
-		"sharp": "^0.34.5",
+		"sharp": "^0.35.4",
 		"socket.io": "^4.8.3",
 		"winston": "^3.19.0"
+	},
+	"devDependencies": {
+		"eslint": "^10.10.0",
+		"globals": "^17.12.0"
 	}
 }

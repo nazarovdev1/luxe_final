@@ -36,12 +36,16 @@ const storeVote = (pollId, optionId) => {
   }
 };
 
-const BrokenImage = () => (
-  <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#0d0f16] text-[#586071]">
-    <ImageOff className="h-8 w-8" />
-    <span className="text-[10px] uppercase tracking-[0.18em]">{t('stylePolls.noImage')}</span>
-  </div>
-);
+const BrokenImage = () => {
+  const { t } = useLanguage();
+
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#0d0f16] text-[#586071]">
+      <ImageOff className="h-8 w-8" />
+      <span className="text-[10px] uppercase tracking-[0.18em]">{t('stylePolls.noImage')}</span>
+    </div>
+  );
+};
 
 const PollImage = ({ src, alt }) => {
   const [failed, setFailed] = useState(false);

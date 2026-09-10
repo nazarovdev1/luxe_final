@@ -126,6 +126,7 @@ const MobileAdminEdit = () => {
     const loadingToast = toast.loading(t('mobileAdmin.imagesUploading', 'Rasmlar yuklanmoqda...'));
 
     try {
+      const uploadedUrls = [];
       const publicKey =
         import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
         import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||
@@ -692,5 +693,4 @@ const MobileAdminEdit = () => {
 };
 
 export default MobileAdminEdit;
-
 

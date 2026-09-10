@@ -33,13 +33,17 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build && node scripts/generate-seo-pages.mjs",
+    "build": "npm run lint && vite build && node scripts/generate-seo-pages.mjs",
+    "lint": "eslint src scripts vite.config.js",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "verify": "vitest run && npm run build"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.14",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
     "jsdom": "^25.0.1",
     "postcss": "^8.4.21",
     "tailwindcss": "^3.2.7",

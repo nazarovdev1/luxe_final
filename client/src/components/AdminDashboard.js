@@ -206,6 +206,7 @@ const AdminDashboard = () => {
   }
 
   const tabsWithOverview = [{ id: 'overview', label: 'Umumiy', description: 'Statistika va hisobotlar', icon: BarChart3 }, ...tabs];
+  const activeTabConfig = tabsWithOverview.find((tab) => tab.id === activeTab);
 
   const selectTab = (id) => {
     setActiveTab(id);

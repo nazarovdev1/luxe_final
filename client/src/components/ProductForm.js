@@ -139,6 +139,7 @@ const ProductForm = ({ product, onClose }) => {
     const loadingToast = toast.loading('Rasmlar yuklanmoqda...');
 
     try {
+      const uploadedUrls = [];
       const publicKey =
         import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
         import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||

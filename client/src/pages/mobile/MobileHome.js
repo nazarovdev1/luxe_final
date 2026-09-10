@@ -50,7 +50,6 @@ export default function MobileHome() {
       sessionStorage.setItem('mobileHomeScroll', String(window.scrollY));
     };
     // Service methods are recreated by the service hook, so this request must remain mount-only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const newestProducts = useMemo(() => [...products].sort((a, b) => (

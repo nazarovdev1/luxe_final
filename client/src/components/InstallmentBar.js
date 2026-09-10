@@ -42,6 +42,7 @@ const PROVIDERS = [
 ];
 
 const InstallmentContent = ({ price }) => {
+  const { t } = useLanguage();
   const [selectedProvider, setSelectedProvider] = useState('uzum');
   const [selectedMonths, setSelectedMonths] = useState(12);
 

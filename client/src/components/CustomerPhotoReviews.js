@@ -9,6 +9,8 @@ import useProductService from '../server/server';
 
 import { API_BASE_URL } from '../services/api';
 
+const API_BASE = API_BASE_URL;
+
 const IMAGEKIT_PUBLIC_KEY =
   import.meta.env.REACT_APP_IMAGEKIT_PUBLIC_KEY ||
   import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ||

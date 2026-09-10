@@ -28,11 +28,15 @@ jobs:
         working-directory: client
         run: npm ci --legacy-peer-deps
 
-      - name: Build frontend
+      - name: Audit frontend production dependencies
+        working-directory: client
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Test, lint, and build frontend
         working-directory: client
         env:
           CI: true
-        run: npm run build
+        run: npm run verify
 
       - name: Install backend dependencies
         working-directory: server

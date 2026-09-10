@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Heart, MessageSquare, Plus, X, Upload, ShoppingBag, Image as ImageIcon, ArrowLeft, Search, Trash2, Camera } from 'lucide-react';
+import { Heart, MessageSquare, Plus, X, Upload, ShoppingBag, Image as ImageIcon, ArrowLeft, Search, Trash2, Camera, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNavigate } from 'react-router-dom';

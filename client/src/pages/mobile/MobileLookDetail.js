@@ -325,8 +325,7 @@ const MobileLookDetail = () => {
     for (const product of lookProducts) {
       const selected = selections[product.id] || {};
       try {
-        // add each product with selected variants
-        // eslint-disable-next-line no-await-in-loop
+        // Add each product sequentially so cart state is updated in order.
         await addToCart(product, selected.color, selected.size, 1);
         added += 1;
       } catch (error) {
