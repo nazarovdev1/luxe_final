@@ -1,12 +1,12 @@
 import React from 'react';
-import { Crown, ChevronDown, Sparkles, Gem, ShieldCheck } from 'lucide-react';
+import { Crown, ChevronDown, Gem, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const ProductHero = ({ title, subtitle, count, categoriesCount }) => {
   const { t } = useLanguage();
 
   return (
-    <section className="relative min-h-[85vh] max-h-[920px] flex items-center justify-center overflow-hidden bg-[#09090b] text-[#f7f1e8] selection:bg-[#d6b47c] selection:text-black pt-20 pb-16">
+    <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#09090b] text-[#f7f1e8] selection:bg-[#d6b47c] selection:text-black pt-28 pb-20 sm:pt-32 sm:pb-24">
       {/* Ambient Luxury Lighting & Glow */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Top Center Warm Spotlight */}
@@ -23,7 +23,7 @@ const ProductHero = ({ title, subtitle, count, categoriesCount }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/80 via-transparent to-[#09090b]" />
       </div>
 
-      <div className="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center">
+      <div className="relative z-10 text-center px-6 max-w-5xl mx-auto flex flex-col items-center my-auto">
         {/* Luxury Badge */}
         <div className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-gradient-to-r from-[#d6b47c]/15 via-[#f4efe6]/10 to-[#c59b5f]/15 border border-[#d6b47c]/35 shadow-[0_0_30px_rgba(214,180,124,0.18)] backdrop-blur-md mb-8 animate-fade-in transition-all duration-500 hover:border-[#d6b47c]/60">
           <Crown className="w-4 h-4 text-[#d6b47c] animate-pulse" />
@@ -33,14 +33,17 @@ const ProductHero = ({ title, subtitle, count, categoriesCount }) => {
         </div>
 
         {/* Main Title */}
-        <h1 className="font-brilliant text-6xl sm:text-7xl lg:text-8xl xl:text-[100px] text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#f7f1e8] to-[#d6b47c] leading-[0.92] tracking-tight mb-6 animate-fade-in-up drop-shadow-[0_12px_40px_rgba(214,180,124,0.16)]">
+        <h1 
+          className="font-brilliant inline-block max-w-full text-6xl sm:text-7xl lg:text-8xl xl:text-[100px] text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#f7f1e8] to-[#d6b47c] !leading-[1.22] tracking-tight mb-6 px-[0.18em] pt-[0.14em] pb-[0.38em] overflow-visible animate-fade-in-up drop-shadow-[0_12px_40px_rgba(214,180,124,0.16)]"
+          style={{ lineHeight: 1.22 }}
+        >
           {title || t('productHero.title') || "Premium Katalog"}
         </h1>
 
         {/* Golden Ornament Divider */}
         <div className="flex items-center justify-center gap-4 mb-8 w-full max-w-md">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#d6b47c]/40 to-[#d6b47c]/80" />
-          <Sparkles className="w-4 h-4 text-[#d6b47c] shrink-0 opacity-90" />
+          <Gem className="w-3.5 h-3.5 text-[#d6b47c] shrink-0 opacity-90" aria-hidden="true" />
           <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#d6b47c]/40 to-[#d6b47c]/80" />
         </div>
 
@@ -82,9 +85,15 @@ const ProductHero = ({ title, subtitle, count, categoriesCount }) => {
       </div>
 
       {/* Scroll Down Indicator */}
-      <a 
-        href="#catalog-grid"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50 hover:text-[#d6b47c] transition-colors duration-300 group cursor-pointer"
+      <button 
+        type="button"
+        onClick={() => {
+          const el = document.getElementById('catalog-grid');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50 hover:text-[#d6b47c] transition-colors duration-300 group cursor-pointer z-20"
       >
         <span className="text-[10px] uppercase tracking-[0.32em] text-[#a2998f] group-hover:text-[#d6b47c] transition-colors font-medium">
           {t('productHero.scroll') || "PASTGA QARANG"}
@@ -92,7 +101,7 @@ const ProductHero = ({ title, subtitle, count, categoriesCount }) => {
         <div className="w-8 h-8 rounded-full border border-white/15 flex items-center justify-center group-hover:border-[#d6b47c]/50 group-hover:bg-[#d6b47c]/10 transition-all duration-300">
           <ChevronDown className="w-4 h-4 text-[#d6b47c] animate-bounce" />
         </div>
-      </a>
+      </button>
     </section>
   );
 };

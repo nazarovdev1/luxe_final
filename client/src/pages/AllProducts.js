@@ -6,7 +6,7 @@ import {
   X,
   Grid3X3,
   LayoutGrid,
-  Sparkles,
+  Check,
   ChevronDown,
   Sliders,
   ArrowUpDown,
@@ -198,7 +198,10 @@ const AllProducts = () => {
         categoriesCount={categories.length - 1}
       />
 
-      <div className="sticky top-16 z-30 backdrop-blur-2xl bg-[#09090b]/85 border-b border-[#d6b47c]/15 shadow-[0_12px_40px_rgba(0,0,0,0.6)] transition-all duration-300">
+      <div 
+        id="catalog-grid"
+        className="sticky top-[75px] lg:top-[89px] z-30 backdrop-blur-2xl bg-[#09090b]/90 border-b border-[#d6b47c]/20 shadow-[0_16px_40px_rgba(0,0,0,0.7)] transition-all duration-300 scroll-mt-[75px] lg:scroll-mt-[89px]"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -272,7 +275,7 @@ const AllProducts = () => {
                         }`}
                       >
                         <span>{opt.label}</span>
-                        {sortBy === opt.value && <Sparkles className="w-3 h-3 text-[#d6b47c]" />}
+                        {sortBy === opt.value && <Check className="w-3 h-3 text-[#d6b47c]" aria-hidden="true" />}
                       </button>
                     ))}
                   </div>

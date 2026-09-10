@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, BarChart3, Gem, Heart, Eye, Sparkles } from 'lucide-react';
+import { Star, BarChart3, Gem, Heart, Eye, BadgeCheck } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const formatPrice = (price) => {
@@ -76,7 +76,7 @@ const PremiumProductCard = ({
                   ? 'bg-gradient-to-r from-[#d6b47c] via-[#f4efe6] to-[#c59b5f] text-black shadow-[0_0_18px_rgba(214,180,124,0.4)]'
                   : 'bg-black/50 backdrop-blur-md text-[#f5f1ea] border border-white/20'
               }`}>
-                {isBestseller ? <Gem className="w-3 h-3 text-black" /> : <Sparkles className="w-3 h-3 text-[#d6b47c]" />}
+                {isBestseller ? <Gem className="w-3 h-3 text-black" /> : <BadgeCheck className="w-3 h-3 text-[#d6b47c]" aria-hidden="true" />}
                 {product.badge}
               </span>
             </div>

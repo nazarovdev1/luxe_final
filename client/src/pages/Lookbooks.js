@@ -8,6 +8,7 @@ import Masonry from '../components/ui/Masonry';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiFetch } from '../services/api';
+import './Lookbooks.css';
 
 /* ─── helpers ──────────────────────────────────────────────────── */
 const SEASONS = ['lookbooks.season_0', 'lookbooks.season_1', 'lookbooks.season_2', 'lookbooks.season_3', 'lookbooks.season_4'];
@@ -21,18 +22,11 @@ function getSeason(index) {
 function HeroSection() {
     const { t } = useLanguage();
     const navigate = useNavigate();
-    const [scrollY, setScrollY] = useState(0);
-    useEffect(() => {
-        const onScroll = () => setScrollY(window.scrollY);
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-
     return (
-        <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        <section className="lookbook-opening relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
             {/* Background Image with Dark Overlay */}
             <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                className="lookbook-opening__image absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
                     backgroundImage: 'url("/look2.jpg")',
                     backgroundPosition: 'center',
@@ -42,11 +36,10 @@ function HeroSection() {
             {/* Layered background gradient to keep text readable */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#060810] via-black/70 to-black/40" />
             <div
-                className="absolute inset-0"
+                className="lookbook-opening__glow absolute inset-0"
                 style={{
                     background:
                         'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(214,180,124,0.08) 0%, transparent 70%)',
-                    transform: `translateY(${scrollY * 0.25}px)`,
                 }}
             />
             {/* Grain texture */}
@@ -68,8 +61,8 @@ function HeroSection() {
             />
 
             {/* Issue badge */}
-            <div className="relative z-10 flex flex-col items-center gap-6 text-center px-6">
-                <div className="flex items-center gap-3 pb-10">
+            <div className="lookbook-opening__content relative z-10 flex flex-col items-center gap-6 text-center px-6">
+                <div className="lookbook-opening__eyebrow flex items-center gap-3 pb-10">
                     <div className="h-px w-12 bg-[#d6b47c]/50" />
                     <span className="text-[10px] uppercase tracking-[0.4em] text-[#d6b47c]/80 font-medium">
                         {t('lookbooks.editorialLabel')}
@@ -78,11 +71,9 @@ function HeroSection() {
                 </div>
 
                 <h1
-                    className="font-brilliant text-[clamp(3.5rem,12vw,9rem)] leading-[0.88] text-[#f5f0e8] relative transition-transform duration-100 ease-out"
+                    className="lookbook-opening__title font-brilliant text-[clamp(3.5rem,12vw,9rem)] leading-[0.88] text-[#f5f0e8] relative"
                     style={{
                         letterSpacing: '-0.02em',
-                        transform: `translateY(${scrollY * 0.4}px)`,
-                        opacity: Math.max(0, 1 - scrollY / 600)
                     }}
                 >
                     <span className="block">{t('lookbooks.heroTitle1')}</span>
@@ -94,21 +85,13 @@ function HeroSection() {
                 </h1>
 
                 <p
-                    className="text-[13px] text-neutral-400 max-w-sm leading-relaxed tracking-wide transition-transform duration-100 ease-out"
-                    style={{
-                        transform: `translateY(${scrollY * 0.2}px)`,
-                        opacity: Math.max(0, 1 - scrollY / 500)
-                    }}
+                    className="lookbook-opening__copy text-[13px] text-neutral-400 max-w-sm leading-relaxed tracking-wide"
                 >
                     {t('lookbooks.heroSubtitle')}
                 </p>
 
                 <div
-                    className="flex flex-col sm:flex-row items-center gap-4 mt-2 transition-transform duration-100 ease-out"
-                    style={{
-                        transform: `translateY(${scrollY * 0.1}px)`,
-                        opacity: Math.max(0, 1 - scrollY / 400)
-                    }}
+                    className="lookbook-opening__actions flex flex-col sm:flex-row items-center gap-4 mt-2"
                 >
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#d6b47c] text-[#0a0c14] text-xs font-semibold tracking-wide cursor-pointer hover:bg-[#e8c98a] transition-colors"
                         onClick={() => document.getElementById('lookbook-grid')?.scrollIntoView({ behavior: 'smooth' })}>

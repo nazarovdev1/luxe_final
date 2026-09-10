@@ -11,8 +11,8 @@
 .blog-intro-issue span { color: #e3c281; }
 .blog-intro-eyebrow { display: inline-flex; align-items: center; align-self: flex-start; gap: 8px; color: #e3c281; font-size: 10px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; }
 .blog-intro-eyebrow::before { content: ''; width: 32px; height: 1px; background: currentColor; }
-.blog-intro-title { margin: 22px 0 18px; max-width: 860px; font: 400 clamp(4.4rem, 10.5vw, 10.2rem)/.8 Georgia, 'Times New Roman', serif; letter-spacing: -.09em; }
-.blog-intro-title span { display: block; overflow: hidden; padding: 0 .06em .09em; margin-left: -.06em; }
+.blog-intro-title { margin: 22px 0 18px; max-width: 860px; font: 400 clamp(4.4rem, 10.5vw, 10.2rem)/.92 Georgia, 'Times New Roman', serif; letter-spacing: -.09em; }
+.blog-intro-title span { display: block; overflow: hidden; padding: 0 .08em .2em; margin: 0 0 -.15em -.08em; }
 .blog-intro-title .blog-intro-gold { margin-left: clamp(2rem, 12vw, 12rem); color: #e3c281; }
 .blog-intro-copy { max-width: 430px; margin: 0 0 36px; color: rgba(246,242,234,.65); font-size: 15px; line-height: 1.75; }
 .blog-intro-bottom { display: flex; gap: 28px; align-items: end; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.17); padding-top: 15px; color: rgba(246,242,234,.58); font-size: 12px; line-height: 1.5; }

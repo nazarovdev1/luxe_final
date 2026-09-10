@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, ArrowRight, BookOpen, Search, Loader2, Sparkles } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, BookOpen, Search, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -205,7 +205,6 @@ const Blog = () => {
               placeholder={t('blog.searchPlaceholder')}
               aria-label={t('blog.searchPlaceholder')}
             />
-            <Sparkles className="blog-search-sparkle w-4 h-4" />
           </div>
           <div className="blog-category-list" aria-label="Blog categories">
             {CATEGORIES.map((cat, index) => (
