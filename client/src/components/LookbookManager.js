@@ -140,7 +140,7 @@ const LookbookManager = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Haqiqatan ham bu lookni o'chirmoqchimisiz?")) {
+    if (!await window.luxeConfirm("Haqiqatan ham bu lookni o'chirmoqchimisiz?")) {
       return;
     }
 

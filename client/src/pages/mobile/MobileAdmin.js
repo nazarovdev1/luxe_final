@@ -218,7 +218,7 @@ const MobileAdmin = () => {
   };
 
   const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm(t('mobileAdmin.confirm_delete_order', 'Ushbu buyurtmani o‘chirmoqchimisiz?'))) {
+    if (!await window.luxeConfirm(t('mobileAdmin.confirm_delete_order', 'Ushbu buyurtmani o‘chirmoqchimisiz?'))) {
       return;
     }
 
@@ -229,7 +229,7 @@ const MobileAdmin = () => {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm(t('mobileAdmin.confirm_delete_product', 'Haqiqatan ham bu mahsulotni o‘chirmoqchimisiz?'))) {
+    if (!await window.luxeConfirm(t('mobileAdmin.confirm_delete_product', 'Haqiqatan ham bu mahsulotni o‘chirmoqchimisiz?'))) {
       return;
     }
 
@@ -279,7 +279,7 @@ const MobileAdmin = () => {
   };
 
   const handleDeletePromo = async (promoId) => {
-    if (!window.confirm(t('mobileAdmin.confirm_delete_promo', 'Ushbu promokodni o‘chirmoqchimisiz?'))) {
+    if (!await window.luxeConfirm(t('mobileAdmin.confirm_delete_promo', 'Ushbu promokodni o‘chirmoqchimisiz?'))) {
       return;
     }
 
@@ -1104,4 +1104,3 @@ const MobileAdmin = () => {
 };
 
 export default MobileAdmin;
-

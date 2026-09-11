@@ -62,7 +62,7 @@ const LiveStreams = () => {
   };
 
   const handleDeleteStream = async (id) => {
-    if (!window.confirm(t('liveStreams.confirmDelete'))) return;
+    if (!await window.luxeConfirm(t('liveStreams.confirmDelete'))) return;
     try {
       const response = await axios.delete(`/api/livestreams/${id}`, {
         headers: { Authorization: `Bearer ${token}` }

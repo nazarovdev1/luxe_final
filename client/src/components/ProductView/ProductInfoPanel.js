@@ -45,8 +45,8 @@ export default function ProductInfoPanel({
   ].filter(Boolean).join(' · ');
 
   const addToBag = () => {
-    if (colors.length && !selectedColor) return window.alert('Iltimos, rangni tanlang.');
-    if (sizes.length && !selectedSize) return window.alert("Iltimos, o'lchamni tanlang.");
+    if (colors.length && !selectedColor) return window.luxeNotify.error('Iltimos, rangni tanlang.');
+    if (sizes.length && !selectedSize) return window.luxeNotify.error("Iltimos, o'lchamni tanlang.");
     onAddToCart?.(selectedColor, selectedSize, quantity);
   };
 

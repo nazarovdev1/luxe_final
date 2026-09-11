@@ -186,8 +186,8 @@ const AdminDashboard = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Haqiqatan ham bu mahsulotni o\'chirmoqchimisiz?')) {
+  const handleDelete = async (id) => {
+    if (await window.luxeConfirm('Haqiqatan ham bu mahsulotni o\'chirmoqchimisiz?')) {
       removeProduct(id);
     }
   };

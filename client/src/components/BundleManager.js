@@ -85,7 +85,7 @@ const BundleManager = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Haqiqatan ham bu to'plamni o'chirmoqchimisiz?")) return;
+    if (!await window.luxeConfirm("Haqiqatan ham bu to'plamni o'chirmoqchimisiz?")) return;
     const token = localStorage.getItem('token');
     const result = await deleteBundle(id, token);
     if (result.success) {

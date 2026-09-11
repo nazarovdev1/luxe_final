@@ -191,7 +191,7 @@ export default function MobileLive() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm(t('mobileLive.errors.confirmDelete'))) return;
+    if (!await window.luxeConfirm(t('mobileLive.errors.confirmDelete'))) return;
     try {
       const res = await axios.delete(`/api/livestreams/${id}`, {
         headers: { Authorization: `Bearer ${token}` }

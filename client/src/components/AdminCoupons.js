@@ -63,7 +63,7 @@ const AdminCoupons = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Kuponni o\'chirmoqchimisiz?')) return;
+    if (!await window.luxeConfirm('Kuponni o\'chirmoqchimisiz?')) return;
     try {
       const res = await axios.delete(`/api/coupons/${id}`, {
         headers: { Authorization: `Bearer ${token}` }

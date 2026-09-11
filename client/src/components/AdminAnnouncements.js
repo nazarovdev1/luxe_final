@@ -97,7 +97,7 @@ const AdminAnnouncements = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Haqiqatan ham bu xabarni o'chirmoqchimisiz?")) {
+    if (!await window.luxeConfirm("Haqiqatan ham bu xabarni o'chirmoqchimisiz?")) {
       return;
     }
 

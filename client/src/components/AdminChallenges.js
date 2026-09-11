@@ -67,7 +67,7 @@ const AdminChallenges = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Musobaqani o\'chirmoqchimisiz?')) return;
+    if (!await window.luxeConfirm('Musobaqani o\'chirmoqchimisiz?')) return;
     try {
       const res = await axios.delete(`/api/challenges/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -84,7 +84,7 @@ const AdminChallenges = () => {
   const handleSetWinner = async (challengeId, userId) => {
     const challenge = challenges.find(c => c._id === challengeId);
     const points = challenge?.reward?.points || 100;
-    if (!window.confirm(`Bu foydalanuvchini g'olib deb belgilamoqchimisiz? ${points} ball avtomatik beriladi.`)) return;
+    if (!await window.luxeConfirm(`Bu foydalanuvchini g'olib deb belgilamoqchimisiz? ${points} ball avtomatik beriladi.`)) return;
     
     setIsSettingWinner(true);
     const result = await setChallengeWinner(challengeId, userId, token);

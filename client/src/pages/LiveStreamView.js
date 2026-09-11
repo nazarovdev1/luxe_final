@@ -104,7 +104,7 @@ const LiveStreamView = () => {
   };
 
   const handleDeleteMessage = async (msgId) => {
-    if (!window.confirm(t('liveStreamView.deleteConfirm'))) return;
+    if (!await window.luxeConfirm(t('liveStreamView.deleteConfirm'))) return;
 
     try {
       const res = await axios.delete(`/api/live-chat/${msgId}`, {

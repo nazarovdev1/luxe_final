@@ -100,7 +100,7 @@ const AdminPromos = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bu promokodni rostdan ham o'chirmoqchimisiz?")) {
+    if (!await window.luxeConfirm("Bu promokodni rostdan ham o'chirmoqchimisiz?")) {
       return;
     }
 

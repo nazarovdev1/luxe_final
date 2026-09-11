@@ -111,7 +111,7 @@ const AdminReels = () => {
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm('Haqiqatan ham bu reelli o\'chirmoqchimisiz?')) {
+    if (!await window.luxeConfirm('Haqiqatan ham bu reelli o\'chirmoqchimisiz?')) {
       return;
     }
 

@@ -103,7 +103,7 @@ export default function MobileStyleFeed() {
   };
 
   const handleDelete = async (postId) => {
-    if (!window.confirm(t('mobileStyleFeed.errors.confirmDelete'))) return;
+    if (!await window.luxeConfirm(t('mobileStyleFeed.errors.confirmDelete'))) return;
     try {
       await axios.delete(`/api/posts/${postId}`, { headers: { Authorization: `Bearer ${token}` } });
       toast.success(t('mobileStyleFeed.errors.postDeleted'));

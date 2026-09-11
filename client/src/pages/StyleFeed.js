@@ -105,7 +105,7 @@ const StyleFeed = () => {
     };
 
     const handleDeletePost = async (postId) => {
-        if (!window.confirm(t('styleFeed.confirmDeletePost'))) return;
+        if (!await window.luxeConfirm(t('styleFeed.confirmDeletePost'))) return;
 
         try {
             const response = await axios.delete(`/api/posts/${postId}`, {
@@ -597,7 +597,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
     };
 
     const handleDeleteComment = async (commentId) => {
-        if (!window.confirm(t('styleFeed.confirmDeleteComment'))) return;
+        if (!await window.luxeConfirm(t('styleFeed.confirmDeleteComment'))) return;
 
         try {
             const response = await axios.delete(`/api/comments/${commentId}`, {

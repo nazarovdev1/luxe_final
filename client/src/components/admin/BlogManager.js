@@ -54,7 +54,7 @@ const BlogManager = () => {
   }, [page, fetchBlogs]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Haqiqatan ham bu maqolani o\'chirmoqchimisiz?')) return;
+    if (!await window.luxeConfirm('Haqiqatan ham bu maqolani o\'chirmoqchimisiz?')) return;
     try {
       await axios.delete(`/api/blogs/${id}`, {
         headers: { Authorization: `Bearer ${token}` }

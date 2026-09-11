@@ -13,7 +13,7 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
   const { t } = useLanguage();
 
   const handleDelete = async (reviewId) => {
-    if (!window.confirm(t('reviewList.deleteConfirm'))) {
+    if (!await window.luxeConfirm(t('reviewList.deleteConfirm'))) {
       return;
     }
 
@@ -95,4 +95,3 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
 };
 
 export default ReviewList;
-

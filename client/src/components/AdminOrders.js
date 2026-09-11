@@ -169,7 +169,7 @@ const AdminOrders = () => {
       setOrders((prev) => prev.filter((order) => order._id !== deleteConfirm));
       setDeleteConfirm(null);
     } else {
-      alert(`Xatolik: ${result.message || 'Buyurtmani o\'chirib bo\'lmadi'}`);
+      window.luxeNotify.error(`Xatolik: ${result.message || 'Buyurtmani o\'chirib bo\'lmadi'}`);
     }
   };
 

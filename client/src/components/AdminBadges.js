@@ -61,7 +61,7 @@ const AdminBadges = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Nishonni o\'chirmoqchimisiz?')) return;
+    if (!await window.luxeConfirm('Nishonni o\'chirmoqchimisiz?')) return;
     try {
       const res = await axios.delete(`/api/badges/${id}`, {
         headers: { Authorization: `Bearer ${token}` }

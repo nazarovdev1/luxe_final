@@ -73,7 +73,7 @@ const ReelComments = ({ reelId, isOpen, onClose, isEmbedded = false }) => {
 
   // Delete comment
   const handleDelete = async (commentId) => {
-    if (!window.confirm(t('reelComments.deleteConfirm'))) return;
+    if (!await window.luxeConfirm(t('reelComments.deleteConfirm'))) return;
 
     try {
       const response = await axios.delete(`/api/reels/manage-comment/${commentId}`, {

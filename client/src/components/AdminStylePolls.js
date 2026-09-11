@@ -165,7 +165,7 @@ const AdminStylePolls = () => {
   };
 
   const deletePoll = async (pollId) => {
-    if (!window.confirm("So'rovnomani o'chirmoqchimisiz?")) return;
+    if (!await window.luxeConfirm("So'rovnomani o'chirmoqchimisiz?")) return;
 
     try {
       const res = await axios.delete(`/api/style-polls/${pollId}`, {

@@ -53,6 +53,7 @@ import { useLocation } from 'react-router-dom';
 import { usePWA } from './hooks/usePWA';
 import InstallPrompt from './components/InstallPrompt';
 import OfflineIndicator from './components/OfflineIndicator';
+import ConfirmDialog from './components/ConfirmDialog';
 
 // Device detection helper
 const isMobileDevice = () => {
@@ -265,6 +266,7 @@ function MainContent() {
           },
         }}
       />
+      <ConfirmDialog />
     </div>
   );
 }
