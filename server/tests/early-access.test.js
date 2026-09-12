@@ -30,10 +30,8 @@ test('visibility query excludes future Diamond products for Gold users', () => {
 
   assert.deepEqual(query, {
     $or: [
-      { earlyAccessUntil: null },
-      { earlyAccessUntil: { $lte: future } },
-      { earlyAccessTier: 'none' },
       { earlyAccessTier: { $ne: 'Diamond' } },
+      { earlyAccessUntil: { $lte: future } },
     ],
   });
 });

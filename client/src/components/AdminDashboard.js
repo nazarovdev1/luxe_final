@@ -50,7 +50,8 @@ const formatCurrency = (value) => {
 
 const getProductImage = (product) => {
   if (Array.isArray(product.images) && product.images.length > 0) {
-    return product.images[0];
+    const first = product.images[0];
+    return typeof first === 'object' ? (first.url || '') : first;
   }
 
   return product.image || '';

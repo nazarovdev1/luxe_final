@@ -31,7 +31,7 @@ const productReducer = (state, action) => {
 
       return {
         ...state,
-        products: newProducts,
+        products: [...newProducts, ...state.products.filter((local) => local && local._localOnly && !newProducts.some((fresh) => fresh.id === local.id))],
         isLoading: false,
       };
     }
@@ -49,7 +49,7 @@ const productReducer = (state, action) => {
       }
       return {
         ...state,
-        products: [...state.products, action.payload],
+        products: [...state.products, { ...action.payload, _localOnly: true }],
       };
 
     case 'UPDATE_PRODUCT':

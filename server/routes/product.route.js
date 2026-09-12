@@ -7,14 +7,14 @@ import {
   postProduct,
   putProduct
 } from '../controllers/product.controller.js'
-import { protect, authorize } from '../middleware/auth.middleware.js'
+import { protect, authorize, optionalProtect } from '../middleware/auth.middleware.js'
 import { validate } from '../middleware/validate.middleware.js'
 
 const router = express.Router()
 
-router.get('/', getProduct)
-router.get('/:id', getSingleProduct)
-router.get('/:id/related', getRelatedProducts)
+router.get('/', optionalProtect, getProduct)
+router.get('/:id', optionalProtect, getSingleProduct)
+router.get('/:id/related', optionalProtect, getRelatedProducts)
 
 router.post('/', protect, authorize('admin', 'manager'), validate('product'), postProduct)
 router.put('/:id', protect, authorize('admin', 'manager'), validate('product'), putProduct)

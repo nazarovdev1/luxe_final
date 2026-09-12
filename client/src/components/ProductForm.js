@@ -322,7 +322,7 @@ const ProductForm = ({ product, onClose }) => {
     setIsSubmitting(true);
 
     try {
-      if (!formData.name || !formData.category || !formData.price || formData.images.length === 0) {
+      if (!formData.name || !formData.category || !formData.price || !formData.description.trim() || formData.images.length === 0) {
         toast.error("Iltimos, barcha majburiy maydonlarni to'ldiring va kamida bitta rasm yuklang", {
           duration: 6000,
         });
@@ -377,7 +377,7 @@ const ProductForm = ({ product, onClose }) => {
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Xatolik yuz berdi. Qaytadan urinib ko\'ring.', { duration: 6000 });
+      toast.error(error?.message || 'Xatolik yuz berdi. Qaytadan urinib ko\'ring.', { duration: 6000 });
     } finally {
       setIsSubmitting(false);
     }

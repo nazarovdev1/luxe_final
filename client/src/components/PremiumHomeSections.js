@@ -12,7 +12,8 @@ import useProductService from '../server/server';
 const CUSTOMER_NAMES = ['Madina R.', 'Aziza K.', 'Sevinch T.'];
 
 const getProductImage = (product) => {
-  return product?.image || product?.images?.[0] || '/hero.jpg';
+  const firstListImage = Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null;
+  return product?.image || (typeof firstListImage === 'object' ? firstListImage?.url : firstListImage) || '/hero.jpg';
 };
 
 const uniqueById = (items) => {

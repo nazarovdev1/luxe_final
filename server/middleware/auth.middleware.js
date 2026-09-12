@@ -75,13 +75,9 @@ export const optionalProtect = async (req, res, next) => {
 
     return next()
   } catch (error) {
-    logger.warn(`Optional auth failed: ${error.message}`)
-    return res.status(401).json({
-      success: false,
-      message: error.name === 'TokenExpiredError'
-        ? 'Session muddati tugagan. Iltimos, qayta kiring.'
-        : 'Not authorized, token failed'
-    })
+    logger.warn(`Optional auth failed, continuing as guest: ${error.message}`)
+    req.user = undefined
+    return next()
   }
 }
 

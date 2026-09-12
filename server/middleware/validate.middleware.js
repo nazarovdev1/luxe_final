@@ -48,7 +48,7 @@ export const schemas = {
     price: Joi.number().min(0).required(),
     originalPrice: Joi.number().min(0).allow(null),
     category: Joi.string().trim().min(1).max(100).required(),
-    images: Joi.array().items(Joi.object({ url: Joi.string().required() })).min(1).required(),
+    images: Joi.array().items(Joi.alternatives().try(Joi.string().uri({ allowRelative: true }).min(1), Joi.object({ url: Joi.string().min(1).required() }).unknown(true))).min(1).required(),
     stock: Joi.number().integer().min(0).default(1),
     badge: Joi.string().valid('NEW', 'BESTSELLER', 'SALE', 'LIMITED', '').allow('', null),
     rating: Joi.number().min(0).max(5).default(0),

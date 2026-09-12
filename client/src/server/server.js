@@ -6,6 +6,7 @@ const fetch = async (path, options = {}) => {
 	const payload = await apiFetch(path, {
 		method: options.method || 'GET',
 		headers: options.headers,
+		auth: options.auth === undefined ? options.headers?.Authorization === "" : options.auth,
 		body: options.body,
 	});
 
@@ -23,7 +24,7 @@ const useProductService = () => {
 	const getAllProducts = async () => {
 		try {
 			// Add timestamp to prevent browser caching
-			const response = await fetch(`${_apiBase}?_t=${Date.now()}`)
+			const response = await fetch(`${_apiBase}?_t=${Date.now()}`, { auth: false })
 			const products = await response.json()
 
 			if (!products.success) return []
@@ -79,12 +80,14 @@ const useProductService = () => {
 
 			const product = await response.json()
 
-			if (!product.success) return null
+			if (!product.success) {
+				throw new Error(product.message || "Mahsulotni saqlashda xatolik")
+			}
 
 			return _transformProduct(product.data)
 		} catch (error) {
 			console.error('POST product error:', error)
-			return null
+			throw error
 		}
 	}
 
@@ -103,14 +106,13 @@ const useProductService = () => {
 			const result = await response.json()
 
 			if (!result.success) {
-				console.error('PUT failed:', result.message)
-				return null
+				throw new Error(result.message || "Mahsulotni yangilashda xatolik")
 			}
 
 			return _transformProduct(result.data)
 		} catch (error) {
 			console.error('PUT product error:', error)
-			return null
+			throw error
 		}
 	}
 

@@ -5,17 +5,36 @@ import logger from '../utils/logger.js'
 import jwt from 'jsonwebtoken'
 import { getPagination, getSort } from '../utils/pagination.js'
 
-let productsCache = null
-let cacheTimestamp = 0
-const CACHE_DURATION = 5 * 60 * 1000
-
-const clearProductsCache = () => {
-  productsCache = null
-  cacheTimestamp = 0
-}
+const clearProductsCache = () => {}
 
 const normalizeProductPayload = (payload = {}) => {
   const product = { ...payload }
+
+  const coerceImages = (value) => {
+    const list = Array.isArray(value) ? value : [value]
+    return list
+      .map((item) => {
+        if (typeof item === 'string') {
+          const url = item.trim()
+          return url ? { url } : null
+        }
+        if (item && typeof item === 'object' && typeof item.url === 'string' && item.url.trim()) {
+          return { ...item, url: item.url.trim() }
+        }
+        return null
+      })
+      .filter(Boolean)
+  }
+
+  if (product.images !== undefined) {
+    product.images = coerceImages(product.images)
+  } else if (typeof product.image === 'string' && product.image.trim()) {
+    product.images = coerceImages(product.image)
+  }
+
+  if (typeof product.image === 'string') {
+    product.image = product.image.trim()
+  }
 
   if (Array.isArray(product.variants) && product.variants.length > 0) {
     product.variants = product.variants.map((variant) => ({
@@ -88,14 +107,25 @@ export const canSeeEarlyAccessProduct = (product, userLevel) => {
 export const earlyAccessVisibilityQuery = (userLevel, now = new Date()) => {
   if (userLevel === 'Diamond') return {}
 
+  // MongoDB treats a missing path differently from explicit null. Legacy
+  // products created before early-access existed have neither field, so match
+  // all three states plus tier 'none'.
   const publiclyVisible = [
     { earlyAccessUntil: null },
+    { earlyAccessUntil: { $exists: false } },
     { earlyAccessUntil: { $lte: now } },
-    { earlyAccessTier: 'none' }
+    { earlyAccessTier: 'none' },
+    { earlyAccessTier: { $exists: false } }
   ]
 
   if (userLevel === 'Gold') {
-    return { $or: [...publiclyVisible, { earlyAccessTier: { $ne: 'Diamond' } }] }
+    // Gold sees everything except future Diamond exclusives.
+    return {
+      $or: [
+        { earlyAccessTier: { $ne: 'Diamond' } },
+        { earlyAccessUntil: { $lte: now } }
+      ]
+    }
   }
 
   return { $or: publiclyVisible }
@@ -103,7 +133,6 @@ export const earlyAccessVisibilityQuery = (userLevel, now = new Date()) => {
 
 export const getProduct = async (req, res) => {
   try {
-    const now = Date.now()
     const { category, badge, sort = '-createdAt', search } = req.query
     const { page, limit, skip } = getPagination(req.query, { defaultLimit: 50, maxLimit: 100 })
     const sortOption = getSort(sort, {
@@ -112,14 +141,6 @@ export const getProduct = async (req, res) => {
       rating: 'rating',
       name: 'name'
     }, { createdAt: -1 })
-
-    const hasAuthHeader = Boolean(req.headers.authorization)
-    const canUsePublicCache = page === 1 && !category && !badge && !search && !hasAuthHeader
-
-    if (productsCache && (now - cacheTimestamp) < CACHE_DURATION && canUsePublicCache) {
-      res.set('Cache-Control', 'public, max-age=60')
-      return res.status(200).json({ success: true, data: productsCache, cached: true })
-    }
 
     const query = {}
     if (category) query.category = category
@@ -132,7 +153,8 @@ export const getProduct = async (req, res) => {
     const authHeader = req.headers.authorization;
     const userLevel = await getUserLevelFromAuth(authHeader)
 
-    Object.assign(query, earlyAccessVisibilityQuery(userLevel, new Date()))
+    const isStaff = req.user && (req.user.role === 'admin' || req.user.role === 'manager')
+    if (!isStaff) Object.assign(query, earlyAccessVisibilityQuery(userLevel, new Date()))
     // -------------------------------------
 
     const [products, total] = await Promise.all([
@@ -173,12 +195,11 @@ export const getProduct = async (req, res) => {
 
     const normalizedProducts = products.map(normalizeProductResponse)
 
-    if (canUsePublicCache) {
-      productsCache = normalizedProducts
-      cacheTimestamp = now
-    }
-
-    res.set('Cache-Control', hasAuthHeader ? 'private, no-store' : 'public, max-age=60')
+    // Always serve the product list fresh. Cloud Run can route consecutive
+    // requests to different instances, so a per-process cache hides a newly
+    // created product behind a stale 5-minute response.
+    clearProductsCache()
+    res.set('Cache-Control', 'no-store')
     res.status(200).json({
       success: true,
       data: normalizedProducts,
@@ -212,7 +233,8 @@ export const getSingleProduct = async (req, res) => {
     }
 
     const userLevel = await getUserLevelFromAuth(req.headers.authorization)
-    if (!canSeeEarlyAccessProduct(product, userLevel)) {
+    const isStaff = req.user && (req.user.role === 'admin' || req.user.role === 'manager')
+    if (!isStaff && !canSeeEarlyAccessProduct(product, userLevel)) {
       return res.status(404).json({ success: false, message: 'Product not found' })
     }
 
@@ -235,12 +257,13 @@ export const getRelatedProducts = async (req, res) => {
     }
 
     const userLevel = await getUserLevelFromAuth(req.headers.authorization)
+    const isStaff = req.user && (req.user.role === 'admin' || req.user.role === 'manager')
     const visibilityQuery = earlyAccessVisibilityQuery(userLevel, new Date())
 
     const relatedProducts = await Product.find({
       category: product.category,
       _id: { $ne: id },
-      ...visibilityQuery
+      ...(isStaff ? {} : visibilityQuery)
     })
       .select({
         name: 1,
@@ -266,7 +289,7 @@ export const getRelatedProducts = async (req, res) => {
 export const postProduct = async (req, res) => {
   const product = normalizeProductPayload(req.validatedBody || req.body)
 
-  if (product.earlyAccessTier !== 'none' && !product.earlyAccessUntil) {
+  if (product.earlyAccessTier && product.earlyAccessTier !== 'none' && !product.earlyAccessUntil) {
     return res.status(400).json({ success: false, message: 'VIP Early Access uchun tugash sanasi majburiy' })
   }
 
@@ -296,7 +319,7 @@ export const putProduct = async (req, res) => {
   const { id } = req.params
   const product = normalizeProductPayload(req.validatedBody || req.body)
 
-  if (product.earlyAccessTier !== 'none' && !product.earlyAccessUntil) {
+  if (product.earlyAccessTier && product.earlyAccessTier !== 'none' && !product.earlyAccessUntil) {
     return res.status(400).json({ success: false, message: 'VIP Early Access uchun tugash sanasi majburiy' })
   }
 

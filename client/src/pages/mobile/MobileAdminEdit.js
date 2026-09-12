@@ -260,7 +260,7 @@ const MobileAdminEdit = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.category || !formData.price) {
+    if (!formData.name || !formData.category || !formData.price || !formData.description.trim()) {
       toast.error(t('mobileAdmin.requiredFields', 'Iltimos, barcha majburiy maydonlarni to‘ldiring'));
       return;
     }
@@ -287,6 +287,7 @@ const MobileAdminEdit = () => {
               .filter(Boolean)
           : [],
         rating: Number(formData.rating) || 0,
+        images: formData.images.map((url) => ({ url })),
         image: formData.images[0],
       };
 
@@ -300,7 +301,7 @@ const MobileAdminEdit = () => {
       }
     } catch (error) {
       console.error('Save error:', error);
-      toast.error(t('mobileAdmin.genericError', 'Kutilmagan xatolik'));
+      toast.error(error?.message || t('mobileAdmin.genericError', 'Kutilmagan xatolik'));
     } finally {
       setIsSubmitting(false);
     }
