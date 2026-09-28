@@ -6,13 +6,16 @@ import {
     Gem,
     Heart,
     ShieldCheck,
-    Sparkles,
     Truck,
 } from 'lucide-react';
 import SEO from '../../components/SEO';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-const galleryImages = ['/second_pose.jpg', '/about_photo.jpg', '/about.JPG'];
+const galleryImages = [
+    '/second_pose.jpg',
+    '/editorial/about-atelier-v2.png',
+    '/editorial/about-manifesto-v2.png',
+];
 
 const usePrefersReducedMotion = () => {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -165,7 +168,7 @@ const MobileAbout = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-[#120d0b] via-[#120d0b]/22 to-black/10" />
                             <div className="absolute inset-x-0 bottom-0 p-5">
                                 <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-black/25 px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-[#ecd8ba] backdrop-blur-md">
-                                    <Sparkles className="h-3.5 w-3.5" />
+                                    <Gem className="h-3.5 w-3.5" />
                                     {t('about.brand')}
                                 </div>
                                 <h1 className="mt-4 font-brilliant text-[3.7rem] leading-[0.8] tracking-[-0.05em] text-[#f7efe3]">

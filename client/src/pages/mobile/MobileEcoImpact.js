@@ -5,6 +5,7 @@ import { Leaf, Droplets, Wind, TreeDeciduous, Award, BarChart3, ShoppingBag, Shi
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { MobileEcoImpactSkeleton } from '../../components/EventSkeletons';
 import './mobileExperiences.css';
 
 const ECO_TIP_DEFS = [
@@ -101,10 +102,7 @@ export default function MobileEcoImpact() {
             </button>
           </div>
         ) : isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-10 h-10 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-green-500 text-xs tracking-widest animate-pulse font-black uppercase">{t('mobileEco.loadingHint')}</p>
-          </div>
+          <MobileEcoImpactSkeleton />
         ) : stats ? (
           <div className="space-y-4">
             {/* Eco Rank Badge */}

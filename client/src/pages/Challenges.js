@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
   Swords, Clock, Trophy, Users, ImageIcon, ChevronRight,
-  Star, Upload, Plus, X, Heart, Calendar,
+  Upload, Plus, X, Heart, Calendar,
   MessageCircle, Send, ChevronLeft
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
+import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
+import { ChallengesSkeleton } from '../components/EventSkeletons';
 
 const Challenges = () => {
   const { user, isAuthenticated, token, isAdmin } = useAuth();
@@ -23,8 +25,13 @@ const Challenges = () => {
   const [isAdminCreate, setIsAdminCreate] = useState(false);
   const [viewingSubmission, setViewingSubmission] = useState(null);
   const [viewingIndex, setViewingIndex] = useState(0);
+  const pageRef = useRef(null);
+  const initialFetchRef = useRef(false);
+  useCommunityMotion(pageRef);
 
   useEffect(() => {
+    if (initialFetchRef.current) return;
+    initialFetchRef.current = true;
     fetchChallenges();
   }, []);
 
@@ -63,19 +70,8 @@ const Challenges = () => {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
-  const typeColor = {
-    social: '#d6b47c',
-    orders: '#a8d8ea',
-    reviews: '#c9b8ff',
-    spending: '#90ee90',
-    streak: '#ff9999'
-  };
-
   return (
-    <div className="min-h-screen bg-[#070707] text-white pt-32 pb-24 relative overflow-hidden">
-      {/* Background Cinematic Glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#d6b47c]/5 rounded-full blur-[120px] -translate-y-1/2" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-[#d6b47c]/3 rounded-full blur-[150px] translate-y-1/2" />
+    <div ref={pageRef} className="community-page community-page--challenges">
 
       <SEO 
         title="Challenges — Luxe | Модные конкурсы" 
@@ -84,55 +80,16 @@ const Challenges = () => {
         breadcrumbSteps={[{ name: 'Challenges', url: '/challenges' }]}
       />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-10">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#d6b47c]/20 to-transparent border-l-2 border-[#d6b47c] px-4 py-2 mb-6">
-              <Swords className="w-4 h-4 text-[#d6b47c]" />
-              <span className="text-[#d6b47c] text-[10px] tracking-[0.3em] uppercase font-black">{t('challenges.weeklyArena')}</span>
-            </div>
-            <h1 className="text-6xl md:text-8xl font-brilliant text-white mb-6 leading-[0.9]">
-              Style<span className="text-[#d6b47c]"> Challenges</span>
-            </h1>
-            <p className="text-gray-400 text-lg md:text-xl font-light leading-relaxed pt-6">
-              {t('challenges.subtitle')}
-            </p>
-          </div>
-          
-          <div className="flex flex-col items-end gap-4">
-            {isAdmin && (
-              <button
-                onClick={() => setIsAdminCreate(true)}
-                className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full"
-              >
-                <div className="absolute inset-0 bg-[#d6b47c] opacity-10 group-hover:opacity-20 transition-opacity" />
-                <div className="absolute inset-0 border border-[#d6b47c]/30 rounded-full" />
-                <span className="relative z-10 flex items-center gap-2 text-[#d6b47c] text-sm font-black tracking-widest uppercase">
-                  <Plus className="w-4 h-4" /> {t('challenges.createChallenge')}
-                </span>
-              </button>
-            )}
-            <div className="flex items-center gap-8">
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('challenges.totalParticipants')}</p>
-                <p className="text-2xl font-brilliant text-white">{challenges.reduce((acc, curr) => acc + (curr.submissions?.length || 0), 0)}</p>
-              </div>
-              <div className="w-px h-10 bg-white/10" />
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('challenges.activeChallenges')}</p>
-                <p className="text-2xl font-brilliant text-[#d6b47c]">{challenges.filter(c => c.isActive).length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <CommunityOpening variant="challenges" description={t('challenges.subtitle')}>
+        <span>{challenges.filter(c => c.isActive).length} {t('challenges.activeChallenges')}</span>
+        {isAdmin && <button type="button" onClick={() => setIsAdminCreate(true)}>+ {t('challenges.createChallenge')}</button>}
+      </CommunityOpening>
+      <div className="community-page__body community-content">
+        <CommunityChapter variant="challenges" />
 
         {/* Challenges Grid */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-6">
-            <div className="w-12 h-12 border-[3px] border-[#d6b47c] border-t-transparent rounded-full animate-spin" />
-            <p className="text-[#d6b47c] text-sm tracking-widest font-medium animate-pulse">{t('challenges.loading')}</p>
-          </div>
+          <ChallengesSkeleton />
         ) : (
           <div className="grid grid-cols-1 gap-12 lg:gap-20">
             {challenges.map(challenge => {
@@ -141,7 +98,7 @@ const Challenges = () => {
               const submissions = [...(challenge.submissions || [])].sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));
               
               return (
-                <div key={challenge._id} className="relative">
+                <div key={challenge._id} className="challenge-editorial relative">
                   {challenge.isActive && !isExpired && (
                     <div className="absolute -left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-[#d6b47c] via-[#d6b47c]/20 to-transparent rounded-full hidden md:block" />
                   )}
@@ -150,18 +107,9 @@ const Challenges = () => {
                     {/* Challenge Card (Info) */}
                     <div className="sticky top-32">
                       <div className="group p-1 rounded-[40px] bg-gradient-to-br from-white/10 to-transparent hover:from-[#d6b47c]/20 transition-all duration-500 shadow-2xl">
-                        <div className="bg-[#0f0f0f] rounded-[39px] p-8 md:p-10">
+                        <div className="challenge-editorial__card bg-[#0f0f0f] rounded-[39px] p-8 md:p-10">
                           <div className="flex items-center justify-between mb-8">
-                            <div 
-                              className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner relative"
-                              style={{ 
-                                background: `linear-gradient(135deg, ${typeColor[challenge.type]}20, ${typeColor[challenge.type]}05)`,
-                                border: `1px solid ${typeColor[challenge.type]}30` 
-                              }}
-                            >
-                              <div className="absolute inset-0 blur-lg opacity-20" style={{ backgroundColor: typeColor[challenge.type] }} />
-                              <span className="relative">{challenge.type === 'social' ? '📸' : challenge.type === 'orders' ? '🛍️' : challenge.type === 'reviews' ? '⭐' : '🏆'}</span>
-                            </div>
+                            <div className="challenge-editorial__type"><span>LUXX</span><b>01</b></div>
                             <div className="text-right">
                               <span className={`text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-[0.2em] inline-block mb-2 ${challenge.isActive && !isExpired ? 'bg-green-500/10 text-green-400 border border-green-500/20' : challenge.winner ? 'bg-amber-300 text-black shadow-[0_5px_15px_rgba(214,180,124,0.3)]' : 'bg-gray-800 text-gray-500'}`}>
                                 {challenge.isActive && !isExpired ? t('challenges.statusActive') : challenge.winner ? t('challenges.statusWinner') : t('challenges.statusFinished')}
@@ -204,7 +152,7 @@ const Challenges = () => {
                     </div>
 
                     {/* Submissions Section */}
-                    <div className="space-y-6">
+                    <div className="challenge-editorial__entries space-y-6">
                       <div className="flex items-center justify-between px-2">
                         <h3 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">{t('challenges.topLooks')}</h3>
                         <div className="flex items-center gap-2">
@@ -258,7 +206,7 @@ const Challenges = () => {
                                   <div className="min-w-0">
                                     <p className="text-white text-xs font-bold truncate">{sub.user?.username}</p>
                                     <div className="flex items-center gap-1 mt-0.5">
-                                      <Star className={`w-2.5 h-2.5 ${isWinner ? 'text-amber-300 fill-amber-300' : 'text-[#d6b47c] fill-[#d6b47c]'}`} />
+                                      <Trophy className={`w-2.5 h-2.5 ${isWinner ? 'text-amber-300' : 'text-[#d6b47c]'}`} />
                                       <span className="text-[9px] text-gray-400 font-medium">{isWinner ? t('challenges.grandWinner') : `#{idx + 1} ${t('challenges.rank')}`}</span>
                                     </div>
                                   </div>
@@ -283,9 +231,10 @@ const Challenges = () => {
                           })}
                         </div>
                       ) : (
-                        <div className="bg-[#111] border border-dashed border-white/10 rounded-[32px] py-20 text-center">
-                          <ImageIcon className="w-10 h-10 text-gray-700 mx-auto mb-4" />
-                          <p className="text-gray-500 font-light">{t('challenges.noSubmissions')}</p>
+                        <div className="challenge-editorial__empty">
+                          <span>00 / ENTRIES</span>
+                          <strong>Hikoya endi boshlanadi.</strong>
+                          <p>{t('challenges.noSubmissions')}</p>
                         </div>
                       )}
                     </div>
@@ -431,7 +380,12 @@ const SubmitModal = ({ challenge, token, onClose, onSuccess, getImageKitAuth, t 
           ) : (
             <div className="text-center p-8">
               {isUploading ? (
-                <div className="w-8 h-8 border-2 border-[#d6b47c] border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="py-2 space-y-3">
+                  <div className="w-16 h-1 bg-[#d6b47c]/20 rounded-full mx-auto overflow-hidden">
+                    <div className="w-full h-full bg-[#d6b47c] -translate-x-full animate-[shimmer_1.5s_infinite]" />
+                  </div>
+                  <p className="text-xs text-[#d6b47c] tracking-widest uppercase font-bold animate-pulse">{t('challenges.uploading') || 'Yuklanmoqda...'}</p>
+                </div>
               ) : (
                 <>
                   <Upload className="w-10 h-10 text-[#d6b47c] mx-auto mb-3" />

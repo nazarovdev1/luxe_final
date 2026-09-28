@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Loading from './components/Loading';
+import Lookbooks from './pages/Lookbooks';
 
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -19,11 +20,10 @@ const Checkout = React.lazy(() => import('./pages/Checkout'));
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Orders = React.lazy(() => import('./pages/Orders'));
-const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
-const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
+const PrivacyPolicy = React.lazy(() => import('./pages/LegalPrivacy'));
+const TermsOfService = React.lazy(() => import('./pages/LegalTerms'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
-const Lookbooks = React.lazy(() => import('./pages/Lookbooks'));
 const LookbookBuilder = React.lazy(() => import('./pages/LookbookBuilder'));
 const StyleFeed = React.lazy(() => import('./pages/StyleFeed'));
 const VIPClub = React.lazy(() => import('./pages/VIPClub'));
@@ -54,6 +54,7 @@ import { usePWA } from './hooks/usePWA';
 import InstallPrompt from './components/InstallPrompt';
 import OfflineIndicator from './components/OfflineIndicator';
 import ConfirmDialog from './components/ConfirmDialog';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Device detection helper
 const isMobileDevice = () => {
@@ -191,7 +192,8 @@ function MainContent() {
               <VisualSearch onClose={() => setIsVisualSearchOpen(false)} />
             </React.Suspense>
           )} */}
-          <Routes>
+          <ErrorBoundary>
+            <Routes>
             {/* Mobile version - separate layout */}
             <Route path="/mobile/*" element={<MobileApp />} />
 
@@ -230,6 +232,7 @@ function MainContent() {
 <Route path="/blog/:slug" element={<React.Suspense fallback={<Loading />}><BlogPost /></React.Suspense>} />
 <Route path="*" element={<NotFound />} />
           </Routes>
+        </ErrorBoundary>
         </div>
       </React.Suspense>
       <Toaster

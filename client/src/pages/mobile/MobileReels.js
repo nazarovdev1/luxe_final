@@ -7,6 +7,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import ReelComments from '../../components/ReelComments';
 import { uploadVideoToAppwrite } from '../../utils/appwrite';
+import { ReelsSkeleton } from '../../components/EventSkeletons';
 
 // Detect iOS PWA standalone mode
 const isIOSPWA = () => {
@@ -499,17 +500,7 @@ const MobileReels = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-6">
-        <div className="relative">
-          <div className="w-16 h-16 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Play size={24} className="text-amber-500 animate-pulse" />
-          </div>
-        </div>
-        <p className="mt-4 text-gray-400 font-medium animate-pulse">{t('mobileReels.loading')}</p>
-      </div>
-    );
+    return <ReelsSkeleton />;
   }
 
   if (reels.length === 0) {

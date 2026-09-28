@@ -1,599 +1,205 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Crown, Shield, ShoppingBag, Gem, Star, Truck } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowUpRight, ArrowRight, ArrowUp, Heart, MoveUpRight, Plus } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ProductGridSkeleton } from './ProductCardSkeleton';
+import { useFavorites } from '../contexts/FavoritesContext';
+import { useAuth } from '../contexts/AuthContext';
+import { getImageUrl, getAllImageUrls, resolveImageUrl } from '../utils/image';
+import { apiFetch } from '../services/api';
 import LookDetailModal from './LookDetailModal';
-import Masonry from './ui/Masonry';
-import BorderGlow from './ui/BorderGlow';
-import useProductService from '../server/server';
+import copy from '../data/atelierHomeCopy';
+import './atelierHome.css';
 
-const CUSTOMER_NAMES = ['Madina R.', 'Aziza K.', 'Sevinch T.'];
-
-const getProductImage = (product) => {
-  const firstListImage = Array.isArray(product?.images) && product.images.length > 0 ? product.images[0] : null;
-  return product?.image || (typeof firstListImage === 'object' ? firstListImage?.url : firstListImage) || '/hero.jpg';
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+const serial = (index) => String(index + 1).padStart(2, '0');
+const fallbackImage = (event) => {
+  if (!event.currentTarget.src.endsWith('/placeholder.jpg')) event.currentTarget.src = '/placeholder.jpg';
 };
 
-const uniqueById = (items) => {
-  const map = new Map();
+function TextLink({ to, children, className = '' }) {
+  return <Link to={to} className={`atelier-link ${className}`}><span>{children}</span><ArrowUpRight size={17} strokeWidth={1.3} aria-hidden="true" /></Link>;
+}
 
-  items.forEach((item) => {
-    if (item?.id && !map.has(item.id)) {
-      map.set(item.id, item);
-    }
-  });
+function ProductTile({ product, c, currency }) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const images = getAllImageUrls(product);
+  const favorite = isFavorite(product.id);
+  const price = Number(product.price);
+  return (
+    <article className="atelier-product">
+      <div className="atelier-product-photo">
+        <Link to={`/product/${product.id}`} className="atelier-product-image" aria-label={`${c.view}: ${product.name}`}>
+          <img src={getImageUrl(product)} alt={product.name} loading="lazy" decoding="async" onError={fallbackImage} />
+          {images[1] && <img className="atelier-product-alternate" src={images[1]} alt="" loading="lazy" decoding="async" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}
+          <span className="atelier-product-discover">{c.view}<Plus size={17} aria-hidden="true" /></span>
+        </Link>
+        {product.badge === 'NEW' && <span className="atelier-product-badge">{c.new}</span>}
+        <button type="button" className={`atelier-favorite ${favorite ? 'is-saved' : ''}`} aria-label={favorite ? c.unfavorite : c.favorite} aria-pressed={favorite} onClick={() => isAuthenticated ? toggleFavorite(product.id) : navigate('/login')}>
+          <Heart size={17} strokeWidth={1.25} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true" />
+        </button>
+      </div>
+      <div className="atelier-product-info"><span>{product.category}</span><span>{Number.isFinite(price) && price > 0 ? `${new Intl.NumberFormat('ru-RU').format(price)} ${currency}` : c.price}</span></div>
+      <Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link>
+    </article>
+  );
+}
 
-  return Array.from(map.values());
-};
-
-const PremiumHomeSections = () => {
+function Collection({ c, language, currency }) {
   const { products, isLoading } = useProducts();
-  const { getAllLooks } = useProductService();
-  const { t } = useLanguage();
-  const [looks, setLooks] = useState([]);
+  const [category, setCategory] = useState('');
+  const root = useRef(null);
+  const categories = useMemo(() => [...new Set(products.map(p => p.category).filter(Boolean))], [products]);
+  const selection = useMemo(() => [...products]
+    .filter(p => p.id && (!category || p.category === category))
+    .sort((a, b) => (new Date(b.createdAt || 0).getTime() || 0) - (new Date(a.createdAt || 0).getTime() || 0))
+    .slice(0, 4), [products, category]);
 
-  const formatPrice = (price) => {
-    if (typeof price !== 'number') return t('premiumHome.priceUnavailable');
-    return `${price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')} ${t('common.sum')}`;
-  };
-
-  useEffect(() => {
-    const fetchLooks = async () => {
-      const result = await getAllLooks();
-      if (result.success) {
-        setLooks(result.data);
-      }
-    };
-    fetchLooks();
-  }, []);
-
-  const masonryItems = useMemo(() => {
-    return looks.map((look, idx) => {
-      const ratio = 0.66 + ((idx * 0.137) % 0.34);
-      return {
-        id: look._id || look.id,
-        img: look.heroImage,
-        url: '#',
-        width: 1,
-        height: 1 / ratio,
-        title: look.title,
-        category: look.items?.[0]?.category,
-        look,
-      };
+  useGSAP(() => {
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      const tiles = root.current.querySelectorAll('.atelier-product');
+      if (tiles.length) gsap.from(tiles, { y: 38, opacity: 0, duration: 0.85, stagger: 0.1, ease: 'power3.out', scrollTrigger: { trigger: root.current, start: 'top 88%', once: true } });
     });
-  }, [looks]);
-
-  const newestProducts = useMemo(() => {
-    return [...products].sort((a, b) => {
-      const aDate = new Date(a.createdAt || 0).getTime();
-      const bDate = new Date(b.createdAt || 0).getTime();
-      return bDate - aDate;
-    });
-  }, [products]);
-
-  const editorialProduct = newestProducts[0];
-
-  const categoryCards = useMemo(() => {
-    const categoryMap = new Map();
-
-    products.forEach((product) => {
-      if (!product.category) return;
-
-      const existing = categoryMap.get(product.category);
-
-      if (!existing) {
-        categoryMap.set(product.category, {
-          name: product.category,
-          count: 1,
-          image: getProductImage(product),
-        });
-        return;
-      }
-
-      existing.count += 1;
-
-      if (!existing.image && getProductImage(product)) {
-        existing.image = getProductImage(product);
-      }
-    });
-
-    return Array.from(categoryMap.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 6);
-  }, [products]);
-
-  const bestsellerProducts = useMemo(() => {
-    const fromBadge = products.filter(
-      (product) => (product.badge || '').toUpperCase() === 'BESTSELLER'
-    );
-
-    const fromRating = [...products].sort(
-      (a, b) => (b.rating || 0) - (a.rating || 0)
-    );
-
-    return uniqueById([...fromBadge, ...fromRating]).slice(0, 4);
-  }, [products]);
-
-  const lookbookProducts = useMemo(() => {
-    return uniqueById([...newestProducts, ...bestsellerProducts]).slice(0, 3);
-  }, [newestProducts, bestsellerProducts]);
-
-  const customerVoices = useMemo(() => {
-    const source = uniqueById([...bestsellerProducts, ...newestProducts]).slice(0, 3);
-    const customQuotes = [
-      t('premiumHome.quote1'),
-      t('premiumHome.quote2'),
-      t('premiumHome.quote3')
-    ];
-
-    return source.map((product, index) => ({
-      id: product.id,
-      name: CUSTOMER_NAMES[index] || 'Luxx mijoz',
-      rating: Number(product.rating || 5).toFixed(1),
-      quote: customQuotes[index] || customQuotes[0],
-      productName: product.name,
-    }));
-  }, [bestsellerProducts, newestProducts, t]);
-
-  const [activeLookId, setActiveLookId] = React.useState(null);
-
-  const categoriesRef = React.useRef(null);
-  const bestsellersRef = React.useRef(null);
-  const [isCategoriesInView, setIsCategoriesInView] = React.useState(false);
-  const [isBestsellersInView, setIsBestsellersInView] = React.useState(false);
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      setIsCategoriesInView(true);
-      return;
-    }
-    const element = categoriesRef.current;
-    if (!element) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsCategoriesInView(true);
-          observer.unobserve(element);
-        }
-      },
-      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      setIsBestsellersInView(true);
-      return;
-    }
-    const element = bestsellersRef.current;
-    if (!element) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsBestsellersInView(true);
-          observer.unobserve(element);
-        }
-      },
-      { threshold: 0.05, rootMargin: '0px 0px -50px 0px' }
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const lookId = params.get('look');
-    if (lookId) {
-      setActiveLookId(lookId);
-    }
-  }, []);
-
-  const openLook = (id) => {
-    setActiveLookId(id);
-    const url = new URL(window.location);
-    url.searchParams.set('look', id);
-    window.history.pushState({}, '', url);
-  };
-
-  const closeLook = () => {
-    setActiveLookId(null);
-    const url = new URL(window.location);
-    url.searchParams.delete('look');
-    window.history.pushState({}, '', url);
-  };
+    ScrollTrigger.refresh();
+    return () => media.revert();
+  }, { scope: root, dependencies: [selection, language, isLoading], revertOnUpdate: true });
 
   return (
-    <>
-      {activeLookId && <LookDetailModal lookId={activeLookId} onClose={closeLook} />}
-      <section id="premium-home" className="bg-transparent text-white">
-        <div className="premium-home-flow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 space-y-16 md:space-y-20">
-          <div className="premium-home-index" aria-label="Luxx kolleksiya statistikasi">
-            <span>01 — 04</span>
-            <p>{t('premiumHome.editorialBadge')}</p>
-            <div><b>{products.length}+</b><small>{t('premiumHome.statsPremiumProducts')}</small></div>
-            <div><b>{categoryCards.length}+</b><small>{t('premiumHome.statsMainCategories')}</small></div>
-          </div>
-
-          <div className="premium-collection-cover relative overflow-hidden rounded-[2rem] border border-white/10">
-            <img
-              src="/second_pose.jpg"
-              alt="Luxx editorial kolleksiya"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#090a0f]/95 via-[#090a0f]/70 to-[#090a0f]/30" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f]/95 via-transparent to-transparent" />
-
-            <div className="relative grid lg:grid-cols-2 gap-8 p-7 sm:p-10 lg:p-12 min-h-[420px] items-end">
-              <div className="space-y-6 max-w-xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/30 px-3 py-1.5 text-xs tracking-wide uppercase">
-                  <Gem className="w-3.5 h-3.5 text-amber-300" />
-                  {t('premiumHome.editorialBadge')}
-                </div>
-
-                <h2 className="font-brilliant text-5xl md:text-7xl tracking-tight text-[#f4f1eb] flex flex-col gap-4">
-                  <span className="leading-none">{t('premiumHome.newCollection')}</span>
-                  <span className="leading-none">{t('premiumHome.collection')}</span>
-                  <span className="leading-none">2026</span>
-                </h2>
-
-                <p className="text-sm md:text-base text-neutral-200/90 max-w-lg">
-                  {t('premiumHome.editorialDesc')}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link
-                    to="/products?filter=new"
-                    className="inline-flex items-center gap-2 px-8 py-4 rounded-tr-[30px] rounded-bl-[30px] rounded-tl-none rounded-br-none border-2 border-black bg-white text-black font-semibold hover:bg-neutral-100 transition-colors"
-                  >
-                    {t('premiumHome.view')}
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-
-                  {editorialProduct?.id && (
-                    <Link
-                      to={`/lookbooks`}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border border-white/25 bg-black/25 text-white font-medium hover:bg-black/35 transition-colors"
-                    >
-                      {t('premiumHome.lookbook')}
-                      <ShoppingBag className="w-4 h-4" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 self-end">
-                <div className="rounded-2xl border border-white/15 bg-black/35 backdrop-blur-md p-4">
-                  <div className="text-2xl font-bold text-[#f4f1eb]">{products.length}+</div>
-                  <div className="text-xs text-neutral-300 mt-1">{t('premiumHome.statsPremiumProducts')}</div>
-                </div>
-                <div className="rounded-2xl border border-white/15 bg-black/35 backdrop-blur-md p-4">
-                  <div className="text-2xl font-bold text-[#f4f1eb]">{categoryCards.length}+</div>
-                  <div className="text-xs text-neutral-300 mt-1">{t('premiumHome.statsMainCategories')}</div>
-                </div>
-                <div className="col-span-2 rounded-2xl border border-white/15 bg-black/35 backdrop-blur-md p-4">
-                  <div className="flex items-center gap-2 text-amber-300 mb-2">
-                    <Crown className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wide">{t('premiumHome.statsPremiumService')}</span>
-                  </div>
-                  <p className="text-sm text-neutral-200">
-                    {t('premiumHome.statsServiceDesc')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <section id="home-categories" ref={categoriesRef} className="premium-categories space-y-6">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div
-                style={{
-                  opacity: isCategoriesInView ? 1 : 0,
-                  transform: isCategoriesInView ? 'translateY(0)' : 'translateY(25px)',
-                  transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
-              >
-                <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">{t('premiumHome.categoriesShopStyle')}</p>
-                <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.categories')}</h3>
-              </div>
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-2 text-sm text-[#f4f1eb] border border-white/20 rounded-full px-4 py-2 hover:bg-white/10 transition-colors"
-                style={{
-                  opacity: isCategoriesInView ? 1 : 0,
-                  transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
-                  transitionDelay: '0.15s'
-                }}
-              >
-                {t('premiumHome.viewAllCategories')}
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categoryCards.map((category, index) => (
-                <Link
-                  key={category.name}
-                  to={`/products?category=${encodeURIComponent(category.name)}`}
-                  className="group relative overflow-hidden rounded-3xl h-52 border border-white/10"
-                  style={{
-                    opacity: isCategoriesInView ? 1 : 0,
-                    transform: isCategoriesInView ? 'translate(0, 0)' : 'translate(-30px, 20px)',
-                    transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
-                    transitionDelay: `${index * 0.08}s`
-                  }}
-                >
-                  <img
-                    src={category.image || '/hero.jpg'}
-                    alt={`${category.name} kategoriyasi`}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-[#090a0f]/40 to-transparent" />
-                  <div className="relative h-full p-5 flex items-end justify-between gap-4">
-                    <div>
-                      <h4 className="text-xl font-semibold text-[#f4f1eb]">{category.name}</h4>
-                      <p className="text-sm text-neutral-300 mt-1">{category.count} ta model</p>
-                    </div>
-                    <span className="w-9 h-9 rounded-full border border-white/30 flex items-center justify-center bg-black/25">
-                      <ArrowRight className="w-4 w-4" />
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          <section id="home-bestsellers" ref={bestsellersRef} className="premium-bestsellers space-y-6">
-            <div
-              className="max-w-3xl"
-              style={{
-                opacity: isBestsellersInView ? 1 : 0,
-                transform: isBestsellersInView ? 'translateX(0)' : 'translateX(-30px)',
-                transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-              }}
-            >
-              <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Top picks</p>
-              <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.bestsellers')}</h3>
-              <p className="text-neutral-300 mt-3 text-sm md:text-base">
-                {t('premiumHome.bestsellersDesc')}
-              </p>
-            </div>
-
-            {isLoading ? (
-              <ProductGridSkeleton count={4} />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
-                {bestsellerProducts.map((product, index) => (
-                  <article
-                    key={product.id}
-                    className="group rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] overflow-hidden"
-                    style={{
-                      opacity: isBestsellersInView ? 1 : 0,
-                      transform: isBestsellersInView ? 'translateY(0) scale(1)' : 'translateY(35px) scale(0.96)',
-                      transition: 'opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1)',
-                      transitionDelay: `${index * 0.1}s`
-                    }}
-                  >
-                    <Link to={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden">
-                      <img
-                        src={getProductImage(product)}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/45 border border-white/20 text-[11px] uppercase tracking-wide">
-                        {product.badge || 'TOP'}
-                      </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#090a0f] via-transparent to-transparent" />
-                    </Link>
-
-                    <div className="p-4">
-                      <p className="text-xs uppercase tracking-wide text-neutral-400">{product.category}</p>
-                      <Link to={`/product/${product.id}`}>
-                        <h4 className="mt-1 text-base font-semibold text-[#f4f1eb] group-hover:text-white transition-colors line-clamp-1">
-                          {product.name}
-                        </h4>
-                      </Link>
-                      <div className="flex items-center gap-1 mt-3 text-amber-300">
-                        <Star className="w-4 h-4 fill-current" />
-                        <span className="text-sm text-neutral-200">{(product.rating || 5).toFixed(1)}</span>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <span className="text-base font-bold text-[#f4f1eb]">{formatPrice(product.price)}</span>
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="inline-flex items-center gap-1 text-sm text-neutral-200 hover:text-white transition-colors"
-                        >
-                          {t('premiumHome.view')}
-                          <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section id="home-lookbook" className="premium-lookbook space-y-8">
-            <div className="max-w-3xl">
-              <p className="text-xs uppercase tracking-[0.24em] text-neutral-400">Lookbook</p>
-              <h3 className="text-3xl md:text-4xl font-semibold text-[#f4f1eb] mt-2">{t('premiumHome.lookbookTitle')}</h3>
-              <p className="text-neutral-300 mt-3 text-sm md:text-base">
-                {t('premiumHome.lookbookDesc')}
-              </p>
-            </div>
-
-            <div className="relative">
-              {masonryItems.length === 0 ? (
-                <div className="py-16 text-center text-neutral-500 text-sm">
-                  {t('lookbooks.noLooksFound')}
-                </div>
-              ) : (
-                <Masonry
-                  items={masonryItems}
-                  columns={[3, 2, 1]}
-                  ease="power3.out"
-                  duration={0.6}
-                  stagger={0.05}
-                  animateFrom="bottom"
-                  scaleOnHover={true}
-                  hoverScale={0.97}
-                  blurToFocus={true}
-                  colorShiftOnHover={false}
-                  borderRadius="20px"
-                  gap={8}
-                  onItemClick={(item) => openLook(item.look._id || item.look.id)}
-                >
-                  {(item) => (
-                    <>
-                      <div className="flex items-center justify-end mb-2 translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-black shadow-lg">
-                          {t('premiumHome.shopLook')}
-                          <ShoppingBag className="w-3 h-3" />
-                        </span>
-                      </div>
-                      <p className="text-xs uppercase tracking-wide text-neutral-200 line-clamp-1">
-                        Look {item.title}
-                      </p>
-                      {item.category && (
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-[#d6b47c] mt-1 line-clamp-1">
-                          {item.category}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </Masonry>
-              )}
-            </div>
-
-            <div id="customer-voices" className="premium-voices pt-2">
-              <div className="flex items-end justify-between flex-wrap gap-4 mb-5">
-                <h4 className="text-2xl md:text-3xl font-semibold text-[#f4f1eb]">{t('premiumHome.customerVoices')}</h4>
-                <p className="text-sm text-neutral-400">{t('premiumHome.customerSubtitle')}</p>
-              </div>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {customerVoices.map((voice) => (
-                  <BorderGlow
-                    key={voice.id}
-                    borderRadius={24}
-                    glowColor="37 51 66"
-                    backgroundColor="rgba(255, 255, 255, 0.03)"
-                    colors={['#d6b47c', '#c4985a', '#f5f0e8']}
-                    glowRadius={30}
-                    glowIntensity={0.8}
-                    edgeSensitivity={20}
-                  >
-                    <article className="p-5 w-full">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-base font-semibold text-[#f4f1eb]">{voice.name}</p>
-                          <p className="text-xs text-neutral-400">{voice.productName}</p>
-                        </div>
-                        <div className="inline-flex items-center gap-1 text-amber-300 text-sm">
-                          <Star className="w-4 h-4 fill-current" />
-                          {voice.rating}
-                        </div>
-                      </div>
-                      <p className="text-sm text-neutral-200 mt-4 leading-relaxed">{voice.quote}</p>
-                    </article>
-                  </BorderGlow>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section id="home-journey" className="premium-promise grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-7">
-              <h4 className="text-2xl font-semibold text-[#f4f1eb]">{t('premiumHome.journeyTitle')}</h4>
-              <div className="mt-6 space-y-4">
-                {[
-                  { title: `01. ${t('premiumHome.journeyDiscover')}`, desc: t('premiumHome.journeyDiscoverDesc') },
-                  { title: `02. ${t('premiumHome.journeySelect')}`, desc: t('premiumHome.journeySelectDesc') },
-                  { title: `03. ${t('premiumHome.journeyCheckout')}`, desc: t('premiumHome.journeyCheckoutDesc') },
-                  { title: `04. ${t('premiumHome.journeyDelivery')}`, desc: t('premiumHome.journeyDeliveryDesc') },
-                ].map((step) => (
-                  <BorderGlow
-                    key={step.title}
-                    borderRadius={16}
-                    glowColor="37 51 66"
-                    backgroundColor="rgba(0, 0, 0, 0.25)"
-                    colors={['#d6b47c', '#c4985a', '#f5f0e8']}
-                    glowRadius={25}
-                    glowIntensity={0.7}
-                    edgeSensitivity={20}
-                  >
-                    <div className="px-4 py-3.5 w-full">
-                      <p className="text-sm font-semibold text-[#f4f1eb]">{step.title}</p>
-                      <p className="text-sm text-neutral-300 mt-1">{step.desc}</p>
-                    </div>
-                  </BorderGlow>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 sm:p-7">
-              <h4 className="text-2xl font-semibold text-[#f4f1eb]">{t('premiumHome.whyLuxx')}</h4>
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <BorderGlow
-                  borderRadius={16}
-                  glowColor="37 51 66"
-                  backgroundColor="rgba(0, 0, 0, 0.25)"
-                  colors={['#d6b47c', '#c4985a', '#f5f0e8']}
-                  glowRadius={25}
-                  glowIntensity={0.7}
-                  edgeSensitivity={20}
-                >
-                  <div className="p-4 w-full h-full">
-                    <Shield className="w-5 h-5 text-emerald-300" />
-                    <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.qualityControl')}</p>
-                    <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.qualityControlDesc')}</p>
-                  </div>
-                </BorderGlow>
-
-                <BorderGlow
-                  borderRadius={16}
-                  glowColor="37 51 66"
-                  backgroundColor="rgba(0, 0, 0, 0.25)"
-                  colors={['#d6b47c', '#c4985a', '#f5f0e8']}
-                  glowRadius={25}
-                  glowIntensity={0.7}
-                  edgeSensitivity={20}
-                >
-                  <div className="p-4 w-full h-full">
-                    <Truck className="w-5 h-5 text-sky-300" />
-                    <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.fastLogistics')}</p>
-                    <p className="text-sm text-neutral-300 mt-1">{t('premiumHome.fastLogisticsDesc')}</p>
-                  </div>
-                </BorderGlow>
-
-                <BorderGlow
-                  className="sm:col-span-2"
-                  borderRadius={16}
-                  glowColor="37 51 66"
-                  backgroundColor="rgba(0, 0, 0, 0.25)"
-                  colors={['#d6b47c', '#c4985a', '#f5f0e8']}
-                  glowRadius={25}
-                  glowIntensity={0.7}
-                  edgeSensitivity={20}
-                >
-                  <div className="p-4 w-full h-full">
-                    <Crown className="w-5 h-5 text-amber-300" />
-                    <p className="mt-3 font-semibold text-[#f4f1eb]">{t('premiumHome.premiumLook')}</p>
-                    <p className="text-sm text-neutral-300 mt-1">
-                      {t('premiumHome.premiumLookDesc')}
-                    </p>
-                  </div>
-                </BorderGlow>
-              </div>
-            </div>
-          </section>
-        </div>
-      </section>
-    </>
+    <section id="products" className="atelier-collection atelier-shell">
+      <span id="new-collection" className="atelier-anchor" />
+      <span id="bestsellers" className="atelier-anchor" />
+      <span id="home-bestsellers" className="atelier-anchor" />
+      <div className="atelier-section-heading" data-reveal>
+        <div><p className="atelier-eyebrow">01 / {c.selected}</p><h2>{c.collection}<br /><em>{c.collectionItalic}</em></h2></div>
+        <div className="atelier-heading-aside"><p>{c.collectionCopy}</p><TextLink to="/products">{c.catalogue}</TextLink></div>
+      </div>
+      <div id="home-categories" className="atelier-filters" aria-label={c.selected}>
+        {[{ value: '', label: c.all }, ...categories.map(name => ({ value: name, label: name }))].map(item => <button type="button" key={item.value} aria-pressed={category === item.value} onClick={() => setCategory(item.value)}>{item.label}<span>{item.value ? products.filter(p => p.category === item.value).length : products.length}</span></button>)}
+      </div>
+      <div className="atelier-products" ref={root} aria-busy={isLoading}>
+        {isLoading && !products.length ? <div className="atelier-product-loading" role="status"><span />{c.loading}</div> : selection.length ? selection.map(product => <ProductTile key={product.id} product={product} c={c} currency={currency} />) : <p className="atelier-empty" role="status">{c.empty}</p>}
+      </div>
+      <div className="atelier-collection-bottom"><span>THE WARDROBE, RECONSIDERED.</span><TextLink to={category ? `/products?category=${encodeURIComponent(category)}` : '/products'}>{c.catalogue}</TextLink></div>
+    </section>
   );
-};
+}
 
-export default PremiumHomeSections;
+function Lookbook({ c }) {
+  const [looks, setLooks] = useState([]);
+  const [active, setActive] = useState(0);
+  const [params, setParams] = useSearchParams();
+  const selectedLook = params.get('look');
+  const scene = useRef(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch('/api/looks').then(result => {
+      if (!cancelled && result.success && Array.isArray(result.data)) setLooks(result.data.filter(look => (look._id || look.id) && resolveImageUrl(look.heroImage)).slice(0, 3));
+    }).catch(() => { /* Keep the editorial selection available while the service is offline. */ });
+    return () => { cancelled = true; };
+  }, []);
+  const scenes = looks.length ? looks : c.fallbackLooks.map((title, i) => ({ title, heroImage: ['/second_pose.jpg', '/about_photo.jpg', '/heroimgg.jpg'][i] }));
+  const activeIndex = Math.min(active, scenes.length - 1);
+  const current = scenes[activeIndex];
+  useGSAP(() => {
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.fromTo(scene.current.querySelectorAll('.atelier-look-layer'), { scale: 1.045, opacity: 0 }, { scale: 1, opacity: 1, duration: 1, ease: 'power3.out' });
+    });
+    return () => media.revert();
+  }, { scope: scene, dependencies: [activeIndex, looks], revertOnUpdate: true });
+  const openLook = () => {
+    const next = new URLSearchParams(params);
+    next.set('look', current._id || current.id);
+    setParams(next, { preventScrollReset: true });
+  };
+  const closeLook = () => {
+    const next = new URLSearchParams(params);
+    next.delete('look');
+    setParams(next, { replace: true, preventScrollReset: true });
+  };
+  return (
+    <section id="home-lookbook" className="atelier-lookbook">
+      <div className="atelier-lookbook-inner atelier-shell">
+        <div className="atelier-look-copy" data-reveal>
+          <p className="atelier-eyebrow">02 / {c.looksLabel}</p>
+          <h2>{c.looks}<br /><em>{c.looksItalic}</em></h2>
+          <p className="atelier-body-copy">{c.looksCopy}</p>
+          <div className="atelier-look-select" aria-label={c.looksLabel}>
+            {scenes.map((look, i) => <button type="button" key={look._id || look.id || i} aria-pressed={activeIndex === i} onClick={() => setActive(i)}><span>{serial(i)}</span><span>{look.title}</span><ArrowUpRight size={19} strokeWidth={1} aria-hidden="true" /></button>)}
+          </div>
+          <TextLink to="/lookbooks">{c.allLooks}</TextLink>
+        </div>
+        <div className="atelier-look-scene" ref={scene}>
+          <img key={current.heroImage} className="atelier-look-layer" src={resolveImageUrl(current.heroImage)} alt={current.title} loading="lazy" decoding="async" onError={fallbackImage} />
+          <div className="atelier-look-shade" />
+          <span className="atelier-look-issue">LUXX / {serial(activeIndex)}</span>
+          <div className="atelier-look-caption"><span>{c.editorial}</span><p aria-live="polite">{current.title}</p></div>
+          {current._id || current.id ? <button type="button" className="atelier-round-link" aria-label={c.openLook} onClick={openLook}><ArrowUpRight size={30} strokeWidth={1} /></button> : <Link to="/lookbooks" className="atelier-round-link" aria-label={c.allLooks}><ArrowUpRight size={30} strokeWidth={1} /></Link>}
+        </div>
+      </div>
+      {selectedLook && <LookDetailModal lookId={selectedLook} onClose={closeLook} />}
+    </section>
+  );
+}
+
+export default function PremiumHomeSections() {
+  const { language, t } = useLanguage();
+  const c = copy[language] || copy.uz;
+  const root = useRef(null);
+  useGSAP(() => {
+    const media = gsap.matchMedia();
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      root.current.querySelectorAll('[data-reveal]').forEach(element => {
+        gsap.from(element, { y: 45, opacity: 0, duration: 1.1, ease: 'power3.out', scrollTrigger: { trigger: element, start: 'top 92%', once: true } });
+      });
+      gsap.from('.atelier-manifesto-title span', { yPercent: 110, rotate: 2, stagger: 0.12, duration: 1.25, ease: 'power4.out', scrollTrigger: { trigger: root.current.querySelector('.atelier-manifesto-title'), start: 'top 87%', once: true } });
+      root.current.querySelectorAll('[data-parallax]').forEach(frame => {
+        gsap.fromTo(frame.querySelector('img'), { yPercent: -5, scale: 1.13 }, { yPercent: 5, scale: 1.13, ease: 'none', scrollTrigger: { trigger: frame, start: 'top bottom', end: 'bottom top', scrub: 1 } });
+      });
+      gsap.fromTo('.atelier-ribbon-track', { xPercent: 5 }, { xPercent: -18, ease: 'none', scrollTrigger: { trigger: root.current.querySelector('.atelier-ribbon'), start: 'top bottom', end: 'bottom top', scrub: 1.5 } });
+    });
+    media.add('(min-width: 1100px) and (prefers-reduced-motion: no-preference)', () => {
+      const craft = root.current.querySelector('.atelier-craft');
+      gsap.timeline({ scrollTrigger: { trigger: craft, start: 'top 88px', end: '+=55%', pin: true, scrub: 0.8, invalidateOnRefresh: true } })
+        .fromTo('.atelier-craft-photo img', { scale: 1.03 }, { scale: 1.2, ease: 'none' }, 0)
+        .fromTo('.atelier-craft-detail', { opacity: 0.28, y: 12 }, { opacity: 1, y: 0, stagger: 0.25, ease: 'none' }, 0);
+    });
+    const onLoad = () => ScrollTrigger.refresh();
+    const images = [...root.current.querySelectorAll('img')];
+    images.forEach(img => img.addEventListener('load', onLoad, { once: true }));
+    let disposed = false;
+    document.fonts?.ready.then(() => { if (!disposed) ScrollTrigger.refresh(); });
+    return () => { disposed = true; images.forEach(img => img.removeEventListener('load', onLoad)); media.revert(); };
+  }, { scope: root, dependencies: [language], revertOnUpdate: true });
+
+  return (
+    <div ref={root} className="atelier-home">
+      <div className="atelier-chapter-line"><span>LUXX — TASHKENT</span><span>{c.edition}</span><a href="#new-collection">{c.discover}<ArrowRight size={13} aria-hidden="true" /></a></div>
+      <section id="premium-home" className="atelier-manifesto atelier-shell">
+        <div className="atelier-manifesto-meta"><span className="atelier-eyebrow">L’ART DE VIVRE</span><span className="atelier-eyebrow">{c.philosophy}</span></div>
+        <div className="atelier-manifesto-layout">
+          <figure className="atelier-manifesto-portrait" data-parallax><img src="/about_photo.jpg" alt={c.signature} width="1536" height="2304" loading="lazy" decoding="async" /><figcaption>FIG. 01 — THE ART OF BEING YOU</figcaption></figure>
+          <div className="atelier-manifesto-content"><h2 className="atelier-manifesto-title">{c.intro.map((line, i) => <div key={line}><span className={i === 1 ? 'atelier-italic' : ''}>{line}</span></div>)}</h2><div className="atelier-manifesto-description" data-reveal><span className="atelier-asterisk" aria-hidden="true">✳</span><p>{c.introCopy}</p><TextLink to="/about">{c.story}</TextLink></div></div>
+          <figure className="atelier-manifesto-detail" data-parallax><img src="/images/mobile/couture-manifesto.webp" alt="" width="900" height="1600" loading="lazy" decoding="async" /><figcaption>{c.signature}</figcaption></figure>
+        </div>
+        <div className="atelier-manifesto-bottom"><span>LESS NOISE. MORE FEELING.</span><span>THE LUXX WAY ↗</span></div>
+      </section>
+      <Collection c={c} language={language} currency={t('common.sum')} />
+      <Lookbook c={c} />
+      <div className="atelier-ribbon" aria-hidden="true"><div className="atelier-ribbon-track">Made to feel. <em>Made for you.</em> <span>✳</span> Made to feel. <em>Made for you.</em></div></div>
+      <section id="about" className="atelier-craft">
+        <div className="atelier-craft-photo"><img src="/images/mobile/couture-manifesto.webp" alt={c.craftLabel} width="900" height="1600" loading="lazy" decoding="async" /><span>THE FEELING OF LUXX</span></div>
+        <div className="atelier-craft-content"><p className="atelier-eyebrow">03 / {c.craftLabel}</p><h2>{c.craft}<br /><em>{c.craftItalic}</em></h2><p className="atelier-body-copy">{c.craftCopy}</p><div className="atelier-craft-details">{c.details.map(([number, title, detail]) => <div className="atelier-craft-detail" key={number}><span>{number}</span><div><h3>{title}</h3><p>{detail}</p></div><Plus size={16} strokeWidth={1} aria-hidden="true" /></div>)}</div><TextLink to="/about">{c.story}</TextLink></div>
+      </section>
+      <section className="atelier-care atelier-shell"><div className="atelier-section-heading" data-reveal><p className="atelier-eyebrow">04 / {c.care}</p><h2>{c.careTitle} <em>{c.careItalic}</em></h2></div><div className="atelier-services">{c.services.map(([title, detail], i) => <Link to={i === 1 ? '/faq' : '/contact'} className="atelier-service" key={title} data-reveal><span className="atelier-service-number">{serial(i)}</span><MoveUpRight size={26} strokeWidth={1} aria-hidden="true" /><h3>{title}</h3><p>{detail}</p></Link>)}</div></section>
+      <section className="atelier-invitation"><div className="atelier-invitation-photo" data-parallax><img src="/second_pose.jpg" alt="" width="1728" height="1152" loading="lazy" decoding="async" /></div><div className="atelier-invitation-content" data-reveal><p className="atelier-eyebrow">{c.invitation}</p><h2>{c.closing}<br /><em>{c.closingItalic}</em></h2><Link to="/products" className="atelier-button">{c.shop}<ArrowUpRight size={20} strokeWidth={1.2} aria-hidden="true" /></Link></div><span className="atelier-invitation-note">A LITTLE LUXURY. ALL YOURS.</span></section>
+      <footer id="footer" className="atelier-footer"><div className="atelier-footer-top atelier-shell"><div className="atelier-footer-brand"><Link to="/" aria-label="LUXX">LUXX<span>®</span></Link><p>{c.footerCopy}</p><span>TASHKENT, UZBEKISTAN</span></div><nav aria-label={c.navigation}><p className="atelier-eyebrow">{c.navigation}</p><Link to="/products">{c.catalogue}</Link><Link to="/lookbooks">Lookbook</Link><Link to="/about">{c.about}</Link><Link to="/blog">{c.journal}</Link></nav><nav aria-label={c.help}><p className="atelier-eyebrow">{c.help}</p><Link to="/contact">{c.contact}</Link><Link to="/faq">{c.faq}</Link><Link to="/orders">{c.orders}</Link><Link to="/gift-cards">{c.gift}</Link></nav><a className="atelier-back-top" href="#hero" aria-label={c.back}><ArrowUp size={23} strokeWidth={1} /><span>{c.back}</span></a></div><div className="atelier-footer-bottom atelier-shell"><span>© {new Date().getFullYear()} LUXX</span><span>EVERY WOMAN, HER OWN SIGNATURE.</span><div><Link to="/privacy-policy">{c.privacy}</Link><Link to="/terms">{c.terms}</Link></div></div></footer>
+    </div>
+  );
+}

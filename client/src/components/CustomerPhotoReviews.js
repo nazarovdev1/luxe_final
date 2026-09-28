@@ -414,7 +414,9 @@ const CustomerPhotoReviews = ({ productId, productName }) => {
       {isLoading ? (
         <div className="photo-community-grid grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="aspect-[3/4] animate-pulse rounded-2xl border border-white/5 bg-white/[0.04]" />
+            <div key={index} className="relative overflow-hidden aspect-[3/4] rounded-2xl border border-white/5 bg-white/[0.04]">
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/15 to-transparent pointer-events-none" />
+            </div>
           ))}
         </div>
       ) : posts.length === 0 ? (

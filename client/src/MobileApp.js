@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import MobileLayout from './components/mobile/MobileLayout';
 import Loading from './components/Loading';
 import SEO from './components/SEO';
+import MobileLookbooks from './pages/mobile/MobileLookbooks';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load pages to avoid circular dependencies and improve performance
 const MobileHome = lazy(() => import('./pages/mobile/MobileHome'));
@@ -19,9 +21,8 @@ const MobileOrders = lazy(() => import('./pages/mobile/MobileOrders'));
 const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
 const LoginForm = lazy(() => import('./components/LoginForm'));
 const RegisterForm = lazy(() => import('./components/RegisterForm'));
-const MobilePrivacyPolicy = lazy(() => import('./pages/mobile/MobilePrivacyPolicy'));
-const MobileTermsOfService = lazy(() => import('./pages/mobile/MobileTermsOfService'));
-const MobileLookbooks = lazy(() => import('./pages/mobile/MobileLookbooks'));
+const MobilePrivacyPolicy = lazy(() => import('./pages/mobile/MobileLegalPrivacy'));
+const MobileTermsOfService = lazy(() => import('./pages/mobile/MobileLegalTerms'));
 const MobileLookDetail = lazy(() => import('./pages/mobile/MobileLookDetail'));
 const MobileVIPClub = lazy(() => import('./pages/mobile/MobileVIPClub'));
 const MobileEcoImpact = lazy(() => import('./pages/mobile/MobileEcoImpact'));
@@ -42,7 +43,8 @@ const MobileApp = () => {
         <MobileLayout>
             <SEO />
             <Suspense fallback={<Loading />}>
-                <Routes>
+                <ErrorBoundary>
+                    <Routes>
                     <Route path="/" element={<MobileHome />} />
                     <Route path="about" element={<MobileAbout />} />
                     <Route path="/products" element={<MobileProducts />} />
@@ -80,6 +82,7 @@ const MobileApp = () => {
                     <Route path="/lookbook-builder" element={<Navigate to="/mobile/lookbooks" replace />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
+                </ErrorBoundary>
             </Suspense>
         </MobileLayout>
     );

@@ -5,6 +5,7 @@ import { Radio, Clock, Users, PlayCircle, CalendarClock, Tv2, Plus, X, Trash2, A
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { MobileLiveSkeleton } from '../../components/EventSkeletons';
 import './mobileExperiences.css';
 
 const extractYouTubeId = (url) => {
@@ -30,6 +31,8 @@ const StreamCard = ({ stream, isAdmin, onDelete, onNavigate, t }) => {
           <img
             src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
             alt={stream.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover opacity-80"
           />
         ) : (
@@ -288,11 +291,7 @@ export default function MobileLive() {
 
         {/* Stream list */}
         {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 rounded-[24px] bg-white/5 animate-pulse" />
-            ))}
-          </div>
+          <MobileLiveSkeleton />
         ) : filteredStreams.length === 0 ? (
           <div className="text-center py-16">
             <Tv2 className="w-14 h-14 text-gray-800 mx-auto mb-4" />

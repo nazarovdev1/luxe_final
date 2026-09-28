@@ -242,8 +242,12 @@ const LookbookBuilder = () => {
 
                     <div className="flex-1 overflow-y-auto p-2 sm:p-4 custom-scrollbar">
                         {isLoading ? (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="w-6 h-6 border-2 border-[#d6b47c] border-t-transparent rounded-full animate-spin"></div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-2">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="relative overflow-hidden aspect-square rounded-xl bg-[#14151f] border border-white/5">
+                                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/15 to-transparent pointer-events-none" />
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">

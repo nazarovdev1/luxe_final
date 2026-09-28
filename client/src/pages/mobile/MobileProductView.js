@@ -28,10 +28,10 @@ import {
   Check,
   Gem,
   Palette,
-  Sparkles,
   Loader2,
   Share2,
   Ruler,
+  Leaf,
 } from 'lucide-react';
 import ReviewForm from '../../components/ReviewForm';
 import ReviewList from '../../components/ReviewList';
@@ -494,7 +494,7 @@ const MobileProductView = () => {
                 {product.ecoScore && (
                   <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
                     <div className="p-2.5 rounded-xl bg-green-500/10">
-                      <Sparkles className="w-4 h-4 text-green-500" />
+                      <Leaf className="w-4 h-4 text-green-500" />
                     </div>
                     <div className="flex-1">
                       <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-1">{t('mobileProductView.eco_responsibility')}</p>
@@ -550,7 +550,7 @@ const MobileProductView = () => {
                     disabled={visualLoading}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#141416] border border-white/5 text-[10px] font-bold text-[#f5f5f3]"
                   >
-                    {visualLoading ? <Loader2 size={12} className="animate-spin text-[#c9a96e]" /> : <Sparkles size={12} className="text-[#c9a96e]" />}
+                    {visualLoading ? <Loader2 size={12} className="animate-spin text-[#c9a96e]" /> : <Gem size={12} className="text-[#c9a96e]" />}
                     {t('mobileProductView.ai_button')}
                   </button>
                 </div>
@@ -576,7 +576,7 @@ const MobileProductView = () => {
               <div className="mb-10">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                    <Sparkles className="text-purple-400" size={16} />
+                    <Gem className="text-purple-400" size={16} />
                   </div>
                   <h3 className="font-brilliant text-xl text-[#f5f5f3]">{t('mobileProductView.ai_title')}</h3>
                 </div>

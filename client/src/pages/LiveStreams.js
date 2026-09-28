@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Radio, Clock, Users, PlayCircle, CalendarClock, Tv2, Plus, X, Trash2 } from 'lucide-react';
@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
+import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
+import { LiveStreamsSkeleton } from '../components/EventSkeletons';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -19,6 +21,9 @@ const LiveStreams = () => {
   const [streams, setStreams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const pageRef = useRef(null);
+  const initialFetchRef = useRef(false);
+  useCommunityMotion(pageRef);
   const navigate = useNavigate();
 
   const fetchStreams = async () => {
@@ -32,7 +37,11 @@ const LiveStreams = () => {
     }
   };
 
-  useEffect(() => { fetchStreams(); }, []);
+  useEffect(() => {
+    if (initialFetchRef.current) return;
+    initialFetchRef.current = true;
+    fetchStreams();
+  }, []);
 
   const handleCreateStream = async (formData) => {
     try {
@@ -82,61 +91,19 @@ const LiveStreams = () => {
   const endedStreams = streams.filter(s => s.status === 'ended');
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white pt-32 pb-24 relative overflow-hidden">
-      {/* Background Cinematic Glows - Red for Live */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-red-600/5 rounded-full blur-[120px] -translate-y-1/2" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-red-600/3 rounded-full blur-[150px] translate-y-1/2" />
+    <div ref={pageRef} className="community-page community-page--live">
 
       <SEO title="Jonli Efirlar — Luxe" description="Luxe jonli savdo efirlarini tomosha qiling va to'g'ridan-to'g'ri xarid qiling." />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-10">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-red-600/20 to-transparent border-l-2 border-red-600 px-4 py-2 mb-6">
-              <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-              <span className="text-red-500 text-[10px] tracking-[0.3em] uppercase font-black">{t('liveStreams.liveArena')}</span>
-            </div>
-            <h1 className="text-6xl md:text-8xl font-brilliant text-white mb-6 leading-[0.9]">
-              Live <span className="text-red-600">{t('liveStreams.title')}</span>
-            </h1>
-            <p className="text-gray-400 text-lg md:text-xl font-light leading-relaxed pt-4">
-              {t('liveStreams.subtitle')}
-            </p>
-          </div>
-          
-          <div className="flex flex-col items-end gap-6">
-            {isAdmin && (
-              <button
-                onClick={() => setIsCreateOpen(true)}
-                className="group relative px-10 py-5 bg-transparent overflow-hidden rounded-full"
-              >
-                <div className="absolute inset-0 bg-red-600 opacity-10 group-hover:opacity-20 transition-opacity" />
-                <div className="absolute inset-0 border border-red-600/30 rounded-full" />
-                <span className="relative z-10 flex items-center gap-3 text-red-500 text-sm font-black tracking-widest uppercase">
-                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> {t('liveStreams.newStream')}
-                </span>
-              </button>
-            )}
-            <div className="flex items-center gap-8">
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('liveStreams.liveViewers')}</p>
-                <p className="text-2xl font-brilliant text-red-500">{liveStreams.reduce((acc, s) => acc + (s.viewersCount || 0), 0)}</p>
-              </div>
-              <div className="w-px h-10 bg-white/10" />
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('liveStreams.upcoming')}</p>
-                <p className="text-2xl font-brilliant text-white">{scheduledStreams.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <CommunityOpening variant="live" description={t('liveStreams.subtitle')}>
+        <span>{liveStreams.length} {t('liveStreams.liveNow')}</span>
+        {isAdmin && <button type="button" onClick={() => setIsCreateOpen(true)}>+ {t('liveStreams.newStream')}</button>}
+      </CommunityOpening>
+      <div className="community-page__body community-content">
+        <CommunityChapter variant="live" />
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-6">
-            <div className="w-12 h-12 border-[3px] border-red-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-red-500 text-sm tracking-widest font-medium animate-pulse">{t('liveStreams.loading')}</p>
-          </div>
+          <LiveStreamsSkeleton />
         ) : (
           <div className="space-y-24">
             {/* 🔴 LIVE NOW */}
@@ -185,10 +152,10 @@ const LiveStreams = () => {
             )}
 
             {streams.length === 0 && (
-              <div className="text-center py-32 border border-dashed border-white/5 rounded-[40px] bg-white/[0.02]">
-                <Tv2 className="w-20 h-20 text-gray-800 mx-auto mb-6 opacity-20" />
-                <h3 className="text-2xl text-gray-400 font-light">{t('liveStreams.noStreams')}</h3>
-                <p className="text-gray-600 mt-3 max-w-sm mx-auto">{t('liveStreams.noStreamsHint')}</p>
+              <div className="live-editorial-empty">
+                <div className="live-editorial-empty__signal"><i /><span>OFF AIR / 00:00</span></div>
+                <div className="live-editorial-empty__copy"><span>THE NEXT LIVE EDIT</span><h3>Keyingi uchrashuv<br /><em>yo‘lda.</em></h3><p>{t('liveStreams.noStreamsHint')}</p></div>
+                <div className="live-editorial-empty__frame"><span>LUXX / STUDIO</span><strong>LIVE</strong><span>SOON — 2026</span></div>
               </div>
             )}
           </div>
@@ -216,7 +183,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
   };
 
   return (
-    <div className={`relative rounded-[28px] border overflow-hidden transition-all hover:scale-[1.01] ${isLive ? 'border-red-500/30 bg-red-500/5' : ended ? 'border-white/5 bg-[#111] opacity-60' : 'border-[#2a2a2a] bg-[#111]'}`}>
+    <div className={`live-editorial-card relative rounded-[28px] border overflow-hidden transition-all hover:scale-[1.01] ${isLive ? 'border-red-500/30 bg-red-500/5' : ended ? 'border-white/5 bg-[#111] opacity-60' : 'border-[#2a2a2a] bg-[#111]'}`}>
       {isAdmin && (
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(stream._id); }}
@@ -235,6 +202,8 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
             src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
             className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
             alt={stream.title}
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full bg-[#0a0a0a] flex items-center justify-center">
@@ -274,7 +243,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
           <div className="flex gap-2 flex-wrap mb-4">
             {stream.featuredProducts.slice(0, 3).map(p => (
               <div key={p._id} className="w-8 h-8 rounded-lg overflow-hidden bg-white border border-white/10" title={p.name}>
-                <img src={p.images?.[0] || p.image} className="w-full h-full object-contain" />
+                <img src={p.images?.[0] || p.image} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
               </div>
             ))}
             {stream.featuredProducts.length > 3 && (

@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Crown, Star, Zap, Trophy, Gift, ShieldCheck, Truck, Unlock, ChevronRight, Flame, Medal, History, Gem } from 'lucide-react';
+import { Crown, Zap, Trophy, Gift, ShieldCheck, Truck, Unlock, ChevronRight, Flame, Medal, History, Gem } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import { useNavigate } from 'react-router-dom';
 import BadgeIcon from '../components/BadgeIcon';
+import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
+import { VIPClubSkeleton } from '../components/EventSkeletons';
 
 const VIP_TIERS = [
   {
@@ -80,7 +82,7 @@ const VIP_TIERS = [
 const HOW_TO_EARN = [
   { icon: <ShieldCheck className="w-5 h-5" />, actionKey: 'vip.earnActionPurchase', pointsKey: 'vip.earnPointsPurchase', descKey: 'vip.earnDescPurchase' },
   { icon: <Unlock className="w-5 h-5" />, actionKey: 'vip.earnActionRegister', pointsKey: 'vip.earnPointsRegister', descKey: 'vip.earnDescRegister' },
-  { icon: <Star className="w-5 h-5" />, actionKey: 'vip.earnActionReview', pointsKey: 'vip.earnPointsReview', descKey: 'vip.earnDescReview' },
+  { icon: <Gem className="w-5 h-5" />, actionKey: 'vip.earnActionReview', pointsKey: 'vip.earnPointsReview', descKey: 'vip.earnDescReview' },
   { icon: <Trophy className="w-5 h-5" />, actionKey: 'vip.earnActionChallengeWin', pointsKey: 'vip.earnPointsChallengeWin', descKey: 'vip.earnDescChallengeWin' },
   { icon: <Zap className="w-5 h-5" />, actionKey: 'vip.earnActionDailyLogin', pointsKey: 'vip.earnPointsDailyLogin', descKey: 'vip.earnDescDailyLogin' },
   { icon: <Gift className="w-5 h-5" />, actionKey: 'vip.earnActionBirthday', pointsKey: 'vip.earnPointsBirthday', descKey: 'vip.earnDescBirthday' },
@@ -96,8 +98,14 @@ const VIPClub = () => {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const pageRef = useRef(null);
+  const lastFetchKeyRef = useRef(null);
+  useCommunityMotion(pageRef);
 
   useEffect(() => {
+    const fetchKey = `${isAuthenticated}:${token || ''}`;
+    if (lastFetchKeyRef.current === fetchKey) return;
+    lastFetchKeyRef.current = fetchKey;
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -137,10 +145,7 @@ const VIPClub = () => {
     : 100;
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white pt-32 pb-24 relative overflow-hidden">
-      {/* Background Cinematic Glows */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#d6b47c]/5 rounded-full blur-[120px] -translate-y-1/2" />
-      <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-[#d6b47c]/3 rounded-full blur-[150px] translate-y-1/2" />
+    <div ref={pageRef} className="community-page community-page--vip">
 
       <SEO 
         title="VIP Club — Luxe | Эксклюзивный клуб" 
@@ -149,23 +154,14 @@ const VIPClub = () => {
         breadcrumbSteps={[{ name: 'VIP Club', url: '/vip-club' }]}
       />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col items-center text-center mb-20">
-          <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#d6b47c]/20 via-[#d6b47c]/10 to-transparent border-l-2 border-[#d6b47c] px-6 py-2 mb-8">
-            <Crown className="w-4 h-4 text-[#d6b47c]" />
-            <span className="text-[#d6b47c] text-[10px] tracking-[0.4em] uppercase font-black">{t('vip.exclusivePerks')}</span>
-          </div>
-          <h1 className="text-6xl md:text-9xl font-brilliant text-white mb-8 leading-tight">
-            Luxe <span className="text-[#d6b47c]">{t('vip.title')}</span>
-          </h1>
-          <p className="text-gray-400 text-lg md:text-xl font-light max-w-3xl leading-relaxed">
-            {t('vip.subtitle')}
-          </p>
-        </div>
+      <CommunityOpening variant="vip" description={t('vip.subtitle')}>
+        <span>{t('vip.exclusivePerks')}</span>
+      </CommunityOpening>
+      <div className="community-page__body community-content">
+        <CommunityChapter variant="vip" />
 
         {/* Cinematic Tab Bar */}
-        <div className="flex flex-nowrap justify-center gap-2 mb-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-2 max-w-4xl mx-auto shadow-2xl overflow-x-auto scrollbar-hide">
+        <div className="vip-editorial-tabs flex flex-nowrap justify-center gap-2 mb-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-2 max-w-4xl mx-auto shadow-2xl overflow-x-auto scrollbar-hide">
           {[
             { id: 'overview', label: t('vip.tabMyLevel'), icon: <Crown className="w-4 h-4" /> },
             { id: 'badges', label: t('vip.tabBadges'), icon: <Medal className="w-4 h-4" /> },
@@ -175,6 +171,8 @@ const VIPClub = () => {
           ].map(tab => (
             <button
               key={tab.id}
+              type="button"
+              aria-pressed={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-shrink-0 flex items-center gap-2 px-6 py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeTab === tab.id ? 'bg-[#d6b47c] text-black shadow-[0_10px_20px_rgba(214,180,124,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
             >
@@ -186,9 +184,11 @@ const VIPClub = () => {
 
         {/* --- OVERVIEW TAB --- */}
         {activeTab === 'overview' && (
-          <div className="space-y-24">
+          <div className="vip-editorial-content space-y-24">
             {/* My Card - Membership Card Style */}
-            {isAuthenticated && pointsData ? (
+            {isLoading ? (
+              <VIPClubSkeleton />
+            ) : isAuthenticated && pointsData ? (
               <div className="relative group">
                 {/* Dynamic Glow Background */}
                 <div className={`absolute -inset-4 rounded-[48px] blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-1000 ${currentTier.glow}`} />

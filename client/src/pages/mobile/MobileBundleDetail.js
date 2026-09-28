@@ -7,6 +7,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import { showCartToast } from '../../utils/toast';
 import SEO from '../../components/SEO';
+import { BundleDetailSkeleton } from '../../components/EventSkeletons';
 
 // Components
 import MobileBundleHero from './BundleDetailComponents/MobileBundleHero';
@@ -146,11 +147,7 @@ const MobileBundleDetail = () => {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-[#060a14] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-[#d6b47c] animate-spin" />
-            </div>
-        );
+        return <BundleDetailSkeleton />;
     }
 
     if (!bundle) return null;

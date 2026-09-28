@@ -8,6 +8,7 @@ import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { io } from 'socket.io-client';
 import SEO from '../components/SEO';
+import { LiveStreamViewSkeleton } from '../components/EventSkeletons';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -126,11 +127,7 @@ const LiveStreamView = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LiveStreamViewSkeleton />;
   }
 
   if (!stream) return null;

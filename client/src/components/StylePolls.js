@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { ArrowRight, BarChart3, CheckCircle, ImageOff, Loader2, MessageCircle, Users } from 'lucide-react';
+import { ArrowRight, BarChart3, CheckCircle, Crown, ImageOff, Loader2, MessageCircle, Users } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const getVisitorKey = () => {
@@ -127,11 +127,13 @@ const StylePolls = () => {
 
   if (isLoading) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-6">
-        <div className="rounded-[28px] border border-white/10 bg-[#0c0e14]/80 p-8">
-          <div className="flex items-center justify-center gap-3 text-[#d6b47c]">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span className="text-sm">{t('stylePolls.loading')}</span>
+      <section className="w-full">
+        <div className="relative overflow-hidden rounded-[0_60px_0_0] border border-[#c1a88e]/20 bg-gradient-to-b from-[#18181b] via-[#111114] to-[#09090b] p-8 md:p-12 shadow-2xl">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.2s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/10 to-transparent pointer-events-none" />
+          <div className="flex flex-col gap-4 max-w-md">
+            <div className="w-36 h-5 rounded-full bg-white/10 animate-pulse" />
+            <div className="w-64 h-8 rounded-full bg-white/10 animate-pulse" />
+            <div className="w-80 h-4 rounded-full bg-white/5 animate-pulse" />
           </div>
         </div>
       </section>
@@ -140,33 +142,55 @@ const StylePolls = () => {
 
   if (polls.length === 0) {
     return (
-      <section className="mx-auto w-full max-w-7xl px-6">
-        <div className="rounded-[28px] border border-dashed border-white/10 bg-[#0c0e14]/70 p-8 text-center">
-          <BarChart3 className="mx-auto mb-4 h-10 w-10 text-[#d6b47c]/50" />
-          <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('stylePolls.title')}</h3>
-          <p className="mt-2 text-sm text-[#7f8797]">
-            {t('stylePolls.empty')}
-          </p>
+      <section className="w-full">
+        <div className="relative overflow-hidden rounded-[0_60px_0_0] border border-[#c1a88e]/25 bg-gradient-to-br from-[#1c1817] via-[#141010] to-[#0c0909] p-8 md:p-12 shadow-2xl">
+          {/* Subtle gold ambient glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#d6b47c]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#d6b47c]/30 bg-[#d6b47c]/10 text-[#d6b47c] text-[10px] font-bold uppercase tracking-[0.2em] mb-4">
+                <Crown className="w-3.5 h-3.5" />
+                <span>STYLE BATTLE & SO'ROVNOMALAR</span>
+              </div>
+              <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl text-[#f7efe6] font-normal tracking-tight uppercase leading-tight mb-3">
+                Yangi Uslub Duellari <em className="italic text-[#d6b47c] font-normal">Tez Kunda</em>
+              </h3>
+              <p className="text-sm md:text-base text-[#ad9b91] font-light leading-relaxed">
+                Mavsumiy eng sara obrazlar, ranglar kombinatsiyasi va trendlar bo‘yicha eksklyuziv hamjamiyat so‘rovnomalari tayyorlanmoqda.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+              <div className="flex items-center gap-3 px-6 py-4 rounded-full bg-white/[0.03] border border-[#c1a88e]/30 backdrop-blur-md shadow-lg">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#d6b47c] animate-pulse" />
+                <span className="text-xs uppercase tracking-widest text-[#f4f1eb] font-semibold">Tez orada ochiladi</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d6b47c]/25 bg-[#d6b47c]/10">
-            <BarChart3 className="h-5 w-5 text-[#d6b47c]" />
+    <section className="w-full">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#c1a88e]/20 pb-6">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#d6b47c]/30 bg-[#d6b47c]/10 text-[#d6b47c] text-[10px] font-bold uppercase tracking-[0.2em] mb-3">
+            <Crown className="w-3.5 h-3.5" />
+            <span>HAMJAMIYAT OVOZI</span>
           </div>
-          <div>
-            <h3 className="text-xl font-semibold text-[#f4f1eb]">{t('stylePolls.title')}</h3>
-            <p className="text-xs text-[#9aa3b2]">{t('stylePolls.subtitle')}</p>
-          </div>
+          <h3 className="font-serif text-3xl md:text-4xl text-[#f7efe6] font-normal tracking-tight uppercase">
+            Style <em className="italic text-[#d6b47c]">Duellari</em>
+          </h3>
+          <p className="mt-1 text-xs md:text-sm text-[#ad9b91] font-light">
+            {t('stylePolls.subtitle') || 'Sevimli obrazingizga ovoz bering va trendlarni birgalikda tanlang.'}
+          </p>
         </div>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-8">
         {displayedPolls.map((poll) => {
           const hasVoted = Boolean(votedPolls[poll._id]);
           const votedOption = votedPolls[poll._id];
@@ -175,18 +199,18 @@ const StylePolls = () => {
           return (
             <article
               key={poll._id}
-              className="overflow-hidden rounded-[28px] border border-white/10 bg-[#0b0d13] shadow-[0_24px_80px_rgba(0,0,0,0.32)]"
+              className="overflow-hidden rounded-[0_48px_0_0] border border-[#c1a88e]/25 bg-[#141111] shadow-[0_24px_80px_rgba(0,0,0,0.32)]"
             >
-              <div className="border-b border-white/10 px-5 py-4 sm:px-6">
+              <div className="border-b border-white/10 px-6 py-5">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-[#d6b47c]/25 bg-[#d6b47c]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#d6b47c]">
-                    {poll.category || 'Community'}
+                  <span className="rounded-full border border-[#d6b47c]/30 bg-[#d6b47c]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d6b47c]">
+                    {poll.category || 'Editorial Duel'}
                   </span>
                   {poll.timeLeft && (
-                    <span className="text-[11px] text-[#9aa3b2]">{poll.timeLeft} {t('stylePolls.remaining')}</span>
+                    <span className="text-[11px] text-[#ad9b91]">{poll.timeLeft} {t('stylePolls.remaining')}</span>
                   )}
                 </div>
-                <h4 className="text-lg font-semibold leading-tight text-[#f4f1eb]">{poll.question}</h4>
+                <h4 className="font-serif text-xl sm:text-2xl font-normal leading-tight text-[#f7efe6]">{poll.question}</h4>
               </div>
 
               <div className="grid grid-cols-1 gap-px bg-white/10 md:grid-cols-2">
@@ -204,13 +228,13 @@ const StylePolls = () => {
                       type="button"
                       onClick={() => handleVote(poll._id, option._id)}
                       disabled={hasVoted || Boolean(votingId)}
-                      className={`group relative min-h-[360px] overflow-hidden bg-[#0f1118] text-left transition-all md:min-h-[430px] ${
-                        hasVoted ? 'cursor-default' : 'cursor-pointer hover:bg-[#141824]'
+                      className={`group relative min-h-[360px] overflow-hidden bg-[#0f0c0c] text-left transition-all md:min-h-[430px] ${
+                        hasVoted ? 'cursor-default' : 'cursor-pointer hover:bg-[#181313]'
                       }`}
                     >
                       <div className="absolute inset-0">
                         <PollImage src={option.image} alt={option.label} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/24 to-black/5" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent" />
                         {hasVoted && (
                           <div
                             className={`absolute inset-x-0 bottom-0 h-1.5 ${isWinning ? 'bg-[#d6b47c]' : 'bg-white/45'} transition-all duration-700`}
@@ -220,29 +244,29 @@ const StylePolls = () => {
                       </div>
 
                       {isSelected && (
-                        <div className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-[#d6b47c] text-black shadow-lg">
+                        <div className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#d6b47c] text-black shadow-lg z-10">
                           <CheckCircle className="h-5 w-5" />
                         </div>
                       )}
 
-                      <div className="relative z-10 flex h-full min-h-[360px] flex-col justify-end p-5 md:min-h-[430px] sm:p-6">
+                      <div className="relative z-10 flex h-full min-h-[360px] flex-col justify-end p-6 md:min-h-[430px]">
                         <div className="flex items-end justify-between gap-4">
                           <div className="min-w-0">
-                            <p className="text-base font-bold text-white sm:text-lg">{option.label}</p>
-                            <p className="mt-1 text-xs text-white/55">
+                            <p className="font-serif text-lg sm:text-xl font-normal text-white">{option.label}</p>
+                            <p className="mt-1 text-xs text-white/60">
                               {hasVoted ? `${option.votes || 0} ${t('stylePolls.vote')}` : t('stylePolls.clickToVote')}
                             </p>
                           </div>
 
-                          <div className="text-right">
+                          <div className="text-right flex-shrink-0">
                             {isVoting ? (
                               <Loader2 className="h-5 w-5 animate-spin text-[#d6b47c]" />
                             ) : hasVoted ? (
-                              <span className={`text-2xl font-black ${isWinning ? 'text-[#d6b47c]' : 'text-white/70'}`}>
+                              <span className={`text-2xl sm:text-3xl font-serif ${isWinning ? 'text-[#d6b47c]' : 'text-white/70'}`}>
                                 {percentage}%
                               </span>
                             ) : (
-                              <span className="rounded-full border border-white/20 bg-black/35 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white/80">
+                              <span className="rounded-full border border-white/30 bg-black/40 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white group-hover:bg-[#d6b47c] group-hover:text-black group-hover:border-[#d6b47c] transition-all">
                                 {t('stylePolls.select')}
                               </span>
                             )}
@@ -254,20 +278,20 @@ const StylePolls = () => {
                 })}
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6">
-                <div className="flex items-center gap-5 text-[#9aa3b2]">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-[#0e0b0b]">
+                <div className="flex items-center gap-5 text-[#ad9b91]">
                   <span className="flex items-center gap-1.5 text-xs">
-                    <Users className="h-3.5 w-3.5" />
+                    <Users className="h-3.5 w-3.5 text-[#d6b47c]" />
                     {totalVotes} {t('stylePolls.vote')}
                   </span>
                   <span className="flex items-center gap-1.5 text-xs">
-                    <MessageCircle className="h-3.5 w-3.5" />
+                    <MessageCircle className="h-3.5 w-3.5 text-[#d6b47c]" />
                     {t('stylePolls.liveUpdates')}
                   </span>
                 </div>
 
                 {hasVoted && (
-                  <span className="flex items-center gap-1.5 text-xs text-emerald-400">
+                  <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
                     <CheckCircle className="h-3.5 w-3.5" />
                     {t('stylePolls.voted')}
                   </span>
@@ -282,7 +306,7 @@ const StylePolls = () => {
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] py-3 text-sm text-[#9aa3b2] transition-all hover:border-[#d6b47c]/25 hover:bg-[#d6b47c]/5 hover:text-[#f4f1eb]"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-[#c1a88e]/30 bg-white/[0.02] py-4 text-xs font-bold uppercase tracking-[0.2em] text-[#d6b47c] transition-all hover:bg-[#d6b47c] hover:text-black"
         >
           {t('stylePolls.viewAll')} <ArrowRight className="h-4 w-4" />
         </button>

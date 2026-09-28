@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 import GiftCardSvg from './GiftCardSvg';
 import { getGiftCardDesign } from '../data/giftCardDesigns';
+import { MyGiftCardsSkeleton } from './EventSkeletons';
 
 const formatPrice = (value) => {
   return Number(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -77,11 +78,7 @@ const MyGiftCards = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d6b47c]"></div>
-      </div>
-    );
+    return <MyGiftCardsSkeleton />;
   }
 
   if (giftCards.length === 0) {

@@ -2,3 +2,44 @@
 @media (max-width:850px) { .gift-atelier { padding:98px 17px 90px; }.gift-atelier__hero { padding-bottom:56px; }.gift-atelier__workspace { grid-template-columns:1fr; gap:46px; }.gift-preview { position:relative; top:auto; order:-1; }.gift-preview__card { max-width:580px; margin:auto; }.gift-designs { grid-template-columns:repeat(5,minmax(0,1fr)); }.gift-atelier h1 { font-size:clamp(3rem,11vw,5.2rem); } }
 @media (max-width:520px) { .gift-atelier__hero { text-align:left; }.gift-atelier__promises { justify-content:flex-start; }.gift-amounts { grid-template-columns:repeat(2,1fr); }.gift-designs { grid-template-columns:repeat(3,1fr); }.gift-recipient { grid-template-columns:1fr; }.gift-field--message { grid-column:auto; }.gift-preview { padding:12px; }.gift-preview__purchase { grid-template-columns:1fr auto 18px; }.gift-preview__purchase b { font-size:10px; }.gift-atelier__hero > p { margin-left:0; }.gift-step--spaced { margin-top:46px; } }
 @media (prefers-reduced-motion:reduce) { .gift-amounts button,.gift-designs button,.gift-preview__purchase { transition:none; } }
+.gift-atelier { padding-top:92px; background:#e9ded1; color:#261b19; }
+.gift-atelier::before { opacity:.13; background-image:radial-gradient(#4e302b .45px,transparent .7px); }
+.gift-atelier__glow { opacity:.11; }
+.gift-atelier__hero { width:calc(100% + 48px); max-width:none; min-height:min(770px,87svh); margin:-1px -24px 100px; padding:50px max(5vw,24px) 65px; display:grid; grid-template-columns:minmax(0,1fr) minmax(340px,.85fr); align-items:center; gap:7vw; text-align:left; background:radial-gradient(circle at 77% 45%,#cf9e77 0,#7a4438 31%,#2a1a1b 70%); color:#fff5ed; overflow:hidden; }
+.gift-atelier__hero-copy { position:relative; z-index:2; }
+.gift-atelier__eyebrow { border:0; border-bottom:1px solid #e2c29b; padding:0 0 14px; color:#e2c29b; }
+.gift-atelier__edition { margin:50px 0 18px; color:#dbc2a8; letter-spacing:.25em; }
+.gift-atelier h1 { font:400 clamp(4.3rem,7vw,8.5rem)/.83 'Bodoni Moda','Didot',Georgia,serif; letter-spacing:-.075em; }
+.gift-atelier__hero h1 em { color:#e3bc91; }
+.gift-atelier__hero > p,.gift-atelier__hero-copy > p { max-width:460px; margin:32px 0 0; color:#e5d4c8; font-size:15px; line-height:1.8; }
+.gift-atelier__promises { justify-content:flex-start; margin-top:35px; color:#e8d9ca; }
+.gift-atelier__hero-art { position:relative; justify-self:center; width:min(100%,650px); transform:rotate(-5deg); filter:drop-shadow(20px 40px 38px #180c1077); }
+.gift-atelier__hero-card { padding:15px; background:#f1e5d4; }
+.gift-atelier__hero-card svg { display:block; width:100%; height:auto; }
+.gift-atelier__hero-art > span { display:block; margin:18px 0 0; text-align:right; color:#eed8c0; font:700 10px/1.2 Manrope,Arial,sans-serif; letter-spacing:.25em; }
+.gift-atelier__workspace { color:#271c18; }
+.gift-step > span { color:#875d47; border-color:#9f795c; }
+.gift-step p { color:#926944; }
+.gift-amounts button { color:#332622; border-color:#c4ae9b; background:#fff9f1; }
+.gift-amounts button.is-selected { color:#fff8ed; background:#6c3d35; border-color:#6c3d35; }
+.gift-field > span { color:#67514a; }
+.gift-field input,.gift-field textarea { color:#261c1a; background:#fff9f1; border-color:#c4ae9b; }
+.gift-field input::placeholder,.gift-field textarea::placeholder { color:#a58c7f; }
+.gift-preview { background:#241a1a; color:#f7ece1; }
+@media(max-width:850px) { .gift-atelier__hero { width:calc(100% + 34px); margin:0 -17px 70px; grid-template-columns:1fr; min-height:auto; padding:70px 25px; gap:55px; } .gift-atelier__hero-art { max-width:520px; } }
+@media(max-width:520px) { .gift-atelier__hero { padding:48px 20px 70px; } .gift-atelier h1 { font-size:clamp(3.9rem,16vw,6rem); } .gift-atelier__edition { margin-top:30px; } }
+.gift-atelier__chapter { position:relative; z-index:1; width:min(1240px,100%); margin:0 auto 75px; display:grid; grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr); gap:25px 7vw; align-items:end; padding:30px 0 50px; border-top:1px solid #7b584977; border-bottom:1px solid #7b584977; }
+.gift-atelier__chapter > span { grid-column:1/-1; color:#926944; font:700 10px/1.3 Manrope,Arial,sans-serif; letter-spacing:.22em; }
+.gift-atelier__chapter h2 { margin:0; font:400 clamp(60px,6vw,115px)/.86 'Bodoni Moda',Georgia,serif; letter-spacing:-.06em; text-transform:uppercase; }
+.gift-atelier__chapter h2 em { color:#9a6e53; font-style:normal; }
+.gift-atelier__chapter p { max-width:330px; color:#6d554b; font:400 15px/1.7 Manrope,Arial,sans-serif; }
+.gift-step { align-items:center; padding-top:20px; border-top:1px solid #92755d88; }
+.gift-step > span { width:auto; height:auto; border:0; font:400 36px/1 'Bodoni Moda',Georgia,serif; }
+.gift-step h2 { font:400 clamp(30px,3vw,48px)/1 'Bodoni Moda',Georgia,serif; }
+.gift-amounts button { min-height:95px; }
+.gift-designs button { background:#fff9f1; color:#513f37; border-color:#c4ae9b; }.gift-designs button.is-selected { background:#ede0d0; }
+.gift-preview { border-color:#7e604b; padding:22px; }
+@media(max-width:850px) { .gift-atelier__chapter { grid-template-columns:1fr; margin-bottom:55px; }.gift-atelier__chapter > span { grid-column:auto; } }
+.gift-ribbon-unfurl { position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, transparent 0%, #e2c29b 30%, #fff 50%, #e2c29b 70%, transparent 100%); pointer-events:none; z-index:10; filter:drop-shadow(0 0 12px #e2c29b); }
+.gift-atelier__specular { position:absolute; top:35%; right:20%; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(226,194,155,0.25) 0%, transparent 70%); pointer-events:none; z-index:1; filter:blur(60px); }
+

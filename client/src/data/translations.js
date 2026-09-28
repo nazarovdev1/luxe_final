@@ -861,6 +861,7 @@ const translations = {
       goToCatalog: "Katalogga o'tish",
       total: 'Jami:',
       checkout: 'Buyurtma berish',
+      removeItem: 'Olib tashlash',
     },
     offline: {
       onlineRestored: 'Internet aloqa tiklandi',
@@ -1566,6 +1567,7 @@ const translations = {
       closeAria: 'Savatni yopish',
       bundleLabel: "To'plam",
       savings: 'Tejash',
+      removeItem: 'Olib tashlash',
     },
     productCard: {
       compareTitle: 'Taqqoslash',
@@ -3620,6 +3622,7 @@ const translations = {
       goToCatalog: 'Перейти в каталог',
       total: 'Итого:',
       checkout: 'Оформить заказ',
+      removeItem: 'Удалить',
     },
     offline: {
       onlineRestored: 'Интернет соединение восстановлено',
@@ -4325,6 +4328,7 @@ const translations = {
       closeAria: 'Закрыть корзину',
       bundleLabel: 'Набор',
       savings: 'Экономия',
+      removeItem: 'Удалить',
     },
     productCard: {
       compareTitle: 'Сравнить',
@@ -6379,6 +6383,7 @@ const translations = {
       goToCatalog: 'Go to catalog',
       total: 'Total:',
       checkout: 'Checkout',
+      removeItem: 'Remove',
     },
     offline: {
       onlineRestored: 'Internet connection restored',
@@ -7084,6 +7089,7 @@ const translations = {
       closeAria: 'Close cart',
       bundleLabel: 'Bundle',
       savings: 'Savings',
+      removeItem: 'Remove',
     },
     productCard: {
       compareTitle: 'Compare',

@@ -1,0 +1,293 @@
+/* ==========================================================================
+   LUXX CINEMATIC HAUTE COUTURE AUTH OPENINGS
+   1. Register: 3D VIP Pass Noir Unboxing & Dimensional Portal
+   2. Login: Runway Spotlight & Anamorphic Monograph
+   ========================================================================== */
+
+.luxx-cinematic-opening-root {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. REGISTER: 3D VIP Pass Noir Unboxing & Portal Fly-Through
+   ────────────────────────────────────────────────────────────────────────── */
+.vip-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, #0b1122 0%, #050811 70%, #020307 100%);
+  z-index: 10;
+  will-change: opacity;
+}
+
+.vip-ambient-orb {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(214, 180, 124, 0.14) 0%, transparent 70%);
+  filter: blur(60px);
+  z-index: 11;
+  pointer-events: none;
+}
+
+.vip-perspective-container {
+  position: relative;
+  z-index: 20;
+  perspective: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.vip-card-stage {
+  width: 360px;
+  height: 220px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(22, 28, 44, 0.95) 0%, rgba(10, 14, 26, 0.98) 100%);
+  border: 1.5px solid rgba(214, 180, 124, 0.7);
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.95),
+    0 0 50px rgba(214, 180, 124, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  backdrop-filter: blur(20px);
+  will-change: transform, opacity, filter;
+}
+
+.vip-card-gleam {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.5) 48%,
+    rgba(214, 180, 124, 0.9) 50%,
+    rgba(255, 255, 255, 0.5) 52%,
+    transparent 60%
+  );
+  transform: rotate(-25deg);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 30;
+  will-change: transform, opacity;
+}
+
+.vip-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vip-card-serial {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(232, 200, 122, 0.85);
+  text-transform: uppercase;
+}
+
+.vip-card-middle {
+  margin-top: 4px;
+}
+
+.vip-card-chip {
+  width: 40px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(214, 180, 124, 0.6);
+  background: linear-gradient(135deg, rgba(214, 180, 124, 0.25), rgba(214, 180, 124, 0.05));
+  margin-bottom: 12px;
+  position: relative;
+  transform-origin: left;
+  will-change: transform;
+}
+
+.vip-card-chip::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 0.8px dashed rgba(214, 180, 124, 0.4);
+  border-radius: 3px;
+}
+
+.vip-card-brand {
+  font-family: 'Cinzel', 'Bodoni Moda', Georgia, serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.26em;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #e8c87a 50%, #c49a5c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  text-shadow: 0 0 25px rgba(214, 180, 124, 0.3);
+}
+
+.vip-card-privilege {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  color: rgba(214, 180, 124, 0.75);
+  text-transform: uppercase;
+  margin: 4px 0 0 0;
+}
+
+.vip-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+}
+
+.vip-card-num {
+  font-family: 'Montserrat', monospace, sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+}
+
+.vip-card-status {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: #e8c87a;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .vip-card-stage {
+    width: 88vw;
+    max-width: 330px;
+    height: 205px;
+    padding: 20px;
+  }
+  .vip-card-brand {
+    font-size: 1.25rem;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. LOGIN: Runway Spotlight & Anamorphic Monograph
+   ────────────────────────────────────────────────────────────────────────── */
+.login-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #0c1426 0%, #060914 65%, #020306 100%);
+  z-index: 10;
+  will-change: opacity;
+}
+
+.login-light-beam {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    rgba(214, 180, 124, 0.4) 25%, 
+    #ffffff 50%, 
+    rgba(214, 180, 124, 0.4) 75%, 
+    transparent 100%
+  );
+  box-shadow: 0 0 50px 8px rgba(214, 180, 124, 0.7);
+  z-index: 15;
+  will-change: transform, opacity;
+}
+
+.login-mono-wrap {
+  position: relative;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  will-change: transform, opacity, filter;
+}
+
+.login-mono-atelier {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.45em;
+  color: rgba(214, 180, 124, 0.85);
+  text-transform: uppercase;
+  margin: 0 0 6px 0;
+}
+
+.login-mono-title {
+  font-family: 'Cinzel', 'Bodoni Moda', Georgia, serif;
+  font-size: 4.2rem;
+  letter-spacing: 0.35em;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #f7e7c4 35%, #d6b47c 65%, #b89355 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 60px rgba(214, 180, 124, 0.4);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.login-progress-track {
+  width: 140px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 18px auto 14px;
+  position: relative;
+}
+
+.login-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #d6b47c, #ffffff);
+  transform-origin: left;
+  box-shadow: 0 0 10px #d6b47c;
+  will-change: transform;
+}
+
+.login-mono-status {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .login-mono-title {
+    font-size: 2.8rem;
+    letter-spacing: 0.25em;
+  }
+  .login-mono-atelier {
+    font-size: 8px;
+    letter-spacing: 0.3em;
+  }
+}

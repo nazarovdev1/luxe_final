@@ -432,9 +432,20 @@ export default function MobileStyleFeed() {
       {/* Posts Grid */}
       <div className="relative z-10">
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-1 px-1">
+          <div className="grid grid-cols-2 gap-2 px-2" aria-busy="true" aria-label="Yuklanmoqda">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-[3/4] bg-white/[0.03] animate-pulse rounded-lg overflow-hidden border border-white/5" />
+              <div key={i} className="aspect-[3/4] bg-gradient-to-b from-[#18181b] via-[#111114] to-[#09090b] rounded-2xl overflow-hidden border border-white/5 relative shadow-lg">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/10 to-transparent pointer-events-none" />
+                <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-white/10 animate-pulse" />
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                  <Camera className="w-6 h-6 text-[#d6b47c]/20 animate-pulse" />
+                  <span className="text-[8px] uppercase tracking-[0.2em] font-bold text-[#d6b47c]/30">Luxe</span>
+                </div>
+                <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5">
+                  <div className="h-2 w-3/4 rounded-full bg-white/10 animate-pulse" />
+                  <div className="h-1.5 w-1/2 rounded-full bg-white/5 animate-pulse" />
+                </div>
+              </div>
             ))}
           </div>
         ) : posts.length === 0 ? (
@@ -476,7 +487,9 @@ export default function MobileStyleFeed() {
                 >
                   <img 
                     src={post.images?.[0] || post.imageUrl} 
-                    alt="" 
+                    alt={post.caption || ''} 
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                     onError={(e) => { e.target.src = '/mobile.jpg' }}
                   />

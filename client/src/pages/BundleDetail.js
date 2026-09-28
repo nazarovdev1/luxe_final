@@ -15,6 +15,7 @@ import BundleSavingsBreakdown from '../components/BundleDetail/BundleSavingsBrea
 import BundleSocialProof from '../components/BundleDetail/BundleSocialProof';
 import BundleStickyBar from '../components/BundleDetail/BundleStickyBar';
 import SEO from '../components/SEO';
+import { BundleDetailSkeleton } from '../components/EventSkeletons';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -213,14 +214,7 @@ export default function BundleDetail() {
 
   // ── Loading ────────────────────────────────────────────
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-[#d6b47c] animate-spin" />
-          <p className="text-[#9aa3b2] text-sm">{t('bundleDetail.loading')}</p>
-        </div>
-      </div>
-    );
+    return <BundleDetailSkeleton />;
   }
 
   // ── Error / Not found ──────────────────────────────────

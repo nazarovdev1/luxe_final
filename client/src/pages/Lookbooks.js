@@ -1,551 +1,490 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, ShoppingBag, Gem, Play, ChevronDown, Plus } from 'lucide-react';
-import toast from 'react-hot-toast';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowUpRight, ArrowDown, ArrowRight, Plus } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import LookDetailModal from '../components/LookDetailModal';
 import SEO from '../components/SEO';
-import Masonry from '../components/ui/Masonry';
-import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiFetch } from '../services/api';
 import './Lookbooks.css';
 
-/* ─── helpers ──────────────────────────────────────────────────── */
-const SEASONS = ['lookbooks.season_0', 'lookbooks.season_1', 'lookbooks.season_2', 'lookbooks.season_3', 'lookbooks.season_4'];
+gsap.registerPlugin(ScrollTrigger);
 
-function getSeason(index) {
-    return SEASONS[index % SEASONS.length];
-}
-
-/* ─── sub-components ─────────────────────────────────────────── */
-
-function HeroSection() {
-    const { t } = useLanguage();
-    const navigate = useNavigate();
-    return (
-        <section className="lookbook-opening relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-            {/* Background Image with Dark Overlay */}
-            <div
-                className="lookbook-opening__image absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: 'url("/look2.jpg")',
-                    backgroundPosition: 'center',
-                    backgroundSize: 'cover'
-                }}
-            />
-            {/* Layered background gradient to keep text readable */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#060810] via-black/70 to-black/40" />
-            <div
-                className="lookbook-opening__glow absolute inset-0"
-                style={{
-                    background:
-                        'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(214,180,124,0.08) 0%, transparent 70%)',
-                }}
-            />
-            {/* Grain texture */}
-            <div
-                className="absolute inset-0 opacity-[0.035] pointer-events-none"
-                style={{
-                    backgroundImage:
-                        "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E\")",
-                }}
-            />
-            {/* Fine grid */}
-            <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{
-                    backgroundImage:
-                        'linear-gradient(rgba(214,180,124,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(214,180,124,0.5) 1px, transparent 1px)',
-                    backgroundSize: '64px 64px',
-                }}
-            />
-
-            {/* Issue badge */}
-            <div className="lookbook-opening__content relative z-10 flex flex-col items-center gap-6 text-center px-6">
-                <div className="lookbook-opening__eyebrow flex items-center gap-3 pb-10">
-                    <div className="h-px w-12 bg-[#d6b47c]/50" />
-                    <span className="text-[10px] uppercase tracking-[0.4em] text-[#d6b47c]/80 font-medium">
-                        {t('lookbooks.editorialLabel')}
-                    </span>
-                    <div className="h-px w-12 bg-[#d6b47c]/50" />
-                </div>
-
-                <h1
-                    className="lookbook-opening__title font-brilliant text-[clamp(3.5rem,12vw,9rem)] leading-[0.88] text-[#f5f0e8] relative"
-                    style={{
-                        letterSpacing: '-0.02em',
-                    }}
-                >
-                    <span className="block">{t('lookbooks.heroTitle1')}</span>
-                    <span className="block text-transparent" style={{
-                        WebkitTextStroke: '1px rgba(245,240,232,0.4)',
-                    }}>
-                        {t('lookbooks.heroTitle2')}
-                    </span>
-                </h1>
-
-                <p
-                    className="lookbook-opening__copy text-[13px] text-neutral-400 max-w-sm leading-relaxed tracking-wide"
-                >
-                    {t('lookbooks.heroSubtitle')}
-                </p>
-
-                <div
-                    className="lookbook-opening__actions flex flex-col sm:flex-row items-center gap-4 mt-2"
-                >
-                    <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#d6b47c] text-[#0a0c14] text-xs font-semibold tracking-wide cursor-pointer hover:bg-[#e8c98a] transition-colors"
-                        onClick={() => document.getElementById('lookbook-grid')?.scrollIntoView({ behavior: 'smooth' })}>
-                        {t('lookbooks.viewCollection')}
-                        <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#d6b47c]/30 text-[#d6b47c] text-xs font-semibold tracking-wide cursor-pointer hover:bg-[#d6b47c]/10 transition-colors"
-                        onClick={() => navigate('/lookbook-builder')}>
-                        {t('lookbooks.createLook')}
-                        <Plus className="w-3.5 h-3.5" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Decorative side text */}
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3">
-                <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#d6b47c]/30 to-transparent" />
-                <span
-                    className="text-[9px] uppercase tracking-[0.4em] text-[#d6b47c]/40"
-                    style={{ writingMode: 'vertical-rl' }}
-                >
-                    {t('lookbooks.year2024')}
-                </span>
-                <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#d6b47c]/30 to-transparent" />
-            </div>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-3">
-                <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#56c4bb]/30 to-transparent" />
-                <span
-                    className="text-[9px] uppercase tracking-[0.4em] text-[#56c4bb]/40"
-                    style={{ writingMode: 'vertical-rl' }}
-                >
-                    {t('lookbooks.premiumLooks')}
-                </span>
-                <div className="h-16 w-px bg-gradient-to-b from-transparent via-[#56c4bb]/30 to-transparent" />
-            </div>
-        </section>
-    );
-}
-
-function FilterBar({ categories, activeFilter, setActiveFilter }) {
-    const { t } = useLanguage();
-    const barRef = useRef(null);
-
-    return (
-        <div className="sticky top-0 z-30 bg-[#060810]/95 backdrop-blur-xl border-b border-white/[0.06]">
-            <div className="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between gap-4">
-                {/* Logo mark */}
-                <div className="hidden md:flex items-center gap-2.5 shrink-0">
-                    <Gem className="w-4 h-4 text-[#d6b47c]" />
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]">
-                        {t('lookbooks.lookbookMark')}
-                    </span>
-                </div>
-
-                {/* Filter pills */}
-                <div
-                    ref={barRef}
-                    className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 justify-start md:justify-center"
-                >
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveFilter(cat)}
-                            className={`shrink-0 px-4 py-1.5 rounded-full text-[11px] font-medium tracking-wide uppercase transition-all duration-200 ${activeFilter === cat
-                                ? 'bg-[#d6b47c] text-[#060810] shadow-lg shadow-[#d6b47c]/20'
-                                : 'text-neutral-400 border border-white/10 hover:text-white hover:border-white/20'
-                                }`}
-                        >
-                            {cat === 'all' ? t('lookbooks.all') : cat}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="hidden md:flex items-center gap-1.5 shrink-0">
-                    <Eye className="w-3.5 h-3.5 text-neutral-500" />
-                    <span className="text-[10px] text-neutral-500 tracking-wide">{t('lookbooks.editorial')}</span>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-/* LookCard – Pinterest masonry card */
-function LookCard({ look, index, onOpen }) {
-    const { t } = useLanguage();
-    const lookId = look._id || look.id;
-    const season = getSeason(index);
-
-    const hasDiscount = look.discountValue > 0 && look.isActive !== false && !(look.expiresAt && new Date(look.expiresAt) < new Date());
-    const discountLabel = hasDiscount
-        ? look.discountType === 'percentage'
-            ? `-${look.discountValue}%`
-            : `-${Number(look.discountValue).toLocaleString('uz-UZ')}`
-        : null;
-
-    const [isVisible, setIsVisible] = useState(false);
-    const cardRef = useRef(null);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.1, rootMargin: '50px' }
-        );
-
-        if (cardRef.current) {
-            observer.observe(cardRef.current);
-        }
-
-        return () => observer.disconnect();
-    }, []);
-
-    return (
-        <article
-            ref={cardRef}
-            className={`group relative overflow-hidden cursor-pointer rounded-2xl bg-[#0c0f1a] mb-4 break-inside-avoid transition-all duration-700 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-                }`}
-            onClick={(e) => onOpen(e, lookId)}
-            style={{ breakInside: 'avoid', pageBreakInside: 'avoid', transitionDelay: `${(index % 4) * 100}ms` }}
-        >
-            <div className="relative w-full overflow-hidden">
-                <img
-                    src={look.heroImage}
-                    alt={look.title}
-                    onError={(e) => { e.target.src = '/hero.jpg'; }}
-                    className="w-full h-auto block object-cover transition-all duration-700 ease-out group-hover:scale-[1.07] group-hover:brightness-110"
-                />
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#060810]/95 to-transparent pointer-events-none" />
-
-                <span className="absolute top-3 left-3 text-[9px] uppercase tracking-[0.3em] text-white/70 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/10">
-                    {t(season)}
-                </span>
-
-                {hasDiscount && discountLabel && (
-                    <span className="absolute top-3 right-12 px-2 py-1 rounded-full bg-emerald-500/90 text-white text-[10px] font-bold shadow-lg">
-                        {discountLabel}
-                    </span>
-                )}
-
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-                    <div className="w-9 h-9 rounded-full bg-[#d6b47c] flex items-center justify-center shadow-[0_0_20px_rgba(214,180,124,0.4)] transform group-hover:scale-110 transition-transform duration-300">
-                        <ArrowRight className="w-4 h-4 text-[#060810]" />
-                    </div>
-                </div>
-
-                <span className="absolute bottom-3 right-3 font-brilliant text-3xl text-white/10 select-none leading-none">
-                    {String(index + 1).padStart(2, '0')}
-                </span>
-            </div>
-
-            <div className="px-5 pt-3 pb-5 absolute bottom-0 left-0 w-full flex flex-col justify-end transform transition-transform duration-500 group-hover:-translate-y-1">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] mb-1.5 font-semibold drop-shadow-md">
-                    {look.items?.[0]?.category || t('lookbooks.collection')}
-                </p>
-                <h3 className="font-serif text-2xl text-[#f5f0e8] leading-snug line-clamp-2 mb-3 drop-shadow-lg" style={{ letterSpacing: '0.02em' }}>
-                    {look.title}
-                </h3>
-                <div className="flex items-center justify-between opacity-80 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-                            <ShoppingBag className="w-3 h-3" />
-                            {look.products?.length || 0} {t('lookbooks.products')}
-                        </div>
-                        {look.originalPrice > 0 && (
-                            <div className="flex items-center gap-1.5">
-                                {hasDiscount && look.originalPrice !== look.discountedPrice && (
-                                    <span className="text-[10px] text-neutral-500 line-through">
-                                        {Number(look.originalPrice).toLocaleString('uz-UZ')}
-                                    </span>
-                                )}
-                                <span className="text-[11px] font-semibold text-[#d6b47c]">
-                                    {Number(look.discountedPrice || look.originalPrice).toLocaleString('uz-UZ')} so'm
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                    <span className="text-xs font-medium text-[#d6b47c] tracking-wide flex items-center gap-1.5 group-hover:text-white transition-colors duration-300">
-                        {t('lookbooks.view')}
-                        <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform duration-300" />
-                    </span>
-                </div>
-            </div>
-        </article>
-    );
-}
-
-/* ─── Loading skeleton ────────────────────────────────────────── */
-function LoadingState() {
-    const { t } = useLanguage();
-    return (
-        <div className="min-h-screen bg-[#060810] flex flex-col items-center justify-center gap-6">
-            {/* Animated luxury spinner */}
-            <div className="relative w-24 h-24">
-                <div className="absolute inset-0 rounded-full border border-[#d6b47c]/10" />
-                <div className="absolute inset-0 rounded-full border-t border-[#d6b47c]/50 animate-spin" style={{ animationDuration: '1.4s' }} />
-                <div className="absolute inset-3 rounded-full border border-[#d6b47c]/5" />
-                <div className="absolute inset-3 rounded-full border-b border-[#56c4bb]/40 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }} />
-                <Gem className="absolute inset-0 m-auto w-6 h-6 text-[#d6b47c] animate-pulse" />
-            </div>
-            <div className="text-center">
-                <p className="text-[11px] uppercase tracking-[0.4em] text-[#d6b47c]/70 mb-1">{t('lookbooks.loading')}</p>
-                <p className="text-xs text-neutral-600">{t('lookbooks.loadingHint')}</p>
-            </div>
-        </div>
-    );
-}
-
-/* ─── Main Component ─────────────────────────────────────────── */
-const Lookbooks = () => {
-    const navigate = useNavigate();
-    const { products } = useProducts();
-    const { t } = useLanguage();
-
-    const [looks, setLooks] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [activeFilter, setActiveFilter] = useState('all');
-    const [selectedLookId, setSelectedLookId] = useState(null);
-
-    useEffect(() => {
-        const fetchLooks = async () => {
-            try {
-                setIsLoading(true);
-                const result = await apiFetch('/api/looks');
-                if (result.success) {
-                    setLooks(result.data || []);
-                } else {
-                    toast.error(t('lookbooks.fetchError'));
-                }
-            } catch (err) {
-                console.error('Failed to fetch looks:', err);
-                toast.error(t('lookbooks.fetchError'));
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchLooks();
-    }, []);
-
-    const categories = useMemo(() => {
-        const cats = new Set(['all']);
-        looks.forEach((look) => {
-            (look.items || []).forEach((item) => {
-                if (item.category) cats.add(item.category);
-            });
-        });
-        return Array.from(cats);
-    }, [looks]);
-
-    const filteredLooks = useMemo(() => {
-        if (activeFilter === 'all') return looks;
-        return looks.filter((look) =>
-            (look.items || []).some((item) => item.category === activeFilter)
-        );
-    }, [activeFilter, looks]);
-
-    const masonryItems = useMemo(() => {
-        return filteredLooks.map((look, idx) => {
-            const ratio = 0.66 + ((idx * 0.137) % 0.34);
-            return {
-                id: look._id || look.id,
-                img: look.heroImage,
-                url: '#',
-                width: 1,
-                height: 1 / ratio,
-                title: look.title,
-                category: look.items?.[0]?.category,
-                look,
-                index: idx,
-                season: getSeason(idx),
-            };
-        });
-    }, [filteredLooks]);
-
-    const openLookModal = (event, lookId) => {
-        if (event && event.stopPropagation) event.stopPropagation();
-        setSelectedLookId(lookId);
-    };
-
-    if (isLoading) return <LoadingState />;
-
-    return (
-        <div className="min-h-screen bg-[#060810] text-[#f5f0e8]">
-            <SEO
-                title="Lookbook - ayollar obrazlari va seasonal style"
-                description="Luxx.uz lookbook sahifasi: yozgi, qishgi, bahorgi va kuzgi ayollar obrazlari, premium kombinatsiyalar va luxury styling ilhomlari."
-                keywords="lookbook uz, ayollar obrazlari, seasonal style, yozgi kiyimlar, qishgi kiyimlar, bahorgi kiyimlar, kuzgi kiyimlar, luxury kiyimlar"
-                canonicalPath="/lookbooks"
-                structuredData={{
-                    '@context': 'https://schema.org',
-                    '@type': 'CollectionPage',
-                    name: 'LUXX Lookbook - Ayollar kiyimlari kolleksiyasi',
-                    description: 'Professional editorial ayollar kiyimlari kolleksiyasi - premium looks va styling ilhomlari',
-                    url: 'https://luxx.uz/lookbooks',
-                    inLanguage: 'uz',
-                    isPartOf: {
-                        '@type': 'WebSite',
-                        name: 'LUXX',
-                        url: 'https://luxx.uz'
-                    },
-                    publisher: {
-                        '@type': 'Organization',
-                        name: 'LUXX',
-                        url: 'https://luxx.uz',
-                        logo: {
-                            '@type': 'ImageObject',
-                            url: 'https://luxx.uz/logoweb2.png'
-                        }
-                    }
-                }}
-            />
-
-            {/* ── Hero ── */}
-            <HeroSection />
-
-            {/* ── Filter Bar ── */}
-            <FilterBar
-                categories={categories}
-                activeFilter={activeFilter}
-                setActiveFilter={setActiveFilter}
-            />
-
-            {/* ── Editorial Grid ── */}
-            <section id="lookbook-grid" className="px-4 sm:px-6 lg:px-10 py-14 max-w-[1600px] mx-auto">
-
-                {/* Section label */}
-                <div className="flex items-center gap-6 mb-10">
-                    <div className="h-px flex-1 bg-gradient-to-r from-[#d6b47c]/30 to-transparent" />
-                    <div className="flex items-center gap-2.5">
-                        <Gem className="w-3.5 h-3.5 text-[#d6b47c]" />
-                        <span className="text-[10px] uppercase tracking-[0.35em] text-[#d6b47c]">
-                            {activeFilter === 'all' ? t('lookbooks.allLooks') : activeFilter}
-                        </span>
-                    </div>
-                    <div className="h-px flex-1 bg-gradient-to-l from-[#d6b47c]/30 to-transparent" />
-                </div>
-
-                {filteredLooks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-32 gap-4">
-                        <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center">
-                            <Eye className="w-7 h-7 text-neutral-600" />
-                        </div>
-                        <p className="text-neutral-500 text-sm">{t('lookbooks.noLooksFound')}</p>
-                        <button
-                            onClick={() => setActiveFilter('all')}
-                            className="text-[#d6b47c] text-xs underline underline-offset-4"
-                        >
-                            {t('lookbooks.viewAll')}
-                        </button>
-                    </div>
-                ) : (
-                    <Masonry
-                        items={masonryItems}
-                        columns={[4, 3, 2]}
-                        ease="power3.out"
-                        duration={0.6}
-                        stagger={0.05}
-                        animateFrom="bottom"
-                        scaleOnHover={true}
-                        hoverScale={0.97}
-                        blurToFocus={true}
-                        colorShiftOnHover={false}
-                        borderRadius="16px"
-                        gap={8}
-                        onItemClick={(item) => openLookModal(null, item.look._id || item.look.id)}
-                    >
-                        {(item) => {
-                            const look = item.look;
-                            const hasDiscount = look.discountValue > 0 && look.isActive !== false && !(look.expiresAt && new Date(look.expiresAt) < new Date());
-                            const discountLabel = hasDiscount
-                                ? look.discountType === 'percentage'
-                                    ? `-${look.discountValue}%`
-                                    : `-${Number(look.discountValue).toLocaleString('uz-UZ')}`
-                                : null;
-                            return (
-                                <>
-                                    <div className="flex items-center justify-between gap-2 mb-2 translate-y-1 group-hover:translate-y-0 transition-transform duration-300">
-                                        <span className="text-[9px] uppercase tracking-[0.3em] text-white/80 bg-black/55 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/15">
-                                            {t(item.season)}
-                                        </span>
-                                        {hasDiscount && discountLabel && (
-                                            <span className="px-2 py-1 rounded-full bg-emerald-500/90 text-white text-[10px] font-bold shadow-lg">
-                                                {discountLabel}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c] mb-1 font-semibold">
-                                        {item.category || t('lookbooks.editorial')}
-                                    </p>
-                                    <h3 className="font-serif text-lg text-[#f5f0e8] leading-snug line-clamp-2 mb-2" style={{ letterSpacing: '0.02em' }}>
-                                        {look.title}
-                                    </h3>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5 text-[10px] text-neutral-300">
-                                            <ShoppingBag className="w-3 h-3" />
-                                            {look.products?.length || 0} {t('lookbooks.products')}
-                                        </div>
-                                        <span className="text-[10px] font-medium text-[#d6b47c] tracking-wide flex items-center gap-1">
-                                            {t('lookbooks.view')}
-                                            <ArrowRight className="w-3 h-3" />
-                                        </span>
-                                    </div>
-                                </>
-                            );
-                        }}
-                    </Masonry>
-                )}
-            </section>
-
-            {/* ── Editorial Footer Banner ── */}
-            <section className="mx-4 sm:mx-6 lg:mx-10 mb-14 relative overflow-hidden rounded-3xl bg-[#0e1120] border border-white/[0.05]">
-                {/* Background accents */}
-                <div className="absolute top-0 left-1/4 w-64 h-64 bg-[#d6b47c]/6 rounded-full blur-[80px] pointer-events-none" />
-                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-[#56c4bb]/6 rounded-full blur-[80px] pointer-events-none" />
-
-                <div className="relative z-10 py-16 px-8 text-center flex flex-col items-center gap-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-px w-10 bg-[#d6b47c]/40" />
-                        <span className="text-[10px] uppercase tracking-[0.4em] text-[#d6b47c]/70">{t('lookbooks.home')}</span>
-                        <div className="h-px w-10 bg-[#d6b47c]/40" />
-                    </div>
-                    <h2 className="font-brilliant text-3xl md:text-5xl text-[#f5f0e8]">
-                        {t('lookbooks.viewAllProducts')}
-                    </h2>
-                    <p className="text-sm text-neutral-400 max-w-md">
-                        {t('lookbooks.footerSubtitle')}
-                    </p>
-                    <div className="flex items-center gap-3 flex-wrap justify-center">
-                        <button
-                            onClick={() => navigate('/products')}
-                            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#d6b47c] text-[#060810] text-sm font-semibold hover:bg-[#e8c98a] transition-all hover:shadow-xl hover:shadow-[#d6b47c]/20"
-                        >
-                            {t('lookbooks.goToProducts')}
-                            <ArrowRight className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-white/15 text-white/70 text-sm hover:bg-white/5 hover:text-white transition-all"
-                        >
-                            {t('lookbooks.home')}
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Look Detail Modal ── */}
-            {selectedLookId && (
-                <LookDetailModal lookId={selectedLookId} onClose={() => setSelectedLookId(null)} />
-            )}
-        </div>
-    );
+const COPY = {
+  uz: {
+    label: 'Obrazlar', heroOne: 'Kiyinish', heroTwo: 'san’ati.', heroIntro: 'Bir qarashdan ko‘proq. Har bir obraz — sizning kayfiyatingiz, qadamingiz va hikoyangiz.', explore: 'Hikoyani boshlash', scroll: 'Pastga qarang',
+    statementTop: '01 / Manifest', statement: 'Kiyim sizni o‘zgartirmaydi. U sizdagi go‘zallikni ko‘rsatadi.', statementBottom: 'Obrazlar orqali o‘zingizga yaqin lahzani toping.',
+    chaptersTop: '02 / Uch kayfiyat', chapters: [
+      { word: 'Sokinlik', title: 'O‘zingiz bilan qoladigan lahza.', text: 'Yumshoq matolar va erkin siluetlar. Hech narsani isbotlash shart bo‘lmagan kunlar uchun.' },
+      { word: 'Ishonch', title: 'Qadamlaringiz aniqroq yangraydi.', text: 'Tiniq chiziqlar va kuchli qomat. Xonaga kirganingizdayoq seziladigan ishonch.' },
+      { word: 'Joziba', title: 'Kechani o‘zingiz bilan olib boring.', text: 'Birgina detal butun kayfiyatni o‘zgartiradi. Nafosat siz bilan qoladi.' },
+    ],
+    archiveTop: '03 / The edit', archiveTitle: 'Obrazlar ichida o‘zingizni toping.', all: 'Barchasi', open: 'Obrazni ko‘rish', pieces: 'mahsulot', empty: 'Yangi obrazlar tez orada.', error: 'Obrazlarni yuklab bo‘lmadi.', retry: 'Qayta urinish', loading: 'Obrazlar yuklanmoqda',
+    createTop: '04 / Sizning navbatingiz', create: 'Endi hikoyani siz yarating.', createText: 'Sevimli kiyimlaringizni birlashtiring. O‘zingizga xos obrazni bir necha qadamda yarating.', builder: 'Obraz yaratish', shop: 'Kiyimlarni ko‘rish',
+    skip: 'O‘tkazib yuborish', replay: 'Opening', edition: 'Kolleksiya obrazlari',
+  },
+  ru: {
+    label: 'Образы', heroOne: 'Искусство', heroTwo: 'одеваться.', heroIntro: 'Больше, чем первый взгляд. Каждый образ — ваше настроение, движение и история.', explore: 'Начать историю', scroll: 'Листайте вниз',
+    statementTop: '01 / Манифест', statement: 'Одежда не меняет вас. Она раскрывает вашу красоту.', statementBottom: 'Найдите момент, который откликается вам.',
+    chaptersTop: '02 / Три настроения', chapters: [
+      { word: 'Спокойствие', title: 'Момент наедине с собой.', text: 'Мягкие ткани и свободные силуэты. Для дней, когда никому ничего не нужно доказывать.' },
+      { word: 'Уверенность', title: 'Ваши шаги звучат яснее.', text: 'Чёткие линии и сильный силуэт. Уверенность, которую замечают сразу.' },
+      { word: 'Очарование', title: 'Возьмите вечер с собой.', text: 'Одна деталь меняет всё настроение. Изящество остаётся с вами.' },
+    ],
+    archiveTop: '03 / The edit', archiveTitle: 'Найдите себя среди образов.', all: 'Все', open: 'Смотреть образ', pieces: 'вещей', empty: 'Новые образы скоро появятся.', error: 'Не удалось загрузить образы.', retry: 'Повторить', loading: 'Загрузка образов',
+    createTop: '04 / Ваша очередь', create: 'Теперь создайте свою историю.', createText: 'Сочетайте любимые вещи. Соберите образ, который говорит о вас.', builder: 'Создать образ', shop: 'Смотреть одежду',
+    skip: 'Пропустить', replay: 'Интро', edition: 'Коллекция образов',
+  },
+  en: {
+    label: 'Lookbooks', heroOne: 'The art of', heroTwo: 'dressing.', heroIntro: 'More than a first impression. Every look carries your mood, your movement, your story.', explore: 'Enter the story', scroll: 'Scroll to discover',
+    statementTop: '01 / Manifesto', statement: 'Clothes do not change you. They reveal the beauty already there.', statementBottom: 'Find a moment that feels like yours.',
+    chaptersTop: '02 / Three moods', chapters: [
+      { word: 'Ease', title: 'A moment entirely your own.', text: 'Soft textures and free silhouettes. For the days when there is nothing to prove.' },
+      { word: 'Presence', title: 'Every step feels more certain.', text: 'Clean lines and strong proportions. Confidence you can feel on arrival.' },
+      { word: 'Allure', title: 'Take the evening with you.', text: 'A single detail can change the mood. Elegance stays with you.' },
+    ],
+    archiveTop: '03 / The edit', archiveTitle: 'Find yourself in the looks.', all: 'All looks', open: 'Discover look', pieces: 'pieces', empty: 'New looks are coming soon.', error: 'Unable to load the looks.', retry: 'Try again', loading: 'Loading looks',
+    createTop: '04 / Your turn', create: 'Now write your own story.', createText: 'Bring your favourite pieces together. Create a look that speaks for you.', builder: 'Create a look', shop: 'Explore the pieces',
+    skip: 'Skip', replay: 'Intro', edition: 'Collection Lookbook',
+  },
 };
 
-export default Lookbooks;
+const CHAPTER_IMAGES = ['/editorial/story-softness-v2.png', '/editorial/story-posture-v2.png', '/editorial/private-edit-evening.png'];
+const FALLBACK = '/editorial/private-edit-evening.png';
+const imageFallback = (event) => { if (!event.currentTarget.src.endsWith(FALLBACK)) event.currentTarget.src = FALLBACK; };
+
+export default function Lookbooks() {
+  const pageRef = useRef(null);
+  const openingContainerRef = useRef(null);
+  const counterRef = useRef(null);
+  const progressRef = useRef(null);
+  const openingTimelineRef = useRef(null);
+  const [openingActive, setOpeningActive] = useState(true);
+
+  const { language } = useLanguage();
+  const copy = COPY[language] || COPY.uz;
+  const [looks, setLooks] = useState([]);
+  const [status, setStatus] = useState('loading');
+  const [attempt, setAttempt] = useState(0);
+  const [category, setCategory] = useState('all');
+  const [selectedLookId, setSelectedLookId] = useState(null);
+
+  const playOpeningAnimation = () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOpeningActive(false);
+      return;
+    }
+
+    setOpeningActive(true);
+    const root = pageRef.current;
+    if (!root) return;
+
+    if (openingTimelineRef.current) {
+      openingTimelineRef.current.kill();
+    }
+
+    const openingEl = openingContainerRef.current;
+    if (!openingEl) return;
+    openingEl.style.display = 'flex';
+    openingEl.style.pointerEvents = 'auto';
+
+    const leftPanel = root.querySelector('.lj-opening-panel--left');
+    const rightPanel = root.querySelector('.lj-opening-panel--right');
+    const seam = root.querySelector('.lj-opening-seam');
+    const stage = root.querySelector('.lj-opening-stage');
+    const topBar = root.querySelector('.lj-opening-top');
+    const bottomBar = root.querySelector('.lj-opening-bottom');
+    const counterEl = counterRef.current;
+    const progressEl = progressRef.current;
+    const heroImage = root.querySelector('.lj-hero-image img');
+    const heroTitles = root.querySelectorAll('.lj-hero-title span');
+    const heroMeta = root.querySelector('.lj-hero-meta');
+    const heroOverline = root.querySelector('.lj-hero-content .lj-overline');
+    const heroBottom = root.querySelector('.lj-hero-bottom');
+    const heroSide = root.querySelector('.lj-hero-side');
+
+    // Reset initial states
+    if (leftPanel && rightPanel) gsap.set([leftPanel, rightPanel], { xPercent: 0 });
+    if (seam) gsap.set(seam, { scaleY: 1, autoAlpha: 1 });
+    if (stage) gsap.set(stage, { scale: 1, y: 0, autoAlpha: 1, filter: 'blur(0px)' });
+    if (topBar && bottomBar) gsap.set([topBar, bottomBar], { autoAlpha: 1, y: 0 });
+    if (progressEl) gsap.set(progressEl, { scaleX: 0 });
+    if (counterEl) counterEl.textContent = '00';
+    if (openingEl) gsap.set(openingEl, { autoAlpha: 1 });
+
+    // Prime the hero elements underneath the curtains so they enter fluidly
+    if (heroImage) gsap.set(heroImage, { scale: 1.05, transformOrigin: '72% 25%', filter: 'brightness(0.65)' });
+    if (heroTitles && heroTitles.length) gsap.set(heroTitles, { yPercent: 105, autoAlpha: 0 });
+    if (heroOverline) gsap.set(heroOverline, { y: 22, autoAlpha: 0 });
+    if (heroMeta) gsap.set(heroMeta, { y: -18, autoAlpha: 0 });
+    if (heroBottom) gsap.set(heroBottom, { y: 22, autoAlpha: 0 });
+    if (heroSide) gsap.set(heroSide, { autoAlpha: 0 });
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      onComplete: () => {
+        if (openingEl) {
+          openingEl.style.display = 'none';
+          openingEl.style.pointerEvents = 'none';
+        }
+        setOpeningActive(false);
+        ScrollTrigger.refresh();
+      },
+    });
+
+    openingTimelineRef.current = tl;
+
+    // 1. Opening stage text entrance
+    if (stage) {
+      tl.fromTo(stage.children,
+        { y: 35, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.08, ease: 'power3.out' },
+        0.1
+      );
+    }
+
+    // Top & bottom chrome bars
+    if (topBar && bottomBar) {
+      tl.fromTo([topBar, bottomBar],
+        { autoAlpha: 0 },
+        { autoAlpha: 1, duration: 0.6 },
+        0.2
+      );
+    }
+
+    // Counter ticker 00 -> 100
+    const counterObj = { val: 0 };
+    tl.to(counterObj, {
+      val: 100,
+      duration: 1.3,
+      ease: 'power2.inOut',
+      onUpdate: () => {
+        if (counterEl) {
+          counterEl.textContent = Math.round(counterObj.val).toString().padStart(2, '0');
+        }
+      },
+    }, 0.2);
+
+    // Progress bar runner
+    if (progressEl) {
+      tl.to(progressEl, {
+        scaleX: 1,
+        duration: 1.3,
+        ease: 'power2.inOut',
+      }, 0.2);
+    }
+
+    // 2. Stage dissolve & lift
+    if (stage) {
+      tl.to(stage, {
+        scale: 1.04,
+        y: -22,
+        autoAlpha: 0,
+        filter: 'blur(8px)',
+        duration: 0.45,
+        ease: 'power2.in',
+      }, 1.5);
+    }
+
+    if (topBar && bottomBar) {
+      tl.to([topBar, bottomBar], {
+        autoAlpha: 0,
+        y: (i) => (i === 0 ? -16 : 16),
+        duration: 0.35,
+        ease: 'power2.in',
+      }, 1.55);
+    }
+
+    if (seam) {
+      tl.to(seam, {
+        scaleY: 0,
+        autoAlpha: 0,
+        duration: 0.3,
+        ease: 'power2.in',
+      }, 1.55);
+    }
+
+    // 3. CURTAINS PARTING (Dual split reveals underlying hero seamlessly!)
+    if (leftPanel && rightPanel) {
+      tl.to(leftPanel, {
+        xPercent: -101,
+        duration: 1.25,
+        ease: 'power4.inOut',
+      }, 1.6);
+
+      tl.to(rightPanel, {
+        xPercent: 101,
+        duration: 1.25,
+        ease: 'power4.inOut',
+      }, 1.6);
+    }
+
+    // 4. HERO ANIMATES IN SYNCHRONY WITH THE PARTING CURTAINS
+    // As curtains open, hero image scales from 1.15 to 1.0 and brightens
+    if (heroImage) {
+      tl.to(heroImage, {
+        scale: 1,
+        filter: 'brightness(1)',
+        duration: 1.35,
+        ease: 'power3.out',
+      }, 1.6);
+    }
+
+    // Hero title lines slide up from clip masks
+    if (heroTitles && heroTitles.length) {
+      tl.to(heroTitles, {
+        yPercent: 0,
+        autoAlpha: 1,
+        duration: 1.0,
+        stagger: 0.1,
+        ease: 'power3.out',
+      }, 1.8);
+    }
+
+    const heroAccents = [heroOverline, heroMeta, heroBottom, heroSide].filter(Boolean);
+    if (heroAccents.length) {
+      tl.to(heroAccents, {
+        y: 0,
+        autoAlpha: 1,
+        duration: 0.85,
+        stagger: 0.08,
+        ease: 'power3.out',
+      }, 2.0);
+    }
+
+    // Smooth invisible handoff for opening container
+    tl.to(openingEl, {
+      autoAlpha: 0,
+      duration: 0.2,
+      ease: 'none',
+    }, 2.8);
+  };
+
+  const skipOpening = () => {
+    if (openingTimelineRef.current) {
+      openingTimelineRef.current.progress(1);
+    }
+    const openingEl = openingContainerRef.current;
+    if (openingEl) {
+      openingEl.style.display = 'none';
+      openingEl.style.pointerEvents = 'none';
+    }
+    setOpeningActive(false);
+  };
+
+  useEffect(() => {
+    playOpeningAnimation();
+    return () => {
+      if (openingTimelineRef.current) {
+        openingTimelineRef.current.kill();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'Escape' && openingActive) {
+        skipOpening();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [openingActive]);
+
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    const context = gsap.context(() => {
+      const hero = root.querySelector('.lj-hero');
+      const heroImage = hero?.querySelector('.lj-hero-image img');
+      const manifest = root.querySelector('.lj-manifest');
+      const film = root.querySelector('.lj-film');
+      const scenes = Array.from(root.querySelectorAll('.lj-scene'));
+
+      if (heroImage) gsap.to(heroImage, {
+        opacity: 0.4, ease: 'none',
+        scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: 0.7 },
+      });
+
+      if (manifest) {
+        gsap.fromTo(manifest.querySelectorAll('.lj-overline, p, .lj-manifest-rule, small'),
+          { y: 64, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 1.15, stagger: 0.12, ease: 'power3.out',
+            scrollTrigger: { trigger: manifest, start: 'top 78%', once: true } });
+      }
+
+      if (film && scenes.length > 1 && window.matchMedia('(min-width: 901px)').matches) {
+        const filmTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: film, start: 'top top', end: '+=240%', pin: true,
+            scrub: 0.75, anticipatePin: 1, invalidateOnRefresh: true,
+          },
+        });
+        scenes.slice(1).forEach((scene, index) => {
+          const at = index;
+          filmTimeline.to(scene, { clipPath: 'inset(0% 0 0 0)', duration: 1, ease: 'none' }, at);
+          filmTimeline.fromTo(scene.querySelector('.lj-scene-image img'),
+            { scale: 1.14, yPercent: 5 }, { scale: 1, yPercent: 0, duration: 1, ease: 'none' }, at);
+          filmTimeline.fromTo(scene.querySelector('.lj-scene-copy'),
+            { y: 55, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power2.out' }, at + 0.3);
+        });
+        gsap.to(film.querySelector('.lj-film-progress span'), {
+          scaleX: 1, transformOrigin: 'left center', ease: 'none',
+          scrollTrigger: { trigger: film, start: 'top top', end: '+=240%', scrub: true },
+        });
+      } else {
+        scenes.forEach((scene) => {
+          gsap.fromTo(scene.querySelector('.lj-scene-copy'),
+            { y: 44, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out',
+              scrollTrigger: { trigger: scene, start: 'top 74%', once: true } });
+          gsap.fromTo(scene.querySelector('.lj-scene-image img'),
+            { scale: 1.1 }, { scale: 1, duration: 1.4, ease: 'power2.out',
+              scrollTrigger: { trigger: scene, start: 'top 78%', once: true } });
+        });
+      }
+
+      const archive = root.querySelector('.lj-archive');
+      if (archive) gsap.fromTo(archive.querySelector('.lj-archive-head'),
+        { y: 65, autoAlpha: 0 },
+        { y: 0, autoAlpha: 1, duration: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: archive, start: 'top 77%', once: true } });
+
+      const finale = root.querySelector('.lj-finale');
+      if (finale) {
+        gsap.fromTo(finale.querySelector('.lj-finale-art img'),
+          { scale: 1.15 }, { scale: 1, ease: 'none',
+            scrollTrigger: { trigger: finale, start: 'top bottom', end: 'bottom top', scrub: 0.8 } });
+        gsap.fromTo(finale.querySelectorAll('.lj-finale-copy > *'),
+          { y: 42, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12, ease: 'power3.out',
+            scrollTrigger: { trigger: finale, start: 'top 72%', once: true } });
+      }
+    }, root);
+
+    return () => context.revert();
+  }, []);
+
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root || status !== 'ready' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const context = gsap.context(() => {
+      root.querySelectorAll('.lj-look').forEach((look) => {
+        gsap.fromTo(look, { y: 68, autoAlpha: 0 }, {
+          y: 0, autoAlpha: 1, duration: 0.95, ease: 'power3.out',
+          scrollTrigger: { trigger: look, start: 'top 88%', once: true },
+        });
+      });
+    }, root);
+    return () => context.revert();
+  }, [status, category, looks]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+    setStatus('loading');
+    apiFetch('/api/looks', { signal: controller.signal }).then((result) => {
+      if (cancelled) return;
+      if (!result.success || !Array.isArray(result.data)) { setStatus('error'); return; }
+      setLooks(result.data.filter((look) => look._id || look.id));
+      setStatus('ready');
+    }).catch(() => { if (!cancelled) setStatus('error'); }).finally(() => window.clearTimeout(timeoutId));
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [attempt]);
+
+  const categories = [...new Set(looks.flatMap((look) => (look.items || []).map((item) => item.category).filter(Boolean)))];
+  const filtered = category === 'all' ? looks : looks.filter((look) => look.items?.some((item) => item.category === category));
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  const open = (look) => setSelectedLookId(look._id || look.id);
+
+  return <main ref={pageRef} className="lj">
+    <SEO title={`${copy.label} | LUXX`} description={copy.heroIntro} canonicalPath="/lookbooks" structuredData={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: copy.label, url: 'https://luxx.uz/lookbooks', inLanguage: language }} />
+
+    {/* Cinematic Editorial Opening Overlay */}
+    <div className="lj-opening" ref={openingContainerRef} role="dialog" aria-label="Lookbook Opening">
+      <div className="lj-opening-panel lj-opening-panel--left" />
+      <div className="lj-opening-panel lj-opening-panel--right" />
+      <div className="lj-opening-seam" />
+
+      <header className="lj-opening-top">
+        <span>LUXX MAISON D'ÉDITION</span>
+        <span className="lj-opening-vol">VOL. 01 — {new Date().getFullYear()}</span>
+        <button
+          type="button"
+          onClick={skipOpening}
+          className="lj-opening-skip"
+          aria-label={copy.skip}
+        >
+          <span>{copy.skip}</span>
+          <span className="lj-opening-skip-key">ESC</span>
+        </button>
+      </header>
+
+      <div className="lj-opening-stage">
+        <div className="lj-opening-crest" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L21 12L12 22L3 12L12 2Z" stroke="#d8b988" strokeWidth="1.2" />
+            <circle cx="12" cy="12" r="2.5" fill="#d8b988" />
+          </svg>
+        </div>
+        <span className="lj-opening-kicker">{copy.edition}</span>
+        <div className="lj-opening-title">
+          <div className="lj-opening-line"><span>{copy.heroOne}</span></div>
+          <div className="lj-opening-line"><span><em>{copy.heroTwo}</em></span></div>
+        </div>
+        <p className="lj-opening-quote">{copy.heroIntro}</p>
+      </div>
+
+      <footer className="lj-opening-bottom">
+        <span className="lj-opening-counter">
+          <span ref={counterRef}>00</span><em>%</em>
+        </span>
+        <div className="lj-opening-progress">
+          <span ref={progressRef} />
+        </div>
+        <span>TASHKENT • MILAN • PARIS</span>
+      </footer>
+    </div>
+
+    <section className="lj-hero" aria-labelledby="lj-title">
+      <div className="lj-hero-image"><img src="/editorial/lookbook-mood-v2.png" alt="" fetchPriority="high" /></div>
+      <div className="lj-hero-shade" />
+      <div className="lj-hero-meta">
+        <span>LUXX / THE LOOKBOOK</span>
+        <span>VOL. 01 — {new Date().getFullYear()}</span>
+      </div>
+      <div className="lj-hero-content"><span className="lj-overline">THE ART OF BEING YOU</span><h1 id="lj-title" className="lj-hero-title"><span>{copy.heroOne}</span><span><em>{copy.heroTwo}</em></span></h1></div>
+      <div className="lj-hero-bottom"><div><p>{copy.heroIntro}</p><button onClick={() => scrollTo('lj-manifest')} className="lj-round-link" aria-label={copy.explore}><ArrowDown size={21} /></button></div><span>{copy.scroll} <span className="lj-scroll-line" /></span></div>
+      <span className="lj-hero-side">LUXX — EDITORIAL STORIES</span>
+    </section>
+    <section className="lj-manifest" id="lj-manifest"><div className="lj-manifest-inner"><span className="lj-overline">{copy.statementTop}</span><p>{copy.statement}</p><span className="lj-manifest-rule" /><small>{copy.statementBottom}</small></div></section>
+    <section className="lj-film" aria-label={copy.chaptersTop}>
+      {copy.chapters.map((chapter, index) => <article className="lj-scene" key={chapter.word}>
+        <div className="lj-scene-image"><img src={CHAPTER_IMAGES[index]} alt="" loading={index === 0 ? 'eager' : 'lazy'} /></div>
+        <div className="lj-scene-veil" />
+        <div className="lj-scene-top"><span>{copy.chaptersTop}</span><span>0{index + 1} / 03</span></div>
+        <div className="lj-scene-copy"><span className="lj-overline">LUXX / {chapter.word}</span><h2>{chapter.title}</h2><p>{chapter.text}</p><button onClick={() => scrollTo('lj-archive')} className="lj-text-link">{copy.archiveTitle}<ArrowUpRight size={18} /></button></div>
+        <span className="lj-scene-word" aria-hidden="true">{chapter.word}</span>
+      </article>)}
+      <div className="lj-film-progress"><span /></div>
+    </section>
+    <section className="lj-archive" id="lj-archive" aria-labelledby="lj-archive-title">
+      <div className="lj-archive-head"><span className="lj-overline">{copy.archiveTop}</span><h2 id="lj-archive-title">{copy.archiveTitle}</h2><span className="lj-archive-count">{String(looks.length).padStart(2, '0')} / LUXX</span></div>
+      {categories.length > 0 && <nav className="lj-categories" aria-label={copy.label}>{['all', ...categories].map((item) => <button key={item} aria-pressed={category === item} onClick={() => setCategory(item)}>{item === 'all' ? copy.all : item}<span>{item === 'all' ? looks.length : looks.filter((look) => look.items?.some((entry) => entry.category === item)).length}</span></button>)}</nav>}
+      {status === 'loading' ? <div className="lj-status" role="status">{copy.loading}<span className="lj-spinner" /></div> : status === 'error' ? <div className="lj-status" role="status"><span>{copy.error}</span><button onClick={() => setAttempt((value) => value + 1)}>{copy.retry}<ArrowRight size={17} /></button></div> : filtered.length === 0 ? <div className="lj-status"><span>{copy.empty}</span>{category !== 'all' && <button onClick={() => setCategory('all')}>{copy.all}<ArrowRight size={17} /></button>}</div> : <div className="lj-looks">{filtered.map((look, index) => <article className="lj-look" key={look._id || look.id}>
+        <button className="lj-look-art" onClick={() => open(look)} aria-label={`${copy.open}: ${look.title}`}><img src={look.heroImage || FALLBACK} alt={look.title} loading="lazy" onError={imageFallback} /><span className="lj-look-action"><ArrowUpRight size={21} /></span></button>
+        <div className="lj-look-info"><span>0{index + 1} / {look.items?.[0]?.category || copy.label}</span><button onClick={() => open(look)}>{look.title}<ArrowUpRight size={20} /></button><small>{look.products?.length || 0} {copy.pieces}</small></div>
+      </article>)}</div>}
+    </section>
+    <section className="lj-finale"><div className="lj-finale-art"><img src="/editorial/lookbook-detail-v2.png" alt="" loading="lazy" /></div><div className="lj-finale-copy"><span className="lj-overline">{copy.createTop}</span><h2>{copy.create}</h2><p>{copy.createText}</p><Link to="/lookbook-builder" className="lj-finale-cta">{copy.builder}<Plus size={22} /></Link><Link to="/products" className="lj-text-link">{copy.shop}<ArrowUpRight size={18} /></Link></div></section>
+    <footer className="lj-footer"><span>LUXX</span><span>{copy.label} / {new Date().getFullYear()}</span><Link to="/products">{copy.shop}<ArrowUpRight size={16} /></Link></footer>
+    {selectedLookId && <LookDetailModal lookId={selectedLookId} onClose={() => setSelectedLookId(null)} />}
+  </main>;
+}

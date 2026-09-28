@@ -33,9 +33,12 @@ const InstallPrompt = ({ isInstallable, onInstall }) => {
       }
     }
 
-    const timer = window.setTimeout(() => setShow(true), 3000)
+    // Keep the desktop maison's opening choreography unobstructed; mobile retains
+    // the shorter install invitation because its experience is intentionally app-led.
+    const revealDelay = isMobilePath ? 3000 : 12000
+    const timer = window.setTimeout(() => setShow(true), revealDelay)
     return () => window.clearTimeout(timer)
-  }, [isInstallable, isIOS])
+  }, [isInstallable, isIOS, isMobilePath])
 
   useEffect(() => () => window.clearTimeout(closeTimerRef.current), [])
 

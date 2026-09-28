@@ -16,28 +16,38 @@ import {
     ChevronRight,
     Camera,
     Image as ImageIcon,
-    Trash2
+    Trash2,
+    User
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import Loading from '../components/Loading';
+import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
 
 const StyleFeed = () => {
     const { user, isAuthenticated, token, isAdmin } = useAuth();
     const { products, getImageKitAuth } = useProducts();
     const { t } = useLanguage();
+    const pageRef = useRef(null);
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const initialFetchRef = useRef(false);
+    useCommunityMotion(pageRef);
 
     const fetchPosts = async (pageNum = 1, append = false) => {
         try {
-            if (pageNum === 1) setIsLoading(true);
+            if (pageNum === 1) {
+                setIsLoading(true);
+            } else {
+                setIsLoadingMore(true);
+            }
             const response = await axios.get(`/api/posts?page=${pageNum}&limit=12`);
             if (response.data.success) {
                 const newPosts = response.data.data;
@@ -49,10 +59,13 @@ const StyleFeed = () => {
             toast.error(t('styleFeed.error'));
         } finally {
             setIsLoading(false);
+            setIsLoadingMore(false);
         }
     };
 
     useEffect(() => {
+        if (initialFetchRef.current) return;
+        initialFetchRef.current = true;
         fetchPosts();
     }, []);
 
@@ -122,63 +135,45 @@ const StyleFeed = () => {
     };
 
     return (
-    <div className="min-h-screen bg-[#070707] text-white pt-32 pb-24 relative overflow-hidden">
-        {/* Background Cinematic Glows */}
-        <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-[#d6b47c]/5 rounded-full blur-[120px] -translate-y-1/2" />
-        <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-[#d6b47c]/3 rounded-full blur-[150px] translate-y-1/2" />
+    <div ref={pageRef} className="community-page community-page--community">
 
         <SEO title="Community Style Feed - Luxe" description="Foydalanuvchilarning eng sara obrazlari va stili." />
         
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-10">
-                <div className="max-w-2xl">
-                    <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-[#d6b47c]/20 to-transparent border-l-2 border-[#d6b47c] px-4 py-2 mb-6">
-                        <ImageIcon className="w-4 h-4 text-[#d6b47c]" />
-                        <span className="text-[#d6b47c] text-[10px] tracking-[0.3em] uppercase font-black">{t('styleFeed.title')}</span>
-                    </div>
-                    <h1 className="text-6xl md:text-8xl font-brilliant text-white mb-6 leading-[0.9]">
-                        Style <span className="text-[#d6b47c]">Feed</span>
-                    </h1>
-                    <p className="text-gray-400 text-lg md:text-xl font-light leading-relaxed pt-4">
-                        {t('styleFeed.subtitle')}
-                    </p>
-                </div>
-                
-                <div className="flex flex-col items-end gap-6">
-                    <button 
-                        onClick={() => isAuthenticated ? setIsCreateModalOpen(true) : toast.error(t('styleFeed.loginToCreate'))}
-                        className="group relative px-10 py-5 bg-transparent overflow-hidden rounded-full"
-                    >
-                        <div className="absolute inset-0 bg-[#d6b47c] opacity-10 group-hover:opacity-20 transition-opacity" />
-                        <div className="absolute inset-0 border border-[#d6b47c]/30 rounded-full" />
-                        <span className="relative z-10 flex items-center gap-3 text-[#d6b47c] text-sm font-black tracking-widest uppercase">
-                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" /> {t('styleFeed.shareLook')}
-                        </span>
-                    </button>
-
-                    <div className="flex items-center gap-8">
-                        <div className="text-right">
-                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('styleFeed.totalPosts')}</p>
-                            <p className="text-2xl font-brilliant text-white">{posts.length}+</p>
-                        </div>
-                        <div className="w-px h-10 bg-white/10" />
-                        <div className="text-right">
-                            <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{t('styleFeed.topStylists')}</p>
-                            <p className="text-2xl font-brilliant text-[#d6b47c]">124</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <CommunityOpening variant="community" description={t('styleFeed.subtitle')}>
+            <button type="button" onClick={() => isAuthenticated ? setIsCreateModalOpen(true) : toast.error(t('styleFeed.loginToCreate'))}>+ {t('styleFeed.shareLook')}</button>
+            <span>{posts.length} {t('styleFeed.totalPosts')}</span>
+        </CommunityOpening>
+        <div className="community-page__body community-content community-page__body--dark">
+            <CommunityChapter variant="community" />
 
             {/* Feed Grid */}
             {isLoading && page === 1 ? (
-                <div className="flex flex-col items-center justify-center py-32 gap-6">
-                    <div className="w-12 h-12 border-[3px] border-[#d6b47c] border-t-transparent rounded-full animate-spin" />
-                    <p className="text-[#d6b47c] text-sm tracking-widest font-medium animate-pulse">{t('styleFeed.loading')}</p>
+                <div className="community-feed-grid" aria-busy="true" aria-label="Galereya yuklanmoqda">
+                    <div className="community-feed-note relative overflow-hidden">
+                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/5 to-transparent pointer-events-none" />
+                        <span>THE COMMUNITY EDIT / 01</span>
+                        <h3>Bir obraz.<br /><em>Ming ilhom.</em></h3>
+                        <p>O‘zingizga yaqin uslubni toping, o‘z obrazingiz bilan suhbatga qo‘shiling.</p>
+                        <div className="w-44 h-9 mt-6 rounded-full bg-gradient-to-r from-white/10 to-[#d6b47c]/10 border border-[#d6b47c]/20 animate-pulse" />
+                    </div>
+                    {[...Array(5)].map((_, index) => (
+                        <StyleFeedCardSkeleton key={`feed-skeleton-${index}`} delay={index * 120} />
+                    ))}
+                </div>
+            ) : posts.length === 0 ? (
+                <div className="text-center py-32 border border-dashed border-white/5 rounded-[40px] bg-white/[0.02]">
+                    <Camera className="w-20 h-20 text-gray-800 mx-auto mb-6 opacity-20" />
+                    <h3 className="text-2xl text-gray-400 font-light">{t('styleFeed.noPosts')}</h3>
+                    <p className="text-gray-600 mt-3">{t('styleFeed.beFirst')}</p>
                 </div>
             ) : (
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-8 space-y-8">
+                <div className="community-feed-grid">
+                    <div className="community-feed-note">
+                        <span>THE COMMUNITY EDIT / 01</span>
+                        <h3>Bir obraz.<br /><em>Ming ilhom.</em></h3>
+                        <p>O‘zingizga yaqin uslubni toping, o‘z obrazingiz bilan suhbatga qo‘shiling.</p>
+                        <button type="button" onClick={() => isAuthenticated ? setIsCreateModalOpen(true) : toast.error(t('styleFeed.loginToCreate'))}>{t('styleFeed.shareLook')} <span aria-hidden="true">↗</span></button>
+                    </div>
                     {posts.map((post) => (
                         <PostCard 
                             key={post._id} 
@@ -188,39 +183,45 @@ const StyleFeed = () => {
                             onClick={() => setSelectedPost(post)}
                         />
                     ))}
+                    {isLoadingMore && [...Array(3)].map((_, index) => (
+                        <StyleFeedCardSkeleton key={`feed-skeleton-more-${index}`} delay={index * 120} />
+                    ))}
                 </div>
             )}
 
-            {posts.length === 0 && !isLoading && (
-                <div className="text-center py-32 border border-dashed border-white/5 rounded-[40px] bg-white/[0.02]">
-                    <Camera className="w-20 h-20 text-gray-800 mx-auto mb-6 opacity-20" />
-                    <h3 className="text-2xl text-gray-400 font-light">{t('styleFeed.noPosts')}</h3>
-                    <p className="text-gray-600 mt-3">{t('styleFeed.beFirst')}</p>
-                </div>
-            )}
-
-            {hasMore && (
+            {hasMore && !isLoading && posts.length > 0 && (
                 <div className="flex justify-center mt-20">
                     <button 
                         onClick={() => {
+                            if (isLoadingMore) return;
                             const nextPage = page + 1;
                             setPage(nextPage);
                             fetchPosts(nextPage, true);
                         }}
-                        className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+                        disabled={isLoadingMore}
+                        className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         <div className="absolute inset-0 bg-white opacity-5 group-hover:opacity-10 transition-opacity" />
                         <div className="absolute inset-0 border border-white/10 rounded-full" />
-                        <span className="relative z-10 text-xs font-black uppercase tracking-[0.2em] text-gray-300 group-hover:text-white">{t('styleFeed.loadMore')}</span>
+                        <span className="relative z-10 text-xs font-black uppercase tracking-[0.2em] text-gray-300 group-hover:text-white flex items-center gap-2">
+                            {isLoadingMore ? (
+                                <>
+                                    <span className="w-3.5 h-3.5 border-2 border-[#d6b47c] border-t-transparent rounded-full animate-spin" />
+                                    <span>{t('styleFeed.loading')}</span>
+                                </>
+                            ) : (
+                                t('styleFeed.loadMore')
+                            )}
+                        </span>
                     </button>
                 </div>
             )}
-        </div>
 
             {/* Style Polls */}
-            <div className="mt-12">
+            <div className="mt-24 pt-16 border-t border-[#c1a88e]/20">
                 <StylePolls />
             </div>
+        </div>
 
             {/* Create Post Modal */}
             {isCreateModalOpen && (
@@ -255,65 +256,147 @@ const StyleFeed = () => {
     );
 };
 
+const StyleFeedCardSkeleton = ({ delay = 0 }) => {
+    return (
+        <div 
+            className="group break-inside-avoid relative rounded-[0_60px_0_0] overflow-hidden bg-gradient-to-b from-[#18181b] via-[#111114] to-[#09090b] border border-white/5 shadow-2xl transition-all duration-500"
+            style={{ animationDelay: `${delay}ms` }}
+        >
+            {/* Golden Shimmer Wave */}
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.2s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/10 to-transparent pointer-events-none z-20" />
+
+            {/* Top User Pill Skeleton */}
+            <div className="absolute top-0 left-0 w-full p-4 z-10 flex items-center justify-between pointer-events-none">
+                <div className="flex items-center gap-2.5 bg-black/40 backdrop-blur-md p-1.5 pr-4 rounded-full border border-white/10">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-white/10 to-[#d6b47c]/20 animate-pulse flex items-center justify-center">
+                        <User className="w-4 h-4 text-[#d6b47c]/60" />
+                    </div>
+                    <div className="w-20 h-3 rounded-full bg-white/10 animate-pulse" />
+                </div>
+            </div>
+
+            {/* Main Visual Skeleton */}
+            <div className="relative w-full aspect-[3/4] bg-gradient-to-b from-[#1c1c20] via-[#141417] to-[#0a0a0c] flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-[#d6b47c]/15 flex items-center justify-center backdrop-blur-sm">
+                        <Camera className="w-6 h-6 text-[#d6b47c]/30 animate-pulse" />
+                    </div>
+                    <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#d6b47c]/40">Luxe Editorial</span>
+                </div>
+            </div>
+
+            {/* Bottom Interaction & Caption Skeleton */}
+            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex flex-col justify-end gap-3 z-10">
+                <div className="h-3 w-4/5 rounded-full bg-white/15 animate-pulse" />
+                <div className="h-2.5 w-1/2 rounded-full bg-white/10 animate-pulse" />
+                
+                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-4 h-4 rounded-full bg-white/10 animate-pulse" />
+                            <div className="w-6 h-2.5 rounded-full bg-white/10 animate-pulse" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-4 h-4 rounded-full bg-white/10 animate-pulse" />
+                            <div className="w-6 h-2.5 rounded-full bg-white/10 animate-pulse" />
+                        </div>
+                    </div>
+                    <div className="w-7 h-7 rounded-full bg-[#d6b47c]/20 border border-[#d6b47c]/30 animate-pulse" />
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const PostCard = ({ post, onLike, currentUserId, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [isImageLoaded, setIsImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const isLiked = post.likes?.includes(currentUserId);
+    const imageUrl = post.images?.[0] || post.imageUrl;
 
     return (
         <div 
-            className="break-inside-avoid relative group rounded-3xl overflow-hidden bg-[#111111] border border-white/5 hover:border-[#d6b47c]/30 transition-all duration-500 cursor-pointer"
+            className="break-inside-avoid relative group rounded-3xl overflow-hidden bg-[#111111] border border-white/5 hover:border-[#d6b47c]/30 transition-all duration-500 cursor-pointer shadow-xl"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onClick={onClick}
         >
             {/* User Info Overlay (Mobile friendly) */}
             <div className="absolute top-0 left-0 w-full p-4 z-10 flex items-center justify-between pointer-events-none">
-                <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md p-1.5 pr-4 rounded-full border border-white/10">
-                    <div className="w-8 h-8 rounded-full bg-[#d6b47c] flex items-center justify-center font-bold text-xs text-black">
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 pr-4 rounded-full border border-white/10 shadow-lg">
+                    <div className="w-8 h-8 rounded-full bg-[#d6b47c] flex items-center justify-center font-bold text-xs text-black overflow-hidden flex-shrink-0">
                         {post.user?.profileImage ? (
-                            <img src={post.user.profileImage} className="w-full h-full rounded-full object-cover" />
+                            <img src={post.user.profileImage} alt="" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            post.user?.username?.[0]?.toUpperCase()
+                            post.user?.username?.[0]?.toUpperCase() || 'L'
                         )}
                     </div>
-                    <span className="text-xs font-semibold tracking-wide">{post.user?.username}</span>
+                    <span className="text-xs font-semibold tracking-wide text-white/90 truncate max-w-[130px]">{post.user?.username || 'Luxe Member'}</span>
                 </div>
             </div>
 
-            {/* Main Image */}
-            <div className="relative aspect-auto">
-                <img 
-                    src={post.images?.[0]} 
-                    alt={post.caption}
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
-                />
+            {/* Main Image with Progressive Skeleton Loading */}
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#141416]">
+                {/* Skeleton shimmer shown while image is loading */}
+                {!isImageLoaded && !imageError && (
+                    <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#1c1c20] via-[#141417] to-[#0c0c0e] flex items-center justify-center">
+                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-[#d6b47c]/10 to-transparent pointer-events-none" />
+                        <Camera className="w-8 h-8 text-[#d6b47c]/20 animate-pulse" />
+                    </div>
+                )}
+
+                {imageError ? (
+                    <div className="w-full h-full aspect-[3/4] flex flex-col items-center justify-center bg-[#151518] text-gray-500 p-4 text-center">
+                        <ImageIcon className="w-10 h-10 text-[#d6b47c]/30 mb-2" />
+                        <span className="text-[11px] uppercase tracking-wider text-gray-400">Luxe Editorial</span>
+                    </div>
+                ) : (
+                    <img 
+                        src={imageUrl} 
+                        alt={post.caption || 'Luxe Style Post'}
+                        loading="lazy"
+                        decoding="async"
+                        onLoad={() => setIsImageLoaded(true)}
+                        onError={() => {
+                            setIsImageLoaded(true);
+                            setImageError(true);
+                        }}
+                        className={`w-full h-full aspect-[3/4] object-cover transition-all duration-700 ease-out group-hover:scale-105 ${
+                            isImageLoaded ? 'opacity-100 blur-0 scale-100' : 'opacity-0 blur-md scale-105 absolute inset-0'
+                        }`}
+                    />
+                )}
                 
                 {/* Interaction Overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 flex flex-col justify-end p-6 ${isHovered ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
-                    <p className="text-sm text-gray-200 line-clamp-2 mb-4 italic">
-                        "{post.caption}"
-                    </p>
+                <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent transition-opacity duration-300 flex flex-col justify-end p-6 z-10 ${isHovered ? 'opacity-100' : 'opacity-0 md:hidden'}`}>
+                    {post.caption && (
+                        <p className="text-sm text-gray-200 line-clamp-2 mb-4 italic font-serif">
+                            "{post.caption}"
+                        </p>
+                    )}
                     
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button 
                                 onClick={(e) => { e.stopPropagation(); onLike(post._id); }}
-                                className="flex items-center gap-1.5 group/like"
+                                className="flex items-center gap-1.5 group/like focus:outline-none"
+                                aria-label="Like post"
                             >
                                 <Heart className={`w-5 h-5 transition-all ${isLiked ? 'fill-red-500 text-red-500 scale-110' : 'text-white group-hover/like:text-red-400'}`} />
-                                <span className="text-xs font-bold">{post.likes?.length || 0}</span>
+                                <span className="text-xs font-bold text-white">{post.likes?.length || 0}</span>
                             </button>
                             <div className="flex items-center gap-1.5">
                                 <MessageSquare className="w-5 h-5 text-white" />
-                                <span className="text-xs font-bold">{post.commentCount || 0}</span>
+                                <span className="text-xs font-bold text-white">{post.commentCount || 0}</span>
                             </div>
                         </div>
 
                         {post.taggedProducts?.length > 0 && (
                             <div className="flex -space-x-2">
-                                {post.taggedProducts.slice(0, 3).map((prod, i) => (
-                                    <div key={prod._id} className="w-8 h-8 rounded-full border-2 border-[#111] bg-[#1a1a1a] p-1 overflow-hidden" title={prod.name}>
-                                        <img src={prod.image} className="w-full h-full object-contain" />
+                                {post.taggedProducts.slice(0, 3).map((prod) => (
+                                    <div key={prod._id || prod.id} className="w-8 h-8 rounded-full border-2 border-[#111] bg-[#1a1a1a] p-1 overflow-hidden shadow-md" title={prod.name}>
+                                        <img src={prod.image || prod.images?.[0]?.url || prod.images?.[0]} alt="" className="w-full h-full object-contain" />
                                     </div>
                                 ))}
                                 {post.taggedProducts.length > 3 && (

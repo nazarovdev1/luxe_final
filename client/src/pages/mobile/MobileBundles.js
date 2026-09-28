@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Sparkles, Gem, Percent } from 'lucide-react';
+import { ArrowLeft, Loader2, Gem, Percent } from 'lucide-react';
 import useProductService from '../../server/server';
 import SEO from '../../components/SEO';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { MobileBundlesSkeleton } from '../../components/EventSkeletons';
 
 const MobileBundles = () => {
     const navigate = useNavigate();
@@ -74,14 +75,11 @@ const MobileBundles = () => {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                        <Loader2 className="w-8 h-8 text-[#d6b47c] animate-spin" />
-                        <p className="text-sm text-neutral-500">{t('mobileBundles.loading')}</p>
-                    </div>
+                    <MobileBundlesSkeleton />
                 ) : bundles.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center border border-white/5 rounded-3xl bg-white/5 backdrop-blur-md">
                         <div className="w-16 h-16 rounded-full bg-[#d6b47c]/10 flex items-center justify-center mb-4 border border-[#d6b47c]/20">
-                            <Sparkles className="w-8 h-8 text-[#d6b47c]" />
+                            <Gem className="w-8 h-8 text-[#d6b47c]" />
                         </div>
                         <h3 className="text-lg font-bold text-[#f4f1eb]">{t('mobileBundles.empty_title')}</h3>
                         <p className="text-sm text-neutral-400 mt-2 px-6">{t('mobileBundles.empty_desc')}</p>

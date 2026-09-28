@@ -7,6 +7,7 @@ import ReelComments from '../components/ReelComments';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
+import { ReelsSkeleton } from '../components/EventSkeletons';
 
 const Reels = () => {
   const [reels, setReels] = useState([]);
@@ -168,17 +169,7 @@ const Reels = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center">
-        <div className="relative">
-          <div className="w-20 h-20 border-2 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Play size={32} className="text-amber-500 animate-pulse" />
-          </div>
-        </div>
-        <p className="mt-6 text-gray-400 font-medium tracking-widest uppercase text-sm animate-pulse">{t('reels.loading')}</p>
-      </div>
-    );
+    return <ReelsSkeleton />;
   }
 
   if (reels.length === 0) {

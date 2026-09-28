@@ -7,12 +7,12 @@ import {
   ArrowLeft,
   ShoppingCart,
   Loader2,
-  Sparkles,
   Gem,
   ChevronRight,
   ShieldCheck,
   Zap,
 } from 'lucide-react';
+import { ProductViewSkeleton } from '../components/EventSkeletons';
 
 // Contexts
 import { useProducts } from '../contexts/ProductContext';
@@ -42,19 +42,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE_URL } from '../services/api';
 
 const API_BASE = API_BASE_URL;
-
-// ── Loading Animation ──────────────────────────────────────
-const DotLoader = () => (
-  <div className="flex flex-col items-center gap-4">
-    <div className="relative flex h-14 w-14 items-center justify-center">
-      <div className="absolute h-full w-full rounded-full border-2 border-[#c9a96e]/20 border-t-[#c9a96e] animate-spin" />
-      <Sparkles className="h-6 w-6 text-[#c9a96e] animate-pulse" />
-    </div>
-    <span className="text-xs uppercase tracking-[0.25em] font-black text-[#c9a96e]">
-      LUXX COLLECTIONS
-    </span>
-  </div>
-);
 
 // ════════════════════════════════════════════════════════════
 // ProductView — Ultra Luxury Cinematic Product Detail Page
@@ -190,11 +177,7 @@ export default function ProductView() {
 
   // ── Loading State ─────────────────────────────────────
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b]">
-        <DotLoader />
-      </div>
-    );
+    return <ProductViewSkeleton />;
   }
 
   // ── Not Found State ───────────────────────────────────

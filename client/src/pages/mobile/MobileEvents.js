@@ -11,7 +11,7 @@ import {
   MessageSquare,
   Play,
   Radio,
-  Sparkles,
+  Gem,
   Swords,
   Trophy,
   Users,
@@ -126,7 +126,7 @@ const DEFAULT_CARD_STYLE = {
 };
 
 const ExploreCard = ({ item, t }) => {
-  const Icon = ICONS[item.id] || ICONS[item.icon] || Sparkles;
+  const Icon = ICONS[item.id] || ICONS[item.icon] || Gem;
   const style = CARD_STYLES[item.id] || DEFAULT_CARD_STYLE;
   const copy = DISPLAY_COPY[item.id];
 
@@ -179,13 +179,15 @@ const MobileEvents = () => {
             src="/mobile_explore_background.png"
             alt=""
             aria-hidden="true"
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-center opacity-100"
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,#07080b_0%,rgba(7,8,11,.92)_43%,rgba(7,8,11,.30)_66%,rgba(7,8,11,.03)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#07080b]/35 to-transparent" />
           <div className="relative z-10 flex h-full max-w-[68%] flex-col justify-center px-5">
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#d6b47c]/35 bg-black/25 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-[#d6b47c]">
-              <Sparkles className="h-2.5 w-2.5" />
+              <Gem className="h-2.5 w-2.5" />
               {t('mobileEvents.explore_badge')}
             </span>
             <h1 className="mt-3 whitespace-nowrap font-[Georgia,serif] text-[22px] leading-[1.08] text-[#f7f1e8]">

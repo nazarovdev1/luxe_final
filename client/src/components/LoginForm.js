@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AlertCircle, ArrowRight, ArrowLeft, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { gsap } from 'gsap';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from './SEO';
 import TelegramLoginButton from './TelegramLoginButton';
+import AuthOpening from './AuthOpening';
+import './AuthOpening.css';
 import './mobile/mobileAuth.css';
 
 /* ─── floating‑particle canvas ─────────────────────────────────── */
@@ -82,8 +85,113 @@ const LoginForm = () => {
 
   const isMobileRoute = location.pathname.startsWith('/mobile');
   const registerLink = isMobileRoute ? '/mobile/register' : '/register';
+  const containerRef = useRef(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        delay: 0.9,
+        defaults: { ease: 'power3.out' }
+      });
+
+      // Left Editorial Section (Desktop)
+      const leftImg = container.querySelector('.auth-editorial-img');
+      const leftBadge = container.querySelector('.auth-editorial-badge');
+      const leftContent = container.querySelector('.auth-editorial-content');
+      const leftLine = container.querySelector('.auth-editorial-line');
+
+      if (leftImg) {
+        tl.fromTo(leftImg,
+          { scale: 1.25, filter: 'brightness(0.65) blur(6px)' },
+          { scale: 1.0, filter: 'brightness(1) blur(0px)', duration: 1.5, ease: 'power2.out' },
+          0
+        );
+      }
+
+      if (leftBadge) {
+        tl.fromTo(leftBadge,
+          { y: -35, opacity: 0, scale: 0.9 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.65, ease: 'back.out(1.4)' },
+          0.1
+        );
+      }
+
+      if (leftContent) {
+        tl.fromTo(leftContent.children,
+          { y: 50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.75, stagger: 0.12, ease: 'power3.out' },
+          0.2
+        );
+      }
+
+      if (leftLine) {
+        tl.fromTo(leftLine,
+          { scaleX: 0, transformOrigin: 'left' },
+          { scaleX: 1, duration: 0.8, ease: 'power2.out' },
+          0.55
+        );
+      }
+
+      // Right Login Form Panel
+      const backBtn = container.querySelector('.auth-back-btn');
+      const formHeaders = container.querySelectorAll('.auth-form-header');
+      const formFields = container.querySelectorAll('.auth-form-field');
+      const formSubmit = container.querySelector('.auth-form-submit');
+      const formFooter = container.querySelector('.auth-form-footer');
+
+      if (backBtn) {
+        tl.fromTo(backBtn,
+          { x: -35, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.6, ease: 'power2.out' },
+          0.1
+        );
+      }
+
+      if (formHeaders && formHeaders.length > 0) {
+        tl.fromTo(formHeaders,
+          { y: 45, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out' },
+          0.2
+        );
+      }
+
+      if (formFields && formFields.length > 0) {
+        tl.fromTo(formFields,
+          { y: 40, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.65, stagger: 0.09, ease: 'power3.out' },
+          0.35
+        );
+      }
+
+      if (formSubmit) {
+        tl.fromTo(formSubmit,
+          { y: 35, scale: 0.92, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.65, ease: 'back.out(1.5)' },
+          0.6
+        );
+      }
+
+      if (formFooter) {
+        tl.fromTo(formFooter.children,
+          { y: 25, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.55, stagger: 0.08, ease: 'power2.out' },
+          0.75
+        );
+      }
+    }, container);
+
+    return () => {
+      ctx.revert();
+    };
+  }, []);
 
   const handleChange = (e) => {
     setCredentials((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -103,26 +211,16 @@ const LoginForm = () => {
   };
 
   return (
-    <div className={`relative min-h-screen overflow-hidden bg-[#060a14] ${isMobileRoute ? 'mobile-auth-shell mobile-auth-shell--login' : ''}`}>
+    <div ref={containerRef} className={`relative min-h-screen overflow-hidden bg-[#060a14] ${isMobileRoute ? 'mobile-auth-shell mobile-auth-shell--login' : ''}`}>
       <SEO title={t('auth.loginTitle')} noIndex={true} />
+      <AuthOpening variant="login" />
 
       {/* ── inline keyframes ─────────────────────────────────────── */}
       <style>{`
-        @keyframes fadeUp   { from { opacity:0; transform:translateY(28px);} to { opacity:1; transform:translateY(0);}}
-        @keyframes fadeIn   { from { opacity:0; } to { opacity:1; }}
         @keyframes pulse    { 0%,100%{opacity:.25;transform:scale(.8)} 50%{opacity:1;transform:scale(1.1)}}
         @keyframes shimmer  { 0%{background-position:-200% 0} 100%{background-position:200% 0}}
         @keyframes float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)}}
         @keyframes glow     { 0%,100%{opacity:.45} 50%{opacity:.75}}
-        @keyframes borderGlow { 0%,100%{border-color:rgba(214,180,124,.12)} 50%{border-color:rgba(214,180,124,.28)}}
-        .anim-fade-up  { animation: fadeUp .7s cubic-bezier(.22,1,.36,1) both; }
-        .anim-fade-in  { animation: fadeIn .6s ease both; }
-        .delay-1 { animation-delay:.12s }
-        .delay-2 { animation-delay:.22s }
-        .delay-3 { animation-delay:.32s }
-        .delay-4 { animation-delay:.42s }
-        .delay-5 { animation-delay:.52s }
-        .delay-6 { animation-delay:.62s }
         .input-glow:focus-within {
           box-shadow: 0 0 0 1px rgba(214,180,124,.35), 0 0 20px rgba(214,180,124,.08);
         }
@@ -144,19 +242,15 @@ const LoginForm = () => {
 
       {/* ── main grid ─────────────────────────────────────────────── */}
       <div className="relative flex min-h-screen w-full">
-        <div
-          className={`w-full transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}
-        >
+        <div className={`w-full transition-opacity duration-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
           <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
 
-
-
             {/* ─── LEFT  — editorial image ─────────────────────────── */}
-            <section className="relative hidden lg:block">
+            <section className="auth-editorial-panel relative hidden lg:block overflow-hidden">
               <img
                 src="/login.jpg"
                 alt="LUXE editorial"
-                className="absolute inset-0 h-full w-full object-cover"
+                className="auth-editorial-img absolute inset-0 h-full w-full object-cover"
               />
               {/* cinematic overlays */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#060a14]/80 via-transparent to-[#060a14]" />
@@ -165,7 +259,7 @@ const LoginForm = () => {
 
               <div className="relative flex h-full flex-col justify-between p-12">
                 {/* top badge */}
-                <div className={`anim-fade-up inline-flex w-fit items-center gap-2.5 rounded-full border border-[#d6b47c]/20 bg-black/40 px-5 py-2 backdrop-blur-md ${mounted ? '' : 'opacity-0'}`}>
+                <div className="auth-editorial-badge inline-flex w-fit items-center gap-2.5 rounded-full border border-[#d6b47c]/20 bg-black/40 px-5 py-2 backdrop-blur-md">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#d6b47c] opacity-50" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-[#d6b47c]" />
@@ -174,7 +268,7 @@ const LoginForm = () => {
                 </div>
 
                 {/* bottom text */}
-                <div className={`max-w-lg ${mounted ? 'anim-fade-up delay-2' : 'opacity-0'}`}>
+                <div className="auth-editorial-content max-w-lg">
                   <p className="text-[13px] font-medium uppercase tracking-[0.3em] text-[#8a94a8]">{t('auth.privateClient')}</p>
                   <h2 className="mt-4 text-[5rem] font-light leading-[1.05] tracking-tight text-white/95">
                     {t('auth.premiumAccess')}
@@ -190,7 +284,7 @@ const LoginForm = () => {
                   </p>
 
                   {/* decorative line */}
-                  <div className="mt-8 flex items-center gap-4">
+                  <div className="auth-editorial-line mt-8 flex items-center gap-4">
                     <div className="h-px w-16 bg-gradient-to-r from-[#d6b47c]/50 to-transparent" />
                     <span className="text-[10px] uppercase tracking-[0.3em] text-[#d6b47c]/40">LUXX ATELIER © 2026</span>
                   </div>
@@ -199,10 +293,10 @@ const LoginForm = () => {
             </section>
 
             {/* ─── RIGHT — login form ──────────────────────────────── */}
-            <section className="mobile-auth-panel relative flex flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-16 xl:px-24">
+            <section className="auth-form-panel mobile-auth-panel relative flex flex-col items-center justify-center px-5 py-10 sm:px-8 lg:px-16 xl:px-24">
               
               {/* ─── Back Button ──────────────────────────────── */}
-              <div className={`absolute left-4 top-4 lg:left-10 lg:top-10 z-[100] ${mounted ? 'anim-fade-up' : 'opacity-0'}`}>
+              <div className="auth-back-btn absolute left-4 top-4 lg:left-10 lg:top-10 z-[100]">
                 <Link 
                   to="/" 
                   className="group flex items-center gap-3 rounded-full border border-white/10 bg-[#060a14]/40 px-4 py-2.5 backdrop-blur-md transition-all duration-500 hover:bg-white/5 hover:border-[#d6b47c]/50 hover:shadow-[0_0_20px_rgba(214,180,124,0.15)]"
@@ -211,6 +305,7 @@ const LoginForm = () => {
                   <span className="hidden sm:block text-[11px] font-bold tracking-[0.2em] text-[#e8d5b0] transition-colors group-hover:text-white">{t('common.mainPage')}</span>
                 </Link>
               </div>
+
               {/* subtle grid pattern */}
               <div className="pointer-events-none absolute inset-0 opacity-[0.025]"
                 style={{
@@ -219,12 +314,10 @@ const LoginForm = () => {
                 }}
               />
 
-              {/* removed mobile hero banner as requested */}
-
               {/* form container */}
-              <div className={`w-full max-w-[420px] ${mounted ? 'anim-fade-up delay-1' : 'opacity-0'}`}>
+              <div className="w-full max-w-[420px]">
                 {/* header */}
-                <div className="hidden lg:block text-left mb-8">
+                <div className="auth-form-header hidden lg:block text-left mb-8">
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#d6b47c]/[0.08] px-4 py-1.5">
                     <div className="h-1 w-1 rounded-full bg-[#d6b47c]" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#d6b47c]">{t('auth.loginTitle')}</span>
@@ -241,7 +334,7 @@ const LoginForm = () => {
                 </div>
 
                 {/* mobile WOW header */}
-                <div className="mobile-auth-header lg:hidden text-center mb-10 mt-4 relative">
+                <div className="auth-form-header mobile-auth-header lg:hidden text-center mb-10 mt-4 relative">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#d6b47c]/10 rounded-full blur-[40px] pointer-events-none"></div>
                   <h1 className="relative text-4xl font-brilliant tracking-wide bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent drop-shadow-[0_2px_15px_rgba(214,180,124,0.25)]">
                     {t('auth.loginTitle')}
@@ -254,7 +347,7 @@ const LoginForm = () => {
                 {/* form */}
                 <form onSubmit={handleSubmit} className="mobile-auth-form mt-8 flex flex-col gap-5">
                   {/* identifier */}
-                  <div className={`anim-fade-up delay-2 ${mounted ? '' : 'opacity-0'}`}>
+                  <div className="auth-form-field">
                     <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
                       {t('auth.identifierLabel')}
                     </label>
@@ -275,7 +368,7 @@ const LoginForm = () => {
                   </div>
 
                   {/* password */}
-                  <div className={`anim-fade-up delay-3 ${mounted ? '' : 'opacity-0'}`}>
+                  <div className="auth-form-field">
                     <label className="mb-2.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8a94a8]">
                       {t('auth.passwordLabel')}
                     </label>
@@ -294,7 +387,7 @@ const LoginForm = () => {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="p-1.5 text-[#4a5468] transition-colors hover:text-[#d6b47c] shrink-0 rounded-lg hover:bg-[#d6b47c]/10"
+                          className="p-1.5 text-[#4a5468] transition-colors hover:text-[#d6b47c] shrink-0"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -304,14 +397,14 @@ const LoginForm = () => {
 
                   {/* error */}
                   {error && (
-                    <div className="anim-fade-in flex items-start gap-3 rounded-2xl border border-red-500/10 bg-red-500/[0.06] px-4 py-3.5 backdrop-blur-sm">
+                    <div className="flex items-start gap-3 rounded-2xl border border-red-500/10 bg-red-500/[0.06] px-4 py-3.5 backdrop-blur-sm">
                       <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-400" />
                       <span className="text-[13px] text-red-300/90">{error}</span>
                     </div>
                   )}
 
                   {/* submit */}
-                  <div className={`anim-fade-up delay-4 mt-6 ${mounted ? '' : 'opacity-0'}`}>
+                  <div className="auth-form-submit mt-6">
                     <button
                       type="submit"
                       disabled={isLoading}
@@ -343,29 +436,32 @@ const LoginForm = () => {
                   </div>
                 </form>
 
-                {/* divider */}
-                <div className={`anim-fade-up delay-5 mt-7 flex items-center gap-4 ${mounted ? '' : 'opacity-0'}`}>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d4758]">{t('auth.or')}</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                </div>
+                {/* footer area (divider, telegram, register link) */}
+                <div className="auth-form-footer">
+                  {/* divider */}
+                  <div className="mt-7 flex items-center gap-4">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#3d4758]">{t('auth.or')}</span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                  </div>
 
-                {/* Telegram Login */}
-                <div className={`anim-fade-up delay-5 mt-6 flex justify-center ${mounted ? '' : 'opacity-0'}`}>
-                  <TelegramLoginButton botName="luxeecomercebot" />
-                </div>
+                  {/* Telegram Login */}
+                  <div className="mt-6 flex justify-center">
+                    <TelegramLoginButton botName="luxeecomercebot" />
+                  </div>
 
-                {/* register link */}
-                <p className={`anim-fade-up delay-6 mt-6 text-center text-[14px] text-[#5a6478] ${mounted ? '' : 'opacity-0'}`}>
-                  {t('auth.noAccount')}{' '}
-                  <Link
-                    to={registerLink}
-                    className="relative font-medium text-[#d6b47c] transition-colors hover:text-[#e8c87a]"
-                  >
-                    {t('auth.goRegister')}
-                    <span className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-[#d6b47c]/50 transition-transform hover:scale-x-100" />
-                  </Link>
-                </p>
+                  {/* register link */}
+                  <p className="mt-6 text-center text-[14px] text-[#5a6478]">
+                    {t('auth.noAccount')}{' '}
+                    <Link
+                      to={registerLink}
+                      className="relative font-medium text-[#d6b47c] transition-colors hover:text-[#e8c87a]"
+                    >
+                      {t('auth.goRegister')}
+                      <span className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-[#d6b47c]/50 transition-transform hover:scale-x-100" />
+                    </Link>
+                  </p>
+                </div>
               </div>
             </section>
           </div>

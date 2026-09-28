@@ -2265,5 +2265,68 @@ body {
 
 @keyframes confirm-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes confirm-dialog-in { from { opacity: 0; transform: translateY(0.75rem) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@media (max-width: 420px) { .confirm-dialog { padding: 1.5rem; } .confirm-dialog__actions { flex-direction: column-reverse; } .confirm-dialog__actions button { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .confirm-dialog-backdrop, .confirm-dialog { animation: none; } }
+
+/* ─── Legal Document Print Stylesheet ────────────────────────── */
+@media print {
+  nav,
+  .luxx-navbar,
+  header.fixed,
+  footer,
+  .toaster-container,
+  #bottom-nav,
+  [data-print-hidden],
+  .print-hidden {
+    display: none !important;
+  }
+
+  html, body, #root, #main-content {
+    background: #ffffff !important;
+    color: #111111 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    font-size: 10.5pt !important;
+    line-height: 1.55 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .sticky, .fixed {
+    position: static !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  h1, h2, h3, h4, strong {
+    color: #000000 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  p, li, span {
+    color: #1a1a1a !important;
+  }
+
+  article, section, [data-legal-article] {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 1.5rem !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  @page {
+    margin: 1.8cm 1.5cm;
+    size: A4 portrait;
+  }
+}
+

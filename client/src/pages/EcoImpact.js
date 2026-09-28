@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Leaf, Droplets, Wind, TreeDeciduous, Award, BarChart3, ShoppingBag, Shirt, Recycle, Sprout, Waves } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
+import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
+import { EcoImpactSkeleton } from '../components/EventSkeletons';
 
 const ECO_TIPS = [
   { icon: <Shirt className="w-full h-full" />, tipKey: 'eco.eco_tip_0' },
@@ -62,8 +64,14 @@ const EcoImpact = () => {
   const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const pageRef = useRef(null);
+  const lastFetchKeyRef = useRef(null);
+  useCommunityMotion(pageRef);
 
   useEffect(() => {
+    const fetchKey = `${isAuthenticated}:${token || ''}`;
+    if (lastFetchKeyRef.current === fetchKey) return;
+    lastFetchKeyRef.current = fetchKey;
     if (!isAuthenticated) { setIsLoading(false); return; }
     const fetch = async () => {
       try {
@@ -82,44 +90,23 @@ const EcoImpact = () => {
   }, [isAuthenticated, token, t]);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-white pt-32 pb-24 relative overflow-hidden">
-      {/* Background Cinematic Glows - Green/Nature */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-green-600/5 rounded-full blur-[120px] -translate-y-1/2" />
-      <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-[#d6b47c]/3 rounded-full blur-[150px] translate-y-1/2" />
+    <div ref={pageRef} className="community-page community-page--eco">
 
       <SEO title="Eco Impact — Luxe" description="O'zingizning xaridlaringiz orqali tabiatga qo'shgan hissangizni ko'ring." />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        {/* Header Section */}
-        <div className="flex flex-col items-center text-center mb-20">
-          <div className="inline-flex items-center gap-2.5 bg-gradient-to-r from-green-600/20 via-green-600/10 to-transparent border-l-2 border-green-600 px-6 py-2 mb-8">
-            <Leaf className="w-4 h-4 text-green-500" />
-            <span className="text-green-500 text-[10px] tracking-[0.4em] uppercase font-black">{t('eco.sustainableFuture')}</span>
-          </div>
-          <h1 className="text-6xl md:text-9xl font-brilliant text-white mb-8 leading-tight">
-            Eco <span className="text-[#d6b47c]">{t('eco.title')}</span>
-          </h1>
-          <p className="text-gray-400 text-lg md:text-xl font-light max-w-3xl leading-relaxed">
-            {t('eco.subtitle')}
-          </p>
-        </div>
+      <CommunityOpening variant="eco" description={t('eco.subtitle')}>
+        <span>{t('eco.sustainableFuture')}</span>
+      </CommunityOpening>
+      <div className="community-page__body community-content">
+        <CommunityChapter variant="eco" />
 
         {!isAuthenticated ? (
-          <div className="text-center py-24 rounded-[40px] border border-white/5 bg-white/[0.02] backdrop-blur-xl">
-            <div className="w-20 h-20 bg-green-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-green-500/20">
-              <Leaf className="w-10 h-10 text-green-500" />
-            </div>
-            <h3 className="text-3xl font-serif mb-3">{t('eco.seeYourImpact')}</h3>
-            <p className="text-gray-500 mb-10 max-w-sm mx-auto text-lg font-light">{t('eco.impactHint')}</p>
-            <button onClick={() => navigate('/login')} className="px-12 py-5 bg-green-600 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-transform">
-              {t('eco.login')}
-            </button>
+          <div className="eco-editorial-gate">
+            <div className="eco-editorial-gate__copy"><span>YOUR PERSONAL IMPACT</span><h3>O‘zgarish<br /><em>sizdan boshlanadi.</em></h3><p>{t('eco.impactHint')}</p><button onClick={() => navigate('/login')}>{t('eco.login')} <span aria-hidden="true">↗</span></button></div>
+            <div className="eco-editorial-gate__visual"><span>01</span><strong>CARE<br />IS A<br />CHOICE.</strong><span>LUXX / IMPACT</span></div>
           </div>
         ) : isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-6">
-            <div className="w-12 h-12 border-[3px] border-green-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-green-500 text-sm tracking-widest font-medium animate-pulse">{t('eco.analyzing')}</p>
-          </div>
+          <EcoImpactSkeleton />
         ) : stats ? (
           <div className="space-y-24">
             {/* Eco Rank Badge */}

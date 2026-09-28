@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -135,10 +135,12 @@ const MobileCart = () => {
                                         <p className="text-[10px] text-gray-500 mt-0.5">{look.products.length} {t('mobileCart.products_count')}</p>
                                     </div>
                                     <button
+                                        type="button"
                                         onClick={() => removeLookFromCart(look.cartLookId)}
-                                        className="shrink-0 w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500/60 active:scale-75 transition-all"
+                                        aria-label={t('common.delete') || "Olib tashlash"}
+                                        className="shrink-0 w-7 h-7 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/70 active:scale-75 hover:bg-red-500/20 hover:text-white transition-all"
                                     >
-                                        <Trash2 className="h-3.5 w-3.5" />
+                                        <X className="h-4 w-4" strokeWidth={2} />
                                     </button>
                                 </div>
                                 </div>
@@ -194,13 +196,15 @@ const MobileCart = () => {
                                 <div className="flex justify-between items-start gap-3 mb-2">
                                     <h3 className="line-clamp-2 text-sm font-bold text-white leading-tight">{item.name}</h3>
                                     <button
+                                        type="button"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             removeFromCart(item.id);
                                         }}
-                                        className="shrink-0 w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-500/60 active:scale-75 transition-all"
+                                        aria-label={t('common.delete') || "Olib tashlash"}
+                                        className="shrink-0 w-7 h-7 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-white/70 active:scale-75 hover:bg-red-500/20 hover:text-white transition-all"
                                     >
-                                        <Trash2 className="h-3.5 w-3.5" />
+                                        <X className="h-4 w-4" strokeWidth={2} />
                                     </button>
                                 </div>
 

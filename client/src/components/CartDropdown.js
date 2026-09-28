@@ -129,8 +129,8 @@ const CartDropdown = ({ isOpen, onClose }) => {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 pr-1">
                           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d6b47c]/10 border border-[#d6b47c]/20 text-[9px] font-bold uppercase tracking-widest text-[#d6b47c] mb-1.5">
                             {t('cartDropdown.bundleLabel')}
                           </div>
@@ -140,10 +140,13 @@ const CartDropdown = ({ isOpen, onClose }) => {
                           </p>
                         </div>
                         <button
+                          type="button"
                           onClick={() => removeLookFromCart(look.cartLookId)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                          title={t('cartDropdown.removeItem') || "Olib tashlash"}
+                          aria-label={t('cartDropdown.removeItem') || "Olib tashlash"}
+                          className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 border border-white/15 text-white/70 hover:text-white hover:bg-red-500/20 hover:border-red-500/40 transition-all active:scale-90"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <X className="h-4 w-4" strokeWidth={2} />
                         </button>
                       </div>
 
@@ -182,61 +185,65 @@ const CartDropdown = ({ isOpen, onClose }) => {
                   : parseFloat(item.price);
 
                 return (
-                  <div key={item.id} className="flex gap-6">
-                    <div className="shrink-0">
-                      <img
-                        src={item.image || '/placeholder.png'}
-                        alt={item.name}
-                        className="h-[120px] w-[90px] object-cover bg-black"
-                      />
-                    </div>
-
-                    <div className="flex-1 flex flex-col min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1">
-                          <h3 className="text-[14px] text-white/90">
-                            {item.name}
-                          </h3>
-                          {item.selectedColor && (
-                            <p className="text-[12px] text-white/50">{t('common.color')}: {item.selectedColor}</p>
-                          )}
-                          {item.selectedSize && (
-                            <p className="text-[12px] text-white/50">{t('common.size')}: {item.selectedSize}</p>
-                          )}
-                        </div>
+                  <div key={item.id} className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-transparent p-5 transition-all hover:border-[#d6b47c]/30">
+                    <div className="flex gap-5">
+                      <div className="shrink-0">
+                        <img
+                          src={item.image || '/placeholder.png'}
+                          alt={item.name}
+                          className="h-[90px] w-[80px] object-cover rounded-xl bg-black border border-white/10"
+                        />
                       </div>
 
-                      <div className="mt-2">
-                        <p className="text-[#d6b47c] text-[13px] tracking-wide">
-                          {money(price)}
-                        </p>
-                      </div>
-
-                      <div className="mt-auto flex items-center gap-4">
-                        <div className="flex items-center border border-white/20">
+                      <div className="flex-1 flex flex-col min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1 pr-1">
+                            <h3 className="text-[15px] text-white font-medium leading-tight truncate">
+                              {item.name}
+                            </h3>
+                            {item.selectedColor && (
+                              <p className="text-[11px] text-white/50 mt-1">{t('common.color')}: {item.selectedColor}</p>
+                            )}
+                            {item.selectedSize && (
+                              <p className="text-[11px] text-white/50">{t('common.size')}: {item.selectedSize}</p>
+                            )}
+                          </div>
                           <button
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            className="flex h-[30px] w-[30px] items-center justify-center text-white/70 hover:text-white transition-colors"
+                            type="button"
+                            onClick={() => handleRemoveItem(item.id)}
+                            title={t('cartDropdown.removeItem') || "Olib tashlash"}
+                            aria-label={t('cartDropdown.removeItem') || "Olib tashlash"}
+                            className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 border border-white/15 text-white/70 hover:text-white hover:bg-red-500/20 hover:border-red-500/40 transition-all active:scale-90"
                           >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="w-[30px] text-center text-[13px] text-white border-l border-r border-white/20 flex items-center justify-center h-[30px]">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            className="flex h-[30px] w-[30px] items-center justify-center text-white/70 hover:text-white transition-colors"
-                          >
-                            <Plus className="h-3 w-3" />
+                            <X className="h-4 w-4" strokeWidth={2} />
                           </button>
                         </div>
 
-                        <button
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="flex h-[30px] w-[30px] items-center justify-center text-[#d6b47c]/70 hover:text-[#d6b47c] hover:bg-[#d6b47c]/10 border border-[#d6b47c]/30 transition-colors ml-auto"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="mt-4 flex items-center justify-between">
+                          <p className="text-[#d6b47c] text-[15px] font-semibold tracking-tight">
+                            {money(price)}
+                          </p>
+
+                          <div className="flex items-center rounded-lg border border-white/15 bg-white/5 overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              className="flex h-7 w-7 items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="w-7 text-center text-xs font-medium text-white border-l border-r border-white/15 flex items-center justify-center h-7">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              className="flex h-7 w-7 items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -113,3 +113,4 @@ node_modules/.cache/
 .turbo/
 .vite/
 .seo-cache/
+scratch/

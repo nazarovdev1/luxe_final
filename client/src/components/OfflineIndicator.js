@@ -5,7 +5,8 @@ import { useLanguage } from '../contexts/LanguageContext'
 const OfflineIndicator = ({ isOnline, updateAvailable, onUpdate }) => {
   const [showOffline, setShowOffline] = useState(false)
   const [wasOffline, setWasOffline] = useState(false)
-  const { t } = useLanguage()
+  const langContext = useLanguage()
+  const t = langContext?.t || ((k, fallback) => fallback || k)
 
   useEffect(() => {
     if (!isOnline) {

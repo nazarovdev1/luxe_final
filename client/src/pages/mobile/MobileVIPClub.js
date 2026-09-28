@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
-  Crown, Star, ShieldCheck, Flame, Trophy, Zap, Gift,
+  Crown, ShieldCheck, Flame, Trophy, Zap, Gift,
   ChevronRight, ArrowLeft, Gem, Medal, Lock, History
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/LoginForm';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { MobileVIPClubSkeleton } from '../../components/EventSkeletons';
 import './mobileExperiences.css';
 import BadgeIcon from '../../components/BadgeIcon';
 
@@ -52,7 +53,7 @@ const VIP_TIER_DEFS = [
 
 const HOW_TO_EARN_DEFS = [
   { icon: <ShieldCheck className="w-4 h-4" />, key: 'purchase' },
-  { icon: <Star className="w-4 h-4" />, key: 'review' },
+  { icon: <Gem className="w-4 h-4" />, key: 'review' },
   { icon: <Flame className="w-4 h-4" />, key: 'sharePost' },
   { icon: <Trophy className="w-4 h-4" />, key: 'challengeWin' },
   { icon: <Zap className="w-4 h-4" />, key: 'dailyLogin' },
@@ -188,9 +189,7 @@ export default function MobileVIPClub() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: currentTier.color }} />
-          </div>
+          <MobileVIPClubSkeleton />
         ) : (
           <div className="mexp-content px-5">
 

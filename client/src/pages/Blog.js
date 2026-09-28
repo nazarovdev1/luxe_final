@@ -32,12 +32,16 @@ const Blog = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const pageRef = useRef(null);
+  const hasLoadedRef = useRef(false);
+  const requestSeqRef = useRef(0);
+  const lastQueryKeyRef = useRef(null);
 
   const fetchBlogs = useCallback(async (pageNum = 1, append = false) => {
+    const requestId = ++requestSeqRef.current;
     try {
-      if (pageNum === 1) {
+      if (pageNum === 1 && !hasLoadedRef.current) {
         setLoading(true);
-      } else {
+      } else if (pageNum > 1) {
         setLoadingMore(true);
       }
 
@@ -53,6 +57,7 @@ const Blog = () => {
       }
 
       const res = await axios.get('/api/blogs', { params });
+      if (requestId !== requestSeqRef.current) return;
 
       if (res.data.success) {
         const newBlogs = res.data.data;
@@ -67,17 +72,23 @@ const Blog = () => {
         setTotal(res.data.pagination.total);
       }
     } catch (err) {
-      console.error('Error fetching blogs:', err);
+      if (requestId === requestSeqRef.current) console.error('Error fetching blogs:', err);
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (requestId === requestSeqRef.current) {
+        hasLoadedRef.current = true;
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   }, [activeCategory, searchQuery]);
 
   useEffect(() => {
+    const queryKey = `${activeCategory}\u0000${searchQuery}`;
+    if (lastQueryKeyRef.current === queryKey) return;
+    lastQueryKeyRef.current = queryKey;
     setPage(1);
     fetchBlogs(1, false);
-  }, [fetchBlogs]);
+  }, [activeCategory, searchQuery, fetchBlogs]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;
@@ -86,6 +97,7 @@ const Blog = () => {
   };
 
   const handleCategoryChange = (slug) => {
+    if (slug === activeCategory && !searchQuery) return;
     setActiveCategory(slug);
     setSearchQuery('');
   };
@@ -143,27 +155,80 @@ const Blog = () => {
   );
 
   useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    intro
-      .from('.blog-intro-eyebrow', { y: 18, opacity: 0, duration: 0.55 })
-      .from('.blog-intro-title span', { yPercent: 118, rotate: 2, stagger: 0.11, duration: 1.1 }, '-=0.18')
-      .from('.blog-intro-copy', { y: 20, opacity: 0, duration: 0.62 }, '-=0.66')
-      .from('.blog-intro-tools', { y: 18, opacity: 0, duration: 0.58 }, '-=0.38');
 
-    gsap.utils.toArray('.blog-reveal').forEach((element) => {
-      gsap.from(element, {
-        y: 46,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: element,
-          start: 'top 87%',
-          toggleActions: 'play none none reverse',
-        },
-      });
+    // ── 7. BLOG: Broadside Press Rule Draw & Unmasked Editorial Headline ──
+    intro.fromTo('.blog-press-rule', 
+      { scaleX: 0, transformOrigin: 'left' }, 
+      { scaleX: 1, duration: 1.25, ease: 'power4.inOut' }, 
+      0
+    );
+
+    intro.fromTo('.blog-intro-issue', 
+      { scale: 0.7, opacity: 0, letterSpacing: '0.4em' }, 
+      { scale: 1, opacity: 1, letterSpacing: '0.2em', duration: 0.9, ease: 'power2.out' }, 
+      0.15
+    );
+
+    intro.fromTo('.blog-intro-eyebrow', 
+      { y: 20, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.6 }, 
+      0.25
+    );
+
+    intro.fromTo('.blog-intro-title span', 
+      { yPercent: 120, rotate: 3, opacity: 0 }, 
+      { yPercent: 0, rotate: 0, opacity: 1, stagger: 0.12, duration: 1.2, ease: 'power3.out' }, 
+      0.3
+    );
+
+    intro.fromTo('.blog-intro-copy, .blog-intro-bottom', 
+      { y: 25, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.8, stagger: 0.14 }, 
+      0.55
+    );
+
+    intro.fromTo('.blog-intro-tools', 
+      { y: 25, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 0.75 }, 
+      0.7
+    );
+
+    gsap.fromTo('.blog-intro-visual img', 
+      { scale: 1.25, opacity: 0.3 }, 
+      { scale: 1, opacity: 1, duration: 1.8, ease: 'power3.out', clearProps: 'opacity' }
+    );
+    gsap.to('.blog-intro-visual img', { 
+      yPercent: 12, 
+      ease: 'none', 
+      scrollTrigger: { trigger: '.blog-intro', start: 'top top', end: 'bottom top', scrub: 0.8 } 
     });
-  }, { scope: pageRef, dependencies: [loading, blogs.length], revertOnUpdate: true });
+  }, { scope: pageRef });
+
+  useGSAP((context, contextSafe) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const root = pageRef.current;
+    if (!root) return;
+    const observed = new WeakSet();
+    const animateArticles = contextSafe(() => {
+      let created = false;
+      root.querySelectorAll('.blog-reveal').forEach((element) => {
+        if (observed.has(element)) return;
+        observed.add(element);
+        created = true;
+        gsap.fromTo(element, { y: 46, opacity: 0 }, {
+          y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', clearProps: 'transform,opacity',
+          scrollTrigger: { trigger: element, start: 'top 87%', once: true },
+        });
+      });
+      if (created) ScrollTrigger.refresh();
+    });
+    animateArticles();
+    const observer = new MutationObserver(() => animateArticles());
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, { scope: pageRef });
 
   return (
     <div ref={pageRef} className="blog-page min-h-screen bg-[#07080c] pt-20 sm:pt-24 pb-24 overflow-hidden">
@@ -179,6 +244,8 @@ const Blog = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <section className="blog-intro">
+          <div className="blog-press-rule" aria-hidden="true" />
+          <div className="blog-intro-visual" aria-hidden="true"><img src="/editorial/journal-editorial-2026.png" alt="" /></div>
           <div className="blog-intro-issue">ISSUE <span>01</span> — 2026</div>
           <div className="blog-intro-eyebrow">
             <BookOpen className="w-3.5 h-3.5" />
@@ -210,6 +277,8 @@ const Blog = () => {
             {CATEGORIES.map((cat, index) => (
               <button
                 key={cat.slug}
+                type="button"
+                aria-pressed={activeCategory === cat.slug}
                 onClick={() => handleCategoryChange(cat.slug)}
                 className={activeCategory === cat.slug ? 'is-active' : ''}
               >
@@ -221,6 +290,11 @@ const Blog = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="blog-chapter blog-reveal">
+          <span>01 / LUXX JOURNAL</span>
+          <h2>O‘qishga <em>arziydigan</em> uslub.</h2>
+          <p>Trenddan ko‘ra uzoq yashaydigan fikrlar. Kiyim, did va o‘zingizga bo‘lgan munosabat haqida.</p>
+        </div>
 
         {/* Loading State */}
         {loading ? (
@@ -243,7 +317,7 @@ const Blog = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   <div className="relative aspect-[16/10] lg:aspect-auto overflow-hidden">
                     <img
-                      src={featuredPost.coverImage || '/placeholder.jpg'}
+                      src="/editorial/journal-feature-2026.png"
                       alt={featuredPost.title?.uz || featuredPost.title?.en || ''}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
@@ -292,7 +366,8 @@ const Blog = () => {
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
-                        src={post.coverImage || '/placeholder.jpg'}
+                        src={post.coverImage || '/editorial/journal-feature-2026.png'}
+                        onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/editorial/journal-feature-2026.png'; }}
                         alt={post.title?.uz || post.title?.en || ''}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -323,6 +398,12 @@ const Blog = () => {
                     </div>
                   </Link>
                 ))}
+              </div>
+            ) : featuredPost && activeCategory === 'Barchasi' && !searchQuery ? (
+              <div className="blog-afterword blog-reveal">
+                <span>THE NEXT CHAPTER</span>
+                <h3>Ilhomni o‘qidingiz.<br /><em>Endi uni kiying.</em></h3>
+                <Link to="/products">Kolleksiyani ko‘rish <ArrowRight size={18} /></Link>
               </div>
             ) : (
               <div className="blog-empty blog-reveal text-center py-20">
