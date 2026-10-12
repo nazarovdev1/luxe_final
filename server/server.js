@@ -61,9 +61,12 @@ import blogRoutes from './routes/blog.routes.js'
 import bundleRoutes from './routes/bundle.route.js'
 import stylePollRoutes from './routes/stylePoll.routes.js'
 import priceAlertRoutes from './routes/priceAlert.route.js'
+import stockAlertRoutes from './routes/stockAlert.route.js'
 import { deleteReelComment as deleteReelCommentController } from './controllers/reel.controller.js'
 
 import { initSocket } from './services/socket.service.js'
+import { startOrderNotifier, triggerRetryIfDue } from './services/orderNotifier.js'
+import { createOriginChecker } from './config/cors.js'
 
 const app = express()
 app.set('trust proxy', 1)
@@ -95,15 +98,7 @@ app.use(helmet({
 }))
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true)
-    if (process.env.NODE_ENV !== 'production') return callback(null, true)
-    const allowed = ['https://luxx.uz', 'https://www.luxx.uz', 'https://luxxuz.vercel.app']
-    if (allowed.includes(origin) || origin.endsWith('.vercel.app')) {
-      return callback(null, true)
-    }
-    return callback(new Error('Not allowed by CORS'))
-  },
+  origin: createOriginChecker(),
   credentials: true
 }))
 
@@ -124,6 +119,31 @@ const authLimiter = rateLimit({
 })
 app.use('/api/auth/login', authLimiter)
 app.use('/api/auth/register', authLimiter)
+
+const passwordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Urinishlar cheklangan. Keyinroq qayta urinib ko\'ring' }
+})
+app.use('/api/auth/password', passwordLimiter)
+
+// Mobile carriers in Uzbekistan share IPs between many users, so the per-IP ceiling is generous;
+// the strict per-phone cap lives in the order controller.
+const orderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  skip: (req) => req.method !== 'POST',
+  message: { success: false, message: 'Buyurtmalar soni cheklangan. Keyinroq urinib ko\'ring' }
+})
+app.use('/api/orders', orderLimiter)
+
+const stockAlertLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  skip: (req) => req.method !== 'POST',
+  message: { success: false, message: 'So\'rovlar cheklangan. Keyinroq urinib ko\'ring' }
+})
+app.use('/api/stock-alerts', stockAlertLimiter)
 
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -152,6 +172,7 @@ app.get('/api/test', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   const ready = isDBConnected()
+  if (ready) triggerRetryIfDue()
   res.status(ready ? 200 : 503).json({
     success: ready,
     status: ready ? 'ready' : 'not_ready',
@@ -188,6 +209,7 @@ app.use('/api/blogs', blogRoutes)
 app.use('/api/bundles', bundleRoutes)
 app.use('/api/style-polls', stylePollRoutes)
 app.use('/api/price-alerts', priceAlertRoutes)
+app.use('/api/stock-alerts', stockAlertRoutes)
 app.delete('/api/delete-reel-comment/:id', protect, (req, res, next) => {
   req.params.commentId = req.params.id
   return deleteReelCommentController(req, res, next)
@@ -272,6 +294,7 @@ const startServer = async () => {
     server.listen(PORT, () => {
       logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
       logger.info(`MongoDB status: ${dbConnected ? 'Connected' : 'Not connected'}`)
+      if (dbConnected) startOrderNotifier()
     }).on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
         logger.error(`Port ${PORT} band (allaqachon ishlatilmoqda). Iltimos, portni bo'shating yoki boshqa port ishlating.`)

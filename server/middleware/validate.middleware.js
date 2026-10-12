@@ -112,7 +112,7 @@ export const schemas = {
       product: Joi.string().pattern(objectIdPattern).required(),
       name: Joi.string().required(),
       image: Joi.string().allow('', null),
-      quantity: Joi.number().integer().min(1).required(),
+      quantity: Joi.number().integer().min(1).max(10).required(),
       price: Joi.number().min(0).required(),
       selectedColor: Joi.string().allow('', null),
       selectedSize: Joi.string().allow('', null),
@@ -121,7 +121,7 @@ export const schemas = {
       lookId: Joi.string().pattern(objectIdPattern).allow(null),
       lookTitle: Joi.string().max(200).allow('', null),
       lookDiscount: Joi.number().min(0).allow(null)
-    })).min(1).required(),
+    })).min(1).max(20).required(),
     totals: Joi.object({
       subtotal: Joi.number().min(0).required(),
       deliveryFee: Joi.number().min(0).required(),
@@ -191,9 +191,10 @@ export const schemas = {
   }),
 
   newPassword: Joi.object({
-    token: Joi.string().required(),
+    token: Joi.string(),
+    resetToken: Joi.string(),
     password: Joi.string().min(6).max(100).required()
-  })
+  }).or('token', 'resetToken')
 }
 
 export const validate = (schemaName) => {

@@ -15,8 +15,11 @@ class SMSService {
         return await this.sendViaApi(phone, message)
       } else if (this.clickSmsLogin) {
         return await this.sendViaClick(phone, message)
+      } else if (process.env.NODE_ENV === 'production') {
+        logger.error('SMS provider is not configured; message was not sent')
+        return { success: false, error: 'SMS provider is not configured' }
       } else {
-        logger.warn(`SMS not configured. Would send to ${phone}: ${message}`)
+        logger.warn(`SMS not configured (development). Would send to ${phone}: ${message}`)
         return { success: true, simulated: true }
       }
     } catch (error) {

@@ -30,6 +30,7 @@ import useRecentlyViewed from '../../hooks/useRecentlyViewed';
 import { showCartToast } from '../../utils/toast';
 
 import { API_BASE_URL } from '../../services/api';
+import { RETURN_DAYS, WARRANTY_DAYS } from '../../config/policies';
 
 const API_BASE = API_BASE_URL;
 
@@ -161,8 +162,8 @@ export default function ProductView() {
 
   const features = [
     { icon: Truck, title: 'Tez yetkazish', subtitle: '3-6 soat ichida' },
-    { icon: Shield, title: 'Kafolat', subtitle: '30 kun' },
-    { icon: RotateCcw, title: 'Qaytarish', subtitle: '7 kun' },
+    { icon: Shield, title: 'Kafolat', subtitle: `${WARRANTY_DAYS} kun` },
+    { icon: RotateCcw, title: 'Qaytarish', subtitle: `${RETURN_DAYS} kun` },
   ];
 
   const handleAddToCart = async () => {

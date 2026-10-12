@@ -217,4 +217,21 @@ async function sendContactMessage(name, phone, message) {
 	}
 }
 
-export { sendOrderToTelegram, sendContactMessage }
+// Generic message to the staff chat (HTML). Callers must escape user-supplied text.
+async function sendStaffMessage(html) {
+	try {
+		const config = getTelegramConfig()
+		if (!config) return { success: false, error: 'Telegram is not configured' }
+		const response = await axios.post(`https://api.telegram.org/bot${config.token}/sendMessage`, {
+			chat_id: config.chatId,
+			text: String(html).slice(0, 4000),
+			parse_mode: 'HTML',
+			disable_web_page_preview: true
+		}, { timeout: 10000 })
+		return response.data.ok ? { success: true } : { success: false, error: response.data.description }
+	} catch (error) {
+		return { success: false, error: error.message }
+	}
+}
+
+export { sendOrderToTelegram, sendContactMessage, sendStaffMessage }

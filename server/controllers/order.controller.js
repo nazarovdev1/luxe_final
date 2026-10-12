@@ -10,11 +10,14 @@ import { sendOrderToTelegram } from '../services/telegram.service.js'
 import pointsService from '../services/points.service.js'
 import logger from '../utils/logger.js'
 import { getPagination } from '../utils/pagination.js'
+import { triggerRetryIfDue } from '../services/orderNotifier.js'
 
 const clampMoney = (value) => Math.max(0, Math.round((Number(value) || 0) * 100) / 100)
 const GIFT_WRAP_PRICES = Object.freeze({ classic: 25000, premium: 45000, minimal: 15000 })
 const DELIVERY_SLOTS = new Set(['morning', 'afternoon', 'evening', 'late_evening', 'express'])
 const EXPRESS_DELIVERY_FEE = 25000
+export const MAX_OPEN_ORDERS_PER_PHONE = 3
+const OPEN_ORDER_WINDOW_MS = 24 * 60 * 60 * 1000
 
 const normalizeIdempotencyKey = (req) => {
   const value = req.get('Idempotency-Key') || req.body.idempotencyKey
@@ -287,6 +290,18 @@ export const createOrder = async (req, res) => {
       })
     }
 
+    const openOrders = await Order.countDocuments({
+      'customer.phone': customer.phone,
+      status: 'Kutilmoqda',
+      createdAt: { $gte: new Date(Date.now() - OPEN_ORDER_WINDOW_MS) }
+    })
+    if (openOrders >= MAX_OPEN_ORDERS_PER_PHONE) {
+      return res.status(429).json({
+        success: false,
+        message: 'Bu raqamdan ochiq buyurtmalar soni limitga yetdi. Iltimos, biz bilan bog\'laning.'
+      })
+    }
+
     const verifiedItems = await buildVerifiedItems(items)
     const subtotal = clampMoney(verifiedItems.reduce((sum, item) => sum + item.price * item.quantity, 0))
     const delivery = verifyDelivery(req.body.scheduledDelivery, customer)
@@ -407,6 +422,12 @@ export const createOrder = async (req, res) => {
     }
 
     const telegramResult = await sendOrderToTelegram(telegramData)
+    await Order.updateOne(
+      { _id: newOrder._id },
+      telegramResult.success
+        ? { $set: { notifiedAt: new Date(), notifyError: null }, $inc: { notifyAttempts: 1 } }
+        : { $set: { notifyError: String(telegramResult.error || 'unknown').slice(0, 300) }, $inc: { notifyAttempts: 1 } }
+    ).catch((err) => logger.error('Order notify state error:', err))
 
     if (telegramResult.success) {
       res.status(201).json({
@@ -438,6 +459,20 @@ export const createOrder = async (req, res) => {
       message: error.status ? error.message : 'Server xatosi. Qayta urining.',
       details: error.details || null
     })
+  }
+}
+
+export const getPendingOrderCount = async (req, res) => {
+  try {
+    triggerRetryIfDue()
+    const [pending, unnotified] = await Promise.all([
+      Order.countDocuments({ status: 'Kutilmoqda' }),
+      Order.countDocuments({ notifiedAt: null, notifyAttempts: { $gt: 0 } })
+    ])
+    res.json({ success: true, data: { pending, unnotified } })
+  } catch (error) {
+    logger.error('Error counting pending orders:', error)
+    res.status(500).json({ success: false, message: 'Server xatosi' })
   }
 }
 

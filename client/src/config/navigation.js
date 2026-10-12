@@ -1,6 +1,9 @@
-export const eventNavItems = [
+import { isFeatureEnabled } from './features';
+
+const allEventNavItems = [
   {
     id: 'style-feed',
+    feature: 'style-feed',
     labelKey: 'nav.community',
     fallbackLabel: 'Style Feed',
     path: '/style-feed',
@@ -11,6 +14,7 @@ export const eventNavItems = [
   },
   {
     id: 'challenges',
+    feature: 'challenges',
     labelKey: 'nav.challenges',
     fallbackLabel: 'Challenges',
     path: '/challenges',
@@ -21,6 +25,7 @@ export const eventNavItems = [
   },
   {
     id: 'live',
+    feature: 'live',
     labelKey: 'nav.live',
     fallbackLabel: 'Jonli Efir',
     path: '/live',
@@ -70,5 +75,7 @@ export const eventNavItems = [
     subtitle: 'Trendlar va stil',
   },
 ];
+
+export const eventNavItems = allEventNavItems.filter((item) => !item.feature || isFeatureEnabled(item.feature));
 
 export const resolveNavLabel = (item, t) => t(item.labelKey, item.fallbackLabel);

@@ -94,6 +94,10 @@ const orderSchema = new mongoose.Schema({
         isExpress: { type: Boolean, default: false }
     },
     deliveredAt: { type: Date, default: null },
+    // Staff notification tracking (Telegram). Used by the retry job so no order goes unseen.
+    notifiedAt: { type: Date, default: null },
+    notifyAttempts: { type: Number, default: 0 },
+    notifyError: { type: String, default: null },
     idempotencyKey: { type: String, trim: true, default: null }
 }, {
     timestamps: true
@@ -103,6 +107,7 @@ orderSchema.index({ 'customer.phone': 1 })
 orderSchema.index({ user: 1, createdAt: -1 })
 orderSchema.index({ status: 1 })
 orderSchema.index({ createdAt: -1 })
+orderSchema.index({ notifiedAt: 1, notifyAttempts: 1, createdAt: 1 })
 orderSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true })
 
 const Order = mongoose.model('Order', orderSchema)

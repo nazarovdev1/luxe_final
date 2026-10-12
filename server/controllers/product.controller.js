@@ -328,7 +328,7 @@ export const putProduct = async (req, res) => {
   }
 
   try {
-    const existing = await Product.findById(id).select('name price images').lean()
+    const existing = await Product.findById(id).select('name price images stock variants').lean()
     if (!existing) {
       return res.status(404).json({ success: false, message: 'Product not found' })
     }
@@ -352,6 +352,10 @@ export const putProduct = async (req, res) => {
         })
         .catch((err) => logger.error('Error importing priceAlert.service:', err))
     }
+
+    import('../services/stockAlert.service.js')
+      .then(({ notifyBackInStock }) => notifyBackInStock(existing, updated))
+      .catch((err) => logger.error('Back-in-stock notification failed:', err))
 
     res.status(200).json({ success: true, data: normalizeProductResponse(updated) })
   } catch (error) {

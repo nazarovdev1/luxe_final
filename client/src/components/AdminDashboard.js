@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import ProductForm from './ProductForm';
 import AdminOrders from './AdminOrders';
+import usePendingOrders from '../hooks/usePendingOrders';
 import AdminUsers from './AdminUsers';
 import AdminAnnouncements from './AdminAnnouncements';
 import LookbookManager from './LookbookManager';
@@ -144,6 +145,16 @@ const AdminDashboard = () => {
   const [adminStats, setAdminStats] = useState(null);
   const [isStatsLoading, setIsStatsLoading] = useState(true);
   const [navOpen, setNavOpen] = useState(false);
+  const { pending: pendingOrders } = usePendingOrders(token, {
+    onIncrease: (count) => toast.success(`Yangi buyurtma: +${count}`, { duration: 8000 }),
+  });
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const baseTitle = document.title.replace(/^\(\d+\)\s*/, '');
+    document.title = pendingOrders > 0 ? `(${pendingOrders}) ${baseTitle}` : baseTitle;
+    return () => { document.title = baseTitle; };
+  }, [pendingOrders]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -245,7 +256,7 @@ const AdminDashboard = () => {
             <p className="px-3 pb-2 pt-1 text-[9px] font-bold tracking-[.17em] text-[#77756f]">ATELIER INDEX</p>
             {tabsWithOverview.map((tab) => {
               const Icon = tab.icon;
-              return <button key={tab.id} type="button" onClick={() => selectTab(tab.id)} className={`admin-tab ${activeTab === tab.id ? 'admin-tab-active' : ''}`}><Icon size={16} /><span className="flex-1">{tab.label}</span>{activeTab === tab.id && <ChevronRight size={14} />}</button>;
+              return <button key={tab.id} type="button" onClick={() => selectTab(tab.id)} className={`admin-tab ${activeTab === tab.id ? 'admin-tab-active' : ''}`}><Icon size={16} /><span className="flex-1">{tab.label}</span>{tab.id === 'orders' && pendingOrders > 0 && <span className="rounded-full bg-[#e0ba72] px-2 py-0.5 text-[10px] font-bold text-[#0a0a0b]" aria-label={`${pendingOrders} ta yangi buyurtma`}>{pendingOrders}</span>}{activeTab === tab.id && <ChevronRight size={14} />}</button>;
             })}
           </nav>
           <div className="mt-auto border-t border-white/10 p-4">

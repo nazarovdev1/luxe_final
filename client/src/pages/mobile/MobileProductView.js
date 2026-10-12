@@ -475,6 +475,13 @@ const MobileProductView = () => {
                 />
               )}
               <PriceDropAlert product={product} />
+              <BackInStockButton
+                productId={product._id || product.id}
+                productName={product.name}
+                hasStock={product.stock == null || Number(product.stock) > 0}
+                size={selectedSize}
+                color={selectedColor}
+              />
             </div>
 
             {/* ── Materials & Eco ─────────────────────────── */}
