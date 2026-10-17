@@ -88,7 +88,7 @@ const LegalPrivacy = () => {
       intro: "Mijozlar ma'lumotlari xavfsizligini ta'minlash bizning ustuvor texnik majburiyatimizdir.",
       items: [
         { label: "256-bitli SSL/TLS shifrlash", desc: "Sayt va foydalanuvchi qurilmasi o'rtasidagi barcha ulanishlar bank darajasidagi shifrlangan kanal orqali o'tadi." },
-        { label: "Plastik karta ma'lumotlari", desc: "To'lovlar to'g'ridan-to'g'ri Click va Payme litsenziyalangan shlyuzlarida bajariladi. Karta raqamlari yoki CVV kodlari bizning serverlarimizda aslo saqlanmaydi." },
+        { label: "Plastik karta ma'lumotlari", desc: "Hozircha to'lov faqat yetkazilganda naqd qabul qilinadi, shuning uchun sayt karta ma'lumotlarini umuman so'ramaydi va saqlamaydi." },
         { label: "Cheklangan xodimlar kirishi", desc: "Faqat buyurtmani yetkazuvchi mas'ul xodimlarga kerakli darajada kirish ruxsati beriladi." },
         { label: "Avtomatlashtirilgan xavfsizlik auditi", desc: "Server tizimlari muntazam ravishda zaifliklarga qarshi sinovdan o'tkaziladi." }
       ],
@@ -352,7 +352,7 @@ const LegalPrivacy = () => {
               <span className="font-mono text-xs text-[#c9a96e] block print:text-black print:font-bold">04 / MOLIYA</span>
               <h2 className="text-base font-medium text-white tracking-tight print:text-black print:font-bold print:text-xs">Karta Ma'lumotlari Saqlanmaydi</h2>
               <p className="text-xs text-neutral-400 font-light leading-relaxed print:text-neutral-800 print:text-[10pt]">
-                To'lovlar to'g'ridan-to'g'ri Click va Payme litsenziyalangan bank shlyuzlarida bajariladi.
+                To'lov yetkazilganda naqd qabul qilinadi; sayt karta ma'lumotlarini so'ramaydi.
               </p>
             </div>
           </div>

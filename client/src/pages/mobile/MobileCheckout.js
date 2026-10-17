@@ -8,10 +8,11 @@ import toast from 'react-hot-toast';
 import {
     ArrowLeft, MapPin, Phone, User,
     Truck, CheckCircle, Navigation, ChevronRight,
-    Gem, ShieldCheck, X, LockKeyhole, Sparkles,
+    Gem, ShieldCheck, X, LockKeyhole, Check,
     Gift, Calendar, Clock, MessageCircle as MessageCircleIconFallback
 } from 'lucide-react';
 import useProductService from '../../server/server';
+import { getPolicyCopy } from '../../config/policies';
 import OrderSuccessModal from '../../components/OrderSuccessModal';
 import useCheckoutTotals, { DELIVERY_TIME_SLOTS, GIFT_WRAP_OPTIONS, getDeliveryDates } from '../../hooks/useCheckoutTotals';
 import { trackEvent } from '../../utils/analytics';
@@ -53,7 +54,8 @@ const validateField = (val, isRequired = true) => {
 
 
 const MobileCheckout = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const policy = getPolicyCopy(language);
     const navigate = useNavigate();
     const { items, lookItems, clearCart } = useCart();
     const { user, isAuthenticated, loading, token } = useAuth();
@@ -508,7 +510,7 @@ const MobileCheckout = () => {
                 <section className="px-5 pt-6">
                     <div className="border-b border-white/10 pb-5">
                         <div className="flex items-center gap-2 text-[#d6b47c]">
-                            <Sparkles className="h-4 w-4" />
+                            <Gem className="h-4 w-4" />
                             <span className="text-[10px] font-bold uppercase tracking-[0.22em]">{t('checkoutPage.conciergeOrder')}</span>
                         </div>
                         <h1 className="mt-2 text-3xl font-light leading-tight text-[#f6f1e8]">
@@ -679,6 +681,15 @@ const MobileCheckout = () => {
                                 </button>
                             ))}
                         </div>
+
+                        <ul className="space-y-2 border-y border-white/10 py-4 text-xs text-[#c7ceda]">
+                            {[policy.tryOn, policy.delivery, policy.returns].map((line) => (
+                                <li key={line} className="flex items-center gap-2.5">
+                                    <Check className="h-4 w-4 shrink-0 text-[#d6b47c]" />
+                                    {line}
+                                </li>
+                            ))}
+                        </ul>
 
                         <InputField label={t('checkoutPage.mobileInputComments')} icon={MessageCircleIconFallback} name="comments" value={formData.comments} onChange={handleChange} placeholder={t('checkoutPage.mobileCommentsPlaceholder')} />
 

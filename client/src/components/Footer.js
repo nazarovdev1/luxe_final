@@ -1,23 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-
-const CATEGORY_LINKS = [
-  { key: 'footer.jumpsuits', category: 'Jumpsuits' },
-  { key: 'footer.dresses', category: 'Dresses' },
-  { key: 'footer.sweaters', category: 'Sweaters' },
-  { key: 'footer.shoes', category: 'Shoes' },
-];
-
-const SOCIAL_ITEMS = [
-  { label: 'Instagram', Icon: Instagram },
-  { label: 'Telegram', isTelegram: true },
-  { label: 'Facebook', Icon: Facebook },
-];
+import { useProducts } from '../contexts/ProductContext';
+import { CONTACT } from '../config/policies';
 
 const Footer = ({ variant = 'default' }) => {
   const { t } = useLanguage();
+  // Categories come from the live catalogue so the footer never links to empty pages.
+  const { categories = [] } = useProducts();
   const isEditorial = variant === 'editorial';
 
   const palette = isEditorial
@@ -60,31 +51,11 @@ const Footer = ({ variant = 'default' }) => {
           <div className="lg:col-span-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
               <img src="/logoweb.png" alt="Logo" className="w-9 h-9 object-contain" />
-              <span className={`${palette.brand} font-serif text-2xl tracking-wide`}>Luxury</span>
+              <span className={`${palette.brand} font-serif text-2xl tracking-wide`}>LUXX</span>
             </div>
-            <p className={`${palette.body} text-[13px] leading-relaxed mb-8 max-w-sm`}>
+            <p className={`${palette.body} text-[13px] leading-relaxed max-w-sm`}>
               {t('footer.description')}
             </p>
-            <div className="flex justify-center md:justify-start gap-3">
-              {SOCIAL_ITEMS.map(({ label, Icon, isTelegram }) => (
-                <button
-                  key={label}
-                  type="button"
-                  aria-label={label}
-                  title={label}
-                  aria-disabled="true"
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${palette.social}`}
-                >
-                  {isTelegram ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z" />
-                    </svg>
-                  ) : (
-                    <Icon className="w-4 h-4" />
-                  )}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -112,11 +83,6 @@ const Footer = ({ variant = 'default' }) => {
                 </Link>
               </li>
               <li>
-                <Link to="/#bestsellers" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
-                  {t('footer.bestsellers')}
-                </Link>
-              </li>
-              <li>
                 <Link to="/about" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
                   {t('footer.aboutUs')}
                 </Link>
@@ -128,13 +94,13 @@ const Footer = ({ variant = 'default' }) => {
           <div className="lg:col-span-2 text-center md:text-left">
             <h3 className={`${palette.heading} text-[15px] font-medium tracking-wide mb-6 pl-3 border-l-2 ${palette.accentBorder} inline-block`}>{t('footer.categories')}</h3>
             <ul className="space-y-4">
-              {CATEGORY_LINKS.map(({ key, category }) => (
-                <li key={key}>
+              {categories.slice(0, 6).map((category) => (
+                <li key={category}>
                   <Link
                     to={`/products?category=${encodeURIComponent(category)}`}
                     className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}
                   >
-                    {t(key)}
+                    {category}
                   </Link>
                 </li>
               ))}
@@ -163,9 +129,9 @@ const Footer = ({ variant = 'default' }) => {
                 </div>
                 <div className="text-left mt-1">
                   <p className={`text-[10px] uppercase tracking-widest ${palette.label} mb-1`}>{t('footer.phone')}</p>
-                  <p className={`text-[13px] ${palette.heading}`}>
-                    +998 88 429 99 69
-                  </p>
+                  <a href={CONTACT.phoneHref} className={`text-[13px] ${palette.heading} ${palette.hoverAccent}`}>
+                    {CONTACT.phone}
+                  </a>
                 </div>
               </div>
 
@@ -175,9 +141,9 @@ const Footer = ({ variant = 'default' }) => {
                 </div>
                 <div className="text-left mt-1">
                   <p className={`text-[10px] uppercase tracking-widest ${palette.label} mb-1`}>{t('footer.email')}</p>
-                  <p className={`text-[13px] ${palette.heading}`}>
-                    support@luxx.uz
-                  </p>
+                  <a href={`mailto:${CONTACT.email}`} className={`text-[13px] ${palette.heading} ${palette.hoverAccent}`}>
+                    {CONTACT.email}
+                  </a>
                 </div>
               </div>
             </div>

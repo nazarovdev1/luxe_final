@@ -56,7 +56,7 @@ const MobileLegalPrivacy = () => {
     { num: '01', title: "100% Shifrlash", desc: "256-bit SSL va xavfsiz ulanish" },
     { num: '02', title: "Sotilmaydi", desc: "Begona shaxslarga berilmaydi" },
     { num: '03', title: "To'liq Nazorat", desc: "Istalgan vaqtda o'chirish huquqi" },
-    { num: '04', title: "Karta Saqlanmaydi", desc: "Click va Payme orqali to'g'ridan-to'g'ri" }
+    { num: '04', title: "Karta Saqlanmaydi", desc: "To'lov yetkazilganda, naqd" }
   ], []);
 
   const sections = useMemo(() => [

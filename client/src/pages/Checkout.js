@@ -19,8 +19,10 @@ import {
   Truck,
   User,
   Tag,
-  X
+  X,
+  Check,
 } from 'lucide-react';
+import { getPolicyCopy } from '../config/policies';
 import useProductService from '../server/server';
 import OrderSuccessModal from '../components/OrderSuccessModal';
 import { trackEvent } from '../utils/analytics';
@@ -100,7 +102,8 @@ const Checkout = () => {
   const { items, lookItems, getCartTotal, clearCart } = useCart();
   const { user, isAuthenticated, loading, token } = useAuth();
   const { createOrder } = useProductService();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const policy = getPolicyCopy(language);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -810,6 +813,15 @@ const Checkout = () => {
                       <p className="text-sm">{t('checkoutPage.paymePay')}</p>
                     </div>
                   </div>
+
+                  <ul className="space-y-2 border-y border-white/10 py-4 text-sm text-[#c7ceda]">
+                    {[policy.tryOn, policy.delivery, policy.returns].map((line) => (
+                      <li key={line} className="flex items-center gap-2.5">
+                        <Check className="h-4 w-4 shrink-0 text-[#d6b47c]" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
 
                   <label className="block">
                     <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.commentsLabel')}</span>

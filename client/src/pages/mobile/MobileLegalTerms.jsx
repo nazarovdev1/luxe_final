@@ -77,8 +77,7 @@ const MobileLegalTerms = () => {
       title: t('terms.section2Title') || "To'lov shartlari",
       items: [
         "Qabul qilganda naqd pul bilan to'lash",
-        "Kuryer terminali orqali (Uzcard / Humo / Visa)",
-        "Saytda yoki ilovada Click va Payme orqali",
+        "Avval uyda kiyib ko'rasiz, keyin to'laysiz",
         "Yashirin to'lov va foizlarsiz sof narx"
       ]
     },

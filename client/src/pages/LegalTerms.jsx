@@ -328,7 +328,7 @@ const LegalTerms = () => {
               <span className="font-mono text-xs text-[#c9a96e] block print:text-black print:font-bold">02 / TO'LOV</span>
               <h2 className="text-base font-medium text-white tracking-tight print:text-black print:font-bold print:text-xs">Qulay To'lov Usullari</h2>
               <p className="text-xs text-neutral-400 font-light leading-relaxed print:text-neutral-800 print:text-[10pt]">
-                Qabul qilganda naqd, kuryerga karta bilan yoki Click va Payme orqali to'lash.
+                Kuryer olib kelganda kiyib ko'rasiz va yoqqanini naqd to'laysiz.
               </p>
             </div>
 

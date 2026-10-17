@@ -6,7 +6,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getPolicyCopy } from '../../config/policies';
+import { CONTACT, getPolicyCopy } from '../../config/policies';
 import useProductService from '../../server/server';
 import toast from 'react-hot-toast';
 import {
@@ -17,7 +17,6 @@ import {
     LogOut,
     ChevronRight,
     ArrowLeft,
-    MessageCircle,
     Mail,
     Gift,
     MessageSquare,
@@ -359,7 +358,7 @@ const MobileProfile = () => {
                 <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.contact_title')}</h2>
 
                 <div className="space-y-3">
-                    <a href="tel:+998901234567" className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
+                    <a href={CONTACT.phoneHref} className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
                         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1f3b2d]">
                             <Phone className="h-5 w-5 text-[#7ce0a4]" />
                         </span>
@@ -369,17 +368,7 @@ const MobileProfile = () => {
                         </div>
                     </a>
 
-                    <a href="https://t.me/luxe_store" target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1d3144]">
-                            <MessageCircle className="h-5 w-5 text-[#8ac7ff]" />
-                        </span>
-                        <div>
-                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_telegram')}</p>
-                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_telegram_value')}</p>
-                        </div>
-                    </a>
-
-                    <a href="mailto:info@luxe.uz" className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
+                    <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
                         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2a3044]">
                             <Mail className="h-5 w-5 text-[#c7ceda]" />
                         </span>
