@@ -15,6 +15,7 @@ import {
   Gem,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getReviewSummary } from '../utils/productDisplay';
 
 /* ─── helpers ─────────────────────────────────────────── */
 const getProductImage = (product) => {
@@ -110,14 +111,17 @@ const MobileProductComparison = ({ products = [], onClose, productPathPrefix = '
       icon: Star,
       key: 'rating',
       render: (p) => (
-        <div className="flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 fill-[#d6b47c] text-[#d6b47c]" />
-          <span className="text-sm font-bold text-white">{p.rating ?? '4.5'}</span>
-        </div>
+        getReviewSummary(p).show ? (
+          <div className="flex items-center gap-1">
+            <Star className="h-3.5 w-3.5 fill-[#d6b47c] text-[#d6b47c]" />
+            <span className="text-sm font-bold text-white">{getReviewSummary(p).rating.toFixed(1)}</span>
+          </div>
+        ) : <span className="text-sm text-white/25">—</span>
       ),
       getBest: (ps) => {
-        const max = Math.max(...ps.map((p) => p.rating ?? 4.5));
-        return ps.findIndex((p) => (p.rating ?? 4.5) === max);
+        const ratings = ps.map((p) => (getReviewSummary(p).show ? getReviewSummary(p).rating : 0));
+        const max = Math.max(...ratings);
+        return max > 0 ? ratings.indexOf(max) : -1;
       },
     },
     {

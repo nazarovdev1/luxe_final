@@ -6,7 +6,7 @@ import ReviewList from '../ReviewList';
 export default function ReviewsSection({ product, reviews = [], onReviewAdded, onReviewDeleted, sectionRef }) {
   const average = reviews.length
     ? reviews.reduce((total, review) => total + Number(review.rating || 0), 0) / reviews.length
-    : Number(product.rating || 5);
+    : 0;
 
   return (
     <section ref={sectionRef} className="review-studio">
@@ -15,10 +15,14 @@ export default function ReviewsSection({ product, reviews = [], onReviewAdded, o
           <p>MIJOZLAR FIKRI</p>
           <h2>Ushbu model haqidagi<br />haqiqiy taassurotlar.</h2>
         </div>
-        <div className="review-studio-score">
-          <strong>{average.toFixed(1)}</strong>
-          <span><span className="review-studio-stars">{Array.from({ length: 5 }, (_, index) => <Star key={index} size={15} fill="currentColor" />)}</span><small>{reviews.length ? `${reviews.length} ta sharh` : 'Hali sharhlar yo‘q'}</small></span>
-        </div>
+        {reviews.length > 0 ? (
+          <div className="review-studio-score">
+            <strong>{average.toFixed(1)}</strong>
+            <span><span className="review-studio-stars">{Array.from({ length: 5 }, (_, index) => <Star key={index} size={15} fill={index < Math.round(average) ? 'currentColor' : 'none'} />)}</span><small>{`${reviews.length} ta sharh`}</small></span>
+          </div>
+        ) : (
+          <div className="review-studio-score"><small>Hali sharhlar yo‘q</small></div>
+        )}
       </div>
 
       <div className="review-studio-layout">

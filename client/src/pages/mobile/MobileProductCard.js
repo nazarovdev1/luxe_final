@@ -4,6 +4,7 @@ import { Heart, ShoppingBag } from 'lucide-react';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getActiveSale, getDisplayBadge } from '../../utils/productDisplay';
 
 const MobileProductCard = ({ product, index = 0 }) => {
     const { isFavorite, toggleFavorite } = useFavorites();
@@ -17,6 +18,7 @@ const MobileProductCard = ({ product, index = 0 }) => {
     };
 
     const formatPrice = (value) => `${parsePrice(value).toLocaleString()} ${t('common.sum')}`;
+    const sale = getActiveSale({ ...product, price: parsePrice(product.price), originalPrice: parsePrice(product.originalPrice) });
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -62,7 +64,7 @@ const MobileProductCard = ({ product, index = 0 }) => {
                 {/* Gradient overlay for better text visibility if needed, or just aesthetic */}
                 <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-active:opacity-100 transition-opacity" />
 
-                <ProductBadge badge={product.badge} />
+                <ProductBadge badge={getDisplayBadge(product)} />
 
                 <button
                     onClick={handleFavoriteToggle}
@@ -88,9 +90,9 @@ const MobileProductCard = ({ product, index = 0 }) => {
 
                 <div className="flex items-center justify-between">
                     <div>
-                        {product.originalPrice && (
+                        {sale.active && (
                             <p className="text-[10px] text-gray-500 line-through mb-0.5">
-                                {formatPrice(product.originalPrice)}
+                                {formatPrice(sale.originalPrice)}
                             </p>
                         )}
                         <p className="text-sm font-medium text-white">

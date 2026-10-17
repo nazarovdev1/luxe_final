@@ -7,8 +7,13 @@ import { getPagination, getSort } from '../utils/pagination.js'
 
 const clearProductsCache = () => {}
 
-const normalizeProductPayload = (payload = {}) => {
+export const normalizeProductPayload = (payload = {}) => {
   const product = { ...payload }
+
+  // Rating and review count are derived from real reviews only (see review.controller.js).
+  delete product.rating
+  delete product.ratings
+  delete product.numOfReviews
 
   const coerceImages = (value) => {
     const list = Array.isArray(value) ? value : [value]
@@ -51,8 +56,8 @@ const normalizeProductPayload = (payload = {}) => {
     product.colors = [...new Set(activeVariants.map((variant) => variant.color).filter(Boolean))]
   }
 
-  if (product.ratings !== undefined && product.rating === undefined) {
-    product.rating = product.ratings
+  if (product.saleEndsAt === '') {
+    product.saleEndsAt = null
   }
 
   if (product.badge === null) {
@@ -71,7 +76,6 @@ const normalizeProductPayload = (payload = {}) => {
     product.garmentMeasurements = product.measurements
   }
 
-  delete product.ratings
   return product
 }
 
@@ -163,6 +167,7 @@ export const getProduct = async (req, res) => {
           name: 1,
           price: 1,
           originalPrice: 1,
+          saleEndsAt: 1,
           category: 1,
           badge: 1,
           rating: 1,
@@ -269,10 +274,12 @@ export const getRelatedProducts = async (req, res) => {
         name: 1,
         price: 1,
         originalPrice: 1,
+        saleEndsAt: 1,
         category: 1,
         badge: 1,
         rating: 1,
         ratings: 1,
+        numOfReviews: 1,
         images: { $slice: 1 }
       })
       .limit(10)

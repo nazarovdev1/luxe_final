@@ -6,14 +6,15 @@ import {
   Plus,
   Ruler,
   Share2,
+  ShieldCheck,
   ShoppingBag,
   Star,
   Truck,
 } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getProductOptions } from '../../utils/productVariants';
-
-const formatPrice = (value) => Number(value || 0).toLocaleString('uz-UZ').replace(/,/g, ' ');
+import { formatPrice, formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from '../../utils/productDisplay';
+import { getPolicyCopy } from '../../config/policies';
 
 export default function ProductInfoPanel({
   product,
@@ -26,7 +27,7 @@ export default function ProductInfoPanel({
   onOpenSizeGuide,
   onOpenQuickOrder,
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -34,7 +35,14 @@ export default function ProductInfoPanel({
   const [isCopied, setIsCopied] = useState(false);
   const colors = getProductOptions(product, 'color');
   const sizes = getProductOptions(product, 'size');
-  const hasDiscount = Number(product.originalPrice) > Number(product.price);
+  const sale = getActiveSale(product);
+  const badge = getDisplayBadge(product);
+  const reviewSummary = getReviewSummary({
+    rating: product.rating,
+    numOfReviews: Math.max(Number(product.numOfReviews) || 0, reviewCount),
+  });
+  const policy = getPolicyCopy(language);
+  const isOriginal = Boolean(product.authenticity?.isOriginal);
   const fitLabels = { small: 'Kichik keladi', 'true-to-size': 'Aynan mos', large: 'Katta keladi' };
   const modelDetails = [
     product.modelInfo?.height && `Bo'yi ${product.modelInfo.height} sm`,
@@ -63,39 +71,53 @@ export default function ProductInfoPanel({
     }
   };
 
+  const composition = [product.fabricComposition, ...(product.materials || [])].filter(Boolean);
+  const materialContent = [
+    composition.length && `Tarkibi: ${[...new Set(composition)].join(', ')}`,
+    product.origin && `Ishlab chiqarilgan: ${product.origin}`,
+    product.careInstructions && `Parvarish: ${product.careInstructions}`,
+  ].filter(Boolean).join('. ');
+
   const details = [
-    { id: 'description', label: 'Model haqida', content: product.description || "Kundalik va maxsus lahzalar uchun yaratilgan nafis, qulay model." },
+    ...(product.description ? [{ id: 'description', label: 'Model haqida', content: product.description }] : []),
+    ...(isOriginal ? [{
+      id: 'authenticity',
+      label: 'Original va kelib chiqishi',
+      content: ['Original mahsulot', product.brand, product.authenticity?.note].filter(Boolean).join(' · '),
+    }] : []),
     ...(product.fit?.note || modelDetails ? [{
       id: 'fit',
       label: 'Fit va model ma’lumotlari',
       content: [fitLabels[product.fit?.type] || '', product.fit?.note, modelDetails].filter(Boolean).join('. '),
     }] : []),
-    { id: 'material', label: 'Material va parvarish', content: product.materials?.join(', ') || "Sifatli mato. Shaklini saqlashi uchun ehtiyotkor parvarish tavsiya qilinadi." },
-    { id: 'delivery', label: 'Yetkazib berish', content: "Toshkent bo'ylab tezkor yetkazib berish mavjud. Buyurtma tafsilotlari checkout paytida tasdiqlanadi." },
+    ...(materialContent ? [{ id: 'material', label: 'Tarkib va parvarish', content: materialContent }] : []),
+    { id: 'delivery', label: 'Yetkazish, kiyib ko‘rish va qaytarish', content: [policy.delivery, policy.tryOn, policy.returns, policy.payment].join('. ') + '.' },
   ];
 
   return (
     <section className="clean-product-panel">
       <div className="clean-product-topline">
-        <span>{product.category || 'YANGI KOLLEKSIYA'}</span>
-        {product.badge && <span className="clean-product-badge">{product.badge}</span>}
+        <span>{product.brand || product.category}</span>
+        {isOriginal && <span className="clean-product-original"><ShieldCheck size={13} aria-hidden="true" /> Original</span>}
+        {badge && <span className="clean-product-badge">{badge === 'LIMITED' ? 'Cheklangan son' : badge}</span>}
       </div>
 
       <h1 className="clean-product-title">{product.name}</h1>
 
-      <div className="clean-product-rating">
-        <div className="flex text-[#c9a96e]" aria-label={`${product.rating || 5} yulduz`}>
-          {Array.from({ length: 5 }, (_, index) => <Star key={index} size={14} fill="currentColor" />)}
+      {reviewSummary.show && (
+        <div className="clean-product-rating">
+          <div className="flex text-[#c9a96e]" aria-label={`${reviewSummary.rating} yulduz`}>
+            {Array.from({ length: 5 }, (_, index) => <Star key={index} size={14} fill={index < Math.round(reviewSummary.rating) ? 'currentColor' : 'none'} />)}
+          </div>
+          <button onClick={onReviewClick}>{reviewSummary.rating.toFixed(1)} · {reviewSummary.count} sharh</button>
         </div>
-        <button onClick={onReviewClick}>{(product.rating || 5).toFixed(1)} · {reviewCount || 'Yangi'} sharhlar</button>
-      </div>
+      )}
 
       <div className="clean-product-price">
         <span>{formatPrice(product.price)} <small>{t('common.sum') || "so'm"}</small></span>
-        {hasDiscount && <del>{formatPrice(product.originalPrice)} so'm</del>}
+        {sale.active && <del>{formatPrice(sale.originalPrice)} so'm</del>}
       </div>
-
-      <p className="clean-product-lead">Siluetni nafis ko‘rsatadigan, kun davomida o‘zingizni erkin his qilishingiz uchun tanlangan model.</p>
+      {sale.active && <p className="clean-product-sale-note">{formatSaleNote(sale.endsAt, language)}</p>}
 
       {colors.length > 0 && (
         <div className="clean-choice">
@@ -140,7 +162,7 @@ export default function ProductInfoPanel({
 
       <button className="clean-quick-order" onClick={() => onOpenQuickOrder?.(selectedColor, selectedSize)}>Bir klikda buyurtma berish</button>
 
-      <div className="clean-delivery-note"><Truck size={17} /><span><b>Bugun yuboriladi</b><small>Toshkent bo‘ylab tezkor yetkazib berish</small></span></div>
+      <div className="clean-delivery-note"><Truck size={17} /><span><b>{policy.delivery}</b><small>{policy.tryOn} · {policy.returns}</small></span></div>
 
       <div className="clean-details">
         {details.map((detail) => (

@@ -30,6 +30,11 @@ const productSchema = new mongoose.Schema({
         default: null,
         min: [0, 'Original price cannot be negative']
     },
+    // A crossed-out originalPrice is only shown while a dated promotion is running.
+    saleEndsAt: {
+        type: Date,
+        default: null
+    },
     category: {
         type: String,
         required: [true, 'Please select category for this product'],
@@ -133,7 +138,7 @@ const productSchema = new mongoose.Schema({
         type: Number,
         min: 1,
         max: 10,
-        default: 5
+        default: null
     },
     materials: [{
         type: String // e.g. "Organic Cotton", "Recycled Polyester"

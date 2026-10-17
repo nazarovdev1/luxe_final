@@ -67,18 +67,16 @@ export default function MobileHome() {
     return Array.from(grouped.values()).sort((a, b) => b.count - a.count).slice(0, 5);
   }, [products]);
 
-  const bestsellers = useMemo(() => {
-    const badged = products.filter((product) => String(product.badge || '').toUpperCase() === 'BESTSELLER');
-    const ranked = [...products].sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
-    return uniqueById([...badged, ...ranked]).slice(0, 4);
+  // Signature pieces: verified originals first, then the most considered (highest priced) items.
+  // No sales ranking until there is real order data behind it.
+  const signaturePieces = useMemo(() => {
+    const originals = products.filter((product) => product.authenticity?.isOriginal);
+    const byPrice = [...products].sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+    return uniqueById([...originals, ...byPrice]).slice(0, 4);
   }, [products]);
 
-  const voices = useMemo(() => [1, 2, 3].map((number) => ({
-    id: `voice-${number}`,
-    name: t(`mobileHome.voice_name_${number}`),
-    quote: t(`mobileHome.voice_quote_${number}`),
-    rating: '5.0',
-  })), [t]);
+  // Customer quotes are shown only when real reviews exist; none are invented here.
+  const voices = useMemo(() => [], []);
 
   const universeItems = useMemo(() => eventNavItems
     .filter((item) => item.id !== 'reels')
@@ -111,7 +109,7 @@ export default function MobileHome() {
         products={products}
         newestProducts={newestProducts}
         categories={categories}
-        bestsellers={bestsellers}
+        bestsellers={signaturePieces}
         bundle={featuredBundle}
         looks={looks}
         voices={voices}

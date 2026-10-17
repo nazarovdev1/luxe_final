@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import SEO from '../../components/SEO';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getPolicyCopy } from '../../config/policies';
 
 const galleryImages = [
     '/second_pose.jpg',
@@ -43,17 +44,15 @@ const usePrefersReducedMotion = () => {
 };
 
 const MobileAbout = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const prefersReducedMotion = usePrefersReducedMotion();
     const galleryRef = useRef(null);
     const slideRefs = useRef([]);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-    const proofChips = useMemo(() => ([
-        { value: '98%', label: t('about.satisfaction') },
-        { value: '3-6', label: t('about.pillarDelivery') },
-        { value: '14', label: t('about.pillarTrust') },
-    ]), [t]);
+    const proofChips = useMemo(() => (
+        getPolicyCopy(language).facts.map(([value, label]) => ({ value, label }))
+    ), [language]);
 
     const pillars = useMemo(() => ([
         {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, X, Star, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '';
@@ -87,9 +88,9 @@ const RecentlyViewed = ({ items, onClear }) => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#12121a] via-transparent to-transparent opacity-80" />
 
-                {item.badge && (
+                {getDisplayBadge(item) && (
                   <span className="absolute top-2 left-2 inline-flex items-center rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-                    {item.badge}
+                    {getDisplayBadge(item)}
                   </span>
                 )}
               </div>
@@ -107,10 +108,10 @@ const RecentlyViewed = ({ items, onClear }) => {
                   <span className="text-sm font-bold text-[#f4f1eb]">
                     {formatPrice(item.price)} {t('common.sum')}
                   </span>
-                  {item.rating > 0 && (
+                  {getReviewSummary(item).show && (
                     <span className="flex items-center gap-1 text-xs text-amber-300">
                       <Star className="w-3 h-3 fill-current" />
-                      {item.rating.toFixed(1)}
+                      {getReviewSummary(item).rating.toFixed(1)}
                     </span>
                   )}
                 </div>

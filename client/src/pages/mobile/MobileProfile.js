@@ -6,6 +6,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getPolicyCopy } from '../../config/policies';
 import useProductService from '../../server/server';
 import toast from 'react-hot-toast';
 import {
@@ -59,7 +60,7 @@ const EVENT_ICONS = {
 };
 
 const MobileProfile = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { isAuthenticated, user, logout } = useAuth();
     const { favorites, toggleFavorite } = useFavorites();
     const { products } = useProducts();
@@ -450,18 +451,12 @@ const MobileProfile = () => {
                     </p>
 
                     <div className="mt-5 grid grid-cols-3 gap-2">
-                        <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
-                            <p className="text-lg font-semibold text-white">100+</p>
-                            <p className="text-[11px] text-gray-400">{t('mobileProfile.about_customers')}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
-                            <p className="text-lg font-semibold text-white">1000+</p>
-                            <p className="text-[11px] text-gray-400">{t('mobileProfile.about_products')}</p>
-                        </div>
-                        <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
-                            <p className="text-lg font-semibold text-white">4.9</p>
-                            <p className="text-[11px] text-gray-400">{t('mobileProfile.about_rating')}</p>
-                        </div>
+                        {getPolicyCopy(language).facts.map(([value, label]) => (
+                            <div key={label} className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
+                                <p className="text-sm font-semibold text-white">{value}</p>
+                                <p className="text-[11px] text-gray-400">{label}</p>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="mt-5 rounded-2xl bg-white/5 border border-white/5 p-4">

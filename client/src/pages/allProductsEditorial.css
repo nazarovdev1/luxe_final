@@ -283,6 +283,7 @@
 .catalogue-card__price { margin-top: 11px; display: flex; align-items: baseline; gap: 12px; }
 .catalogue-card__price strong { font-size: 12px; font-weight: 700; letter-spacing: .04em; }
 .catalogue-card__price span { color: rgba(23,17,15,.38); font-size: 10px; text-decoration: line-through; }
+.catalogue-card__sale-note { margin: 6px 0 0; color: #9a7a45; font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 
 .catalogue-loading-grid { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--cat-line); }
 .catalogue-loading-grid > div { aspect-ratio: 3 / 4; background: #ded4c8; overflow: hidden; }

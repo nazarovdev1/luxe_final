@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   ShoppingCart,
   Loader2,
-  Gem,
   ChevronRight,
   ShieldCheck,
   Zap,
@@ -29,7 +28,6 @@ import ProductInfoPanel from '../components/ProductView/ProductInfoPanel';
 import FloatingCTA from '../components/ProductView/FloatingCTA';
 import RelatedProducts from '../components/ProductView/RelatedProducts';
 import ReviewsSection from '../components/ProductView/ReviewsSection';
-import CraftsmanshipSpotlight from '../components/ProductView/CraftsmanshipSpotlight';
 import CompleteTheLook from '../components/ProductView/CompleteTheLook';
 import QuickOrderModal from '../components/ProductView/QuickOrderModal';
 import SizeGuideModal from '../components/SizeGuideModal';
@@ -40,8 +38,17 @@ import CustomerPhotoReviews from '../components/CustomerPhotoReviews';
 import { useLanguage } from '../contexts/LanguageContext';
 
 import { API_BASE_URL } from '../services/api';
+import { RETURN_DAYS } from '../config/policies';
+import { getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
 
 const API_BASE = API_BASE_URL;
+
+const marqueeItems = [
+  "TOSHKENT BO'YLAB SHU KUNI YETKAZIB BERISH",
+  "UYDA KIYIB KO'RIB, YOQSA TO'LAYSIZ",
+  `${RETURN_DAYS} KUN ICHIDA QAYTARISH`,
+  'SHAXSIY FITTING VA OBRAZ KONSYERJI',
+];
 
 // ════════════════════════════════════════════════════════════
 // ProductView — Ultra Luxury Cinematic Product Detail Page
@@ -209,6 +216,12 @@ export default function ProductView() {
     ? product.images.map(img => typeof img === 'object' ? img.url : img)
     : [product.image].filter(Boolean);
 
+  // Structured-data rating comes from the reviews shown on the page, never from the product record.
+  const reviewAverage = getReviewSummary({
+    rating: reviews.length ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length : 0,
+    numOfReviews: reviews.length,
+  });
+
   const relatedProducts = (products || [])
     .filter((item) => item.id !== product.id && item.category === product.category)
     .slice(0, 4);
@@ -225,15 +238,12 @@ export default function ProductView() {
       {/* ── Ticker Tape Top Banner ──────────────────────── */}
       <div className="product-marquee w-full py-2.5 overflow-hidden whitespace-nowrap mb-7 pointer-events-none">
         <div className="inline-flex items-center gap-8 animate-[marquee_25s_linear_infinite] text-[10px] font-black uppercase tracking-[0.25em] text-[#c9a96e]">
-          <span>✨ EXCLUSIVE LUXURY COLLECTION</span>
-          <span>•</span>
-          <span>⚡ TOSHKEN BO'YLAB 3-6 SOATDA EXPRESS YETKAZIB BERISH</span>
-          <span>•</span>
-          <span>💎 100% KAFOLATLANGAN ORIGINAL SIFAT</span>
-          <span>•</span>
-          <span>🌟 TO'PLAM CHEGIRMASI: -15% OUTFIT MATCHING</span>
-          <span>•</span>
-          <span>✨ EXCLUSIVE LUXURY COLLECTION</span>
+          {[...marqueeItems, ...marqueeItems].map((item, index) => (
+            <React.Fragment key={`${item}-${index}`}>
+              <span>{item}</span>
+              <span>·</span>
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
@@ -263,7 +273,7 @@ export default function ProductView() {
             description: product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari`,
             sku: product.sku || product._id,
             category: product.category,
-            brand: { '@type': 'Brand', name: 'Luxx.uz' },
+            brand: { '@type': 'Brand', name: product.brand || 'Luxx.uz' },
             offers: {
               '@type': 'Offer',
               url: `https://luxx.uz/product/${id}`,
@@ -273,12 +283,12 @@ export default function ProductView() {
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
             },
-            ...(product.rating && reviews.length > 0 && {
+            ...(reviewAverage.show && {
               aggregateRating: {
                 '@type': 'AggregateRating',
-                ratingValue: product.rating,
+                ratingValue: reviewAverage.rating,
                 bestRating: '5',
-                ratingCount: reviews.length,
+                ratingCount: reviewAverage.count,
               },
             }),
           })}
@@ -310,13 +320,6 @@ export default function ProductView() {
           <ChevronRight className="h-3 w-3 text-white/20" />
           <span className="text-white/90 font-bold truncate max-w-[240px]">{product.name}</span>
 
-          {/* Badge */}
-          {product.badge && (
-            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#c9a96e]/15 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#c9a96e] border border-[#c9a96e]/30 shadow-sm backdrop-blur-md">
-              <Gem className="h-3 w-3" />
-              {product.badge}
-            </span>
-          )}
         </nav>
 
         {/* ── Main Product Section (5-Second WOW Grid) ───── */}
@@ -324,7 +327,7 @@ export default function ProductView() {
 
           {/* Left Column: Gallery with Interactive Hotspots */}
           <div className="clean-gallery-shell animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <PremiumGallery images={images} productName={product.name} badge={product.badge} />
+            <PremiumGallery images={images} productName={product.name} badge={getDisplayBadge(product)} videoUrl={product.videoUrl} />
           </div>
 
           {/* Right Column: Sticky Product Info with 1-Click Buy */}
@@ -348,11 +351,6 @@ export default function ProductView() {
               />
             </div>
           </div>
-        </div>
-
-        {/* ── 3D Craftsmanship Spotlight Section ────────── */}
-        <div data-product-reveal className="product-scroll-reveal">
-          <CraftsmanshipSpotlight />
         </div>
 
         {/* ── Outfit Matcher Lookbook (Complete The Look) ── */}

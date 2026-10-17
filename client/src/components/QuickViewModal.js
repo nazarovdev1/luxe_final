@@ -6,6 +6,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import toast from 'react-hot-toast';
 import { showCartToast } from '../utils/toast';
+import { formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
+import { RETURN_DAYS } from '../config/policies';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -58,7 +60,7 @@ const formatColorLabel = (color) => {
 
 const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPathPrefix = '' }) => {
   const { addToCart } = useCart();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const modalRef = useRef(null);
 
@@ -163,10 +165,11 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
     }
   };
 
-  const hasDiscount = product.originalPrice && Number(product.originalPrice) > Number(product.price);
-  const discountPercent = hasDiscount
-    ? Math.round(((Number(product.originalPrice) - Number(product.price)) / Number(product.originalPrice)) * 100)
-    : 0;
+  const sale = getActiveSale(product);
+  const hasDiscount = sale.active;
+  const discountPercent = sale.percent;
+  const badge = getDisplayBadge(product);
+  const reviewSummary = getReviewSummary(product);
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
@@ -248,13 +251,9 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
 
             {/* Badges */}
             <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-20">
-              {product.badge ? (
+              {badge && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-semibold tracking-[0.22em] uppercase bg-black/60 backdrop-blur-md border border-[#d8b988]/30 text-[#d8b988]">
-                  {product.badge}
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-semibold tracking-[0.22em] uppercase bg-black/60 backdrop-blur-md border border-white/10 text-neutral-300">
-                  ATELIER EDIT
+                  {badge === 'LIMITED' ? 'Cheklangan son' : badge}
                 </span>
               )}
 
@@ -308,7 +307,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
             {/* Top Eyebrow */}
             <div className="flex items-center justify-between mb-2 pr-10 sm:pr-12">
               <span className="text-[10px] font-semibold tracking-[0.28em] text-[#d8b988] uppercase truncate max-w-[200px]">
-                LUXX / {product.category || 'HAUTE COUTURE'}
+                {product.brand || product.category}
               </span>
 
               {/* Desktop Wishlist Button */}
@@ -336,25 +335,26 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
             </Link>
 
             {/* Rating / Guarantee info */}
-            <div className="flex items-center gap-3 mb-4">
-              {product.rating > 0 ? (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#d8b988]/10 border border-[#d8b988]/20">
-                  <Star className="w-3 h-3 fill-[#d8b988] text-[#d8b988]" />
-                  <span className="text-xs font-semibold text-[#d8b988]">
-                    {Number(product.rating).toFixed(1)}
-                  </span>
-                  {product.numReviews > 0 && (
-                    <span className="text-[11px] text-neutral-400">
-                      ({product.numReviews} sharh)
+            {(reviewSummary.show || product.authenticity?.isOriginal) && (
+              <div className="flex items-center gap-3 mb-4">
+                {reviewSummary.show && (
+                  <div className="inline-flex items-center gap-1.5">
+                    <Star className="w-3 h-3 fill-[#d8b988] text-[#d8b988]" />
+                    <span className="text-xs font-semibold text-[#d8b988]">
+                      {reviewSummary.rating.toFixed(1)}
                     </span>
-                  )}
-                </div>
-              ) : (
-                <span className="text-[10px] text-[#d8b988]/80 tracking-[0.2em] uppercase font-mono">
-                  • ASL NUSXA KAFOLATI
-                </span>
-              )}
-            </div>
+                    <span className="text-[11px] text-neutral-400">
+                      ({reviewSummary.count} sharh)
+                    </span>
+                  </div>
+                )}
+                {product.authenticity?.isOriginal && (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-[#d8b988]/90 tracking-[0.2em] uppercase">
+                    <ShieldCheck className="w-3 h-3" /> Original
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Price Block */}
             <div className="flex items-baseline gap-3 pb-4 mb-5 border-b border-white/10">
@@ -369,10 +369,15 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
               )}
               {hasDiscount && (
                 <span className="text-sm text-neutral-500 line-through">
-                  {formatPrice(Number(product.originalPrice || 0) * (quantity > 1 ? quantity : 1))} so‘m
+                  {formatPrice(Number(sale.originalPrice || 0) * (quantity > 1 ? quantity : 1))} so‘m
                 </span>
               )}
             </div>
+            {hasDiscount && (
+              <p className="-mt-3 mb-5 text-[10px] uppercase tracking-[0.18em] text-[#d8b988]">
+                {formatSaleNote(sale.endsAt, language)}
+              </p>
+            )}
 
             {/* Description */}
             {product.description && (
@@ -540,15 +545,15 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
             <div className="grid grid-cols-3 gap-2 pt-3 text-center border-t border-white/5">
               <div className="flex items-center justify-center gap-1.5 text-neutral-400">
                 <Truck className="w-3.5 h-3.5 text-[#d8b988] shrink-0" />
-                <span className="text-[10px] tracking-wide text-neutral-300 whitespace-nowrap">3–6 soatda</span>
+                <span className="text-[10px] tracking-wide text-neutral-300 whitespace-nowrap">Shu kuni</span>
               </div>
               <div className="flex items-center justify-center gap-1.5 text-neutral-400 border-x border-white/5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#d8b988] shrink-0" />
-                <span className="text-[10px] tracking-wide text-neutral-300 whitespace-nowrap">100% Asl</span>
+                <Check className="w-3.5 h-3.5 text-[#d8b988] shrink-0" />
+                <span className="text-[10px] tracking-wide text-neutral-300 whitespace-nowrap">Uyda kiyib ko‘rish</span>
               </div>
               <div className="flex items-center justify-center gap-1.5 text-neutral-400">
                 <RotateCcw className="w-3.5 h-3.5 text-[#d8b988] shrink-0" />
-                <span className="text-[10px] tracking-wide text-neutral-300 whitespace-nowrap">14 kun bepul</span>
+                <span className="text-[10px] tracking-wide text-neutral-300 whitespace-nowrap">{RETURN_DAYS} kun qaytarish</span>
               </div>
             </div>
           </div>

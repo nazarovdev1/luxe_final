@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowRight, Crown, Gem, ShieldCheck, Sparkles, Star, Truck } from 'lucide-react';
+import { ArrowDown, ArrowRight, Check, Crown, Gem, ShieldCheck, Star, Truck } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getReviewSummary } from '../../utils/productDisplay';
+import { RETURN_DAYS } from '../../config/policies';
 import './mobileCoutureHome.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -160,10 +162,14 @@ const Bestsellers = ({ products }) => {
   if (!products.length) return null;
   return (
     <section className="mch-section mch-best">
-      <SectionHeading index="05" eyebrow="MOST WANTED" title={<>Hamma izlayotgan<br /><em>obrazlar</em></>} action="Ko‘rish" to="/mobile/products" />
+      <SectionHeading index="05" eyebrow="SIGNATURE PIECES" title={<>Atelyening<br /><em>asosiy buyumlari</em></>} action="Ko‘rish" to="/mobile/products" />
       <Link to={`/mobile/product/${idOf(products[0])}`} className="mch-best__lead" data-couture-card>
-        <div className="mch-best__picture"><img src={imageOf(products[0])} alt={products[0].name} loading="lazy" /><span>NO.01</span></div>
-        <div className="mch-best__lead-copy"><p><Crown size={13} /> HOUSE ICON</p><h3>{products[0].name}</h3><div><span><Star size={13} fill="currentColor" /> {(products[0].rating || 5).toFixed(1)}</span><strong>{money(products[0].price)} so‘m</strong></div></div>
+        <div className="mch-best__picture"><img src={imageOf(products[0])} alt={products[0].name} loading="lazy" /><span>01</span></div>
+        <div className="mch-best__lead-copy">
+          <p>{products[0].authenticity?.isOriginal ? <><ShieldCheck size={13} /> {products[0].brand || 'Original'}</> : <><Crown size={13} /> {products[0].brand || products[0].category}</>}</p>
+          <h3>{products[0].name}</h3>
+          <div>{getReviewSummary(products[0]).show && <span><Star size={13} fill="currentColor" /> {getReviewSummary(products[0]).rating.toFixed(1)}</span>}<strong>{money(products[0].price)} so‘m</strong></div>
+        </div>
       </Link>
       <div className="mch-best__list">
         {products.slice(1).map((product, index) => (
@@ -200,23 +206,26 @@ const Editorial = ({ looks, fallbackProducts, onOpenLook }) => {
   );
 };
 
-const Finale = ({ voices }) => (
+const Finale = ({ voices = [] }) => (
   <>
-    <section className="mch-voices">
-      <p className="mch-kicker"><span>07</span>CLIENT NOTES</p>
-      {voices.map((voice, index) => (
-        <blockquote key={voice.id} data-couture-reveal>
-          <span>“</span><p>{voice.quote}</p><footer>{voice.name}<i />{voice.rating} / 5</footer><b>0{index + 1}</b>
-        </blockquote>
-      ))}
-    </section>
+    {/* Client notes appear only once there are real, published customer reviews. */}
+    {voices.length > 0 && (
+      <section className="mch-voices">
+        <p className="mch-kicker"><span>07</span>CLIENT NOTES</p>
+        {voices.map((voice, index) => (
+          <blockquote key={voice.id} data-couture-reveal>
+            <span>“</span><p>{voice.quote}</p><footer>{voice.name}<i />{voice.rating} / 5</footer><b>0{index + 1}</b>
+          </blockquote>
+        ))}
+      </section>
+    )}
     <section className="mch-finale">
       <img src="/images/mobile/couture-manifesto.webp" alt="" loading="lazy" aria-hidden="true" />
       <div className="mch-finale__shade" />
       <div className="mch-finale__copy" data-couture-reveal>
         <p>LUXX MANIFESTO / TASHKENT</p>
         <h2>Siz modaga<br />ergashmaysiz.<br /><em>Uni yaratasiz.</em></h2>
-        <div className="mch-finale__trust"><span><ShieldCheck size={17} />14 kun kafolat</span><span><Truck size={17} />Tez yetkazish</span><span><Sparkles size={17} />Original sifat</span></div>
+        <div className="mch-finale__trust"><span><Truck size={17} />Shu kuni yetkazish</span><span><Check size={17} />Uyda kiyib ko‘rish</span><span><ShieldCheck size={17} />{RETURN_DAYS} kun qaytarish</span></div>
         <Link to="/mobile/products" className="mch-button mch-button--gold">Barcha mahsulotlarni ko‘rish<ArrowRight size={16} /></Link>
       </div>
       <p className="mch-finale__signature">LUXX</p>

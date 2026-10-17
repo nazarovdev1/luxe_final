@@ -138,7 +138,7 @@ const FlashSaleBar = ({ originalPrice, salePrice, stock, endTime, soldCount }) =
           originalPrice={originalPrice}
           salePrice={salePrice}
           totalStock={stock}
-          soldCount={soldCount || Math.floor(Math.random() * 7) + 3}
+          soldCount={soldCount || 0}
         />
       </div>
     </div>

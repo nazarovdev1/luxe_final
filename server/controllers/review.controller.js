@@ -2,6 +2,17 @@ import Review from '../models/review.model.js'
 import Product from '../models/product.model.js'
 import pointsService from '../services/points.service.js'
 
+// Rating and review count always come from stored reviews, never from admin input.
+export const recalculateProductRating = async (productId) => {
+    const reviews = await Review.find({ product: productId }).select('rating').lean()
+    const numOfReviews = reviews.length
+    const rating = numOfReviews
+        ? Math.round((reviews.reduce((acc, item) => acc + item.rating, 0) / numOfReviews) * 10) / 10
+        : 0
+    await Product.findByIdAndUpdate(productId, { rating, numOfReviews })
+    return { rating, numOfReviews }
+}
+
 export const getReviews = async (req, res) => {
     try {
         const reviews = await Review.find({ product: req.params.productId })
@@ -39,15 +50,13 @@ export const createReview = async (req, res) => {
             console.error('Points error for review:', error)
         }
 
-        // Update product rating
-        const reviews = await Review.find({ product: productId })
-        const avgRating =
-            reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length
-
-        await Product.findByIdAndUpdate(productId, { rating: avgRating })
+        await recalculateProductRating(productId)
 
         res.status(201).json(review)
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({ message: 'Siz bu mahsulotga allaqachon sharh qoldirgansiz' })
+        }
         res.status(400).json({ message: error.message })
     }
 }
@@ -62,15 +71,7 @@ export const deleteReview = async (req, res) => {
 
         await Review.deleteOne({ _id: req.params.id })
 
-        // Recalculate product rating
-        const reviews = await Review.find({ product: review.product })
-        let avgRating = 0
-        if (reviews.length > 0) {
-            avgRating =
-                reviews.reduce((acc, item) => item.rating + acc, 0) / reviews.length
-        }
-
-        await Product.findByIdAndUpdate(review.product, { rating: avgRating })
+        await recalculateProductRating(review.product)
 
         res.json({ message: 'Sharh o\'chirildi' })
     } catch (error) {

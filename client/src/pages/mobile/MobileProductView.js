@@ -19,24 +19,21 @@ import {
   Plus,
   Minus,
   Truck,
-  Shield,
+  ShieldCheck,
   RotateCcw,
   ChevronLeft,
   ChevronRight,
   X,
   MessageCircle,
   Check,
-  Gem,
-  Palette,
   Loader2,
   Share2,
   Ruler,
-  Leaf,
+  Gem,
 } from 'lucide-react';
 import ReviewForm from '../../components/ReviewForm';
 import ReviewList from '../../components/ReviewList';
 import SEO from '../../components/SEO';
-import FlashSaleTimer from '../../components/FlashSaleTimer';
 import BackInStockButton from '../../components/BackInStockButton';
 import PriceDropAlert from '../../components/PriceDropAlert';
 import CustomerPhotoReviews from '../../components/CustomerPhotoReviews';
@@ -44,6 +41,8 @@ import SizeGuideModal from '../../components/SizeGuideModal';
 import { showCartToast } from '../../utils/toast';
 import { findVariant, getProductOptions } from '../../utils/productVariants';
 import { trackEvent, productAnalyticsPayload } from '../../utils/analytics';
+import { formatSaleNote, getActiveSale, getDisplayBadge } from '../../utils/productDisplay';
+import { getPolicyCopy } from '../../config/policies';
 
 import { API_BASE_URL } from '../../services/api';
 
@@ -65,7 +64,7 @@ const getProductImage = (item) => {
 };
 
 const MobileProductView = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -259,8 +258,27 @@ const MobileProductView = () => {
     ))
   );
 
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
-  const discountPercent = hasDiscount ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
+  const sale = getActiveSale(product);
+  const hasDiscount = sale.active;
+  const discountPercent = sale.percent;
+  const badge = getDisplayBadge(product);
+  const policy = getPolicyCopy(language);
+  const reviewAverage = reviews.length
+    ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length
+    : 0;
+  const isOriginal = Boolean(product.authenticity?.isOriginal);
+  const composition = [...new Set([product.fabricComposition, ...(product.materials || [])].filter(Boolean))];
+  const modelDetails = [
+    product.modelInfo?.height && `Model bo'yi ${product.modelInfo.height} sm`,
+    product.modelInfo?.wearingSize && `kiygan o'lchami ${product.modelInfo.wearingSize}`,
+  ].filter(Boolean).join(', ');
+  const productFacts = [
+    isOriginal && { label: 'Original', value: [product.brand, product.authenticity?.note].filter(Boolean).join(' · ') || 'Original mahsulot' },
+    composition.length && { label: 'Tarkibi', value: composition.join(', ') },
+    product.origin && { label: 'Ishlab chiqarilgan', value: product.origin },
+    product.careInstructions && { label: 'Parvarish', value: product.careInstructions },
+    (product.fit?.note || modelDetails) && { label: 'Fit', value: [product.fit?.note, modelDetails].filter(Boolean).join('. ') },
+  ].filter(Boolean);
 
   return (
     <>
@@ -278,7 +296,7 @@ const MobileProductView = () => {
             "image": images,
             "description": product.description,
             "sku": product.sku || product._id,
-            "brand": { "@type": "Brand", "name": "Luxx.uz" },
+            "brand": { "@type": "Brand", "name": product.brand || "Luxx.uz" },
             "offers": { "@type": "Offer", "url": `https://luxx.uz/product/${id}`, "priceCurrency": "UZS", "price": product.price, "availability": product.stock == null || Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }
           })}
         </script>
@@ -309,11 +327,10 @@ const MobileProductView = () => {
           )}
 
           {/* Badge */}
-          {product.badge && (
+          {badge && (
             <div className="absolute bottom-32 left-6 z-20 animate-fade-in-up">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#c9a96e]/15 backdrop-blur-xl border border-[#c9a96e]/25 text-[10px] font-black uppercase tracking-[0.2em] text-[#c9a96e]">
-                <Gem className="w-3 h-3" />
-                {product.badge}
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-xl border border-[#c9a96e]/25 text-[10px] font-black uppercase tracking-[0.2em] text-[#c9a96e]">
+                {badge === 'LIMITED' ? 'Cheklangan son' : badge}
               </span>
             </div>
           )}
@@ -354,27 +371,32 @@ const MobileProductView = () => {
             <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
 
             {/* Category */}
-            {product.category && (
-              <p className="text-[10px] font-black text-[#c9a96e] uppercase tracking-[0.3em] mb-3">{product.category}</p>
+            {(product.brand || product.category) && (
+              <p className="flex items-center gap-3 text-[10px] font-black text-[#c9a96e] uppercase tracking-[0.3em] mb-3">
+                {product.brand || product.category}
+                {isOriginal && <span className="inline-flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Original</span>}
+              </p>
             )}
 
             {/* Title */}
             <h1 className="font-brilliant text-3xl sm:text-4xl text-[#f5f5f3] leading-[1.1] mb-5">{product.name}</h1>
 
-            {/* Rating */}
+            {/* Rating — only when real reviews exist */}
+            {reviews.length > 0 && (
               <button
                 type="button"
                 onClick={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="flex items-center gap-4 mb-6 text-left"
               >
-                <div className="flex items-center gap-1">{renderStars(product.rating || 0)}</div>
-                <span className="text-[#f5f5f3] text-sm font-bold">{(product.rating || 0).toFixed(1)}</span>
+                <div className="flex items-center gap-1">{renderStars(reviewAverage)}</div>
+                <span className="text-[#f5f5f3] text-sm font-bold">{reviewAverage.toFixed(1)}</span>
                 <div className="w-px h-4 bg-white/10" />
                 <div className="flex items-center gap-1.5 text-[#8a8a8d]">
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span className="text-xs font-bold">{reviews.length} {t('mobileProductView.reviews_single')}</span>
                 </div>
               </button>
+            )}
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
@@ -384,11 +406,14 @@ const MobileProductView = () => {
               </span>
               {hasDiscount && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#6b6b6e] line-through">{formatPrice(product.originalPrice)}</span>
-                  <span className="px-2 py-0.5 rounded-lg bg-[#c9a96e]/10 text-[#c9a96e] text-[10px] font-black">-{discountPercent}%</span>
+                  <span className="text-sm text-[#6b6b6e] line-through">{formatPrice(sale.originalPrice)}</span>
+                  <span className="text-[#c9a96e] text-[10px] font-black">-{discountPercent}%</span>
                 </div>
               )}
             </div>
+            {hasDiscount && (
+              <p className="-mt-4 mb-6 text-[10px] font-bold uppercase tracking-[0.18em] text-[#c9a96e]">{formatSaleNote(sale.endsAt, language)}</p>
+            )}
 
             {/* Description */}
             {product.description && (
@@ -464,16 +489,6 @@ const MobileProductView = () => {
 
             {/* ── Premium Features ────────────────────────── */}
             <div className="space-y-4 mb-8">
-              {hasDiscount && (
-                <FlashSaleTimer
-                  endTime={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()}
-                  originalPrice={product.originalPrice}
-                  salePrice={product.price}
-                  totalStock={product.stock || 10}
-                  soldCount={Math.floor(Math.random() * 7) + 3}
-                  productName={product.name}
-                />
-              )}
               <PriceDropAlert product={product} />
               <BackInStockButton
                 productId={product._id || product.id}
@@ -485,48 +500,28 @@ const MobileProductView = () => {
             </div>
 
             {/* ── Materials & Eco ─────────────────────────── */}
-            {(product.materials?.length > 0 || product.ecoScore) && (
-              <div className="space-y-3 mb-8">
-                {product.materials?.length > 0 && (
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                    <div className="p-2.5 rounded-xl bg-[#c9a96e]/10">
-                      <Palette className="w-4 h-4 text-[#c9a96e]" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-0.5">{t('mobileProductView.materials')}</p>
-                      <p className="text-sm text-[#f5f5f3]">{product.materials.join(', ')}</p>
-                    </div>
+            {/* ── Product facts (only what the shop has actually entered) ── */}
+            {productFacts.length > 0 && (
+              <dl className="mb-8 divide-y divide-white/5 border-y border-white/5">
+                {productFacts.map((fact) => (
+                  <div key={fact.label} className="flex gap-4 py-3.5">
+                    <dt className="w-28 shrink-0 text-[10px] font-bold uppercase tracking-widest text-[#6b6b6e]">{fact.label}</dt>
+                    <dd className="text-sm text-[#f5f5f3]">{fact.value}</dd>
                   </div>
-                )}
-                {product.ecoScore && (
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                    <div className="p-2.5 rounded-xl bg-green-500/10">
-                      <Leaf className="w-4 h-4 text-green-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-bold text-[#6b6b6e] uppercase tracking-widest mb-1">{t('mobileProductView.eco_responsibility')}</p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div className="h-full bg-green-500 rounded-full" style={{ width: `${product.ecoScore * 10}%` }} />
-                        </div>
-                        <span className="text-xs font-bold text-green-400">{product.ecoScore}/10</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                ))}
+              </dl>
             )}
 
-            {/* ── Trust Badges ────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-3 mb-10">
+            {/* ── Service promises (from config/policies) ─── */}
+            <div className="mb-10 space-y-3 border-b border-white/5 pb-8">
               {[
-                { icon: Truck, label: t('mobileProductView.trust_delivery') },
-                { icon: Shield, label: t('mobileProductView.trust_warranty') },
-                { icon: RotateCcw, label: t('mobileProductView.trust_return') },
-              ].map(({ icon: Icon, label }, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                  <Icon className="w-4 h-4 text-[#c9a96e]" />
-                  <span className="text-[10px] font-bold text-[#8a8a8d] uppercase tracking-wider">{label}</span>
+                { icon: Truck, label: policy.delivery },
+                { icon: Check, label: policy.tryOn },
+                { icon: RotateCcw, label: policy.returns },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <Icon className="w-4 h-4 shrink-0 text-[#c9a96e]" />
+                  <span className="text-xs text-[#d8d4cc]">{label}</span>
                 </div>
               ))}
             </div>
@@ -616,13 +611,17 @@ const MobileProductView = () => {
 
               {/* Rating summary */}
               <div className="p-5 rounded-xl bg-white/[0.02] border border-white/5 mb-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="text-3xl font-bold text-[#f5f5f3]">{(product.rating || 0).toFixed(1)}</div>
-                  <div>
-                    <div className="flex items-center gap-0.5 mb-1">{renderStars(product.rating || 0)}</div>
-                    <p className="text-xs text-[#8a8a8d]">{reviews.length} {t('mobileProductView.reviews_count')}</p>
+                {reviews.length > 0 ? (
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="text-3xl font-bold text-[#f5f5f3]">{reviewAverage.toFixed(1)}</div>
+                    <div>
+                      <div className="flex items-center gap-0.5 mb-1">{renderStars(reviewAverage)}</div>
+                      <p className="text-xs text-[#8a8a8d]">{reviews.length} {t('mobileProductView.reviews_count')}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <p className="text-sm text-[#8a8a8d]">Hali sharhlar yo‘q. Birinchi fikr sizniki bo‘lsin.</p>
+                )}
                 {reviews.length > 0 && (
                   <div className="space-y-1.5 pt-3 border-t border-white/5">
                     {[5, 4, 3, 2, 1].map((star) => {

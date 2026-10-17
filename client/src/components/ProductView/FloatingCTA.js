@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Loader2, Heart, Sparkles } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Loader2, Heart } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getActiveSale } from '../../utils/productDisplay';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -57,6 +58,7 @@ export default function FloatingCTA({
   if (!shouldRender || !product) return null;
 
   const thumbnail = getProductImage(product);
+  const sale = getActiveSale(product);
 
   return (
     <div
@@ -84,9 +86,9 @@ export default function FloatingCTA({
                   <p className="text-xs sm:text-sm font-bold text-[#c9a96e]">
                     {formatPrice(product.price)} {t('common.sum')}
                   </p>
-                  {product.originalPrice && product.originalPrice > product.price && (
+                  {sale.active && (
                     <span className="text-[10px] text-[#6b6b6e] line-through hidden sm:inline">
-                      {formatPrice(product.originalPrice)}
+                      {formatPrice(sale.originalPrice)}
                     </span>
                   )}
                 </div>

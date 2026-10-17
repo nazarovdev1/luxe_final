@@ -12,6 +12,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import useProductListing from '../../hooks/useProductListing';
 import { showCartToast } from '../../utils/toast';
+import { getActiveSale, getDisplayBadge, getReviewSummary } from '../../utils/productDisplay';
 import QuickViewModal from '../../components/QuickViewModal';
 import MobileProductComparison from '../../components/MobileProductComparison';
 import SEO from '../../components/SEO';
@@ -21,8 +22,6 @@ import './mobileProductsFilter.css';
 const SORT_OPTIONS = [
   { id: 'featured', key: 'sort_recommended' },
   { id: 'newest', key: 'sort_newest' },
-  { id: 'bestseller', key: 'sort_bestseller' },
-  { id: 'rating', key: 'sort_rating' },
   { id: 'price-low', key: 'sort_price_low' },
   { id: 'price-high', key: 'sort_price_high' },
 ];
@@ -216,18 +215,18 @@ const MobileProducts = () => {
             <img src={getProductImage(product)} alt={product.name} loading={isLead ? 'eager' : 'lazy'} />
             <div className="mcp-card__shade" />
             <span className="mcp-card__index">{String(index + 1).padStart(2, '0')}</span>
-            {product.badge && <span className="mcp-card__badge">{product.badge}</span>}
+            {getDisplayBadge(product) && <span className="mcp-card__badge">{getDisplayBadge(product) === 'LIMITED' ? 'Cheklangan' : getDisplayBadge(product)}</span>}
             <button type="button" onClick={(event) => favorite(event, id)} className="mcp-card__heart" aria-label={t('mobileProducts.wishlist_label')}>
               <Heart className={isFavorite(id) ? 'fill-current' : ''} />
             </button>
-            {isLead && <span className="mcp-card__hero-mark">eng ko‘p<br />tanlangan</span>}
           </div>
           <div className="mcp-card__copy">
-            <p>{product.category || 'LUXX to‘plami'}</p>
+            <p>{product.brand || product.category || 'LUXX to‘plami'}</p>
             <h2>{product.name}</h2>
             <div className="mcp-card__price-line">
               <strong>{formatPrice(product.price)} <small>{t('common.sum')}</small></strong>
-              {product.rating > 0 && <span>★ {Number(product.rating).toFixed(1)}</span>}
+              {getReviewSummary(product).show && <span>★ {getReviewSummary(product).rating.toFixed(1)}</span>}
+              {getActiveSale(product).active && <span className="mcp-card__was">{formatPrice(product.originalPrice)}</span>}
             </div>
           </div>
         </Link>

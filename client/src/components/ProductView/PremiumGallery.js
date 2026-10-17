@@ -1,13 +1,16 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, X, ZoomIn, Maximize2, Sparkles, Share2, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ZoomIn, Maximize2, Share2, Check, Camera, Play } from 'lucide-react';
+
+const BADGE_LABELS = { NEW: 'Yangi', LIMITED: 'Cheklangan son' };
 
 /**
  * PremiumGallery — Immersive luxury product image gallery
- * Features: hover zoom lens, interactive hotspots, thumbnail strip, full-screen lightbox, micro-interactions
+ * Features: hover zoom lens, thumbnail strip, optional product video, full-screen lightbox
  */
-export default function PremiumGallery({ images = [], productName = '', badge = '' }) {
+export default function PremiumGallery({ images = [], productName = '', badge = '', videoUrl = '' }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [isZooming, setIsZooming] = useState(false);
@@ -18,6 +21,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
   // ── Navigation ──────────────────────────────────────────
   const goTo = useCallback((index) => {
     if (index >= 0 && index < images.length) {
+      setShowVideo(false);
       setCurrentIndex(index);
     }
   }, [images.length]);
@@ -92,7 +96,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
   if (!images || images.length === 0) {
     return (
       <div className="aspect-[3/4] rounded-3xl bg-[#141416] border border-white/5 flex flex-col items-center justify-center text-[#6b6b6e] space-y-2">
-        <Sparkles className="h-8 w-8 text-[#c9a96e]/40 animate-pulse" />
+        <Camera className="h-8 w-8 text-[#c9a96e]/40" />
         <p className="text-sm font-medium">Rasm mavjud emas</p>
       </div>
     );
@@ -200,6 +204,18 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
         ref={mainImageRef}
       >
         <div className="relative aspect-[3/4] w-full overflow-hidden">
+          {showVideo && videoUrl && (
+            <video
+              src={videoUrl}
+              className="absolute inset-0 z-20 h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           {/* Main Image */}
           <img
             src={images[currentIndex]}
@@ -218,16 +234,10 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
           {/* Top Floating Glass Badges */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-30">
             {badge ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#c9a96e]/90 text-black px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] backdrop-blur-md shadow-lg pointer-events-auto border border-[#c9a96e]">
-                <Sparkles className="h-3 w-3" />
-                {badge}
+              <span className="inline-flex items-center rounded-full bg-black/50 text-[#c9a96e] border border-[#c9a96e]/40 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] backdrop-blur-md pointer-events-auto">
+                {BADGE_LABELS[badge] || badge}
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/50 text-[#c9a96e] border border-[#c9a96e]/40 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] backdrop-blur-md pointer-events-auto shadow-md">
-                <Sparkles className="h-3 w-3" />
-                LUXX EXCLUSIVE
-              </span>
-            )}
+            ) : <span />}
 
             <div className="flex items-center gap-2 pointer-events-auto">
               <button
@@ -284,7 +294,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
       </div>
 
       {/* ── Thumbnail Strip ──────────────────────────────── */}
-      {images.length > 1 && (
+      {(images.length > 1 || videoUrl) && (
         <div
           ref={thumbnailStripRef}
           className="scrollbar-hide flex gap-3 overflow-x-auto py-1 px-0.5"
@@ -295,7 +305,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
               key={index}
               onClick={() => goTo(index)}
               className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl transition-all duration-300 ${
-                index === currentIndex
+                index === currentIndex && !showVideo
                   ? 'ring-2 ring-[#c9a96e] ring-offset-3 ring-offset-[#0a0a0b] scale-105 shadow-[0_0_15px_rgba(201,169,110,0.3)]'
                   : 'opacity-50 hover:opacity-90 hover:scale-[1.03] border border-white/10'
               }`}
@@ -306,11 +316,23 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
                 className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
                 loading="lazy"
               />
-              {index === currentIndex && (
+              {index === currentIndex && !showVideo && (
                 <div className="absolute inset-0 bg-[#c9a96e]/10 pointer-events-none" />
               )}
             </button>
           ))}
+          {videoUrl && (
+            <button
+              onClick={() => setShowVideo(true)}
+              aria-label="Mahsulot videosi"
+              className={`relative flex h-20 w-20 flex-shrink-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl border text-[10px] uppercase tracking-[0.18em] transition-all duration-300 ${
+                showVideo ? 'border-[#c9a96e] text-[#c9a96e]' : 'border-white/10 text-white/60 hover:text-white'
+              }`}
+            >
+              <Play className="h-5 w-5" />
+              Video
+            </button>
+          )}
         </div>
       )}
 

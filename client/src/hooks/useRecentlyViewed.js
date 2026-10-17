@@ -49,6 +49,7 @@ export const useRecentlyViewed = () => {
         image: product.image || (Array.isArray(product.images) ? product.images[0] : null),
         category: product.category || '',
         rating: product.rating || 0,
+        numOfReviews: product.numOfReviews || 0,
         badge: product.badge || '',
         viewedAt: Date.now(),
       };

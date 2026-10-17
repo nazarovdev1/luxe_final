@@ -6,11 +6,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SEO from '../components/SEO';
 import Footer from '../components/Footer';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getPolicyCopy } from '../config/policies';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const AboutPage = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const pageRef = useRef(null);
 
   useLayoutEffect(() => {
@@ -109,11 +110,7 @@ const AboutPage = () => {
               </div>
 
               <aside data-about-rail className="grid grid-cols-3 border-t border-white/20 pt-5 lg:grid-cols-1 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
-                {[
-                  ['98%', t('about.satisfaction')],
-                  ['3–6', t('about.pillarDelivery')],
-                  ['14', t('about.pillarTrust')],
-                ].map(([value, label]) => (
+                {getPolicyCopy(language).facts.map(([value, label]) => (
                   <div key={value} className="py-2 lg:border-b lg:border-white/15 lg:py-5">
                     <p className="font-brilliant text-3xl text-[#f6ecdf]">{value}</p>
                     <p className="mt-1 text-[9px] uppercase leading-4 tracking-[.16em] text-white/46">{label}</p>

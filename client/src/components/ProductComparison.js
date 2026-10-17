@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Check, BarChart3, ArrowRight, Sparkles, Ruler, Palette, Star, PackageCheck, Tag, Gem } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { getReviewSummary } from '../utils/productDisplay';
 
 const getProductImage = (product) => {
   if (!product) return '/placeholder.jpg';
@@ -98,14 +99,17 @@ const ProductComparison = ({ products = [], onClose, productPathPrefix = '' }) =
       icon: Star,
       key: 'rating',
       render: (p) => (
-        <div className="flex items-center gap-1.5">
-          <Star className="w-3.5 h-3.5 fill-[#d6b47c] text-[#d6b47c]" />
-          <span className="text-sm font-bold text-[#f5f5f3]">{p.rating || '4.5'}</span>
-        </div>
+        getReviewSummary(p).show ? (
+          <div className="flex items-center gap-1.5">
+            <Star className="w-3.5 h-3.5 fill-[#d6b47c] text-[#d6b47c]" />
+            <span className="text-sm font-bold text-[#f5f5f3]">{getReviewSummary(p).rating.toFixed(1)}</span>
+          </div>
+        ) : <span className="text-[11px] text-[#555]">—</span>
       ),
       getBest: (prods) => {
-        const max = Math.max(...prods.map((p) => p.rating || 4.5));
-        return prods.findIndex((p) => (p.rating || 4.5) === max);
+        const ratings = prods.map((p) => (getReviewSummary(p).show ? getReviewSummary(p).rating : 0));
+        const max = Math.max(...ratings);
+        return max > 0 ? ratings.indexOf(max) : -1;
       },
     },
     {

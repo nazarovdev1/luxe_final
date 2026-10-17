@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Loader2, Gem, Eye } from 'lucide-react';
+import { ArrowRight, Loader2, Gem, Eye } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { getActiveSale, getDisplayBadge } from '../../utils/productDisplay';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -58,7 +59,7 @@ export default function RelatedProducts({
                 {visualLoading ? (
                   <Loader2 size={14} className="animate-spin text-[#c9a96e]" />
                 ) : (
-                  <Sparkles size={14} className="text-[#c9a96e] animate-pulse" />
+                  <Gem size={14} className="text-[#c9a96e]" />
                 )}
                 <span>AI O'xshashlar</span>
               </button>
@@ -77,10 +78,10 @@ export default function RelatedProducts({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
             {relatedProducts.map((item, idx) => {
               const image = getProductImage(item);
-              const hasDiscount = item.originalPrice && item.originalPrice > item.price;
-              const discountPercent = hasDiscount
-                ? Math.round((1 - item.price / item.originalPrice) * 100)
-                : 0;
+              const sale = getActiveSale(item);
+              const hasDiscount = sale.active;
+              const discountPercent = sale.percent;
+              const badge = getDisplayBadge(item);
 
               return (
                 <Link
@@ -106,14 +107,14 @@ export default function RelatedProducts({
                     </div>
 
                     {hasDiscount && (
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-red-500/90 text-white text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md">
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/60 text-[#d8b988] text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
                         -{discountPercent}%
                       </span>
                     )}
 
-                    {item.badge && (
-                      <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#c9a96e]/90 text-black text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md">
-                        {item.badge}
+                    {badge && (
+                      <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-[#d8b988] text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
+                        {badge === 'LIMITED' ? 'Cheklangan' : badge}
                       </span>
                     )}
                   </div>
@@ -133,7 +134,7 @@ export default function RelatedProducts({
                       </span>
                       {hasDiscount && (
                         <span className="text-xs text-[#6b6b6e] line-through">
-                          {formatPrice(item.originalPrice)}
+                          {formatPrice(sale.originalPrice)}
                         </span>
                       )}
                     </div>
@@ -150,7 +151,7 @@ export default function RelatedProducts({
         <section className="border-t border-white/10 pt-16">
           <div className="flex items-center gap-4 mb-10">
             <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-              <Sparkles className="text-purple-400 animate-pulse" size={22} />
+              <Eye className="text-[#c9a96e]" size={22} />
             </div>
             <div>
               <h2 className="text-2xl sm:text-3xl font-serif font-normal text-white tracking-tight">
