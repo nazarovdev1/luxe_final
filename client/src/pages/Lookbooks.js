@@ -50,8 +50,8 @@ const COPY = {
   },
 };
 
-const CHAPTER_IMAGES = ['/editorial/story-softness-v2.png', '/editorial/story-posture-v2.png', '/editorial/private-edit-evening.png'];
-const FALLBACK = '/editorial/private-edit-evening.png';
+const CHAPTER_IMAGES = ['/editorial/story-softness-v2.webp', '/editorial/story-posture-v2.webp', '/editorial/private-edit-evening.webp'];
+const FALLBACK = '/editorial/private-edit-evening.webp';
 const imageFallback = (event) => { if (!event.currentTarget.src.endsWith(FALLBACK)) event.currentTarget.src = FALLBACK; };
 
 export default function Lookbooks() {
@@ -454,7 +454,7 @@ export default function Lookbooks() {
     </div>
 
     <section className="lj-hero" aria-labelledby="lj-title">
-      <div className="lj-hero-image"><img src="/editorial/lookbook-mood-v2.png" alt="" fetchPriority="high" /></div>
+      <div className="lj-hero-image"><img src="/editorial/lookbook-mood-v2.webp" alt="" fetchPriority="high" /></div>
       <div className="lj-hero-shade" />
       <div className="lj-hero-meta">
         <span>LUXX / THE LOOKBOOK</span>
@@ -483,7 +483,7 @@ export default function Lookbooks() {
         <div className="lj-look-info"><span>0{index + 1} / {look.items?.[0]?.category || copy.label}</span><button onClick={() => open(look)}>{look.title}<ArrowUpRight size={20} /></button><small>{look.products?.length || 0} {copy.pieces}</small></div>
       </article>)}</div>}
     </section>
-    <section className="lj-finale"><div className="lj-finale-art"><img src="/editorial/lookbook-detail-v2.png" alt="" loading="lazy" /></div><div className="lj-finale-copy"><span className="lj-overline">{copy.createTop}</span><h2>{copy.create}</h2><p>{copy.createText}</p><Link to="/lookbook-builder" className="lj-finale-cta">{copy.builder}<Plus size={22} /></Link><Link to="/products" className="lj-text-link">{copy.shop}<ArrowUpRight size={18} /></Link></div></section>
+    <section className="lj-finale"><div className="lj-finale-art"><img src="/editorial/lookbook-detail-v2.webp" alt="" loading="lazy" /></div><div className="lj-finale-copy"><span className="lj-overline">{copy.createTop}</span><h2>{copy.create}</h2><p>{copy.createText}</p><Link to="/lookbook-builder" className="lj-finale-cta">{copy.builder}<Plus size={22} /></Link><Link to="/products" className="lj-text-link">{copy.shop}<ArrowUpRight size={18} /></Link></div></section>
     <footer className="lj-footer"><span>LUXX</span><span>{copy.label} / {new Date().getFullYear()}</span><Link to="/products">{copy.shop}<ArrowUpRight size={16} /></Link></footer>
     {selectedLookId && <LookDetailModal lookId={selectedLookId} onClose={() => setSelectedLookId(null)} />}
   </main>;

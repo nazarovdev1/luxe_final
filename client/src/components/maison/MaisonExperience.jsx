@@ -1,34 +1,24 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, Eye, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Check } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useProducts } from '../../contexts/ProductContext';
 import QuickViewModal from '../QuickViewModal';
+import PremiumProductCard from '../PremiumProductCard';
+import { CONTACT, getPolicyCopy } from '../../config/policies';
 import './maisonExperience.css';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
-
-const fallbackProducts = [
-  { id: 'editorial-01', name: 'Nocturne drape', category: 'LUXX EDIT', price: null, image: '/second_pose.jpg', editorial: true },
-  { id: 'editorial-02', name: 'Soft architecture', category: 'ATELIER', price: null, image: '/heroimgg.jpg', editorial: true },
-  { id: 'editorial-03', name: 'Quiet movement', category: 'SIGNATURE', price: null, image: '/about_photo.jpg', editorial: true },
-  { id: 'editorial-04', name: 'After dark', category: 'EDITION 04', price: null, image: '/look2.jpg', editorial: true },
-];
-
-const formatPrice = (value, fallback) => {
-  const price = Number(value);
-  if (!Number.isFinite(price) || price <= 0) return fallback;
-  return `${new Intl.NumberFormat('ru-RU').format(price)} so‘m`;
-};
 
 export default function MaisonExperience() {
   const root = useRef(null);
   const storyTrack = useRef(null);
   const { language } = useLanguage();
-  const { products } = useProducts();
+  const { products, isLoading } = useProducts();
+  const policy = getPolicyCopy(language);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [activeService, setActiveService] = useState(0);
 
@@ -39,6 +29,10 @@ export default function MaisonExperience() {
       introMain: 'butun xona\nuni his qiladi.',
       introBody: 'Biz kiyimni tanaga moslashtiramiz — ayolni kiyimga emas. Har bir chiziq erkinlik, har bir mato esa sokin ishonch uchun tanlangan.',
       introLink: 'Falsafamiz',
+      shopLabel: 'KOLLEKSIYA · 02',
+      shopTitle: 'Hozir\nmavjud.',
+      shopBody: 'Har bir buyum Toshkentdagi atelyeda tekshiriladi. Shu kuni olib boramiz: uyda kiyib ko‘rasiz va faqat yoqqanini to‘laysiz.',
+      contactLabel: 'ALOQA',
       storyLabel: 'THE FEELING · 01—03',
       storyHint: 'Siljiting',
       collectionEyebrow: 'PRIVATE EDIT · 04',
@@ -65,6 +59,10 @@ export default function MaisonExperience() {
       introMain: 'это чувствует\nвся комната.',
       introBody: 'Мы создаём одежду для тела — не подстраиваем женщину под одежду. Каждая линия дарит свободу, каждая ткань — тихую уверенность.',
       introLink: 'Наша философия',
+      shopLabel: 'КОЛЛЕКЦИЯ · 02',
+      shopTitle: 'В наличии\nсейчас.',
+      shopBody: 'Каждая вещь проверяется в ташкентском ателье. Привезём в тот же день: примерьте дома и оплатите только то, что оставите.',
+      contactLabel: 'КОНТАКТЫ',
       storyLabel: 'THE FEELING · 01—03',
       storyHint: 'Листайте',
       collectionEyebrow: 'PRIVATE EDIT · 04',
@@ -91,6 +89,10 @@ export default function MaisonExperience() {
       introMain: 'the whole room\nfeels it.',
       introBody: 'We fit the garment to the woman, never the woman to the garment. Every line is made for freedom; every fabric, for quiet confidence.',
       introLink: 'Our philosophy',
+      shopLabel: 'THE COLLECTION · 02',
+      shopTitle: 'Available\nnow.',
+      shopBody: 'Every piece is checked in our Tashkent atelier. Delivered the same day: try it on at home and pay only for what you keep.',
+      contactLabel: 'CONTACT',
       storyLabel: 'THE FEELING · 01—03',
       storyHint: 'Keep moving',
       collectionEyebrow: 'PRIVATE EDIT · 04',
@@ -115,7 +117,8 @@ export default function MaisonExperience() {
 
   const copy = words || {
     edition: 'LUXX · WOMEN’S EDIT 2026', introTop: 'Ayol o‘zini qulay his qilganida,', introMain: 'butun xona\nuni his qiladi.',
-    introBody: 'Biz kiyimni tanaga moslashtiramiz — ayolni kiyimga emas.', introLink: 'Falsafamiz', storyLabel: 'THE FEELING · 01—03', storyHint: 'Siljiting',
+    introBody: 'Biz kiyimni tanaga moslashtiramiz — ayolni kiyimga emas.', introLink: 'Falsafamiz',
+    shopLabel: 'KOLLEKSIYA · 02', shopTitle: 'Hozir\nmavjud.', shopBody: 'Shu kuni olib boramiz: uyda kiyib ko‘rasiz va faqat yoqqanini to‘laysiz.', contactLabel: 'ALOQA', storyLabel: 'THE FEELING · 01—03', storyHint: 'Siljiting',
     collectionEyebrow: 'PRIVATE EDIT · 04', collectionTitle: 'Siz uchun\nsaralangan.', collectionBody: 'Kamroq, lekin aniqroq.', allProducts: 'Barcha kiyimlar', quickView: 'Tezkor ko‘rish', priceRequest: 'Narxini aniqlashtiring',
     lookLabel: 'A COMPLETE MOOD · 05', lookTitle: 'Kiyim emas.\nSizning\nkayfiyatingiz.', lookBody: 'Tayyor obraz — ertalabki tanlovni yengillashtiradi.', lookCta: 'Lookbook’ni ochish',
     atelierLabel: 'THE LUXX RITUAL · 06', atelierTitle: 'Sizni\neshitadigan\nxizmat.', atelierBody: 'Har bir detal sizning vaqtingiz va komfortingizni asrash uchun.', concierge: 'Konsyerj bilan bog‘lanish',
@@ -124,44 +127,42 @@ export default function MaisonExperience() {
 
   const stories = {
     uz: [
-      { number: '01', word: 'MAYINLIK', title: 'Tana bemalol\nnafas oladi.', body: 'Yumshoq qatlamlar va o‘ylangan proporsiya harakatni cheklamaydi — siz kun bo‘yi o‘zingiz bo‘lib qolasiz.', image: '/editorial/story-softness-v2.png' },
-      { number: '02', word: 'QOMAT', title: 'Aniq kesim.\nYengil his.', body: 'Tuzilma qomatni bosmaydi, uni davom ettiradi. Kuch va nazokat bir xil chiziqda uchrashadi.', image: '/editorial/story-posture-v2.png' },
-      { number: '03', word: 'HUZUR', title: 'Urinmasdan\nsezilish.', body: 'Siz kirganingizda avval kiyim emas, sokin ishonchingiz seziladi.', image: '/editorial/story-presence-v2.png' },
+      { number: '01', word: 'MAYINLIK', title: 'Tana bemalol\nnafas oladi.', body: 'Yumshoq qatlamlar va o‘ylangan proporsiya harakatni cheklamaydi — siz kun bo‘yi o‘zingiz bo‘lib qolasiz.', image: '/editorial/story-softness-v2.webp' },
+      { number: '02', word: 'QOMAT', title: 'Aniq kesim.\nYengil his.', body: 'Tuzilma qomatni bosmaydi, uni davom ettiradi. Kuch va nazokat bir xil chiziqda uchrashadi.', image: '/editorial/story-posture-v2.webp' },
+      { number: '03', word: 'HUZUR', title: 'Urinmasdan\nsezilish.', body: 'Siz kirganingizda avval kiyim emas, sokin ishonchingiz seziladi.', image: '/editorial/story-presence-v2.webp' },
     ],
     ru: [
-      { number: '01', word: 'НЕЖНОСТЬ', title: 'Тело свободно\nдышит.', body: 'Мягкие слои и выверенные пропорции не сковывают движения — весь день вы остаётесь собой.', image: '/editorial/story-softness-v2.png' },
-      { number: '02', word: 'ОСАНКА', title: 'Точный крой.\nЛёгкое чувство.', body: 'Конструкция не подавляет фигуру, а продолжает её. Сила и нежность встречаются в одной линии.', image: '/editorial/story-posture-v2.png' },
-      { number: '03', word: 'ПОКОЙ', title: 'Заметна\nбез усилий.', body: 'Когда вы входите, сначала чувствуют вашу тихую уверенность — не одежду.', image: '/editorial/story-presence-v2.png' },
+      { number: '01', word: 'НЕЖНОСТЬ', title: 'Тело свободно\nдышит.', body: 'Мягкие слои и выверенные пропорции не сковывают движения — весь день вы остаётесь собой.', image: '/editorial/story-softness-v2.webp' },
+      { number: '02', word: 'ОСАНКА', title: 'Точный крой.\nЛёгкое чувство.', body: 'Конструкция не подавляет фигуру, а продолжает её. Сила и нежность встречаются в одной линии.', image: '/editorial/story-posture-v2.webp' },
+      { number: '03', word: 'ПОКОЙ', title: 'Заметна\nбез усилий.', body: 'Когда вы входите, сначала чувствуют вашу тихую уверенность — не одежду.', image: '/editorial/story-presence-v2.webp' },
     ],
     en: [
-      { number: '01', word: 'SOFTNESS', title: 'The body is free\nto breathe.', body: 'Soft layers and considered proportion never restrict movement, so you remain yourself all day.', image: '/editorial/story-softness-v2.png' },
-      { number: '02', word: 'POSTURE', title: 'Exact cut.\nEffortless feeling.', body: 'Structure never overpowers the body; it extends it. Strength and delicacy meet in one line.', image: '/editorial/story-posture-v2.png' },
-      { number: '03', word: 'PRESENCE', title: 'Noticed without\ntrying.', body: 'When you enter, the room notices your quiet confidence before the clothes.', image: '/editorial/story-presence-v2.png' },
+      { number: '01', word: 'SOFTNESS', title: 'The body is free\nto breathe.', body: 'Soft layers and considered proportion never restrict movement, so you remain yourself all day.', image: '/editorial/story-softness-v2.webp' },
+      { number: '02', word: 'POSTURE', title: 'Exact cut.\nEffortless feeling.', body: 'Structure never overpowers the body; it extends it. Strength and delicacy meet in one line.', image: '/editorial/story-posture-v2.webp' },
+      { number: '03', word: 'PRESENCE', title: 'Noticed without\ntrying.', body: 'When you enter, the room notices your quiet confidence before the clothes.', image: '/editorial/story-presence-v2.webp' },
     ],
   }[language] || [];
 
   const services = {
     uz: [
-      { num: '01', title: 'Shaxsiy fitting', body: 'Atelyedagi sokin uchrashuv: qomat, odat va kun tartibingizga mos tavsiyalar.', image: '/editorial/atelier-fitting-v2.png' },
-      { num: '02', title: 'Obraz konsyerji', body: 'Bir tadbir yoki butun mavsum uchun tayyor, o‘zaro uyg‘un garderob.', image: '/editorial/atelier-concierge-v2.png' },
-      { num: '03', title: 'Nozik yetkazish', body: 'Har bir buyum tekshiriladi, ehtiyotkor qadoqlanadi va siz tanlagan vaqtda yetkaziladi.', image: '/editorial/atelier-delivery-v2.png' },
+      { num: '01', title: 'Shaxsiy fitting', body: 'Atelyedagi sokin uchrashuv: qomat, odat va kun tartibingizga mos tavsiyalar.', image: '/editorial/atelier-fitting-v2.webp' },
+      { num: '02', title: 'Obraz konsyerji', body: 'Bir tadbir yoki butun mavsum uchun tayyor, o‘zaro uyg‘un garderob.', image: '/editorial/atelier-concierge-v2.webp' },
+      { num: '03', title: 'Uyda kiyib ko‘rib to‘lash', body: 'Toshkent bo‘ylab shu kuni olib boramiz. Kiyib ko‘rasiz, faqat yoqqanini to‘laysiz.', image: '/editorial/atelier-delivery-v2.webp' },
     ],
     ru: [
-      { num: '01', title: 'Личная примерка', body: 'Спокойная встреча в ателье и рекомендации с учётом фигуры, привычек и ритма жизни.', image: '/editorial/atelier-fitting-v2.png' },
-      { num: '02', title: 'Консьерж образа', body: 'Цельный гардероб для одного события или всего сезона.', image: '/editorial/atelier-concierge-v2.png' },
-      { num: '03', title: 'Бережная доставка', body: 'Каждая вещь проверяется, деликатно упаковывается и приезжает в выбранное вами время.', image: '/editorial/atelier-delivery-v2.png' },
+      { num: '01', title: 'Личная примерка', body: 'Спокойная встреча в ателье и рекомендации с учётом фигуры, привычек и ритма жизни.', image: '/editorial/atelier-fitting-v2.webp' },
+      { num: '02', title: 'Консьерж образа', body: 'Цельный гардероб для одного события или всего сезона.', image: '/editorial/atelier-concierge-v2.webp' },
+      { num: '03', title: 'Примерка дома', body: 'Привезём по Ташкенту в тот же день. Примерьте и оплатите только то, что оставите.', image: '/editorial/atelier-delivery-v2.webp' },
     ],
     en: [
-      { num: '01', title: 'Private fitting', body: 'A calm atelier appointment, shaped around your form, habits and daily rhythm.', image: '/editorial/atelier-fitting-v2.png' },
-      { num: '02', title: 'Look concierge', body: 'A complete, harmonious wardrobe for one occasion or the entire season.', image: '/editorial/atelier-concierge-v2.png' },
-      { num: '03', title: 'Considered delivery', body: 'Every piece is inspected, delicately wrapped and delivered at the time you choose.', image: '/editorial/atelier-delivery-v2.png' },
+      { num: '01', title: 'Private fitting', body: 'A calm atelier appointment, shaped around your form, habits and daily rhythm.', image: '/editorial/atelier-fitting-v2.webp' },
+      { num: '02', title: 'Look concierge', body: 'A complete, harmonious wardrobe for one occasion or the entire season.', image: '/editorial/atelier-concierge-v2.webp' },
+      { num: '03', title: 'Try on at home', body: 'Same-day delivery across Tashkent. Try everything on and pay only for what you keep.', image: '/editorial/atelier-delivery-v2.webp' },
     ],
   }[language] || [];
 
-  const showcase = useMemo(() => {
-    const real = products.filter((product) => product?.id).slice(0, 4);
-    return fallbackProducts.map((fallback, index) => real[index] || fallback);
-  }, [products]);
+  // Only real catalogue items; no editorial placeholders posing as products.
+  const shopProducts = useMemo(() => products.filter((product) => product?.id).slice(0, 8), [products]);
 
   useGSAP(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -217,21 +218,20 @@ export default function MaisonExperience() {
     return () => mm.revert();
   }, { scope: root, dependencies: [language] });
 
-  useGSAP(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    gsap.fromTo('.mh-curation-item', { y: 28, autoAlpha: 0 }, {
-      y: 0,
-      autoAlpha: 1,
-      duration: 0.9,
-      stagger: 0.1,
-      ease: 'power3.out',
-      scrollTrigger: { trigger: '.mh-curation-list', start: 'top 84%', once: true },
+  // Images and the product grid change page height after load; recompute trigger positions
+  // so pinned/revealed sections never stay hidden at a stale offset.
+  useEffect(() => {
+    const refresh = () => ScrollTrigger.refresh();
+    const images = Array.from(root.current?.querySelectorAll('img') || []);
+    images.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener('load', refresh, { once: true });
+        img.addEventListener('error', refresh, { once: true });
+      }
     });
-  }, { scope: root, dependencies: [showcase.map((item) => item.id).join('|')], revertOnUpdate: true });
-
-  const openProduct = (product) => {
-    if (!product.editorial) setQuickViewProduct(product);
-  };
+    const timer = window.setTimeout(refresh, 300);
+    return () => window.clearTimeout(timer);
+  }, [shopProducts.length]);
 
   return (
     <main ref={root} className="maison-home" aria-label="LUXX maison experience">
@@ -239,7 +239,7 @@ export default function MaisonExperience() {
         <div className="mh-opening-orbit" aria-hidden="true"><span>LUXX</span></div>
         <div className="mh-shell mh-opening-grid">
           <div className="mh-opening-copy mh-reveal">
-            <span className="mh-label"><Sparkles size={12} /> {copy.edition}</span>
+            <span className="mh-label">{copy.edition}</span>
             <p className="mh-opening-prelude">{copy.introTop}</p>
             <h2>{copy.introMain.split('\n').map((line) => <span key={line}>{line}</span>)}</h2>
             <div className="mh-opening-lower">
@@ -249,10 +249,43 @@ export default function MaisonExperience() {
           </div>
 
           <div className="mh-opening-art mh-image-reveal">
-            <div className="mh-opening-art-main"><img src="/editorial/opening-main-v2.png" alt="LUXX ayollar kolleksiyasi" loading="lazy" /></div>
-            <div className="mh-opening-art-detail"><img src="/editorial/opening-detail-v2.png" alt="LUXX mato va detal" loading="lazy" /></div>
+            <div className="mh-opening-art-main"><img src="/editorial/opening-main-v2.webp" alt="LUXX ayollar kolleksiyasi" loading="eager" fetchPriority="high" decoding="async" /></div>
+            <div className="mh-opening-art-detail"><img src="/editorial/opening-detail-v2.webp" alt="LUXX mato va detal" loading="eager" decoding="async" /></div>
             <span className="mh-opening-caption">FIG. 01 — SOFT POWER</span>
           </div>
+        </div>
+      </section>
+
+      <section className="mh-shop" id="collection" aria-labelledby="mh-shop-title">
+        <div className="mh-shell">
+          <header className="mh-shop-head">
+            <div>
+              <span className="mh-label">{copy.shopLabel}</span>
+              <h2 id="mh-shop-title">{copy.shopTitle.split('\n').map((line) => <span key={line}>{line}</span>)}</h2>
+            </div>
+            <div className="mh-shop-note">
+              <p>{copy.shopBody}</p>
+              <Link to="/products" className="mh-text-link"><span>{copy.allProducts}</span><ArrowRight size={15} /></Link>
+            </div>
+          </header>
+
+          {isLoading && shopProducts.length === 0 ? (
+            <div className="mh-shop-grid" aria-busy="true">
+              {Array.from({ length: 4 }, (_, index) => <div key={index} className="mh-shop-skeleton" />)}
+            </div>
+          ) : (
+            <div className="mh-shop-grid">
+              {shopProducts.map((product, index) => (
+                <PremiumProductCard key={product.id} product={product} index={index} priority={index < 2} onQuickView={setQuickViewProduct} />
+              ))}
+            </div>
+          )}
+
+          <ul className="mh-shop-promises">
+            {[policy.delivery, policy.tryOn, policy.returns].map((line) => (
+              <li key={line}><Check size={14} aria-hidden="true" />{line}</li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -305,7 +338,7 @@ export default function MaisonExperience() {
 
           <div className="mh-curation-stage">
             <Link to="/products" className="mh-curation-portrait mh-curation-portrait-main mh-image-reveal" aria-label={copy.allProducts}>
-              <img src="/editorial/private-edit-tailoring.png" alt="LUXX bordo kostyum editorial obrazi" loading="lazy" />
+              <img src="/editorial/private-edit-tailoring.webp" alt="LUXX bordo kostyum editorial obrazi" loading="lazy" />
               <span className="mh-curation-figure">FIG. 04 — QUIET AUTHORITY</span>
             </Link>
 
@@ -317,43 +350,18 @@ export default function MaisonExperience() {
               </div>
 
               <Link to="/products" className="mh-curation-portrait mh-curation-portrait-secondary mh-image-reveal" aria-label={copy.allProducts}>
-                <img src="/editorial/private-edit-evening.png" alt="LUXX qora atlas ko‘ylak editorial obrazi" loading="lazy" />
+                <img src="/editorial/private-edit-evening.webp" alt="LUXX qora atlas ko‘ylak editorial obrazi" loading="lazy" />
                 <span>02</span>
               </Link>
-
-              <div className="mh-curation-list" aria-label={copy.collectionTitle.replace('\n', ' ')}>
-                {showcase.map((product, index) => {
-                  const link = product.editorial ? '/products' : `/product/${product.id}`;
-                  return (
-                    <article className="mh-curation-item" key={product.id}>
-                      <span className="mh-curation-item-index">0{index + 1}</span>
-                      <div>
-                        <span>{product.category || 'LUXX ATELIER'}</span>
-                        <h3><Link to={link}>{product.name}</Link></h3>
-                      </div>
-                      <div className="mh-curation-item-action">
-                        <span>{formatPrice(product.price, copy.priceRequest)}</span>
-                        <button type="button" onClick={() => openProduct(product)} aria-label={`${copy.quickView}: ${product.name}`} disabled={product.editorial}>
-                          {product.editorial ? <ArrowUpRight size={15} /> : <Eye size={15} />}
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
             </aside>
-
-            <div className="mh-curation-seal" aria-hidden="true">
-              <span>CURATED</span><strong>04</strong><span>FOR YOU</span>
-            </div>
           </div>
         </div>
       </section>
 
       <section className="mh-look" id="home-lookbook">
         <div className="mh-look-images" aria-hidden="true">
-          <div className="mh-look-image-primary"><img src="/editorial/lookbook-mood-v2.png" alt="" loading="lazy" /></div>
-          <div className="mh-look-image-secondary"><img src="/editorial/lookbook-detail-v2.png" alt="" loading="lazy" /></div>
+          <div className="mh-look-image-primary"><img src="/editorial/lookbook-mood-v2.webp" alt="" loading="lazy" /></div>
+          <div className="mh-look-image-secondary"><img src="/editorial/lookbook-detail-v2.webp" alt="" loading="lazy" /></div>
         </div>
         <div className="mh-look-veil" />
         <div className="mh-shell mh-look-content mh-reveal">
@@ -399,7 +407,7 @@ export default function MaisonExperience() {
             <nav aria-label="Footer">
               <div><span>EXPLORE</span><Link to="/products">Kolleksiya</Link><Link to="/lookbooks">Lookbook</Link><Link to="/about">Maison</Link></div>
               <div><span>CARE</span><Link to="/contact">Aloqa</Link><Link to="/faq">Savollar</Link><Link to="/orders">Buyurtmalar</Link></div>
-              <div><span>FOLLOW</span><a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram</a><a href="https://t.me/" target="_blank" rel="noreferrer">Telegram</a></div>
+              <div><span>{copy.contactLabel}</span><a href={CONTACT.phoneHref}>{CONTACT.phone}</a><a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></div>
             </nav>
           </div>
           <div className="mh-footer-base"><span>© {new Date().getFullYear()} LUXX · {copy.rights}</span><a href="#hero">{copy.back} ↑</a></div>

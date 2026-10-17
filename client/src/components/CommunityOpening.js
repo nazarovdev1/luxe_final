@@ -8,11 +8,11 @@ import './CommunityOpening.css';
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const openings = {
-  community: { index: '01', kicker: 'THE PEOPLE / LUXX', title: ['Uslub —', 'birga yaratiladi.'], note: 'COMMUNITY', image: '/editorial/community-editorial-2026.png', alt: 'LUXX moda hamjamiyati obrazi' },
-  challenges: { index: '02', kicker: 'A NEW CREATIVE ARENA', title: ['O‘z uslubingni', 'ko‘rsat.'], note: 'CHALLENGES', image: '/editorial/challenges-editorial-2026.png', alt: 'Ijodiy moda obrazi' },
-  live: { index: '03', kicker: 'ON AIR / LUXX', title: ['Moda ayni', 'lahzada.'], note: 'LIVE', image: '/editorial/live-editorial-2026.png', alt: 'Jonli moda efiri obrazi' },
-  vip: { index: '04', kicker: 'THE PRIVATE CIRCLE', title: ['Oddiy a’zolik', 'emas.'], note: 'VIP CLUB', image: '/editorial/vip-editorial-2026.png', alt: 'LUXX premium tajribasi' },
-  eco: { index: '05', kicker: 'A MORE CONSIDERED FUTURE', title: ['Go‘zallikning', 'izi yengil.'], note: 'ECO IMPACT', image: '/editorial/eco-editorial-2026.png', alt: 'Mas’uliyatli moda va hunarmandchilik' },
+  community: { index: '01', kicker: 'THE PEOPLE / LUXX', title: ['Uslub —', 'birga yaratiladi.'], note: 'COMMUNITY', image: '/editorial/community-editorial-2026.webp', alt: 'LUXX moda hamjamiyati obrazi' },
+  challenges: { index: '02', kicker: 'A NEW CREATIVE ARENA', title: ['O‘z uslubingni', 'ko‘rsat.'], note: 'CHALLENGES', image: '/editorial/challenges-editorial-2026.webp', alt: 'Ijodiy moda obrazi' },
+  live: { index: '03', kicker: 'ON AIR / LUXX', title: ['Moda ayni', 'lahzada.'], note: 'LIVE', image: '/editorial/live-editorial-2026.webp', alt: 'Jonli moda efiri obrazi' },
+  vip: { index: '04', kicker: 'THE PRIVATE CIRCLE', title: ['Oddiy a’zolik', 'emas.'], note: 'VIP CLUB', image: '/editorial/vip-editorial-2026.webp', alt: 'LUXX premium tajribasi' },
+  eco: { index: '05', kicker: 'A MORE CONSIDERED FUTURE', title: ['Go‘zallikning', 'izi yengil.'], note: 'ECO IMPACT', image: '/editorial/eco-editorial-2026.webp', alt: 'Mas’uliyatli moda va hunarmandchilik' },
 };
 
 export function useCommunityMotion(scope) {

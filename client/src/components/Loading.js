@@ -20,8 +20,7 @@ const Loading = () => {
             </div>
             <div className="luxury-loader__bottomline">
                 <span className="luxury-loader__rail" aria-hidden="true"><i /></span>
-                <span>ATELIER TAYYORLANMOQDA</span>
-                <b>00<span>/</span>100</b>
+                <span>LUXX · TOSHKENT</span>
             </div>
         </div>
     );

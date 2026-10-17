@@ -176,9 +176,9 @@ const AllProducts = () => {
     return () => context.revert();
   }, [isLoading, selectedCategory, sortBy, visibleCount, sortedProducts.length]);
   const heroItems = [
-    { product: products[0], image: getProductImage(products[0], '/editorial/private-edit-tailoring.png'), fallbackName: 'The Signature Line', fallbackCategory: 'Tailoring' },
-    { product: products[1], image: getProductImage(products[1], '/editorial/private-edit-evening.png'), fallbackName: 'Evening Architecture', fallbackCategory: 'Private Edit' },
-    { product: products[2], image: getProductImage(products[2], '/editorial/story-presence-v2.png'), fallbackName: 'Quiet Presence', fallbackCategory: 'Atelier' },
+    { product: products[0], image: getProductImage(products[0], '/editorial/private-edit-tailoring.webp'), fallbackName: 'The Signature Line', fallbackCategory: 'Tailoring' },
+    { product: products[1], image: getProductImage(products[1], '/editorial/private-edit-evening.webp'), fallbackName: 'Evening Architecture', fallbackCategory: 'Private Edit' },
+    { product: products[2], image: getProductImage(products[2], '/editorial/story-presence-v2.webp'), fallbackName: 'Quiet Presence', fallbackCategory: 'Atelier' },
   ];
   const seoData = useMemo(() => ({
     title: selectedCategory === allLabel ? 'Premium ayollar kiyimlari | Luxx.uz' : `${selectedCategory} | Luxx.uz`,

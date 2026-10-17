@@ -1,11 +1,29 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDownRight, ArrowRight, Gem, Play, Sparkles } from 'lucide-react';
+import { ArrowDownRight, ArrowRight, Gem, Play } from 'lucide-react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 gsap.registerPlugin(useGSAP);
+
+const HERO_SEEN_KEY = 'luxxHeroIntroSeen';
+
+const hasSeenIntro = () => {
+  try {
+    return Boolean(sessionStorage.getItem(HERO_SEEN_KEY));
+  } catch {
+    return false;
+  }
+};
+
+const markIntroSeen = () => {
+  try {
+    sessionStorage.setItem(HERO_SEEN_KEY, '1');
+  } catch {
+    // Storage can be blocked (private mode); the intro then simply plays again.
+  }
+};
 
 const Hero = () => {
   const { t } = useLanguage();
@@ -14,17 +32,22 @@ const Hero = () => {
   useGSAP(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
-    const intro = gsap.timeline({ defaults: { ease: 'power4.out' } });
-    intro
-      .from('.luxx-hero-image', { scale: 1.08, autoAlpha: 0, duration: 1.05 }, 0)
-      .from('.luxx-hero-kicker', { y: 24, autoAlpha: 0, duration: 0.58 }, 0.42)
-      .from('.luxx-hero-word', { yPercent: 118, rotate: 2, duration: 0.82, stagger: 0.09 }, 0.5)
-      .from('.luxx-hero-copy', { y: 20, autoAlpha: 0, duration: 0.55 }, 0.78)
-      .from('.luxx-hero-action', { y: 16, autoAlpha: 0, duration: 0.44, stagger: 0.08 }, 0.88)
-      .from('.luxx-hero-side-note', { x: 24, autoAlpha: 0, duration: 0.48 }, 0.9)
-      .to('.luxx-hero-intro-mark', { yPercent: -36, autoAlpha: 0, duration: 0.22, ease: 'power2.in' }, 0.28)
-      .to('.luxx-hero-intro', { scaleY: 0, transformOrigin: 'top center', duration: 0.78, ease: 'power4.inOut' }, 0.43)
-      .set('.luxx-hero-intro', { autoAlpha: 0, pointerEvents: 'none' });
+    // The curtain intro plays once per visit; returning to the home page shows content at once.
+    if (hasSeenIntro()) {
+      gsap.set('.luxx-hero-intro', { autoAlpha: 0, pointerEvents: 'none' });
+    } else {
+      markIntroSeen();
+      gsap.timeline({ defaults: { ease: 'power4.out' } })
+        .from('.luxx-hero-image', { scale: 1.08, autoAlpha: 0, duration: 1.05 }, 0)
+        .from('.luxx-hero-kicker', { y: 24, autoAlpha: 0, duration: 0.58 }, 0.42)
+        .from('.luxx-hero-word', { yPercent: 118, rotate: 2, duration: 0.82, stagger: 0.09 }, 0.5)
+        .from('.luxx-hero-copy', { y: 20, autoAlpha: 0, duration: 0.55 }, 0.78)
+        .from('.luxx-hero-action', { y: 16, autoAlpha: 0, duration: 0.44, stagger: 0.08 }, 0.88)
+        .from('.luxx-hero-side-note', { x: 24, autoAlpha: 0, duration: 0.48 }, 0.9)
+        .to('.luxx-hero-intro-mark', { yPercent: -36, autoAlpha: 0, duration: 0.22, ease: 'power2.in' }, 0.28)
+        .to('.luxx-hero-intro', { scaleY: 0, transformOrigin: 'top center', duration: 0.78, ease: 'power4.inOut' }, 0.43)
+        .set('.luxx-hero-intro', { autoAlpha: 0, pointerEvents: 'none' });
+    }
 
     const image = root.current?.querySelector('.luxx-hero-image');
     const glow = root.current?.querySelector('.luxx-hero-glow');
@@ -101,7 +124,7 @@ const Hero = () => {
           </div>
 
           <aside className="luxx-hero-side-note">
-            <span className="luxx-hero-side-label"><Sparkles size={12} /> YANGI NASHR</span>
+            <span className="luxx-hero-side-label"><Gem size={12} /> YANGI NASHR</span>
             <p>Har bir chiqishingiz uchun yaratilgan sokin ishonch.</p>
             <Link to="/products?filter=new" aria-label={t('hero.viewCollection')}><ArrowRight size={18} /></Link>
           </aside>
