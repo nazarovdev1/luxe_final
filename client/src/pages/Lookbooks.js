@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import LookDetailModal from '../components/LookDetailModal';
 import SEO from '../components/SEO';
+import { hasSeenOpening, markOpeningSeen } from '../components/PageOpening';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiFetch } from '../services/api';
 import './Lookbooks.css';
@@ -66,14 +67,7 @@ const OPENING_FRAMES = [
   HERO_IMAGE,
 ];
 
-// The opening plays once per visit; coming back to the lookbook goes straight to the content.
-const OPENING_SEEN_KEY = 'luxxLookbookOpeningSeen';
-const hasSeenOpening = () => {
-  try { return Boolean(sessionStorage.getItem(OPENING_SEEN_KEY)); } catch { return false; }
-};
-const markOpeningSeen = () => {
-  try { sessionStorage.setItem(OPENING_SEEN_KEY, '1'); } catch { /* storage blocked: the opening simply plays again */ }
-};
+const OPENING_ID = 'lookbook';
 
 export default function Lookbooks() {
   const pageRef = useRef(null);
@@ -82,7 +76,7 @@ export default function Lookbooks() {
   const openingRunRef = useRef(0);
   // Decided once per mount, so a StrictMode double effect cannot skip a first-time opening.
   const skipOpeningRef = useRef(null);
-  if (skipOpeningRef.current === null) skipOpeningRef.current = hasSeenOpening();
+  if (skipOpeningRef.current === null) skipOpeningRef.current = hasSeenOpening(OPENING_ID);
   const openingTimelineRef = useRef(null);
   const [openingActive, setOpeningActive] = useState(true);
 
@@ -100,7 +94,7 @@ export default function Lookbooks() {
   };
 
   const hideOpening = () => {
-    markOpeningSeen();
+    markOpeningSeen(OPENING_ID);
     setChromeHidden(false);
     const openingEl = openingContainerRef.current;
     if (openingEl) {

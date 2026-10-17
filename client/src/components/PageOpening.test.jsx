@@ -33,7 +33,7 @@ describe('PageOpening', () => {
     const { unmount } = render(<PageOpening id="test" build={() => {}}><p>Opening art</p></PageOpening>);
     act(() => { fireEvent.click(screen.getByRole('button', { name: /o‘tkazib yuborish/i })); });
     expect(screen.queryByText('Opening art')).toBeNull();
-    expect(sessionStorage.getItem('luxxOpening:test')).toBe('1');
+    expect(Number(sessionStorage.getItem('luxxOpening:test'))).toBeGreaterThan(0);
     unmount();
 
     render(<PageOpening id="test" build={() => {}}><p>Opening art</p></PageOpening>);
