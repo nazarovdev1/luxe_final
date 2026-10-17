@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Star, BarChart3, Heart, Eye, ArrowUpRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { formatPrice, formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
+// The card is reused outside the catalogue (home page), so it brings its own styles.
+import '../pages/allProductsEditorial.css';
 
 const getImageUrl = (product) => {
   if (!product) return '/placeholder.jpg';
