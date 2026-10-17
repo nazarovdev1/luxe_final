@@ -8,36 +8,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 const SKIP_LABEL = { uz: 'O‘tkazib yuborish', ru: 'Пропустить', en: 'Skip' };
 
-// An opening replays after this much time away, so shoppers hopping between pages are not
-// shown it every click, while coming back later (or an owner reviewing) still sees it.
-export const OPENING_COOLDOWN_MS = 3 * 60 * 1000;
-
-const storageKey = (id) => `luxxOpening:${id}`;
-
-// Adding ?opening to any page URL forces its opening to play.
-const isForced = () => {
-  try { return new URLSearchParams(window.location.search).has('opening'); } catch { return false; }
-};
-
-export const hasSeenOpening = (id, now = Date.now()) => {
-  if (isForced()) return false;
-  try {
-    const at = Number(sessionStorage.getItem(storageKey(id)));
-    return Number.isFinite(at) && at > 0 && now - at < OPENING_COOLDOWN_MS;
-  } catch { return false; }
-};
-
-export const markOpeningSeen = (id, now = Date.now()) => {
-  try { sessionStorage.setItem(storageKey(id), String(now)); } catch { /* storage blocked: the opening simply plays again */ }
-};
-
 const setChromeHidden = (hidden) => {
   window.dispatchEvent(new CustomEvent('luxx:chrome-visibility', { detail: { hidden } }));
 };
 
 /**
  * Full-screen page opening shared by the main pages.
- *  - replays after a 3-minute cooldown (or with ?opening) and never for reduced-motion users
+ *  - plays on every visit (refresh and revisits included), except for reduced-motion users
  *  - portalled to <body> so no page stacking context can paint over it
  *  - hides the site navbar while it plays, skippable with the button or Esc
  *  - `build(tl, overlay)` adds the page's own choreography to a GSAP timeline;
@@ -50,12 +27,11 @@ export default function PageOpening({ id, language = 'uz', className = '', build
   const runRef = useRef(0);
   const skipRef = useRef(null);
   if (skipRef.current === null) {
-    skipRef.current = hasSeenOpening(id) || (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    skipRef.current = (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
   const [active, setActive] = useState(!skipRef.current);
 
   const finish = () => {
-    markOpeningSeen(id);
     setChromeHidden(false);
     setActive(false);
     ScrollTrigger.refresh();

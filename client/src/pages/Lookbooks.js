@@ -6,7 +6,6 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import LookDetailModal from '../components/LookDetailModal';
 import SEO from '../components/SEO';
-import { hasSeenOpening, markOpeningSeen } from '../components/PageOpening';
 import { useLanguage } from '../contexts/LanguageContext';
 import { apiFetch } from '../services/api';
 import './Lookbooks.css';
@@ -67,16 +66,11 @@ const OPENING_FRAMES = [
   HERO_IMAGE,
 ];
 
-const OPENING_ID = 'lookbook';
-
 export default function Lookbooks() {
   const pageRef = useRef(null);
   const openingContainerRef = useRef(null);
   const frameCountRef = useRef(null);
   const openingRunRef = useRef(0);
-  // Decided once per mount, so a StrictMode double effect cannot skip a first-time opening.
-  const skipOpeningRef = useRef(null);
-  if (skipOpeningRef.current === null) skipOpeningRef.current = hasSeenOpening(OPENING_ID);
   const openingTimelineRef = useRef(null);
   const [openingActive, setOpeningActive] = useState(true);
 
@@ -94,7 +88,6 @@ export default function Lookbooks() {
   };
 
   const hideOpening = () => {
-    markOpeningSeen(OPENING_ID);
     setChromeHidden(false);
     const openingEl = openingContainerRef.current;
     if (openingEl) {
@@ -113,7 +106,7 @@ export default function Lookbooks() {
     if (!root || !openingEl) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced || skipOpeningRef.current) {
+    if (reduced) {
       hideOpening();
       return;
     }

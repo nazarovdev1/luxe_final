@@ -3,50 +3,51 @@ import PageOpening from './PageOpening';
 
 /* Page-specific openings built on the shared PageOpening shell. Each one plays once per tab. */
 
-// ── HOME · Maison doors ─────────────────────────────────────────────────────
-// A gold seam is drawn, LUXX settles across two doors, light leaks through the seam,
-// then the doors swing open in 3D onto the home page.
+// ── HOME · Window letters ───────────────────────────────────────────────────
+// LUXX is a window onto an editorial photo: the letters are revealed by a gold line,
+// the photo drifts inside them, then the camera dives through the letters into the page.
 const HOME_COPY = {
   uz: { kicker: 'Maison · Toshkent', caption: 'Har bir ayol — o‘z imzosi.' },
   ru: { kicker: 'Maison · Ташкент', caption: 'Каждая женщина — своя подпись.' },
   en: { kicker: 'Maison · Tashkent', caption: 'Every woman, her own signature.' },
 };
 
-const DoorMark = () => <span>LU<i>X</i>X</span>;
-
 export function HomeOpening({ language = 'uz' }) {
   const copy = HOME_COPY[language] || HOME_COPY.uz;
   const build = (tl, el) => {
-    const seam = el.querySelector('.po-seam');
-    const doors = el.querySelectorAll('.po-door');
-    const left = el.querySelector('.po-door--left');
-    const right = el.querySelector('.po-door--right');
-    const marks = el.querySelectorAll('.po-door__mark');
-    const words = el.querySelectorAll('.po-doors__kicker, .po-doors__caption');
+    const word = el.querySelector('.po-window__word');
+    const line = el.querySelector('.po-window__line');
+    const words = el.querySelectorAll('.po-window__kicker, .po-window__caption');
+    const wash = el.querySelector('.po-window__wash');
+    const reveal = { right: 100 };
+    const applyReveal = () => { word.style.clipPath = `inset(0 ${reveal.right}% 0 0)`; };
+    const state = { pos: 30 };
+    const applyPos = () => { word.style.backgroundPosition = `${state.pos}% 18%`; };
 
-    tl.set(seam, { scaleY: 0 })
-      .set(marks, { yPercent: 18, autoAlpha: 0, letterSpacing: '.3em' })
+    applyReveal();
+    applyPos();
+    tl.set(line, { scaleX: 0 })
       .set(words, { y: 16, autoAlpha: 0 })
-      .to(seam, { scaleY: 1, duration: 0.9, ease: 'expo.inOut' }, 0)
-      .to(marks, { yPercent: 0, autoAlpha: 1, letterSpacing: '.08em', duration: 1.3, ease: 'expo.out' }, 0.35)
-      .to(words, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12 }, 0.7)
-      // light leaks through the seam just before the doors part
-      .to(seam, { width: 10, marginLeft: -5, boxShadow: '0 0 90px 30px rgba(255,236,200,.55)', duration: 0.45, ease: 'power2.in' }, 1.85)
-      .to(words, { autoAlpha: 0, y: -10, duration: 0.35, ease: 'power2.in' }, 1.95)
-      .to(left, { rotateY: -108, duration: 1.5, ease: 'power3.inOut' }, 2.2)
-      .to(right, { rotateY: 108, duration: 1.5, ease: 'power3.inOut' }, 2.2)
-      .to(doors, { filter: 'brightness(.35)', duration: 1.2, ease: 'power2.in' }, 2.3)
-      .to(seam, { autoAlpha: 0, duration: 0.5 }, 2.35)
-      .to(el, { backgroundColor: 'rgba(11,9,7,0)', duration: 0.6 }, 2.2);
+      .set(wash, { autoAlpha: 0 })
+      .set(word, { scale: 1, transformOrigin: '87% 49%' })
+      .to(line, { scaleX: 1, duration: 0.8, ease: 'expo.inOut' }, 0)
+      .to(reveal, { right: 0, duration: 1.3, ease: 'expo.inOut', onUpdate: applyReveal }, 0.35)
+      .to(state, { pos: 75, duration: 3.2, ease: 'none', onUpdate: applyPos }, 0.35)
+      .to(words, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12 }, 0.9)
+      .to(words, { autoAlpha: 0, y: -10, duration: 0.35, ease: 'power2.in' }, 2.15)
+      .to(line, { autoAlpha: 0, duration: 0.3 }, 2.15)
+      // dive through the second X: the photo inside the letters floods the screen
+      .to(word, { scale: 46, duration: 1.7, ease: 'expo.in' }, 2.35)
+      .to(wash, { autoAlpha: 1, duration: 0.5, ease: 'power2.in' }, 3.55);
   };
 
   return (
-    <PageOpening id="home" language={language} className="po-doors" build={build}>
-      <div className="po-door po-door--left"><div className="po-door__frame" /><div className="po-door__mark"><DoorMark /></div></div>
-      <div className="po-door po-door--right"><div className="po-door__frame" /><div className="po-door__mark"><DoorMark /></div></div>
-      <div className="po-seam" />
-      <p className="po-kicker po-doors__kicker">{copy.kicker}</p>
-      <p className="po-doors__caption">{copy.caption}</p>
+    <PageOpening id="home" language={language} className="po-window" build={build}>
+      <p className="po-kicker po-window__kicker">{copy.kicker}</p>
+      <h1 className="po-window__word" aria-label="LUXX">LUXX</h1>
+      <span className="po-window__line" />
+      <p className="po-window__caption">{copy.caption}</p>
+      <div className="po-window__wash" />
     </PageOpening>
   );
 }

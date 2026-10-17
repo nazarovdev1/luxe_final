@@ -33,61 +33,23 @@
 .page-opening__skip kbd { font: inherit; font-size: 8px; opacity: .6; }
 .po-kicker { font: 600 10px/1 system-ui, sans-serif; letter-spacing: .32em; text-transform: uppercase; color: var(--po-gold); }
 
-/* ── HOME · Maison doors ─────────────────────────────── */
-.po-doors { background: transparent; perspective: 1800px; }
-.po-door {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50.2%;
-  overflow: hidden;
-  background:
-    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 56px 100%,
-    linear-gradient(180deg, #1d1215 0%, #120b0d 100%);
-  backface-visibility: hidden;
+/* ── HOME · Window letters ───────────────────────────── */
+.po-window { display: grid; place-items: center; background: #0b0907; }
+.po-window__word {
+  margin: 0;
+  font: 700 clamp(150px, 27vw, 460px)/.85 Georgia, 'Times New Roman', serif;
+  letter-spacing: .02em;
+  color: transparent;
+  background: url('/editorial/opening-main-v2.webp') 30% 18% / 150% auto no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1px rgba(216, 185, 136, .5);
   will-change: transform;
 }
-.po-door--left { left: 0; transform-origin: left center; box-shadow: inset -30px 0 60px rgba(0,0,0,.45); }
-.po-door--right { right: 0; transform-origin: right center; box-shadow: inset 30px 0 60px rgba(0,0,0,.45); }
-.po-door__frame { position: absolute; inset: 7% 9%; border: 1px solid rgba(216,185,136,.22); }
-.po-door__mark {
-  position: absolute;
-  top: 50%;
-  width: 100vw;
-  transform: translateY(-50%);
-  text-align: center;
-  font-size: clamp(90px, 15vw, 240px);
-  line-height: 1;
-  letter-spacing: .08em;
-  color: var(--po-ivory);
-}
-.po-door--left .po-door__mark { left: 0; }
-.po-door--right .po-door__mark { right: 0; }
-.po-door__mark i { font-style: normal; color: var(--po-gold); }
-.po-seam {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  margin-left: -1px;
-  background: linear-gradient(180deg, transparent, var(--po-gold) 20%, #fff3dc 50%, var(--po-gold) 80%, transparent);
-  box-shadow: 0 0 24px 4px rgba(216,185,136,.45);
-  transform-origin: top center;
-  z-index: 3;
-}
-.po-doors__caption {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 14vh;
-  z-index: 4;
-  text-align: center;
-  font-style: italic;
-  font-size: clamp(15px, 1.4vw, 21px);
-  color: rgba(246,241,232,.85);
-}
-.po-doors__kicker { position: absolute; left: 0; right: 0; top: 16vh; z-index: 4; text-align: center; }
+.po-window__line { position: absolute; left: 12%; right: 12%; top: 72%; height: 1px; background: var(--po-gold); transform-origin: left center; }
+.po-window__kicker { position: absolute; left: 0; right: 0; top: 16vh; text-align: center; }
+.po-window__caption { position: absolute; left: 0; right: 0; bottom: 14vh; margin: 0; text-align: center; font-style: italic; font-size: clamp(15px, 1.4vw, 21px); color: rgba(246, 241, 232, .85); }
+.po-window__wash { position: absolute; inset: 0; z-index: 4; pointer-events: none; background: #0b0907; }
 
 /* ── KIYIMLAR · Atelier rail ─────────────────────────── */
 .po-rail { background: #f3ede3; color: #17110f; }
@@ -169,5 +131,4 @@
   .po-rail__piece { width: 22vw; }
   .po-rail__piece:nth-child(n+4) { display: none; }
   .po-rail__count strong { font-size: 40px; }
-  .po-door__mark { font-size: 26vw; }
 }
