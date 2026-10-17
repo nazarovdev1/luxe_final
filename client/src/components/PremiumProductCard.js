@@ -34,7 +34,7 @@ const PremiumProductCard = ({ product, onQuickView, onCompare, isCompareSelected
           src={imageUrl}
           alt={product.name}
           loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
+          fetchpriority={priority ? 'high' : 'auto'}
           decoding="async"
           onLoad={() => setImgLoaded(true)}
           className={imgLoaded ? 'is-loaded' : ''}

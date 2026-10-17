@@ -249,7 +249,7 @@ export default function MaisonExperience() {
           </div>
 
           <div className="mh-opening-art mh-image-reveal">
-            <div className="mh-opening-art-main"><img src="/editorial/opening-main-v2.webp" alt="LUXX ayollar kolleksiyasi" loading="eager" fetchPriority="high" decoding="async" /></div>
+            <div className="mh-opening-art-main"><img src="/editorial/opening-main-v2.webp" alt="LUXX ayollar kolleksiyasi" loading="eager" fetchpriority="high" decoding="async" /></div>
             <div className="mh-opening-art-detail"><img src="/editorial/opening-detail-v2.webp" alt="LUXX mato va detal" loading="eager" decoding="async" /></div>
             <span className="mh-opening-caption">FIG. 01 — SOFT POWER</span>
           </div>

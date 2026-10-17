@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ArrowDown, ArrowRight, Plus } from 'lucide-react';
 import { gsap } from 'gsap';
@@ -124,15 +125,15 @@ export default function Lookbooks() {
     }
     setChromeHidden(true);
 
-    const aperture = root.querySelector('.lj-op-aperture');
-    const frames = Array.from(root.querySelectorAll('.lj-op-frame'));
-    const lens = root.querySelector('.lj-op-lens');
-    const flash = root.querySelector('.lj-op-flash');
-    const shade = root.querySelector('.lj-op-shade');
-    const wordLeft = root.querySelector('.lj-op-word--l');
-    const wordRight = root.querySelector('.lj-op-word--r');
-    const chrome = root.querySelectorAll('.lj-op-top, .lj-op-bottom');
-    const caption = root.querySelector('.lj-op-caption');
+    const aperture = openingEl.querySelector('.lj-op-aperture');
+    const frames = Array.from(openingEl.querySelectorAll('.lj-op-frame'));
+    const lens = openingEl.querySelector('.lj-op-lens');
+    const flash = openingEl.querySelector('.lj-op-flash');
+    const shade = openingEl.querySelector('.lj-op-shade');
+    const wordLeft = openingEl.querySelector('.lj-op-word--l');
+    const wordRight = openingEl.querySelector('.lj-op-word--r');
+    const chrome = openingEl.querySelectorAll('.lj-op-top, .lj-op-bottom');
+    const caption = openingEl.querySelector('.lj-op-caption');
     const heroImage = root.querySelector('.lj-hero-image img');
     const heroTitles = root.querySelectorAll('.lj-hero-title span');
     const heroAccents = [
@@ -149,18 +150,20 @@ export default function Lookbooks() {
     const lensW = lensH * 0.74;
     const insetY = (vh - lensH) / 2;
     const insetX = (vw - lensW) / 2;
-    const closed = `inset(${vh / 2}px ${insetX}px ${vh / 2}px ${insetX}px)`;
-    const open = `inset(${insetY}px ${insetX}px ${insetY}px ${insetX}px)`;
-    const full = 'inset(0px 0px 0px 0px)';
-
-    gsap.set(aperture, { clipPath: closed });
+    // Tween plain numbers and write clip-path ourselves: browsers collapse equal inset() values,
+    // which makes direct clip-path tweens interpolate the wrong edges.
+    const iris = { top: vh / 2, right: insetX, bottom: vh / 2, left: insetX };
+    const applyIris = () => {
+      aperture.style.clipPath = `inset(${iris.top}px ${iris.right}px ${iris.bottom}px ${iris.left}px)`;
+    };
+    applyIris();
     gsap.set(lens, { top: insetY, left: insetX, width: lensW, height: lensH, autoAlpha: 0, scale: 0.92 });
     gsap.set(frames, { autoAlpha: 0, scale: 1.12 });
     gsap.set(flash, { autoAlpha: 0 });
     gsap.set(shade, { autoAlpha: 0 });
     gsap.set(wordLeft, { xPercent: -60, autoAlpha: 0 });
     gsap.set(wordRight, { xPercent: 60, autoAlpha: 0 });
-    gsap.set(chrome, { autoAlpha: 0 });
+    gsap.set(chrome, { autoAlpha: 1 });
     gsap.set(caption, { autoAlpha: 0, y: 14 });
     if (heroImage) gsap.set(heroImage, { scale: 1, filter: 'brightness(1)' });
     if (heroTitles.length) gsap.set(heroTitles, { yPercent: 105, autoAlpha: 0 });
@@ -186,23 +189,23 @@ export default function Lookbooks() {
       if (runId === openingRunRef.current && openingContainerRef.current?.style.display !== 'none') skipOpening();
     }, 9000);
 
-    tl.to(chrome, { autoAlpha: 1, duration: 0.6 }, 0)
+    tl
       .to(wordLeft, { xPercent: -8, autoAlpha: 1, duration: 2.6, ease: 'power2.out' }, 0.05)
       .to(wordRight, { xPercent: 8, autoAlpha: 1, duration: 2.6, ease: 'power2.out' }, 0.05)
       // Shutter opens vertically into a portrait lens
-      .to(aperture, { clipPath: open, duration: 0.75, ease: 'expo.inOut' }, 0.2)
+      .to(iris, { top: insetY, bottom: insetY, duration: 0.75, ease: 'expo.inOut', onUpdate: applyIris }, 0.2)
       .to(lens, { autoAlpha: 1, scale: 1, duration: 0.6 }, 0.55)
       .to(caption, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.7);
 
     // Frames flicker in like a fashion shoot, each with a soft flash
     const firstFrameAt = 0.45;
-    const frameStep = 0.27;
+    const frameStep = 0.36;
     frames.forEach((frame, index) => {
       const at = firstFrameAt + index * frameStep;
       tl.call(() => setFrameCount(index), null, at)
         .set(frame, { autoAlpha: 1 }, at)
         .to(frame, { scale: 1, duration: 0.9, ease: 'power2.out' }, at)
-        .fromTo(flash, { autoAlpha: 0.75 }, { autoAlpha: 0, duration: 0.32, ease: 'power2.out' }, at);
+        .fromTo(flash, { autoAlpha: 0.55 }, { autoAlpha: 0, duration: 0.32, ease: 'power2.out' }, at);
       if (index > 0) tl.set(frames[index - 1], { autoAlpha: 0 }, at + 0.02);
     });
 
@@ -210,7 +213,7 @@ export default function Lookbooks() {
     const expandAt = firstFrameAt + frames.length * frameStep + 0.25;
     tl.to(lens, { autoAlpha: 0, scale: 1.08, duration: 0.35, ease: 'power2.in' }, expandAt - 0.1)
       .to(caption, { autoAlpha: 0, y: -10, duration: 0.3, ease: 'power2.in' }, expandAt - 0.1)
-      .to(aperture, { clipPath: full, duration: 1.15, ease: 'expo.inOut' }, expandAt)
+      .to(iris, { top: 0, right: 0, bottom: 0, left: 0, duration: 1.15, ease: 'expo.inOut', onUpdate: applyIris }, expandAt)
       .to(shade, { autoAlpha: 1, duration: 0.9, ease: 'power2.inOut' }, expandAt + 0.35)
       .to(wordLeft, { xPercent: -130, autoAlpha: 0, duration: 1.1, ease: 'expo.in' }, expandAt - 0.05)
       .to(wordRight, { xPercent: 130, autoAlpha: 0, duration: 1.1, ease: 'expo.in' }, expandAt - 0.05)
@@ -366,8 +369,9 @@ export default function Lookbooks() {
   return <main ref={pageRef} className="lj">
     <SEO title={`${copy.label} | LUXX`} description={copy.heroIntro} canonicalPath="/lookbooks" structuredData={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: copy.label, url: 'https://luxx.uz/lookbooks', inLanguage: language }} />
 
-    {/* Opening: "the shoot" — see playOpeningAnimation */}
-    <div className="lj-opening" ref={openingContainerRef} role="dialog" aria-label={copy.edition}>
+    {/* Opening: "the shoot" — see playOpeningAnimation. Portalled to <body> so no page
+        stacking context (main content is z-10) lets the navbar or prompts paint over it. */}
+    {createPortal(<div className="lj-opening" ref={openingContainerRef} role="dialog" aria-label={copy.edition}>
       <div className="lj-op-words" aria-hidden="true">
         <span className="lj-op-word lj-op-word--l">Look</span>
         <span className="lj-op-word lj-op-word--r"><em>book</em></span>
@@ -383,9 +387,10 @@ export default function Lookbooks() {
           />
         ))}
         <div className="lj-op-shade" />
+        {/* Inside the aperture so the flash lights the lens only */}
+        <div className="lj-op-flash" />
       </div>
       <div className="lj-op-lens" aria-hidden="true" />
-      <div className="lj-op-flash" aria-hidden="true" />
       <div className="lj-op-grain" aria-hidden="true" />
 
       <header className="lj-op-top">
@@ -402,10 +407,10 @@ export default function Lookbooks() {
         <span>FRAME <span ref={frameCountRef} className="lj-op-frame-count">01 / {String(OPENING_FRAMES.length).padStart(2, '0')}</span></span>
         <span>TOSHKENT · ATELIER</span>
       </footer>
-    </div>
+    </div>, document.body)}
 
     <section className="lj-hero" aria-labelledby="lj-title">
-      <div className="lj-hero-image"><img src={HERO_IMAGE} alt="" fetchPriority="high" /></div>
+      <div className="lj-hero-image"><img src={HERO_IMAGE} alt="" fetchpriority="high" /></div>
       <div className="lj-hero-shade" />
       <div className="lj-hero-meta">
         <span>LUXX / THE LOOKBOOK</span>

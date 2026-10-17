@@ -207,7 +207,7 @@ const AllProducts = () => {
         <div className="wardrobe-runway">
           {heroItems.map((item, index) => (
             <figure key={item.product?.id || item.fallbackName}>
-              <img src={item.image} alt={item.product?.name || item.fallbackName} fetchPriority={index === 0 ? 'high' : 'auto'} />
+              <img src={item.image} alt={item.product?.name || item.fallbackName} fetchpriority={index === 0 ? 'high' : 'auto'} />
               <figcaption><span>{String(index + 1).padStart(2, '0')}</span><div><small>{item.product?.category || item.fallbackCategory}</small><strong>{item.product?.name || item.fallbackName}</strong></div></figcaption>
             </figure>
           ))}

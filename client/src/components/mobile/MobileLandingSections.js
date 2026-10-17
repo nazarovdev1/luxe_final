@@ -411,7 +411,7 @@ export const MobileHero = ({ product, onScrollToProducts }) => {
           aria-hidden="true"
           style={{ transform: `translateY(${bgShift}px)` }}
         >
-          <img src="/333-mobile.webp" alt="" fetchPriority="high" width={800} height={1200} decoding="async" />
+          <img src="/333-mobile.webp" alt="" fetchpriority="high" width={800} height={1200} decoding="async" />
           <div className="mh-bg-ov-v" />
           <div className="mh-bg-ov-h" />
         </div>
