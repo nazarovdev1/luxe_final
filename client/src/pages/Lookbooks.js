@@ -22,7 +22,7 @@ const COPY = {
     ],
     archiveTop: '03 / The edit', archiveTitle: 'Obrazlar ichida o‘zingizni toping.', all: 'Barchasi', open: 'Obrazni ko‘rish', pieces: 'mahsulot', empty: 'Yangi obrazlar tez orada.', error: 'Obrazlarni yuklab bo‘lmadi.', retry: 'Qayta urinish', loading: 'Obrazlar yuklanmoqda',
     createTop: '04 / Sizning navbatingiz', create: 'Endi hikoyani siz yarating.', createText: 'Sevimli kiyimlaringizni birlashtiring. O‘zingizga xos obrazni bir necha qadamda yarating.', builder: 'Obraz yaratish', shop: 'Kiyimlarni ko‘rish',
-    skip: 'O‘tkazib yuborish', replay: 'Opening', edition: 'Kolleksiya obrazlari',
+    skip: 'O‘tkazib yuborish', replay: 'Opening', edition: 'Kolleksiya obrazlari', openingCaption: 'Har bir obraz — bitta kadr.',
   },
   ru: {
     label: 'Образы', heroOne: 'Искусство', heroTwo: 'одеваться.', heroIntro: 'Больше, чем первый взгляд. Каждый образ — ваше настроение, движение и история.', explore: 'Начать историю', scroll: 'Листайте вниз',
@@ -34,7 +34,7 @@ const COPY = {
     ],
     archiveTop: '03 / The edit', archiveTitle: 'Найдите себя среди образов.', all: 'Все', open: 'Смотреть образ', pieces: 'вещей', empty: 'Новые образы скоро появятся.', error: 'Не удалось загрузить образы.', retry: 'Повторить', loading: 'Загрузка образов',
     createTop: '04 / Ваша очередь', create: 'Теперь создайте свою историю.', createText: 'Сочетайте любимые вещи. Соберите образ, который говорит о вас.', builder: 'Создать образ', shop: 'Смотреть одежду',
-    skip: 'Пропустить', replay: 'Интро', edition: 'Коллекция образов',
+    skip: 'Пропустить', replay: 'Интро', edition: 'Коллекция образов', openingCaption: 'Каждый образ — один кадр.',
   },
   en: {
     label: 'Lookbooks', heroOne: 'The art of', heroTwo: 'dressing.', heroIntro: 'More than a first impression. Every look carries your mood, your movement, your story.', explore: 'Enter the story', scroll: 'Scroll to discover',
@@ -46,7 +46,7 @@ const COPY = {
     ],
     archiveTop: '03 / The edit', archiveTitle: 'Find yourself in the looks.', all: 'All looks', open: 'Discover look', pieces: 'pieces', empty: 'New looks are coming soon.', error: 'Unable to load the looks.', retry: 'Try again', loading: 'Loading looks',
     createTop: '04 / Your turn', create: 'Now write your own story.', createText: 'Bring your favourite pieces together. Create a look that speaks for you.', builder: 'Create a look', shop: 'Explore the pieces',
-    skip: 'Skip', replay: 'Intro', edition: 'Collection Lookbook',
+    skip: 'Skip', replay: 'Intro', edition: 'Collection Lookbook', openingCaption: 'Every look, a single frame.',
   },
 };
 
@@ -54,11 +54,34 @@ const CHAPTER_IMAGES = ['/editorial/story-softness-v2.webp', '/editorial/story-p
 const FALLBACK = '/editorial/private-edit-evening.webp';
 const imageFallback = (event) => { if (!event.currentTarget.src.endsWith(FALLBACK)) event.currentTarget.src = FALLBACK; };
 
+// Frames shown through the opening aperture; the last one is the hero image itself.
+const HERO_IMAGE = '/editorial/lookbook-mood-v2.webp';
+const OPENING_FRAMES = [
+  '/editorial/story-softness-v2.webp',
+  '/editorial/private-edit-evening.webp',
+  '/editorial/story-posture-v2.webp',
+  '/editorial/lookbook-detail-v2.webp',
+  '/editorial/story-presence-v2.webp',
+  HERO_IMAGE,
+];
+
+// The opening plays once per visit; coming back to the lookbook goes straight to the content.
+const OPENING_SEEN_KEY = 'luxxLookbookOpeningSeen';
+const hasSeenOpening = () => {
+  try { return Boolean(sessionStorage.getItem(OPENING_SEEN_KEY)); } catch { return false; }
+};
+const markOpeningSeen = () => {
+  try { sessionStorage.setItem(OPENING_SEEN_KEY, '1'); } catch { /* storage blocked: the opening simply plays again */ }
+};
+
 export default function Lookbooks() {
   const pageRef = useRef(null);
   const openingContainerRef = useRef(null);
-  const counterRef = useRef(null);
-  const progressRef = useRef(null);
+  const frameCountRef = useRef(null);
+  const openingRunRef = useRef(0);
+  // Decided once per mount, so a StrictMode double effect cannot skip a first-time opening.
+  const skipOpeningRef = useRef(null);
+  if (skipOpeningRef.current === null) skipOpeningRef.current = hasSeenOpening();
   const openingTimelineRef = useRef(null);
   const [openingActive, setOpeningActive] = useState(true);
 
@@ -70,215 +93,151 @@ export default function Lookbooks() {
   const [category, setCategory] = useState('all');
   const [selectedLookId, setSelectedLookId] = useState(null);
 
-  const playOpeningAnimation = () => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setOpeningActive(false);
-      return;
-    }
-
-    setOpeningActive(true);
-    const root = pageRef.current;
-    if (!root) return;
-
-    if (openingTimelineRef.current) {
-      openingTimelineRef.current.kill();
-    }
-
-    const openingEl = openingContainerRef.current;
-    if (!openingEl) return;
-    openingEl.style.display = 'flex';
-    openingEl.style.pointerEvents = 'auto';
-
-    const leftPanel = root.querySelector('.lj-opening-panel--left');
-    const rightPanel = root.querySelector('.lj-opening-panel--right');
-    const seam = root.querySelector('.lj-opening-seam');
-    const stage = root.querySelector('.lj-opening-stage');
-    const topBar = root.querySelector('.lj-opening-top');
-    const bottomBar = root.querySelector('.lj-opening-bottom');
-    const counterEl = counterRef.current;
-    const progressEl = progressRef.current;
-    const heroImage = root.querySelector('.lj-hero-image img');
-    const heroTitles = root.querySelectorAll('.lj-hero-title span');
-    const heroMeta = root.querySelector('.lj-hero-meta');
-    const heroOverline = root.querySelector('.lj-hero-content .lj-overline');
-    const heroBottom = root.querySelector('.lj-hero-bottom');
-    const heroSide = root.querySelector('.lj-hero-side');
-
-    // Reset initial states
-    if (leftPanel && rightPanel) gsap.set([leftPanel, rightPanel], { xPercent: 0 });
-    if (seam) gsap.set(seam, { scaleY: 1, autoAlpha: 1 });
-    if (stage) gsap.set(stage, { scale: 1, y: 0, autoAlpha: 1, filter: 'blur(0px)' });
-    if (topBar && bottomBar) gsap.set([topBar, bottomBar], { autoAlpha: 1, y: 0 });
-    if (progressEl) gsap.set(progressEl, { scaleX: 0 });
-    if (counterEl) counterEl.textContent = '00';
-    if (openingEl) gsap.set(openingEl, { autoAlpha: 1 });
-
-    // Prime the hero elements underneath the curtains so they enter fluidly
-    if (heroImage) gsap.set(heroImage, { scale: 1.05, transformOrigin: '72% 25%', filter: 'brightness(0.65)' });
-    if (heroTitles && heroTitles.length) gsap.set(heroTitles, { yPercent: 105, autoAlpha: 0 });
-    if (heroOverline) gsap.set(heroOverline, { y: 22, autoAlpha: 0 });
-    if (heroMeta) gsap.set(heroMeta, { y: -18, autoAlpha: 0 });
-    if (heroBottom) gsap.set(heroBottom, { y: 22, autoAlpha: 0 });
-    if (heroSide) gsap.set(heroSide, { autoAlpha: 0 });
-
-    const tl = gsap.timeline({
-      defaults: { ease: 'power3.out' },
-      onComplete: () => {
-        if (openingEl) {
-          openingEl.style.display = 'none';
-          openingEl.style.pointerEvents = 'none';
-        }
-        setOpeningActive(false);
-        ScrollTrigger.refresh();
-      },
-    });
-
-    openingTimelineRef.current = tl;
-
-    // 1. Opening stage text entrance
-    if (stage) {
-      tl.fromTo(stage.children,
-        { y: 35, autoAlpha: 0 },
-        { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.08, ease: 'power3.out' },
-        0.1
-      );
-    }
-
-    // Top & bottom chrome bars
-    if (topBar && bottomBar) {
-      tl.fromTo([topBar, bottomBar],
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.6 },
-        0.2
-      );
-    }
-
-    // Counter ticker 00 -> 100
-    const counterObj = { val: 0 };
-    tl.to(counterObj, {
-      val: 100,
-      duration: 1.3,
-      ease: 'power2.inOut',
-      onUpdate: () => {
-        if (counterEl) {
-          counterEl.textContent = Math.round(counterObj.val).toString().padStart(2, '0');
-        }
-      },
-    }, 0.2);
-
-    // Progress bar runner
-    if (progressEl) {
-      tl.to(progressEl, {
-        scaleX: 1,
-        duration: 1.3,
-        ease: 'power2.inOut',
-      }, 0.2);
-    }
-
-    // 2. Stage dissolve & lift
-    if (stage) {
-      tl.to(stage, {
-        scale: 1.04,
-        y: -22,
-        autoAlpha: 0,
-        filter: 'blur(8px)',
-        duration: 0.45,
-        ease: 'power2.in',
-      }, 1.5);
-    }
-
-    if (topBar && bottomBar) {
-      tl.to([topBar, bottomBar], {
-        autoAlpha: 0,
-        y: (i) => (i === 0 ? -16 : 16),
-        duration: 0.35,
-        ease: 'power2.in',
-      }, 1.55);
-    }
-
-    if (seam) {
-      tl.to(seam, {
-        scaleY: 0,
-        autoAlpha: 0,
-        duration: 0.3,
-        ease: 'power2.in',
-      }, 1.55);
-    }
-
-    // 3. CURTAINS PARTING (Dual split reveals underlying hero seamlessly!)
-    if (leftPanel && rightPanel) {
-      tl.to(leftPanel, {
-        xPercent: -101,
-        duration: 1.25,
-        ease: 'power4.inOut',
-      }, 1.6);
-
-      tl.to(rightPanel, {
-        xPercent: 101,
-        duration: 1.25,
-        ease: 'power4.inOut',
-      }, 1.6);
-    }
-
-    // 4. HERO ANIMATES IN SYNCHRONY WITH THE PARTING CURTAINS
-    // As curtains open, hero image scales from 1.15 to 1.0 and brightens
-    if (heroImage) {
-      tl.to(heroImage, {
-        scale: 1,
-        filter: 'brightness(1)',
-        duration: 1.35,
-        ease: 'power3.out',
-      }, 1.6);
-    }
-
-    // Hero title lines slide up from clip masks
-    if (heroTitles && heroTitles.length) {
-      tl.to(heroTitles, {
-        yPercent: 0,
-        autoAlpha: 1,
-        duration: 1.0,
-        stagger: 0.1,
-        ease: 'power3.out',
-      }, 1.8);
-    }
-
-    const heroAccents = [heroOverline, heroMeta, heroBottom, heroSide].filter(Boolean);
-    if (heroAccents.length) {
-      tl.to(heroAccents, {
-        y: 0,
-        autoAlpha: 1,
-        duration: 0.85,
-        stagger: 0.08,
-        ease: 'power3.out',
-      }, 2.0);
-    }
-
-    // Smooth invisible handoff for opening container
-    tl.to(openingEl, {
-      autoAlpha: 0,
-      duration: 0.2,
-      ease: 'none',
-    }, 2.8);
+  // The site navbar sits above page content; hide it while the opening owns the screen.
+  const setChromeHidden = (hidden) => {
+    window.dispatchEvent(new CustomEvent('luxx:chrome-visibility', { detail: { hidden } }));
   };
 
-  const skipOpening = () => {
-    if (openingTimelineRef.current) {
-      openingTimelineRef.current.progress(1);
-    }
+  const hideOpening = () => {
+    markOpeningSeen();
+    setChromeHidden(false);
     const openingEl = openingContainerRef.current;
     if (openingEl) {
       openingEl.style.display = 'none';
       openingEl.style.pointerEvents = 'none';
     }
     setOpeningActive(false);
+    ScrollTrigger.refresh();
+  };
+
+  // "The shoot": a portrait aperture flickers through editorial frames with a camera flash,
+  // then opens to full screen on the very image the hero uses, so the hand-off is seamless.
+  const playOpeningAnimation = async (runId) => {
+    const root = pageRef.current;
+    const openingEl = openingContainerRef.current;
+    if (!root || !openingEl) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || skipOpeningRef.current) {
+      hideOpening();
+      return;
+    }
+    setChromeHidden(true);
+
+    const aperture = root.querySelector('.lj-op-aperture');
+    const frames = Array.from(root.querySelectorAll('.lj-op-frame'));
+    const lens = root.querySelector('.lj-op-lens');
+    const flash = root.querySelector('.lj-op-flash');
+    const shade = root.querySelector('.lj-op-shade');
+    const wordLeft = root.querySelector('.lj-op-word--l');
+    const wordRight = root.querySelector('.lj-op-word--r');
+    const chrome = root.querySelectorAll('.lj-op-top, .lj-op-bottom');
+    const caption = root.querySelector('.lj-op-caption');
+    const heroImage = root.querySelector('.lj-hero-image img');
+    const heroTitles = root.querySelectorAll('.lj-hero-title span');
+    const heroAccents = [
+      root.querySelector('.lj-hero-content .lj-overline'),
+      root.querySelector('.lj-hero-meta'),
+      root.querySelector('.lj-hero-bottom'),
+      root.querySelector('.lj-hero-side'),
+    ].filter(Boolean);
+
+    // Portrait lens geometry in pixels (GSAP interpolates matching inset() values).
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const lensH = Math.min(vh * 0.56, 560);
+    const lensW = lensH * 0.74;
+    const insetY = (vh - lensH) / 2;
+    const insetX = (vw - lensW) / 2;
+    const closed = `inset(${vh / 2}px ${insetX}px ${vh / 2}px ${insetX}px)`;
+    const open = `inset(${insetY}px ${insetX}px ${insetY}px ${insetX}px)`;
+    const full = 'inset(0px 0px 0px 0px)';
+
+    gsap.set(aperture, { clipPath: closed });
+    gsap.set(lens, { top: insetY, left: insetX, width: lensW, height: lensH, autoAlpha: 0, scale: 0.92 });
+    gsap.set(frames, { autoAlpha: 0, scale: 1.12 });
+    gsap.set(flash, { autoAlpha: 0 });
+    gsap.set(shade, { autoAlpha: 0 });
+    gsap.set(wordLeft, { xPercent: -60, autoAlpha: 0 });
+    gsap.set(wordRight, { xPercent: 60, autoAlpha: 0 });
+    gsap.set(chrome, { autoAlpha: 0 });
+    gsap.set(caption, { autoAlpha: 0, y: 14 });
+    if (heroImage) gsap.set(heroImage, { scale: 1, filter: 'brightness(1)' });
+    if (heroTitles.length) gsap.set(heroTitles, { yPercent: 105, autoAlpha: 0 });
+    if (heroAccents.length) gsap.set(heroAccents, { y: 20, autoAlpha: 0 });
+
+    // Wait (briefly) for the frames so the flicker never shows an empty lens.
+    await Promise.race([
+      Promise.all(frames.map((img) => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()))),
+      new Promise((resolve) => setTimeout(resolve, 1400)),
+    ]);
+    // A newer run (or unmount) superseded this one while frames were decoding.
+    if (!openingContainerRef.current || runId !== openingRunRef.current) return;
+
+    const setFrameCount = (index) => {
+      if (frameCountRef.current) frameCountRef.current.textContent = `${String(index + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`;
+    };
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, onComplete: hideOpening });
+    openingTimelineRef.current = tl;
+
+    // Safety net: the page must never stay behind the opening (e.g. a stalled animation frame loop).
+    window.setTimeout(() => {
+      if (runId === openingRunRef.current && openingContainerRef.current?.style.display !== 'none') skipOpening();
+    }, 9000);
+
+    tl.to(chrome, { autoAlpha: 1, duration: 0.6 }, 0)
+      .to(wordLeft, { xPercent: -8, autoAlpha: 1, duration: 2.6, ease: 'power2.out' }, 0.05)
+      .to(wordRight, { xPercent: 8, autoAlpha: 1, duration: 2.6, ease: 'power2.out' }, 0.05)
+      // Shutter opens vertically into a portrait lens
+      .to(aperture, { clipPath: open, duration: 0.75, ease: 'expo.inOut' }, 0.2)
+      .to(lens, { autoAlpha: 1, scale: 1, duration: 0.6 }, 0.55)
+      .to(caption, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.7);
+
+    // Frames flicker in like a fashion shoot, each with a soft flash
+    const firstFrameAt = 0.45;
+    const frameStep = 0.27;
+    frames.forEach((frame, index) => {
+      const at = firstFrameAt + index * frameStep;
+      tl.call(() => setFrameCount(index), null, at)
+        .set(frame, { autoAlpha: 1 }, at)
+        .to(frame, { scale: 1, duration: 0.9, ease: 'power2.out' }, at)
+        .fromTo(flash, { autoAlpha: 0.75 }, { autoAlpha: 0, duration: 0.32, ease: 'power2.out' }, at);
+      if (index > 0) tl.set(frames[index - 1], { autoAlpha: 0 }, at + 0.02);
+    });
+
+    // The last frame (the hero image) breaks out of the lens to full screen
+    const expandAt = firstFrameAt + frames.length * frameStep + 0.25;
+    tl.to(lens, { autoAlpha: 0, scale: 1.08, duration: 0.35, ease: 'power2.in' }, expandAt - 0.1)
+      .to(caption, { autoAlpha: 0, y: -10, duration: 0.3, ease: 'power2.in' }, expandAt - 0.1)
+      .to(aperture, { clipPath: full, duration: 1.15, ease: 'expo.inOut' }, expandAt)
+      .to(shade, { autoAlpha: 1, duration: 0.9, ease: 'power2.inOut' }, expandAt + 0.35)
+      .to(wordLeft, { xPercent: -130, autoAlpha: 0, duration: 1.1, ease: 'expo.in' }, expandAt - 0.05)
+      .to(wordRight, { xPercent: 130, autoAlpha: 0, duration: 1.1, ease: 'expo.in' }, expandAt - 0.05)
+      .to(chrome, { autoAlpha: 0, duration: 0.4 }, expandAt + 0.3);
+
+    // Hero copy rises as the frame settles; then the overlay quietly dissolves
+    if (heroTitles.length) tl.to(heroTitles, { yPercent: 0, autoAlpha: 1, duration: 1, stagger: 0.1 }, expandAt + 0.85);
+    if (heroAccents.length) tl.to(heroAccents, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.07 }, expandAt + 1.05);
+    tl.to(openingEl, { autoAlpha: 0, duration: 0.45, ease: 'power1.out' }, expandAt + 1.1);
+  };
+
+  const skipOpening = () => {
+    if (openingTimelineRef.current) {
+      openingTimelineRef.current.progress(1);
+    }
+    hideOpening();
   };
 
   useEffect(() => {
-    playOpeningAnimation();
+    openingRunRef.current += 1;
+    playOpeningAnimation(openingRunRef.current);
     return () => {
+      openingRunRef.current += 1;
       if (openingTimelineRef.current) {
         openingTimelineRef.current.kill();
       }
+      setChromeHidden(false);
     };
   }, []);
 
@@ -407,54 +366,46 @@ export default function Lookbooks() {
   return <main ref={pageRef} className="lj">
     <SEO title={`${copy.label} | LUXX`} description={copy.heroIntro} canonicalPath="/lookbooks" structuredData={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: copy.label, url: 'https://luxx.uz/lookbooks', inLanguage: language }} />
 
-    {/* Cinematic Editorial Opening Overlay */}
-    <div className="lj-opening" ref={openingContainerRef} role="dialog" aria-label="Lookbook Opening">
-      <div className="lj-opening-panel lj-opening-panel--left" />
-      <div className="lj-opening-panel lj-opening-panel--right" />
-      <div className="lj-opening-seam" />
+    {/* Opening: "the shoot" — see playOpeningAnimation */}
+    <div className="lj-opening" ref={openingContainerRef} role="dialog" aria-label={copy.edition}>
+      <div className="lj-op-words" aria-hidden="true">
+        <span className="lj-op-word lj-op-word--l">Look</span>
+        <span className="lj-op-word lj-op-word--r"><em>book</em></span>
+      </div>
+      <div className="lj-op-aperture" aria-hidden="true">
+        {OPENING_FRAMES.map((src, index) => (
+          <img
+            key={src}
+            src={src}
+            alt=""
+            decoding="async"
+            className={`lj-op-frame${index === OPENING_FRAMES.length - 1 ? ' lj-op-frame--final' : ''}`}
+          />
+        ))}
+        <div className="lj-op-shade" />
+      </div>
+      <div className="lj-op-lens" aria-hidden="true" />
+      <div className="lj-op-flash" aria-hidden="true" />
+      <div className="lj-op-grain" aria-hidden="true" />
 
-      <header className="lj-opening-top">
-        <span>LUXX MAISON D'ÉDITION</span>
-        <span className="lj-opening-vol">VOL. 01 — {new Date().getFullYear()}</span>
-        <button
-          type="button"
-          onClick={skipOpening}
-          className="lj-opening-skip"
-          aria-label={copy.skip}
-        >
-          <span>{copy.skip}</span>
-          <span className="lj-opening-skip-key">ESC</span>
+      <header className="lj-op-top">
+        <span className="lj-op-rec"><i aria-hidden="true" />LUXX · {copy.edition}</span>
+        <span>VOL. 01 — {new Date().getFullYear()}</span>
+        <button type="button" onClick={skipOpening} className="lj-op-skip" aria-label={copy.skip}>
+          {copy.skip} <kbd>ESC</kbd>
         </button>
       </header>
 
-      <div className="lj-opening-stage">
-        <div className="lj-opening-crest" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L21 12L12 22L3 12L12 2Z" stroke="#d8b988" strokeWidth="1.2" />
-            <circle cx="12" cy="12" r="2.5" fill="#d8b988" />
-          </svg>
-        </div>
-        <span className="lj-opening-kicker">{copy.edition}</span>
-        <div className="lj-opening-title">
-          <div className="lj-opening-line"><span>{copy.heroOne}</span></div>
-          <div className="lj-opening-line"><span><em>{copy.heroTwo}</em></span></div>
-        </div>
-        <p className="lj-opening-quote">{copy.heroIntro}</p>
-      </div>
+      <p className="lj-op-caption">{copy.openingCaption}</p>
 
-      <footer className="lj-opening-bottom">
-        <span className="lj-opening-counter">
-          <span ref={counterRef}>00</span><em>%</em>
-        </span>
-        <div className="lj-opening-progress">
-          <span ref={progressRef} />
-        </div>
-        <span>TASHKENT • MILAN • PARIS</span>
+      <footer className="lj-op-bottom">
+        <span>FRAME <span ref={frameCountRef} className="lj-op-frame-count">01 / {String(OPENING_FRAMES.length).padStart(2, '0')}</span></span>
+        <span>TOSHKENT · ATELIER</span>
       </footer>
     </div>
 
     <section className="lj-hero" aria-labelledby="lj-title">
-      <div className="lj-hero-image"><img src="/editorial/lookbook-mood-v2.webp" alt="" fetchPriority="high" /></div>
+      <div className="lj-hero-image"><img src={HERO_IMAGE} alt="" fetchPriority="high" /></div>
       <div className="lj-hero-shade" />
       <div className="lj-hero-meta">
         <span>LUXX / THE LOOKBOOK</span>
