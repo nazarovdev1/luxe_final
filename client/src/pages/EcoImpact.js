@@ -4,6 +4,7 @@ import { Leaf, Droplets, Wind, TreeDeciduous, Award, BarChart3, ShoppingBag, Shi
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { EventOpening } from '../components/PageOpenings';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
 import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
@@ -61,7 +62,7 @@ const EcoScoreBar = ({ score, t }) => {
 const EcoImpact = () => {
   const { isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const pageRef = useRef(null);
@@ -91,6 +92,7 @@ const EcoImpact = () => {
 
   return (
     <div ref={pageRef} className="community-page community-page--eco">
+      <EventOpening variant="eco" language={language} />
 
       <SEO title="Eco Impact — Luxe" description="O'zingizning xaridlaringiz orqali tabiatga qo'shgan hissangizni ko'ring." />
 

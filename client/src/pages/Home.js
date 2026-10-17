@@ -4,10 +4,11 @@ import Hero from '../components/Hero';
 import MaisonExperience from '../components/maison/MaisonExperience';
 import SEO from '../components/SEO';
 import { useLanguage } from '../contexts/LanguageContext';
+import { HomeOpening } from '../components/PageOpenings';
 
 const Home = () => {
   const location = useLocation();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   useEffect(() => {
     if (!location.hash) return undefined;
     const timer = window.setTimeout(() => {
@@ -19,6 +20,7 @@ const Home = () => {
   }, [location.hash]);
   return (
     <div className="couture-homepage">
+      <HomeOpening language={language} />
       <SEO title={t('home.seoTitle')} description={t('home.seoDesc')} keywords={t('home.seoKeywords')} canonicalPath="/" />
       <Hero />
       <MaisonExperience />

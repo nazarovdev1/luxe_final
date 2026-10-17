@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Crown, Zap, Trophy, Gift, ShieldCheck, Truck, Unlock, ChevronRight, Flame, Medal, History, Gem } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { EventOpening } from '../components/PageOpenings';
 import SEO from '../components/SEO';
 import { useNavigate } from 'react-router-dom';
 import BadgeIcon from '../components/BadgeIcon';
@@ -91,7 +92,7 @@ const HOW_TO_EARN = [
 const VIPClub = () => {
   const { isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [pointsData, setPointsData] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [badges, setBadges] = useState([]);
@@ -146,6 +147,7 @@ const VIPClub = () => {
 
   return (
     <div ref={pageRef} className="community-page community-page--vip">
+      <EventOpening variant="vip" language={language} />
 
       <SEO 
         title="VIP Club — Luxe | Эксклюзивный клуб" 

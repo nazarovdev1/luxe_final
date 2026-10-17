@@ -6,6 +6,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { EventOpening } from '../components/PageOpenings';
 import SEO from '../components/SEO';
 import './Blog.css';
 
@@ -21,7 +22,7 @@ const CATEGORIES = [
 ];
 
 const Blog = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('Barchasi');
   const [searchQuery, setSearchQuery] = useState('');
   const [blogs, setBlogs] = useState([]);
@@ -232,6 +233,7 @@ const Blog = () => {
 
   return (
     <div ref={pageRef} className="blog-page min-h-screen bg-[#07080c] pt-20 sm:pt-24 pb-24 overflow-hidden">
+      <EventOpening variant="blog" language={language} />
       <SEO
         title="Blog | Luxx.uz"
         description="Eng so'nggi moda yangiliklari, uslub maslahatlari, trendlar va kombinatsiyalar. Luxx.uz blogi — premium fashion haqida hamma narsa."

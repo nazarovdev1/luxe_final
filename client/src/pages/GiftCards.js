@@ -4,6 +4,7 @@ import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { EventOpening } from '../components/PageOpenings';
 import GiftCardSvg from '../components/GiftCardSvg';
 import { GIFT_CARD_DESIGNS, getGiftCardDesign } from '../data/giftCardDesigns';
 import './GiftCards.css';
@@ -19,7 +20,7 @@ const getDigits = (value) => value.toString().replace(/\D/g, '');
 
 const GiftCards = () => {
   const { isAuthenticated } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedAmount, setSelectedAmount] = useState(300000);
   const [customAmount, setCustomAmount] = useState('');
   const [selectedDesign, setSelectedDesign] = useState(GIFT_CARD_DESIGNS[0].id);
@@ -145,6 +146,7 @@ const GiftCards = () => {
 
   return (
     <main ref={pageRef} className="gift-atelier">
+      <EventOpening variant="gift" language={language} />
       <SEO title="Sovg'a kartalari | Luxx.uz" description="Luxx.uz sovg'a kartalari - sevgan insoningizga premium kiyim sovg'a qiling." canonicalPath="/gift-cards" />
       <div className="gift-atelier__glow gift-atelier__glow--one" /><div className="gift-atelier__glow gift-atelier__glow--two" />
 

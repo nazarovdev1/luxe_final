@@ -1,0 +1,173 @@
+/* Shared shell for page openings (see PageOpening.jsx). Page-specific styles live below. */
+.page-opening {
+  --po-gold: #d8b988;
+  --po-ivory: #f6f1e8;
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  overflow: hidden;
+  background: #0b0907;
+  color: var(--po-ivory);
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.page-opening__skip {
+  position: absolute;
+  top: 30px;
+  right: 4%;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid rgba(246, 241, 232, .25);
+  border-radius: 999px;
+  background: rgba(11, 9, 7, .35);
+  color: rgba(246, 241, 232, .8);
+  font: 600 9px/1 system-ui, sans-serif;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color .3s, color .3s;
+}
+.page-opening__skip:hover { border-color: var(--po-gold); color: var(--po-gold); }
+.page-opening__skip kbd { font: inherit; font-size: 8px; opacity: .6; }
+.po-kicker { font: 600 10px/1 system-ui, sans-serif; letter-spacing: .32em; text-transform: uppercase; color: var(--po-gold); }
+
+/* ── HOME · Maison doors ─────────────────────────────── */
+.po-doors { background: transparent; perspective: 1800px; }
+.po-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.2%;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 56px 100%,
+    linear-gradient(180deg, #1d1215 0%, #120b0d 100%);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+.po-door--left { left: 0; transform-origin: left center; box-shadow: inset -30px 0 60px rgba(0,0,0,.45); }
+.po-door--right { right: 0; transform-origin: right center; box-shadow: inset 30px 0 60px rgba(0,0,0,.45); }
+.po-door__frame { position: absolute; inset: 7% 9%; border: 1px solid rgba(216,185,136,.22); }
+.po-door__mark {
+  position: absolute;
+  top: 50%;
+  width: 100vw;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: clamp(90px, 15vw, 240px);
+  line-height: 1;
+  letter-spacing: .08em;
+  color: var(--po-ivory);
+}
+.po-door--left .po-door__mark { left: 0; }
+.po-door--right .po-door__mark { right: 0; }
+.po-door__mark i { font-style: normal; color: var(--po-gold); }
+.po-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(180deg, transparent, var(--po-gold) 20%, #fff3dc 50%, var(--po-gold) 80%, transparent);
+  box-shadow: 0 0 24px 4px rgba(216,185,136,.45);
+  transform-origin: top center;
+  z-index: 3;
+}
+.po-doors__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14vh;
+  z-index: 4;
+  text-align: center;
+  font-style: italic;
+  font-size: clamp(15px, 1.4vw, 21px);
+  color: rgba(246,241,232,.85);
+}
+.po-doors__kicker { position: absolute; left: 0; right: 0; top: 16vh; z-index: 4; text-align: center; }
+
+/* ── KIYIMLAR · Atelier rail ─────────────────────────── */
+.po-rail { background: #f3ede3; color: #17110f; }
+.po-rail .page-opening__skip { color: rgba(23,17,15,.7); border-color: rgba(23,17,15,.2); background: rgba(243,237,227,.6); }
+.po-rail__title { position: absolute; left: 6%; bottom: 12vh; z-index: 3; }
+.po-rail__title h2 { margin: 18px 0 0; font-weight: 400; font-size: clamp(56px, 7.4vw, 128px); line-height: .92; letter-spacing: -.05em; }
+.po-rail__title h2 > span { display: block; overflow: hidden; padding-bottom: .06em; }
+.po-rail__title h2 > span > span { display: inline-block; }
+.po-rail__title h2 em { color: #9a6f3a; }
+.po-rail__count { position: absolute; right: 6%; bottom: 13vh; z-index: 3; font: 600 10px/1.6 system-ui, sans-serif; letter-spacing: .28em; text-transform: uppercase; text-align: right; color: rgba(23,17,15,.6); }
+.po-rail__count strong { display: block; font: 400 56px/1 Georgia, serif; letter-spacing: -.03em; color: #17110f; }
+.po-rail__bar { position: absolute; top: 19vh; left: 4%; right: 4%; height: 2px; background: linear-gradient(90deg, #8c6a3b, #d8b988, #8c6a3b); transform-origin: left center; z-index: 2; }
+.po-rail__pieces { position: absolute; top: 19vh; left: 6%; right: 6%; display: flex; justify-content: center; gap: clamp(14px, 2vw, 34px); z-index: 2; }
+.po-rail__piece { position: relative; width: clamp(110px, 12vw, 190px); padding-top: 38px; transform-origin: 50% 0; will-change: transform; }
+.po-rail__piece::before { content: ''; position: absolute; top: -2px; left: 50%; width: 22px; height: 38px; margin-left: -11px; border: 2px solid #8c6a3b; border-bottom: 0; border-radius: 12px 12px 0 0; }
+.po-rail__piece img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center top; box-shadow: 0 22px 40px rgba(23,17,15,.22); }
+.po-rail__pleats { position: absolute; inset: 0; z-index: 5; display: flex; pointer-events: none; }
+.po-rail__pleat { flex: 1; background: linear-gradient(90deg, #e6dccd, #f3ede3 40%, #ddd1c0); transform: translateY(101%); }
+
+/* ── EVENTS · Invitation ─────────────────────────────── */
+.po-invite { display: grid; place-items: center; perspective: 1400px; background: radial-gradient(circle at 50% 40%, #241619 0%, #0b0907 70%); }
+.po-invite__card {
+  position: relative;
+  width: min(360px, 78vw);
+  aspect-ratio: 5 / 7;
+  padding: 44px 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  color: #22161a;
+  background: linear-gradient(160deg, #fbf7f0, #efe5d6);
+  box-shadow: 0 40px 90px rgba(0,0,0,.55);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.po-invite__card::before { content: ''; position: absolute; inset: 12px; border: 1px solid rgba(154,111,58,.55); }
+.po-invite__card::after { content: ''; position: absolute; inset: 18px; border: 1px solid rgba(154,111,58,.25); }
+.po-invite__card .po-kicker { color: #9a6f3a; }
+.po-invite__title { margin: 0; font-weight: 400; font-size: clamp(34px, 4vw, 48px); line-height: 1.02; letter-spacing: -.02em; }
+.po-invite__title em { color: #9a6f3a; }
+.po-invite__line { width: 60px; height: 1px; background: #9a6f3a; }
+.po-invite__note { font-size: 14px; font-style: italic; color: rgba(34,22,26,.7); }
+/* The card can't clip (the seal hangs off its edge), so the sheen gets its own clipped layer. */
+.po-invite__shine { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.po-invite__sheen { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.75) 50%, transparent 65%); transform: translateX(-120%); pointer-events: none; }
+.po-invite__seal {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--seal-hi, #e6c78f), var(--seal, #9a6f3a) 70%);
+  box-shadow: 0 8px 18px rgba(0,0,0,.35), inset 0 -3px 6px rgba(0,0,0,.25);
+  color: #fbf7f0;
+  font-size: 26px;
+  font-style: italic;
+}
+.po-invite--eco { --seal: #4f6b45; --seal-hi: #9fbf8a; }
+.po-invite--gift { --seal: #7a2333; --seal-hi: #c45a6a; }
+.po-invite--blog { --seal: #2a2a2e; --seal-hi: #6b6b72; }
+
+/* ── ABOUT · Signature ───────────────────────────────── */
+.po-sign { display: grid; place-items: center; background: #160d0f; }
+.po-sign__svg { width: min(720px, 86vw); height: auto; overflow: visible; }
+.po-sign__word { font: italic 400 190px Georgia, 'Times New Roman', serif; letter-spacing: -.02em; fill: transparent; stroke: var(--po-gold); stroke-width: 1.2; }
+.po-sign__thread { stroke: var(--po-gold); stroke-width: 1; fill: none; }
+.po-sign__meta { position: absolute; left: 0; right: 0; bottom: 18vh; text-align: center; }
+.po-sign__meta p { margin: 14px 0 0; font-style: italic; font-size: clamp(15px, 1.4vw, 20px); color: rgba(246,241,232,.82); }
+
+@media (max-width: 768px) {
+  .po-rail__pieces { gap: 10px; }
+  .po-rail__piece { width: 22vw; }
+  .po-rail__piece:nth-child(n+4) { display: none; }
+  .po-rail__count strong { font-size: 40px; }
+  .po-door__mark { font-size: 26vw; }
+}

@@ -5,6 +5,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { CatalogueOpening } from '../components/PageOpenings';
 import QuickViewModal from '../components/QuickViewModal';
 import ProductComparison from '../components/ProductComparison';
 import SEO from '../components/SEO';
@@ -196,6 +197,7 @@ const AllProducts = () => {
 
   return (
     <main ref={pageRef} className="catalogue-page">
+      <CatalogueOpening language={language} products={products} />
       <SEO title={seoData.title} description={seoData.description} keywords={seoData.keywords} breadcrumbSteps={seoData.breadcrumbs} canonicalPath="/products" structuredData={{ '@context': 'https://schema.org', '@type': 'ItemList', '@id': 'https://luxx.uz/products#item-list', name: selectedCategory === allLabel ? 'Barcha mahsulotlar' : `${selectedCategory} mahsulotlari`, url: 'https://luxx.uz/products', numberOfItems: sortedProducts.length, itemListElement: displayedProducts.slice(0, 20).map((product, index) => ({ '@type': 'ListItem', position: index + 1, url: `https://luxx.uz/product/${product.id}`, name: product.name })) }} />
 
       <section className="wardrobe-hero" aria-labelledby="catalogue-title">

@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SEO from '../components/SEO';
 import Footer from '../components/Footer';
 import { useLanguage } from '../contexts/LanguageContext';
+import { AboutOpening } from '../components/PageOpenings';
 import { getPolicyCopy } from '../config/policies';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -78,6 +79,7 @@ const AboutPage = () => {
 
   return (
     <div ref={pageRef} className="overflow-hidden bg-[#eee7db] text-[#191511] selection:bg-[#bd8b47] selection:text-white">
+      <AboutOpening language={language} />
       <SEO title={`${t('nav.about')} — Luxx.uz`} description={t('about.description')} canonicalPath="/about" />
 
       <main>
