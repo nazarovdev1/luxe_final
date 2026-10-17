@@ -56,6 +56,30 @@ export const formatSaleNote = (endsAt, language = 'uz') => {
   return `Ochilish narxi · ${day}-${SALE_MONTHS.uz[month]}gacha`;
 };
 
+// Admin helpers for the "how long does this discount run?" question.
+export const toDateInput = (date) => {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
+};
+
+const daysFromNow = (days) => toDateInput(new Date(Date.now() + days * 86400000));
+
+export const SALE_PRESETS = [
+  { label: '1 hafta', date: () => daysFromNow(7) },
+  { label: '1 oy', date: () => daysFromNow(30) },
+  { label: '31-dekabrgacha', date: () => OPENING_SALE_ENDS_AT.slice(0, 10) },
+];
+
+// A crossed-out price needs an end date; returns an error message or ''.
+export const validateSaleDates = ({ price, originalPrice, saleEndsAt }, today = toDateInput(new Date())) => {
+  const was = Number(String(originalPrice ?? '').replace(/[^0-9.]/g, ''));
+  if (!was) return '';
+  if (was <= Number(String(price ?? '').replace(/[^0-9.]/g, ''))) return 'Eski narx yangi narxdan katta bo‘lishi kerak';
+  if (!saleEndsAt) return 'Chegirma qachongacha amal qilishini tanlang';
+  if (saleEndsAt < today) return 'Chegirma tugash sanasi o‘tib ketgan';
+  return '';
+};
+
 export const formatPrice = (value) => {
   const number = Math.round(toNumber(value));
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');

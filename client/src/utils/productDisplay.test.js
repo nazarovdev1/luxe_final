@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPrice, formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from './productDisplay';
+import { formatPrice, formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary, validateSaleDates } from './productDisplay';
 
 describe('getReviewSummary', () => {
   it('hides a rating that has no reviews behind it', () => {
@@ -39,6 +39,24 @@ describe('getDisplayBadge', () => {
     expect(getDisplayBadge({ badge: 'BESTSELLER' })).toBe('');
     expect(getDisplayBadge({ badge: 'NEW' })).toBe('NEW');
     expect(getDisplayBadge({ badge: 'LIMITED' })).toBe('LIMITED');
+  });
+});
+
+describe('validateSaleDates', () => {
+  const today = '2026-10-17';
+
+  it('requires an end date whenever an old price is entered', () => {
+    expect(validateSaleDates({ price: '1499000', originalPrice: '1850000', saleEndsAt: '' }, today)).toMatch(/qachongacha/);
+    expect(validateSaleDates({ price: '1499000', originalPrice: '1850000', saleEndsAt: '2026-12-31' }, today)).toBe('');
+  });
+
+  it('rejects past dates and an old price that is not higher', () => {
+    expect(validateSaleDates({ price: '1499000', originalPrice: '1850000', saleEndsAt: '2026-10-01' }, today)).toMatch(/o‘tib/);
+    expect(validateSaleDates({ price: '2000000', originalPrice: '1850000', saleEndsAt: '2026-12-31' }, today)).toMatch(/katta/);
+  });
+
+  it('needs nothing when there is no discount', () => {
+    expect(validateSaleDates({ price: '1499000', originalPrice: '', saleEndsAt: '' }, today)).toBe('');
   });
 });
 

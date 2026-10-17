@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import LoginForm from '../../components/LoginForm';
 import './mobileAdminTheme.css';
+import { SALE_PRESETS, toDateInput, validateSaleDates } from '../../utils/productDisplay';
 
 const CATEGORIES = [
   'Palto plash',
@@ -285,6 +286,12 @@ const MobileAdminEdit = () => {
       return;
     }
 
+    const saleError = validateSaleDates(formData);
+    if (saleError) {
+      toast.error(saleError);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -505,17 +512,32 @@ const MobileAdminEdit = () => {
                 placeholder="399000"
               />
             </div>
-            <div className="space-y-1 col-span-2">
-              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">Aksiya tugash sanasi</label>
-              <input
-                type="date"
-                name="saleEndsAt"
-                value={formData.saleEndsAt}
-                onChange={handleChange}
-                className="lux-input"
-              />
-              <p className="text-[10px] text-neutral-500">Bo‘sh qolsa: ochilish aksiyasi, 31-dekabr 2026 gacha.</p>
-            </div>
+            {String(formData.originalPrice).trim() && (
+              <div className="space-y-2 col-span-2 rounded-xl border border-amber-300/40 p-3">
+                <label className="text-[11px] font-bold uppercase text-amber-200 tracking-wider">Bu chegirma qachongacha? *</label>
+                <input
+                  type="date"
+                  name="saleEndsAt"
+                  value={formData.saleEndsAt}
+                  min={toDateInput(new Date())}
+                  onChange={handleChange}
+                  className="lux-input"
+                />
+                <div className="flex flex-wrap gap-2">
+                  {SALE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, saleEndsAt: preset.date() }))}
+                      className="rounded-full border border-white/15 px-3 py-1 text-[11px] text-neutral-200"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-neutral-500">Shu kundan keyin eski narx saytda avtomatik yo‘qoladi.</p>
+              </div>
+            )}
           </div>
         </section>
 

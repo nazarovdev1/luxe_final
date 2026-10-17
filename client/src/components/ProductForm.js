@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { X, Upload, Save, Pipette, Plus, Image as ImageIcon, Gem, Flame } from 'lucide-react';
+import { SALE_PRESETS, toDateInput, validateSaleDates } from '../utils/productDisplay';
 
 const CATEGORIES = [
   'Palto plash',
@@ -334,6 +335,13 @@ const ProductForm = ({ product, onClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const saleError = validateSaleDates(formData);
+    if (saleError) {
+      toast.error(saleError);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -472,17 +480,33 @@ const ProductForm = ({ product, onClose }) => {
           <p className="admin-muted text-xs mt-1">Faqat aksiya paytida chizilgan holda ko‘rinadi.</p>
         </div>
 
-        <div>
-          <label className="block text-sm text-slate-200 mb-2">Aksiya tugash sanasi</label>
-          <input
-            type="date"
-            name="saleEndsAt"
-            value={formData.saleEndsAt}
-            onChange={handleChange}
-            className="admin-input"
-          />
-          <p className="admin-muted text-xs mt-1">Bo‘sh qolsa: ochilish aksiyasi, 31-dekabr 2026 gacha.</p>
-        </div>
+        {String(formData.originalPrice).trim() && (
+          <div className="lg:col-span-2 rounded-xl border border-amber-300/40 p-4">
+            <label className="block text-sm text-amber-200 mb-2">Bu chegirma qachongacha amal qiladi? *</label>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="date"
+                name="saleEndsAt"
+                value={formData.saleEndsAt}
+                min={toDateInput(new Date())}
+                onChange={handleChange}
+                className="admin-input max-w-[200px]"
+                required
+              />
+              {SALE_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  className="admin-btn-secondary px-3 py-1.5 text-xs"
+                  onClick={() => setFormData((prev) => ({ ...prev, saleEndsAt: preset.date() }))}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            <p className="admin-muted text-xs mt-2">Shu kundan keyin eski narx saytda avtomatik yo‘qoladi va faqat yangi narx qoladi.</p>
+          </div>
+        )}
       </div>
 
       <section className="admin-card-soft p-4 space-y-4">
