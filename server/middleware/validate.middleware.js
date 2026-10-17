@@ -91,6 +91,16 @@ export const schemas = {
       UK: Joi.string().allow('', null),
       RU: Joi.string().allow('', null)
     }).allow(null),
+    brand: Joi.string().trim().max(80).allow('', null),
+    authenticity: Joi.object({
+      isOriginal: Joi.boolean().default(false),
+      note: Joi.string().trim().max(300).allow('', null)
+    }).allow(null),
+    fabricComposition: Joi.string().trim().max(300).allow('', null),
+    careInstructions: Joi.string().trim().max(500).allow('', null),
+    origin: Joi.string().trim().max(80).allow('', null),
+    videoUrl: Joi.string().trim().uri({ scheme: ['https'] }).max(500).allow('', null),
+    materials: Joi.array().items(Joi.string().trim().max(80)),
     isLookbook: Joi.boolean(),
     earlyAccessTier: Joi.string().valid('none', 'Gold', 'Diamond').default('none'),
     earlyAccessUntil: Joi.date().allow('', null),

@@ -143,6 +143,16 @@ const productSchema = new mongoose.Schema({
     materials: [{
         type: String // e.g. "Organic Cotton", "Recycled Polyester"
     }],
+    // Facts a discerning customer asks before buying. Shown only when filled in.
+    brand: { type: String, trim: true, maxlength: 80, default: '' },
+    authenticity: {
+        isOriginal: { type: Boolean, default: false },
+        note: { type: String, trim: true, maxlength: 300, default: '' }
+    },
+    fabricComposition: { type: String, trim: true, maxlength: 300, default: '' },
+    careInstructions: { type: String, trim: true, maxlength: 500, default: '' },
+    origin: { type: String, trim: true, maxlength: 80, default: '' },
+    videoUrl: { type: String, trim: true, maxlength: 500, default: '' },
     carbonFootprint: {
         type: Number // in kg CO2
     },

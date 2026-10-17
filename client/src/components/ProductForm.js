@@ -24,10 +24,17 @@ const EMPTY_FORM = {
   category: '',
   price: '',
   originalPrice: '',
+  saleEndsAt: '',
   images: [],
   image: '',
   badge: '',
-  rating: 0,
+  brand: '',
+  authenticity: { isOriginal: false, note: '' },
+  fabricComposition: '',
+  materials: '',
+  careInstructions: '',
+  origin: '',
+  videoUrl: '',
   colors: [],
   sizes: '',
   stock: 0,
@@ -78,10 +85,18 @@ const ProductForm = ({ product, onClose }) => {
       category: product.category || '',
       price: product.price || '',
       originalPrice: product.originalPrice || '',
+      saleEndsAt: product.saleEndsAt ? new Date(product.saleEndsAt).toISOString().split('T')[0] : '',
       images,
       image: images[0]?.url || '',
-      badge: product.badge || '',
-      rating: product.rating || 0,
+      // Only factual badges are offered; legacy BESTSELLER/SALE values are cleared on save.
+      badge: ['NEW', 'LIMITED'].includes(product.badge) ? product.badge : '',
+      brand: product.brand || '',
+      authenticity: { isOriginal: Boolean(product.authenticity?.isOriginal), note: product.authenticity?.note || '' },
+      fabricComposition: product.fabricComposition || '',
+      materials: Array.isArray(product.materials) ? product.materials.join(', ') : '',
+      careInstructions: product.careInstructions || '',
+      origin: product.origin || '',
+      videoUrl: product.videoUrl || '',
       colors: Array.isArray(product.colors)
         ? product.colors
         : product.colors
@@ -335,6 +350,15 @@ const ProductForm = ({ product, onClose }) => {
         originalPrice: formData.originalPrice
           ? Number(formData.originalPrice.toString().replace(/[^0-9.]/g, ''))
           : null,
+        // End of the chosen day in Tashkent; empty means the shop-wide opening promotion date.
+        saleEndsAt: formData.saleEndsAt ? `${formData.saleEndsAt}T23:59:59+05:00` : null,
+        brand: formData.brand.trim(),
+        authenticity: { isOriginal: formData.authenticity.isOriginal, note: formData.authenticity.note.trim() },
+        fabricComposition: formData.fabricComposition.trim(),
+        materials: formData.materials.split(',').map((item) => item.trim()).filter(Boolean),
+        careInstructions: formData.careInstructions.trim(),
+        origin: formData.origin.trim(),
+        videoUrl: formData.videoUrl.trim(),
         colors: Array.isArray(formData.colors) ? formData.colors : [],
         sizes: formData.sizes
           ? formData.sizes
@@ -342,7 +366,6 @@ const ProductForm = ({ product, onClose }) => {
               .map((item) => item.trim())
               .filter(Boolean)
           : [],
-        rating: Number(formData.rating) || 0,
         stock: formData.variants.length
           ? formData.variants.filter((variant) => variant.isActive !== false).reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0)
           : Number(formData.stock) || 0,
@@ -446,6 +469,19 @@ const ProductForm = ({ product, onClose }) => {
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{t('common.sum')}</span>
           </div>
+          <p className="admin-muted text-xs mt-1">Faqat aksiya paytida chizilgan holda ko‘rinadi.</p>
+        </div>
+
+        <div>
+          <label className="block text-sm text-slate-200 mb-2">Aksiya tugash sanasi</label>
+          <input
+            type="date"
+            name="saleEndsAt"
+            value={formData.saleEndsAt}
+            onChange={handleChange}
+            className="admin-input"
+          />
+          <p className="admin-muted text-xs mt-1">Bo‘sh qolsa: ochilish aksiyasi, 31-dekabr 2026 gacha.</p>
         </div>
       </div>
 
@@ -520,23 +556,53 @@ const ProductForm = ({ product, onClose }) => {
           <select name="badge" value={formData.badge} onChange={handleChange} className="admin-select">
             <option value="">Tanlanmagan</option>
             <option value="NEW">Yangi kolleksiya</option>
-            <option value="BESTSELLER">Bestseller</option>
+            <option value="LIMITED">Cheklangan son</option>
           </select>
+          <p className="admin-muted text-xs mt-1">Reyting faqat haqiqiy mijoz sharhlaridan hisoblanadi.</p>
         </div>
 
         <div>
-          <label className="block text-sm text-slate-200 mb-2">Reyting (0-5)</label>
+          <label className="block text-sm text-slate-200 mb-2">Brend</label>
           <input
-            type="number"
-            name="rating"
-            min="0"
-            max="5"
-            step="0.1"
-            value={formData.rating}
+            type="text"
+            name="brand"
+            value={formData.brand}
             onChange={handleChange}
+            maxLength="80"
             className="admin-input"
+            placeholder="Masalan: Max Mara (bo‘lmasa bo‘sh qoldiring)"
           />
         </div>
+
+        <section className="lg:col-span-2 admin-card-soft p-4 space-y-3">
+          <h3 className="admin-section-title text-base">Mahsulot faktlari</h3>
+          <p className="admin-muted text-xs">Faqat tasdiqlangan ma'lumot yozing. Bo‘sh maydonlar saytda ko‘rsatilmaydi.</p>
+          <label className="flex items-center gap-2 text-sm text-slate-200">
+            <input
+              type="checkbox"
+              checked={formData.authenticity.isOriginal}
+              onChange={(event) => setFormData((prev) => ({ ...prev, authenticity: { ...prev.authenticity, isOriginal: event.target.checked } }))}
+            />
+            Original mahsulot (isboti bor: hujjat, chek yoki distribyutor)
+          </label>
+          {formData.authenticity.isOriginal && (
+            <input
+              type="text"
+              value={formData.authenticity.note}
+              maxLength="300"
+              onChange={(event) => updateNested('authenticity', 'note', event.target.value)}
+              className="admin-input"
+              placeholder="Masalan: Italiya, rasmiy distribyutor hujjati bilan"
+            />
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label><span className="block text-xs text-slate-300 mb-1">Mato tarkibi</span><input name="fabricComposition" value={formData.fabricComposition} maxLength="300" onChange={handleChange} className="admin-input" placeholder="Masalan: 90% jun, 10% kashemir" /></label>
+            <label><span className="block text-xs text-slate-300 mb-1">Materiallar (vergul bilan)</span><input name="materials" value={formData.materials} onChange={handleChange} className="admin-input" placeholder="Jun, ipak astar" /></label>
+            <label><span className="block text-xs text-slate-300 mb-1">Ishlab chiqarilgan mamlakat</span><input name="origin" value={formData.origin} maxLength="80" onChange={handleChange} className="admin-input" placeholder="Italiya" /></label>
+            <label><span className="block text-xs text-slate-300 mb-1">Video havolasi (https)</span><input name="videoUrl" value={formData.videoUrl} maxLength="500" onChange={handleChange} className="admin-input" placeholder="https://ik.imagekit.io/..." /></label>
+            <label className="sm:col-span-2"><span className="block text-xs text-slate-300 mb-1">Parvarish</span><input name="careInstructions" value={formData.careInstructions} maxLength="500" onChange={handleChange} className="admin-input" placeholder="Faqat kimyoviy tozalash" /></label>
+          </div>
+        </section>
 
         <div className="lg:col-span-2">
           <label className="block text-sm text-slate-200 mb-2">Ranglar</label>

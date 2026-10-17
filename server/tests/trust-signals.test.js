@@ -33,6 +33,27 @@ test('product validation no longer injects a default rating and accepts a sale e
   assert.ok(value.saleEndsAt instanceof Date)
 })
 
+test('product facts (brand, authenticity, fabric, origin, video) are accepted and stored', () => {
+  const facts = {
+    brand: 'Max Mara',
+    authenticity: { isOriginal: true, note: 'Italiya, hujjat bilan' },
+    fabricComposition: '100% jun',
+    careInstructions: 'Faqat kimyoviy tozalash',
+    origin: 'Italiya',
+    videoUrl: 'https://ik.imagekit.io/luxx/palto.mp4'
+  }
+  const { error, value } = schemas.product.validate({ ...baseProduct, ...facts }, { allowUnknown: true })
+  assert.equal(error, undefined)
+  const doc = new Product(value)
+  assert.equal(doc.brand, 'Max Mara')
+  assert.equal(doc.authenticity.isOriginal, true)
+  assert.equal(doc.fabricComposition, '100% jun')
+  assert.equal(doc.origin, 'Italiya')
+
+  const insecureVideo = schemas.product.validate({ ...baseProduct, videoUrl: 'http://example.com/v.mp4' }, { allowUnknown: true })
+  assert.ok(insecureVideo.error)
+})
+
 test('rating and review count are recalculated from stored reviews', async () => {
   const originals = { find: Review.find, update: Product.findByIdAndUpdate }
   const updates = []

@@ -13,7 +13,6 @@ import {
   Image as ImageIcon,
   Pipette,
   Gem,
-  Sparkles,
   Layers,
   Star,
   Check,
@@ -41,11 +40,17 @@ const EMPTY_FORM = {
   category: '',
   price: '',
   originalPrice: '',
+  saleEndsAt: '',
   images: [],
   badge: '',
-  rating: 0,
+  brand: '',
+  authenticity: { isOriginal: false, note: '' },
+  fabricComposition: '',
+  careInstructions: '',
+  origin: '',
   colors: [],
   sizes: '',
+  stock: null,
   description: '',
   isLookbook: false,
 };
@@ -77,16 +82,26 @@ const MobileAdminEdit = () => {
       return;
     }
 
-    const images = Array.isArray(product.images) ? product.images : [product.image].filter(Boolean);
+    // Products arrive with images as {url} objects; the form works with plain URL strings.
+    const images = (Array.isArray(product.images) ? product.images : [product.image])
+      .map((image) => (typeof image === 'object' ? image?.url : image))
+      .filter(Boolean);
 
     setFormData({
       name: product.name || '',
       category: product.category || '',
       price: product.price?.toString() || '',
       originalPrice: product.originalPrice?.toString() || '',
+      saleEndsAt: product.saleEndsAt ? new Date(product.saleEndsAt).toISOString().split('T')[0] : '',
       images,
-      badge: product.badge || '',
-      rating: product.rating || 0,
+      badge: ['NEW', 'LIMITED'].includes(product.badge) ? product.badge : '',
+      brand: product.brand || '',
+      authenticity: { isOriginal: Boolean(product.authenticity?.isOriginal), note: product.authenticity?.note || '' },
+      fabricComposition: product.fabricComposition || '',
+      careInstructions: product.careInstructions || '',
+      origin: product.origin || '',
+      // Sent back unchanged so the validator's default stock never overwrites the real count.
+      stock: product.stock ?? null,
       colors: Array.isArray(product.colors)
         ? product.colors
         : product.colors
@@ -286,10 +301,16 @@ const MobileAdminEdit = () => {
               .map((item) => item.trim())
               .filter(Boolean)
           : [],
-        rating: Number(formData.rating) || 0,
+        saleEndsAt: formData.saleEndsAt ? `${formData.saleEndsAt}T23:59:59+05:00` : null,
+        brand: formData.brand.trim(),
+        authenticity: { isOriginal: formData.authenticity.isOriginal, note: formData.authenticity.note.trim() },
+        fabricComposition: formData.fabricComposition.trim(),
+        careInstructions: formData.careInstructions.trim(),
+        origin: formData.origin.trim(),
         images: formData.images.map((url) => ({ url })),
         image: formData.images[0],
       };
+      if (payload.stock === null) delete payload.stock;
 
       const result = id ? await updateProduct(id, payload) : await addProduct(payload);
 
@@ -484,14 +505,25 @@ const MobileAdminEdit = () => {
                 placeholder="399000"
               />
             </div>
+            <div className="space-y-1 col-span-2">
+              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">Aksiya tugash sanasi</label>
+              <input
+                type="date"
+                name="saleEndsAt"
+                value={formData.saleEndsAt}
+                onChange={handleChange}
+                className="lux-input"
+              />
+              <p className="text-[10px] text-neutral-500">Bo‘sh qolsa: ochilish aksiyasi, 31-dekabr 2026 gacha.</p>
+            </div>
           </div>
         </section>
 
         {/* ─── Section 3: Badges, Rating & Lookbook ─── */}
         <section className="lux-card p-4 space-y-3.5">
           <h2 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" />
-            Belgilar va Reyting
+            <Gem className="w-3.5 h-3.5" />
+            Belgilar va faktlar
           </h2>
 
           <div className="grid grid-cols-2 gap-3">
@@ -505,24 +537,39 @@ const MobileAdminEdit = () => {
               >
                 <option value="">{t('mobileAdmin.badgeNone', 'Belgisiz')}</option>
                 <option value="NEW">{t('mobileAdmin.badgeNew', 'Yangi (NEW)')}</option>
-                <option value="BESTSELLER">{t('mobileAdmin.badgeBestseller', 'Bestseller (TOP)')}</option>
+                <option value="LIMITED">Cheklangan son</option>
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">{t('mobileAdmin.rating', 'Reyting (0 - 5)')}</label>
-              <input
-                type="number"
-                name="rating"
-                min="0"
-                max="5"
-                step="0.1"
-                value={formData.rating}
-                onChange={handleChange}
-                className="lux-input font-bold"
-                placeholder="4.8"
-              />
+              <label className="text-[11px] font-bold uppercase text-neutral-400 tracking-wider">Brend</label>
+              <input type="text" name="brand" value={formData.brand} onChange={handleChange} maxLength="80" className="lux-input" placeholder="Max Mara" />
             </div>
+          </div>
+          <p className="text-[10px] text-neutral-500">Reyting faqat haqiqiy mijoz sharhlaridan hisoblanadi.</p>
+
+          <label className="flex items-center gap-2 text-xs text-neutral-200">
+            <input
+              type="checkbox"
+              checked={formData.authenticity.isOriginal}
+              onChange={(event) => setFormData((prev) => ({ ...prev, authenticity: { ...prev.authenticity, isOriginal: event.target.checked } }))}
+            />
+            Original (isboti bor)
+          </label>
+          {formData.authenticity.isOriginal && (
+            <input
+              type="text"
+              value={formData.authenticity.note}
+              maxLength="300"
+              onChange={(event) => setFormData((prev) => ({ ...prev, authenticity: { ...prev.authenticity, note: event.target.value } }))}
+              className="lux-input"
+              placeholder="Italiya, rasmiy distribyutor hujjati bilan"
+            />
+          )}
+          <input type="text" name="fabricComposition" value={formData.fabricComposition} onChange={handleChange} maxLength="300" className="lux-input" placeholder="Mato tarkibi: 90% jun, 10% kashemir" />
+          <div className="grid grid-cols-2 gap-3">
+            <input type="text" name="origin" value={formData.origin} onChange={handleChange} maxLength="80" className="lux-input" placeholder="Mamlakat: Italiya" />
+            <input type="text" name="careInstructions" value={formData.careInstructions} onChange={handleChange} maxLength="500" className="lux-input" placeholder="Parvarish" />
           </div>
 
           <label className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 cursor-pointer">

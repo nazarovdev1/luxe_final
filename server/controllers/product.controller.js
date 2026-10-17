@@ -173,6 +173,8 @@ export const getProduct = async (req, res) => {
           rating: 1,
           ratings: 1,
           numOfReviews: 1,
+          brand: 1,
+          authenticity: 1,
           colors: 1,
           sizes: 1,
           description: 1,
