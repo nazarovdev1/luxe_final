@@ -55,7 +55,7 @@ export function HomeOpening({ language = 'uz' }) {
 
 // ── KIYIMLAR · Atelier rail ─────────────────────────────────────────────────
 // A brass rail is drawn, real pieces from the catalogue swing in on hangers,
-// then fabric pleats sweep up and take the room away.
+// then fabric pleats rise to cover the room and lift away, revealing the page last.
 const RAIL_COPY = {
   uz: { kicker: 'Atelye · Garderob', one: 'Garderob', two: 'ochilmoqda.', pieces: 'buyum tayyor' },
   ru: { kicker: 'Ателье · Гардероб', one: 'Гардероб', two: 'открывается.', pieces: 'вещей готово' },
@@ -76,7 +76,7 @@ export function CatalogueOpening({ language = 'uz', products = [] }) {
   // Frozen at mount: if products arrive mid-animation, swapping the hangers would detach the tweens.
   const railRef = React.useRef(null);
   if (railRef.current === null) {
-    const real = products.map(imageOf).filter(Boolean).map((url) => thumbUrl(url, 420));
+    const real = products.map(imageOf).filter(Boolean).map((url) => thumbUrl(url, 640));
     railRef.current = { pieces: (real.length ? real : RAIL_FALLBACK).slice(0, 5), count: real.length };
   }
   const { pieces } = railRef.current;
@@ -101,10 +101,14 @@ export function CatalogueOpening({ language = 'uz', products = [] }) {
       .to(kicker, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.6)
       .to(titleSpans, { yPercent: 0, duration: 1, stagger: 0.12, ease: 'expo.out' }, 0.75)
       .to(counter, { autoAlpha: 1, y: 0, duration: 0.6 }, 1.1)
-      .to(hangers, { y: -40, autoAlpha: 0, duration: 0.6, stagger: 0.06, ease: 'power2.in' }, 2.75)
-      .to(pleats, { yPercent: -101, duration: 0.95, stagger: { each: 0.05, from: 'center' }, ease: 'power3.inOut' }, 2.95)
-      .set(el, { backgroundColor: 'transparent' }, 3.1)
-      .set(el.querySelectorAll('.po-rail__title, .po-rail__count, .po-rail__bar'), { autoAlpha: 0 }, 3.1);
+      // 1) the pleats rise and fully cover the room (page underneath stays hidden)
+      .set(pleats, { y: 0, yPercent: 101 }, 0)
+      .to(pleats, { yPercent: 0, duration: 0.75, stagger: { each: 0.05, from: 'center' }, ease: 'power3.out' }, 2.7)
+      // 2) once covered, drop the rail scene and make the overlay see-through behind the pleats
+      .set(el.querySelectorAll('.po-rail__pieces, .po-rail__title, .po-rail__count, .po-rail__bar'), { autoAlpha: 0 }, 3.7)
+      .set(el, { backgroundColor: 'transparent' }, 3.7)
+      // 3) the pleats leave upward and the catalogue is revealed last
+      .to(pleats, { yPercent: -101, duration: 0.9, stagger: { each: 0.05, from: 'center' }, ease: 'power3.inOut' }, 3.9);
   };
 
   return (

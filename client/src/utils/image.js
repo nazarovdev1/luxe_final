@@ -121,5 +121,5 @@ export default getImageUrl;
 // 400px image instead of the original, which keeps animations smooth on modest phones.
 export const thumbUrl = (url, width = 400) => {
   if (typeof url !== 'string' || !url.includes('ik.imagekit.io') || /[?&]tr=/.test(url)) return url;
-  return `${url}${url.includes('?') ? '&' : '?'}tr=w-${width},q-70`;
+  return `${url}${url.includes('?') ? '&' : '?'}tr=w-${width},q-85`;
 };
