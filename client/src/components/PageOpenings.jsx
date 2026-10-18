@@ -1,6 +1,5 @@
 import React from 'react';
 import PageOpening from './PageOpening';
-import { thumbUrl } from '../utils/image';
 
 /* Page-specific openings built on the shared PageOpening shell. Each one plays once per tab. */
 
@@ -76,7 +75,7 @@ export function CatalogueOpening({ language = 'uz', products = [] }) {
   // Frozen at mount: if products arrive mid-animation, swapping the hangers would detach the tweens.
   const railRef = React.useRef(null);
   if (railRef.current === null) {
-    const real = products.map(imageOf).filter(Boolean).map((url) => thumbUrl(url, 640));
+    const real = products.map(imageOf).filter(Boolean);
     railRef.current = { pieces: (real.length ? real : RAIL_FALLBACK).slice(0, 5), count: real.length };
   }
   const { pieces } = railRef.current;
