@@ -7,7 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 const ContactPage = () => {
     const { t } = useLanguage();
     return (
-        <div className="min-h-screen bg-[#0a0a0f]">
+        <div className="min-h-screen bg-[#120d0b]">
             <SEO
                 title={t('contactPage.seoTitle')}
                 description={t('contactPage.seoDesc')}
