@@ -61,7 +61,7 @@ const RAIL_COPY = {
   en: { kicker: 'Atelier · Wardrobe', one: 'The wardrobe', two: 'is open.', pieces: 'pieces ready' },
 };
 
-const RAIL_FALLBACK = ['/editorial/private-edit-tailoring.webp', '/editorial/private-edit-evening.webp', '/editorial/story-posture-v2.webp', '/editorial/story-softness-v2.webp', '/editorial/opening-main-v2.webp'];
+const RAIL_FALLBACK = ['/editorial/private-edit-tailoring.png', '/editorial/private-edit-evening.png', '/editorial/story-posture-v2.png', '/editorial/story-softness-v2.png', '/editorial/opening-main-v2.png'];
 
 const imageOf = (product) => {
   if (!product) return '';

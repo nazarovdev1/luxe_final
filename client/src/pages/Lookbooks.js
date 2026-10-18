@@ -51,18 +51,18 @@ const COPY = {
   },
 };
 
-const CHAPTER_IMAGES = ['/editorial/story-softness-v2.webp', '/editorial/story-posture-v2.webp', '/editorial/private-edit-evening.webp'];
-const FALLBACK = '/editorial/private-edit-evening.webp';
+const CHAPTER_IMAGES = ['/editorial/story-softness-v2.png', '/editorial/story-posture-v2.png', '/editorial/private-edit-evening.png'];
+const FALLBACK = '/editorial/private-edit-evening.png';
 const imageFallback = (event) => { if (!event.currentTarget.src.endsWith(FALLBACK)) event.currentTarget.src = FALLBACK; };
 
 // Frames shown through the opening aperture; the last one is the hero image itself.
-const HERO_IMAGE = '/editorial/lookbook-mood-v2.webp';
+const HERO_IMAGE = '/editorial/lookbook-mood-v2.png';
 const OPENING_FRAMES = [
-  '/editorial/story-softness-v2.webp',
-  '/editorial/private-edit-evening.webp',
-  '/editorial/story-posture-v2.webp',
-  '/editorial/lookbook-detail-v2.webp',
-  '/editorial/story-presence-v2.webp',
+  '/editorial/story-softness-v2.png',
+  '/editorial/private-edit-evening.png',
+  '/editorial/story-posture-v2.png',
+  '/editorial/lookbook-detail-v2.png',
+  '/editorial/story-presence-v2.png',
   HERO_IMAGE,
 ];
 
@@ -426,7 +426,7 @@ export default function Lookbooks() {
         <div className="lj-look-info"><span>0{index + 1} / {look.items?.[0]?.category || copy.label}</span><button onClick={() => open(look)}>{look.title}<ArrowUpRight size={20} /></button><small>{look.products?.length || 0} {copy.pieces}</small></div>
       </article>)}</div>}
     </section>
-    <section className="lj-finale"><div className="lj-finale-art"><img src="/editorial/lookbook-detail-v2.webp" alt="" loading="lazy" /></div><div className="lj-finale-copy"><span className="lj-overline">{copy.createTop}</span><h2>{copy.create}</h2><p>{copy.createText}</p><Link to="/lookbook-builder" className="lj-finale-cta">{copy.builder}<Plus size={22} /></Link><Link to="/products" className="lj-text-link">{copy.shop}<ArrowUpRight size={18} /></Link></div></section>
+    <section className="lj-finale"><div className="lj-finale-art"><img src="/editorial/lookbook-detail-v2.png" alt="" loading="lazy" /></div><div className="lj-finale-copy"><span className="lj-overline">{copy.createTop}</span><h2>{copy.create}</h2><p>{copy.createText}</p><Link to="/lookbook-builder" className="lj-finale-cta">{copy.builder}<Plus size={22} /></Link><Link to="/products" className="lj-text-link">{copy.shop}<ArrowUpRight size={18} /></Link></div></section>
     <footer className="lj-footer"><span>LUXX</span><span>{copy.label} / {new Date().getFullYear()}</span><Link to="/products">{copy.shop}<ArrowUpRight size={16} /></Link></footer>
     {selectedLookId && <LookDetailModal lookId={selectedLookId} onClose={() => setSelectedLookId(null)} />}
   </main>;

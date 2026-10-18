@@ -40,7 +40,7 @@
   font: 700 clamp(150px, 27vw, 460px)/.85 Georgia, 'Times New Roman', serif;
   letter-spacing: .02em;
   color: transparent;
-  background: url('/editorial/opening-main-v2.webp') 30% 18% / 150% auto no-repeat;
+  background: url('/editorial/opening-main-v2.png') 30% 18% / 150% auto no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-stroke: 1px rgba(216, 185, 136, .5);

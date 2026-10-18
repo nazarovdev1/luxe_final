@@ -127,37 +127,37 @@ export default function MaisonExperience() {
 
   const stories = {
     uz: [
-      { number: '01', word: 'MAYINLIK', title: 'Tana bemalol\nnafas oladi.', body: 'Yumshoq qatlamlar va o‘ylangan proporsiya harakatni cheklamaydi — siz kun bo‘yi o‘zingiz bo‘lib qolasiz.', image: '/editorial/story-softness-v2.webp' },
-      { number: '02', word: 'QOMAT', title: 'Aniq kesim.\nYengil his.', body: 'Tuzilma qomatni bosmaydi, uni davom ettiradi. Kuch va nazokat bir xil chiziqda uchrashadi.', image: '/editorial/story-posture-v2.webp' },
-      { number: '03', word: 'HUZUR', title: 'Urinmasdan\nsezilish.', body: 'Siz kirganingizda avval kiyim emas, sokin ishonchingiz seziladi.', image: '/editorial/story-presence-v2.webp' },
+      { number: '01', word: 'MAYINLIK', title: 'Tana bemalol\nnafas oladi.', body: 'Yumshoq qatlamlar va o‘ylangan proporsiya harakatni cheklamaydi — siz kun bo‘yi o‘zingiz bo‘lib qolasiz.', image: '/editorial/story-softness-v2.png' },
+      { number: '02', word: 'QOMAT', title: 'Aniq kesim.\nYengil his.', body: 'Tuzilma qomatni bosmaydi, uni davom ettiradi. Kuch va nazokat bir xil chiziqda uchrashadi.', image: '/editorial/story-posture-v2.png' },
+      { number: '03', word: 'HUZUR', title: 'Urinmasdan\nsezilish.', body: 'Siz kirganingizda avval kiyim emas, sokin ishonchingiz seziladi.', image: '/editorial/story-presence-v2.png' },
     ],
     ru: [
-      { number: '01', word: 'НЕЖНОСТЬ', title: 'Тело свободно\nдышит.', body: 'Мягкие слои и выверенные пропорции не сковывают движения — весь день вы остаётесь собой.', image: '/editorial/story-softness-v2.webp' },
-      { number: '02', word: 'ОСАНКА', title: 'Точный крой.\nЛёгкое чувство.', body: 'Конструкция не подавляет фигуру, а продолжает её. Сила и нежность встречаются в одной линии.', image: '/editorial/story-posture-v2.webp' },
-      { number: '03', word: 'ПОКОЙ', title: 'Заметна\nбез усилий.', body: 'Когда вы входите, сначала чувствуют вашу тихую уверенность — не одежду.', image: '/editorial/story-presence-v2.webp' },
+      { number: '01', word: 'НЕЖНОСТЬ', title: 'Тело свободно\nдышит.', body: 'Мягкие слои и выверенные пропорции не сковывают движения — весь день вы остаётесь собой.', image: '/editorial/story-softness-v2.png' },
+      { number: '02', word: 'ОСАНКА', title: 'Точный крой.\nЛёгкое чувство.', body: 'Конструкция не подавляет фигуру, а продолжает её. Сила и нежность встречаются в одной линии.', image: '/editorial/story-posture-v2.png' },
+      { number: '03', word: 'ПОКОЙ', title: 'Заметна\nбез усилий.', body: 'Когда вы входите, сначала чувствуют вашу тихую уверенность — не одежду.', image: '/editorial/story-presence-v2.png' },
     ],
     en: [
-      { number: '01', word: 'SOFTNESS', title: 'The body is free\nto breathe.', body: 'Soft layers and considered proportion never restrict movement, so you remain yourself all day.', image: '/editorial/story-softness-v2.webp' },
-      { number: '02', word: 'POSTURE', title: 'Exact cut.\nEffortless feeling.', body: 'Structure never overpowers the body; it extends it. Strength and delicacy meet in one line.', image: '/editorial/story-posture-v2.webp' },
-      { number: '03', word: 'PRESENCE', title: 'Noticed without\ntrying.', body: 'When you enter, the room notices your quiet confidence before the clothes.', image: '/editorial/story-presence-v2.webp' },
+      { number: '01', word: 'SOFTNESS', title: 'The body is free\nto breathe.', body: 'Soft layers and considered proportion never restrict movement, so you remain yourself all day.', image: '/editorial/story-softness-v2.png' },
+      { number: '02', word: 'POSTURE', title: 'Exact cut.\nEffortless feeling.', body: 'Structure never overpowers the body; it extends it. Strength and delicacy meet in one line.', image: '/editorial/story-posture-v2.png' },
+      { number: '03', word: 'PRESENCE', title: 'Noticed without\ntrying.', body: 'When you enter, the room notices your quiet confidence before the clothes.', image: '/editorial/story-presence-v2.png' },
     ],
   }[language] || [];
 
   const services = {
     uz: [
-      { num: '01', title: 'Shaxsiy fitting', body: 'Atelyedagi sokin uchrashuv: qomat, odat va kun tartibingizga mos tavsiyalar.', image: '/editorial/atelier-fitting-v2.webp' },
-      { num: '02', title: 'Obraz konsyerji', body: 'Bir tadbir yoki butun mavsum uchun tayyor, o‘zaro uyg‘un garderob.', image: '/editorial/atelier-concierge-v2.webp' },
-      { num: '03', title: 'Uyda kiyib ko‘rib to‘lash', body: 'Toshkent bo‘ylab shu kuni olib boramiz. Kiyib ko‘rasiz, faqat yoqqanini to‘laysiz.', image: '/editorial/atelier-delivery-v2.webp' },
+      { num: '01', title: 'Shaxsiy fitting', body: 'Atelyedagi sokin uchrashuv: qomat, odat va kun tartibingizga mos tavsiyalar.', image: '/editorial/atelier-fitting-v2.png' },
+      { num: '02', title: 'Obraz konsyerji', body: 'Bir tadbir yoki butun mavsum uchun tayyor, o‘zaro uyg‘un garderob.', image: '/editorial/atelier-concierge-v2.png' },
+      { num: '03', title: 'Uyda kiyib ko‘rib to‘lash', body: 'Toshkent bo‘ylab shu kuni olib boramiz. Kiyib ko‘rasiz, faqat yoqqanini to‘laysiz.', image: '/editorial/atelier-delivery-v2.png' },
     ],
     ru: [
-      { num: '01', title: 'Личная примерка', body: 'Спокойная встреча в ателье и рекомендации с учётом фигуры, привычек и ритма жизни.', image: '/editorial/atelier-fitting-v2.webp' },
-      { num: '02', title: 'Консьерж образа', body: 'Цельный гардероб для одного события или всего сезона.', image: '/editorial/atelier-concierge-v2.webp' },
-      { num: '03', title: 'Примерка дома', body: 'Привезём по Ташкенту в тот же день. Примерьте и оплатите только то, что оставите.', image: '/editorial/atelier-delivery-v2.webp' },
+      { num: '01', title: 'Личная примерка', body: 'Спокойная встреча в ателье и рекомендации с учётом фигуры, привычек и ритма жизни.', image: '/editorial/atelier-fitting-v2.png' },
+      { num: '02', title: 'Консьерж образа', body: 'Цельный гардероб для одного события или всего сезона.', image: '/editorial/atelier-concierge-v2.png' },
+      { num: '03', title: 'Примерка дома', body: 'Привезём по Ташкенту в тот же день. Примерьте и оплатите только то, что оставите.', image: '/editorial/atelier-delivery-v2.png' },
     ],
     en: [
-      { num: '01', title: 'Private fitting', body: 'A calm atelier appointment, shaped around your form, habits and daily rhythm.', image: '/editorial/atelier-fitting-v2.webp' },
-      { num: '02', title: 'Look concierge', body: 'A complete, harmonious wardrobe for one occasion or the entire season.', image: '/editorial/atelier-concierge-v2.webp' },
-      { num: '03', title: 'Try on at home', body: 'Same-day delivery across Tashkent. Try everything on and pay only for what you keep.', image: '/editorial/atelier-delivery-v2.webp' },
+      { num: '01', title: 'Private fitting', body: 'A calm atelier appointment, shaped around your form, habits and daily rhythm.', image: '/editorial/atelier-fitting-v2.png' },
+      { num: '02', title: 'Look concierge', body: 'A complete, harmonious wardrobe for one occasion or the entire season.', image: '/editorial/atelier-concierge-v2.png' },
+      { num: '03', title: 'Try on at home', body: 'Same-day delivery across Tashkent. Try everything on and pay only for what you keep.', image: '/editorial/atelier-delivery-v2.png' },
     ],
   }[language] || [];
 
@@ -249,8 +249,8 @@ export default function MaisonExperience() {
           </div>
 
           <div className="mh-opening-art mh-image-reveal">
-            <div className="mh-opening-art-main"><img src="/editorial/opening-main-v2.webp" alt="LUXX ayollar kolleksiyasi" loading="eager" fetchpriority="high" decoding="async" /></div>
-            <div className="mh-opening-art-detail"><img src="/editorial/opening-detail-v2.webp" alt="LUXX mato va detal" loading="eager" decoding="async" /></div>
+            <div className="mh-opening-art-main"><img src="/editorial/opening-main-v2.png" alt="LUXX ayollar kolleksiyasi" loading="eager" fetchpriority="high" decoding="async" /></div>
+            <div className="mh-opening-art-detail"><img src="/editorial/opening-detail-v2.png" alt="LUXX mato va detal" loading="eager" decoding="async" /></div>
             <span className="mh-opening-caption">FIG. 01 — SOFT POWER</span>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function MaisonExperience() {
 
           <div className="mh-curation-stage">
             <Link to="/products" className="mh-curation-portrait mh-curation-portrait-main mh-image-reveal" aria-label={copy.allProducts}>
-              <img src="/editorial/private-edit-tailoring.webp" alt="LUXX bordo kostyum editorial obrazi" loading="lazy" />
+              <img src="/editorial/private-edit-tailoring.png" alt="LUXX bordo kostyum editorial obrazi" loading="lazy" />
               <span className="mh-curation-figure">FIG. 04 — QUIET AUTHORITY</span>
             </Link>
 
@@ -350,7 +350,7 @@ export default function MaisonExperience() {
               </div>
 
               <Link to="/products" className="mh-curation-portrait mh-curation-portrait-secondary mh-image-reveal" aria-label={copy.allProducts}>
-                <img src="/editorial/private-edit-evening.webp" alt="LUXX qora atlas ko‘ylak editorial obrazi" loading="lazy" />
+                <img src="/editorial/private-edit-evening.png" alt="LUXX qora atlas ko‘ylak editorial obrazi" loading="lazy" />
                 <span>02</span>
               </Link>
             </aside>
@@ -360,8 +360,8 @@ export default function MaisonExperience() {
 
       <section className="mh-look" id="home-lookbook">
         <div className="mh-look-images" aria-hidden="true">
-          <div className="mh-look-image-primary"><img src="/editorial/lookbook-mood-v2.webp" alt="" loading="lazy" /></div>
-          <div className="mh-look-image-secondary"><img src="/editorial/lookbook-detail-v2.webp" alt="" loading="lazy" /></div>
+          <div className="mh-look-image-primary"><img src="/editorial/lookbook-mood-v2.png" alt="" loading="lazy" /></div>
+          <div className="mh-look-image-secondary"><img src="/editorial/lookbook-detail-v2.png" alt="" loading="lazy" /></div>
         </div>
         <div className="mh-look-veil" />
         <div className="mh-shell mh-look-content mh-reveal">

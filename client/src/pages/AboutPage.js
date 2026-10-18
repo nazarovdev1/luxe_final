@@ -135,10 +135,10 @@ const AboutPage = () => {
 
             <div data-about-mosaic className="relative min-h-[470px] sm:min-h-[610px]">
               <div data-about-wipe className="absolute inset-x-0 top-0 h-[78%] overflow-hidden bg-[#b7ab9b]">
-                <img data-about-mosaic-main src="/editorial/about-atelier-v2.webp" alt={t('about.brandTitle')} className="h-[112%] w-full object-cover object-center" />
+                <img data-about-mosaic-main src="/editorial/about-atelier-v2.png" alt={t('about.brandTitle')} className="h-[112%] w-full object-cover object-center" />
               </div>
               <div data-about-wipe className="absolute bottom-0 left-0 w-[43%] overflow-hidden border-[10px] border-[#eee7db] bg-[#1c1714] sm:border-[14px]">
-                <img src="/editorial/about-craft-v2.webp" alt={t('about.pillarDesign')} className="aspect-[3/4] w-full object-cover object-[58%_center]" />
+                <img src="/editorial/about-craft-v2.png" alt={t('about.pillarDesign')} className="aspect-[3/4] w-full object-cover object-[58%_center]" />
               </div>
               <div data-about-reveal-item className="absolute bottom-8 right-0 max-w-[58%] bg-[#c79657] px-5 py-6 text-[#20170f] shadow-[0_24px_55px_rgba(84,54,20,.22)] sm:bottom-12 sm:px-8 sm:py-9">
                 <HeartHandshake aria-label={t('about.pillarClient')} className="h-5 w-5" />
@@ -201,7 +201,7 @@ const AboutPage = () => {
 
         <section data-about-reveal className="bg-[#0f0c0a] px-4 pt-4 sm:px-6 sm:pt-6">
           <div data-about-reveal-item className="relative mx-auto min-h-[640px] max-w-[1560px] overflow-hidden bg-[#17120f] text-[#f7efe4] sm:min-h-[720px]">
-            <img data-about-wipe src="/editorial/about-manifesto-v2.webp" alt={t('about.brandTitle')} className="absolute inset-0 h-full w-full object-cover object-[68%_center]" />
+            <img data-about-wipe src="/editorial/about-manifesto-v2.png" alt={t('about.brandTitle')} className="absolute inset-0 h-full w-full object-cover object-[68%_center]" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(10,8,7,.94)_0%,rgba(10,8,7,.72)_42%,rgba(10,8,7,.12)_100%)]" />
             <div className="relative flex min-h-[640px] max-w-3xl flex-col justify-center px-7 py-16 sm:min-h-[720px] sm:px-14 lg:px-24">
               <p className="text-[10px] font-semibold uppercase tracking-[.32em] text-[#d7ad71]">04 / {t('about.manifesto')}</p>

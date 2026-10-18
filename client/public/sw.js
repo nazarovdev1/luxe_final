@@ -1,10 +1,10 @@
 // Never cache Vite's hashed JS/CSS bundles. A new deployment removes the
 // previous hashes, so serving an old entry bundle here would make lazy routes
 // request CSS files that no longer exist.
-const CACHE_NAME = 'luxe-v8'
-const STATIC_CACHE = 'luxe-static-v8'
-const API_CACHE = 'luxe-api-v8'
-const IMAGE_CACHE = 'luxe-images-v8'
+const CACHE_NAME = 'luxe-v9'
+const STATIC_CACHE = 'luxe-static-v9'
+const API_CACHE = 'luxe-api-v9'
+const IMAGE_CACHE = 'luxe-images-v9'
 
 const STATIC_ASSETS = [
   '/',
