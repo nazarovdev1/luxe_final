@@ -24,6 +24,7 @@ const WORDS = {
     call: "Qo'ng'iroq qilish",
     write: 'Xabar qoldirish',
     caption: 'Shaxsiy konsyerj',
+    cue: 'Pastga',
     indexTitle: "To'g'ridan-to'g'ri",
     rows: { phone: 'Telefon', email: 'Email', atelier: 'Atelier', hours: 'Ish vaqti' },
     hoursValue: `Har kuni, ${pad(OPEN_HOUR)}:00 — ${CLOSE_HOUR}:00`,
@@ -53,6 +54,7 @@ const WORDS = {
     call: 'Позвонить',
     write: 'Оставить сообщение',
     caption: 'Личный консьерж',
+    cue: 'Вниз',
     indexTitle: 'Напрямую',
     rows: { phone: 'Телефон', email: 'Email', atelier: 'Ателье', hours: 'Часы работы' },
     hoursValue: `Ежедневно, ${pad(OPEN_HOUR)}:00 — ${CLOSE_HOUR}:00`,
@@ -82,6 +84,7 @@ const WORDS = {
     call: 'Call us',
     write: 'Leave a message',
     caption: 'Personal concierge',
+    cue: 'Scroll',
     indexTitle: 'Directly',
     rows: { phone: 'Phone', email: 'Email', atelier: 'Atelier', hours: 'Hours' },
     hoursValue: `Daily, ${pad(OPEN_HOUR)}:00 — ${CLOSE_HOUR}:00`,
@@ -110,6 +113,12 @@ const isOpenNow = (date = new Date()) => {
   return hour >= OPEN_HOUR && hour < CLOSE_HOUR;
 };
 
+const marquee = (items) => items.map(([text, outline], index) => (
+  <span key={index} className={outline ? 'is-outline' : ''}>{text}</span>
+));
+const MARQUEE_A = marquee([['LUXX', true], ['ATELIER', false], ['LUXX', true], ['CONCIERGE', false]]);
+const MARQUEE_B = marquee([['PRIVATE', false], ['FITTING', true], ['STYLING', false], ['HOME', true]]);
+
 const PHONE_PATTERN = /^[+]?[0-9\-\s()]{7,15}$/;
 
 const Field = ({ label, as = 'input', ...props }) => {
@@ -135,6 +144,10 @@ const Contact = () => {
   const [error, setError] = useState('');
   const [sentName, setSentName] = useState('');
   const open = useMemo(() => isOpenNow(), []);
+  const formWords = [
+    ...w.formTitle[0].split(' ').map((word) => ({ word, accent: false })),
+    ...w.formTitle[1].split(' ').map((word) => ({ word, accent: true })),
+  ];
 
   const rows = [
     { id: 'phone', label: w.rows.phone, value: CONTACT.phone, href: CONTACT.phoneHref, icon: Phone },
@@ -158,27 +171,60 @@ const Contact = () => {
         .from('.ct-hero__lead, .ct-hero__status, .ct-hero__actions > *', { y: 22, autoAlpha: 0, duration: 1, stagger: 0.08 }, 0.7)
         .from('.ct-arch__caption', { x: -18, autoAlpha: 0, duration: 1 }, 1.3);
 
+      const scrub = (trigger, start, end, extra = {}) => ({ trigger, start, end, scrub: 0.7, ...extra });
+
+      // Hero leaves the stage as the page scrolls: lines drift apart, photo lags behind.
+      gsap.utils.toArray('.ct-hero__title > span').forEach((line, index) => {
+        gsap.to(line, { x: index % 2 ? 90 : -90, autoAlpha: 0.15, ease: 'none', scrollTrigger: scrub('.ct-hero', 'top top', 'bottom 15%') });
+      });
+      gsap.to('.ct-hero__copy > :not(.ct-hero__title)', { y: -60, autoAlpha: 0, ease: 'none', scrollTrigger: scrub('.ct-hero', '35% top', 'bottom 20%') });
+      gsap.to('.ct-arch', { y: 140, ease: 'none', scrollTrigger: scrub('.ct-hero', 'top top', 'bottom top') });
+      gsap.to('.ct-arch__photo img', { scale: 1.18, yPercent: 6, ease: 'none', scrollTrigger: scrub('.ct-hero', 'top top', 'bottom top') });
+      gsap.to('.ct-cue', { autoAlpha: 0, ease: 'none', scrollTrigger: scrub('.ct-hero', 'top top', '20% top') });
+
+      // Gold progress thread across the top of the page.
+      gsap.fromTo('.ct-progress', { scaleX: 0 }, { scaleX: 1, ease: 'none', scrollTrigger: { trigger: root, start: 'top top', end: 'bottom bottom', scrub: 0.3 } });
+
+      // A giant marquee slides sideways with the scroll, in both directions.
+      gsap.fromTo('.ct-marquee__track', { xPercent: 0 }, { xPercent: -42, ease: 'none', scrollTrigger: scrub('.ct-marquee', 'top bottom', 'bottom top', { scrub: 0.5 }) });
+      gsap.fromTo('.ct-marquee__track--rev', { xPercent: -42 }, { xPercent: 0, ease: 'none', scrollTrigger: scrub('.ct-marquee', 'top bottom', 'bottom top', { scrub: 0.5 }) });
+
       gsap.from('.ct-index__head > *', {
         y: 30, autoAlpha: 0, duration: 1, stagger: 0.1, ease: 'power3.out',
         scrollTrigger: { trigger: '.ct-index', start: 'top 80%', once: true },
       });
+      // Each direct line is "written" left to right as it crosses the middle of the screen.
       gsap.utils.toArray('.ct-row').forEach((row) => {
-        gsap.from(row, {
-          y: 50, autoAlpha: 0, duration: 1.1, ease: 'power3.out',
-          scrollTrigger: { trigger: row, start: 'top 90%', once: true },
-        });
-        gsap.from(row.querySelector('.ct-row__rule'), {
-          scaleX: 0, duration: 1.4, ease: 'expo.inOut',
-          scrollTrigger: { trigger: row, start: 'top 90%', once: true },
-        });
+        const range = scrub(row, 'top 88%', 'top 38%');
+        gsap.fromTo(row.querySelector('.ct-row__value'), { '--fill': '0%' }, { '--fill': '100%', ease: 'none', scrollTrigger: range });
+        gsap.fromTo(row.querySelector('.ct-row__rule'), { scaleX: 0 }, { scaleX: 1, ease: 'none', scrollTrigger: range });
+        gsap.from(row.querySelectorAll('.ct-row__num, .ct-row__label'), { x: -34, autoAlpha: 0, stagger: 0.1, ease: 'none', scrollTrigger: range });
+        const arrow = row.querySelector('.ct-row__arrow');
+        if (arrow) gsap.from(arrow, { x: -24, y: 24, autoAlpha: 0, ease: 'none', scrollTrigger: range });
       });
-      gsap.from('.ct-request__intro > *, .ct-topics > *, .ct-form > *', {
-        y: 36, autoAlpha: 0, duration: 1, stagger: 0.06, ease: 'power3.out',
+
+      // Request: headline words rise, the photo unveils and drifts, fields arrive one by one.
+      gsap.from('.ct-request__intro h2 .ct-word > span', {
+        yPercent: 110, duration: 1.2, stagger: 0.12, ease: 'expo.out',
         scrollTrigger: { trigger: '.ct-request', start: 'top 75%', once: true },
       });
-      gsap.fromTo('.ct-map__frame', { clipPath: 'inset(12% 8% 12% 8%)' }, {
-        clipPath: 'inset(0% 0% 0% 0%)', ease: 'none',
-        scrollTrigger: { trigger: '.ct-map', start: 'top bottom', end: 'top 30%', scrub: 0.8 },
+      gsap.from('.ct-request__intro .ct-kicker', { y: 16, autoAlpha: 0, duration: 0.9, scrollTrigger: { trigger: '.ct-request', start: 'top 78%', once: true } });
+      gsap.fromTo('.ct-request__photo', { clipPath: 'inset(45% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: scrub('.ct-request', 'top 70%', 'top 20%') });
+      gsap.fromTo('.ct-request__photo img', { yPercent: -9, scale: 1.2 }, { yPercent: 9, scale: 1.2, ease: 'none', scrollTrigger: scrub('.ct-request', 'top bottom', 'bottom top') });
+      const reveal = gsap.utils.toArray('.ct-topic, .ct-field, .ct-form__foot');
+      gsap.set(reveal, { y: 44, autoAlpha: 0 });
+      ScrollTrigger.batch(reveal, {
+        start: 'top 93%',
+        once: true,
+        onEnter: (batch) => gsap.to(batch, { y: 0, autoAlpha: 1, stagger: 0.09, duration: 1, ease: 'power3.out', overwrite: true }),
+      });
+
+      // Map: the frame opens like a curtain while the city zooms out behind the card.
+      gsap.fromTo('.ct-map__frame', { clipPath: 'inset(14% 10% 14% 10%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: scrub('.ct-map', 'top bottom', 'top 25%') });
+      gsap.fromTo('.ct-map__frame iframe', { scale: 1.45 }, { scale: 1, ease: 'none', scrollTrigger: scrub('.ct-map', 'top bottom', 'bottom 60%') });
+      gsap.from('.ct-map__card > *', {
+        y: 34, autoAlpha: 0, duration: 1, stagger: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.ct-map', start: 'top 55%', once: true },
       });
     }, root);
 
@@ -224,6 +270,7 @@ const Contact = () => {
 
   return (
     <div ref={rootRef} className="ct">
+      <span className="ct-progress" aria-hidden="true" />
       <section className="ct-hero">
         <div className="ct-hero__copy">
           <p className="ct-hero__kicker">{w.kicker}</p>
@@ -268,7 +315,16 @@ const Contact = () => {
             {w.caption}
           </figcaption>
         </figure>
+        <span className="ct-cue" aria-hidden="true">
+          <span>{w.cue}</span>
+          <i />
+        </span>
       </section>
+
+      <div className="ct-marquee" aria-hidden="true">
+        <div className="ct-marquee__track">{MARQUEE_A}{MARQUEE_A}</div>
+        <div className="ct-marquee__track ct-marquee__track--rev">{MARQUEE_B}{MARQUEE_B}</div>
+      </div>
 
       <section className="ct-index">
         <div className="ct-index__head">
@@ -310,7 +366,13 @@ const Contact = () => {
       <section ref={formRef} className="ct-request">
         <div className="ct-request__intro">
           <p className="ct-kicker">{w.formKicker}</p>
-          <h2>{w.formTitle[0]} <em>{w.formTitle[1]}</em></h2>
+          <h2>
+            {formWords.map(({ word, accent }, index) => (
+              <span key={index} className="ct-word">
+                <span>{accent ? <em>{word}</em> : word}</span>{' '}
+              </span>
+            ))}
+          </h2>
           <figure className="ct-request__photo">
             <img src="/editorial/atelier-fitting-v2.png" alt="" width="1122" height="1402" loading="lazy" decoding="async" />
           </figure>
