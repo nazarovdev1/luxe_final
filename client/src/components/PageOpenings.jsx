@@ -1,5 +1,6 @@
 import React from 'react';
 import PageOpening from './PageOpening';
+import { thumbUrl } from '../utils/image';
 
 /* Page-specific openings built on the shared PageOpening shell. Each one plays once per tab. */
 
@@ -75,7 +76,7 @@ export function CatalogueOpening({ language = 'uz', products = [] }) {
   // Frozen at mount: if products arrive mid-animation, swapping the hangers would detach the tweens.
   const railRef = React.useRef(null);
   if (railRef.current === null) {
-    const real = products.map(imageOf).filter(Boolean);
+    const real = products.map(imageOf).filter(Boolean).map((url) => thumbUrl(url, 420));
     railRef.current = { pieces: (real.length ? real : RAIL_FALLBACK).slice(0, 5), count: real.length };
   }
   const { pieces } = railRef.current;
@@ -90,13 +91,13 @@ export function CatalogueOpening({ language = 'uz', products = [] }) {
     const pleats = el.querySelectorAll('.po-rail__pleat');
 
     tl.set(bar, { scaleX: 0 })
-      .set(hangers, { x: () => window.innerWidth * 0.7, rotate: -14, autoAlpha: 0 })
+      .set(hangers, { x: () => window.innerWidth * 0.7, rotate: -14, autoAlpha: 0, force3D: true })
       .set(titleSpans, { yPercent: 110 })
       .set([kicker, counter], { autoAlpha: 0, y: 12 })
       .to(bar, { scaleX: 1, duration: 0.9, ease: 'expo.inOut' }, 0)
       .to(hangers, { x: 0, autoAlpha: 1, duration: 1.1, stagger: 0.12, ease: 'power3.out' }, 0.45)
       // the swing settles like a garment on a hanger
-      .to(hangers, { rotate: 0, duration: 1.6, stagger: 0.12, ease: 'elastic.out(1, 0.35)' }, 0.75)
+      .to(hangers, { rotate: 0, duration: 1.2, stagger: 0.1, ease: 'back.out(1.6)' }, 0.75)
       .to(kicker, { autoAlpha: 1, y: 0, duration: 0.6 }, 0.6)
       .to(titleSpans, { yPercent: 0, duration: 1, stagger: 0.12, ease: 'expo.out' }, 0.75)
       .to(counter, { autoAlpha: 1, y: 0, duration: 0.6 }, 1.1)
@@ -118,7 +119,7 @@ export function CatalogueOpening({ language = 'uz', products = [] }) {
       </div>
       <div className="po-rail__count"><strong>{String(count).padStart(2, '0')}</strong>{copy.pieces}</div>
       <div className="po-rail__pleats" aria-hidden="true">
-        {Array.from({ length: 9 }, (_, index) => <span key={index} className="po-rail__pleat" />)}
+        {Array.from({ length: 7 }, (_, index) => <span key={index} className="po-rail__pleat" />)}
       </div>
     </PageOpening>
   );

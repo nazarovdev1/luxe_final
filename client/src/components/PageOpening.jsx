@@ -8,6 +8,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 const SKIP_LABEL = { uz: 'O‘tkazib yuborish', ru: 'Пропустить', en: 'Skip' };
 
+const afterFirstRender = () => new Promise((resolve) => {
+  const settle = () => requestAnimationFrame(() => requestAnimationFrame(resolve));
+  if ('requestIdleCallback' in window) window.requestIdleCallback(settle, { timeout: 450 });
+  else window.setTimeout(settle, 150);
+});
+
 const setChromeHidden = (hidden) => {
   window.dispatchEvent(new CustomEvent('luxx:chrome-visibility', { detail: { hidden } }));
 };
@@ -58,6 +64,9 @@ export default function PageOpening({ id, language = 'uz', className = '', build
         Promise.all(images.map((img) => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()))),
         new Promise((resolve) => setTimeout(resolve, 1200)),
       ]);
+      // Let the page mounting underneath finish its heavy first render before animating,
+      // otherwise the first frames stutter. The overlay is already opaque, so nothing shows.
+      await afterFirstRender();
       if (runId !== runRef.current) return;
 
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, onComplete: finish });

@@ -63,11 +63,11 @@
 .po-rail__count strong { display: block; font: 400 56px/1 Georgia, serif; letter-spacing: -.03em; color: #17110f; }
 .po-rail__bar { position: absolute; top: 19vh; left: 4%; right: 4%; height: 2px; background: linear-gradient(90deg, #8c6a3b, #d8b988, #8c6a3b); transform-origin: left center; z-index: 2; }
 .po-rail__pieces { position: absolute; top: 19vh; left: 6%; right: 6%; display: flex; justify-content: center; gap: clamp(14px, 2vw, 34px); z-index: 2; }
-.po-rail__piece { position: relative; width: clamp(110px, 12vw, 190px); padding-top: 38px; transform-origin: 50% 0; will-change: transform; }
+.po-rail__piece { position: relative; contain: layout paint; width: clamp(110px, 12vw, 190px); padding-top: 38px; transform-origin: 50% 0; will-change: transform; }
 .po-rail__piece::before { content: ''; position: absolute; top: -2px; left: 50%; width: 22px; height: 38px; margin-left: -11px; border: 2px solid #8c6a3b; border-bottom: 0; border-radius: 12px 12px 0 0; }
-.po-rail__piece img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center top; box-shadow: 0 22px 40px rgba(23,17,15,.22); }
+.po-rail__piece img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center top; box-shadow: 0 12px 22px rgba(23,17,15,.2); backface-visibility: hidden; }
 .po-rail__pleats { position: absolute; inset: 0; z-index: 5; display: flex; pointer-events: none; }
-.po-rail__pleat { flex: 1; background: linear-gradient(90deg, #e6dccd, #f3ede3 40%, #ddd1c0); transform: translateY(101%); }
+.po-rail__pleat { flex: 1; will-change: transform; backface-visibility: hidden; background: linear-gradient(90deg, #e6dccd, #f3ede3 40%, #ddd1c0); transform: translateY(101%); }
 
 /* ── EVENTS · Invitation ─────────────────────────────── */
 .po-invite { display: grid; place-items: center; perspective: 1400px; background: radial-gradient(circle at 50% 40%, #241619 0%, #0b0907 70%); }
