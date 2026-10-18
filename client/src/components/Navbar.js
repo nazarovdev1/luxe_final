@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { gsap } from 'gsap';
 import {
   Camera,
   ChevronRight,
@@ -23,8 +24,42 @@ import SplitText from './ui/SplitText';
 
 const isMacOS = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
 
-const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+const Navbar = ({ entrance = false, onSearchClick, onCartClick, onVisualSearch }) => {
+  const navRef = useRef(null);
+  const logoRef = useRef(null);
+  const linksRef = useRef(null);
+  const actionsRef = useRef(null);
+  const hairlineRef = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Entrance after a page opening: a gold thread draws across, then the logo,
+  // links and actions settle in from above, out of a soft focus.
+  useLayoutEffect(() => {
+    if (!entrance || prefersReducedMotion() || !navRef.current) return undefined;
+
+    const ctx = gsap.context(() => {
+      const links = gsap.utils.toArray(linksRef.current?.children || []);
+      const actions = gsap.utils.toArray(actionsRef.current?.children || []);
+      const targets = [logoRef.current, ...links, ...actions].filter(Boolean);
+
+      gsap.set(targets, { transition: 'none' });
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        onComplete: () => gsap.set(targets, { clearProps: 'transition,transform,opacity,filter' }),
+      })
+        .fromTo(hairlineRef.current, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 1.1, ease: 'expo.inOut' }, 0)
+        .from(logoRef.current, { opacity: 0, y: -18, scale: 0.9, filter: 'blur(10px)', duration: 1 }, 0.15)
+        .from(links, { opacity: 0, y: -16, filter: 'blur(6px)', duration: 0.8, stagger: 0.08 }, 0.35)
+        .from(actions, { opacity: 0, y: -12, filter: 'blur(6px)', duration: 0.7, stagger: 0.06 }, 0.55)
+        .to(hairlineRef.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, 1.25);
+    }, navRef);
+
+    return () => ctx.revert();
+    // Plays once per mount: the navbar remounts each time a surface hands the screen back.
+  }, []);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -127,19 +162,27 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
 
   return (
     <nav
+      ref={navRef}
       className={`luxx-navbar ${isScrolled ? 'luxx-navbar-scrolled' : ''} fixed top-0 left-0 w-full z-40 transition-all duration-300 pointer-events-auto ${isScrolled
         ? 'bg-[#0a0a0a]/75 backdrop-blur-xl border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]'
         : 'bg-transparent border-b border-transparent'
         }`}
     >
+      {entrance && (
+        <span
+          ref={hairlineRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-0 h-px w-full origin-center scale-x-0 bg-gradient-to-r from-transparent via-[#d6b47c] to-transparent"
+        />
+      )}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="w-full">
             <div className="relative h-[76px] flex items-center justify-between">
-            <Link to="/" className="flex items-center shrink-0">
+            <Link ref={logoRef} to="/" className="flex items-center shrink-0">
               <img src="/logonav.png" alt="Luxx logo" className="h-16 w-[90px] object-contain" />
             </Link>
 
-            <div className="hidden lg:flex flex-1 items-center justify-center gap-8 xl:gap-10 mx-8">
+            <div ref={linksRef} className="hidden lg:flex flex-1 items-center justify-center gap-8 xl:gap-10 mx-8">
               {navItems.map(item => {
                 const active = isItemActive(item) || (item.dropdown && item.dropdown.some(sub => isItemActive(sub)));
                 const baseClass = `relative group py-1 text-[13px] font-medium tracking-[0.05em] uppercase whitespace-nowrap transition-all duration-300 ${active
@@ -190,7 +233,7 @@ const Navbar = ({ onSearchClick, onCartClick, onVisualSearch }) => {
               })}
             </div>
 
-            <div className="flex items-center gap-3 lg:gap-4 shrink-0">
+            <div ref={actionsRef} className="flex items-center gap-3 lg:gap-4 shrink-0">
               <button
                 onClick={handleSearchClick}
                 className="hidden lg:flex items-center gap-2.5 h-9 pl-3.5 pr-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200 cursor-pointer group"

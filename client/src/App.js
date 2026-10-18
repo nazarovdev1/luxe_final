@@ -84,6 +84,7 @@ function MainContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const [isChromeHiddenBySurface, setIsChromeHiddenBySurface] = useState(false);
+  const [navbarEntrance, setNavbarEntrance] = useState(false);
 
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -101,7 +102,10 @@ function MainContent() {
 
   useEffect(() => {
     const handleChromeVisibility = (event) => {
-      setIsChromeHiddenBySurface(Boolean(event.detail?.hidden));
+      const hidden = Boolean(event.detail?.hidden);
+      // Once a surface (page opening, story viewer) gave the screen back, the navbar makes an entrance.
+      if (hidden) setNavbarEntrance(true);
+      setIsChromeHiddenBySurface(hidden);
     };
 
     window.addEventListener('luxx:chrome-visibility', handleChromeVisibility);
@@ -175,7 +179,7 @@ function MainContent() {
         {showDesktopChrome && !isChromeHiddenBySurface && (
           <>
             {!isAboutPage && <AnnouncementBanner />}
-            <Navbar onSearchClick={openSearch} onCartClick={openCart} /* onVisualSearch={() => setIsVisualSearchOpen(true)} */ />
+            <Navbar entrance={navbarEntrance} onSearchClick={openSearch} onCartClick={openCart} /*onVisualSearch={() => setIsVisualSearchOpen(true)} */ />
           </>
         )}
 

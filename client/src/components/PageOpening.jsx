@@ -72,6 +72,8 @@ export default function PageOpening({ id, language = 'uz', className = '', build
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, onComplete: finish });
       timelineRef.current = tl;
       build(tl, overlay);
+      // Bring the navbar back under the fading curtain so its entrance overlaps the reveal.
+      tl.call(() => setChromeHidden(false));
       tl.to(overlay, { autoAlpha: 0, duration: 0.45, ease: 'power1.out' });
     };
     start();

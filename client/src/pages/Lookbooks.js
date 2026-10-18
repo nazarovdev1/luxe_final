@@ -209,7 +209,8 @@ export default function Lookbooks() {
     // Hero copy rises as the frame settles; then the overlay quietly dissolves
     if (heroTitles.length) tl.to(heroTitles, { yPercent: 0, autoAlpha: 1, duration: 1, stagger: 0.1 }, expandAt + 0.85);
     if (heroAccents.length) tl.to(heroAccents, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.07 }, expandAt + 1.05);
-    tl.to(openingEl, { autoAlpha: 0, duration: 0.45, ease: 'power1.out' }, expandAt + 1.1);
+    tl.call(() => setChromeHidden(false), null, expandAt + 1.1)
+      .to(openingEl, { autoAlpha: 0, duration: 0.45, ease: 'power1.out' }, expandAt + 1.1);
   };
 
   const skipOpening = () => {
