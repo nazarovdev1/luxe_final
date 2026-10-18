@@ -1,4 +1,5 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight, Check, Clock, Mail, MapPin, Phone } from 'lucide-react';
@@ -137,6 +138,7 @@ const Contact = () => {
   const w = WORDS[language] || WORDS.uz;
   const rootRef = useRef(null);
   const formRef = useRef(null);
+  const lenisRef = useRef(null);
 
   const [topic, setTopic] = useState(0);
   const [formData, setFormData] = useState({ name: '', phone: '', message: '' });
@@ -156,6 +158,26 @@ const Contact = () => {
     { id: 'hours', label: w.rows.hours, value: w.hoursValue, icon: Clock },
   ];
 
+  // Inertial wheel scrolling: turns the wheel's stepped jumps into one continuous glide,
+  // which is what makes scrubbed animations look smooth instead of catching up in steps.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    const lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true });
+    lenisRef.current = lenis;
+    lenis.on('scroll', ScrollTrigger.update);
+    const tick = (time) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(tick);
+      gsap.ticker.lagSmoothing(500, 33);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
+  }, []);
+
   useLayoutEffect(() => {
     const root = rootRef.current;
     if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -171,7 +193,7 @@ const Contact = () => {
         .from('.ct-hero__lead, .ct-hero__status, .ct-hero__actions > *', { y: 22, autoAlpha: 0, duration: 1, stagger: 0.08 }, 0.7)
         .from('.ct-arch__caption', { x: -18, autoAlpha: 0, duration: 1 }, 1.3);
 
-      const scrub = (trigger, start, end, extra = {}) => ({ trigger, start, end, scrub: 0.7, ...extra });
+      const scrub = (trigger, start, end, extra = {}) => ({ trigger, start, end, scrub: 0.3, ...extra });
 
       // Hero leaves the stage as the page scrolls: lines drift apart, photo lags behind.
       gsap.utils.toArray('.ct-hero__title > span').forEach((line, index) => {
@@ -186,8 +208,8 @@ const Contact = () => {
       gsap.fromTo('.ct-progress', { scaleX: 0 }, { scaleX: 1, ease: 'none', scrollTrigger: { trigger: root, start: 'top top', end: 'bottom bottom', scrub: 0.3 } });
 
       // A giant marquee slides sideways with the scroll, in both directions.
-      gsap.fromTo('.ct-marquee__track', { xPercent: 0 }, { xPercent: -42, ease: 'none', scrollTrigger: scrub('.ct-marquee', 'top bottom', 'bottom top', { scrub: 0.5 }) });
-      gsap.fromTo('.ct-marquee__track--rev', { xPercent: -42 }, { xPercent: 0, ease: 'none', scrollTrigger: scrub('.ct-marquee', 'top bottom', 'bottom top', { scrub: 0.5 }) });
+      gsap.fromTo('.ct-marquee__track', { xPercent: 0 }, { xPercent: -42, ease: 'none', scrollTrigger: scrub('.ct-marquee', 'top bottom', 'bottom top', { scrub: 0.3 }) });
+      gsap.fromTo('.ct-marquee__track--rev', { xPercent: -42 }, { xPercent: 0, ease: 'none', scrollTrigger: scrub('.ct-marquee', 'top bottom', 'bottom top', { scrub: 0.3 }) });
 
       gsap.from('.ct-index__head > *', {
         y: 30, autoAlpha: 0, duration: 1, stagger: 0.1, ease: 'power3.out',
@@ -221,7 +243,6 @@ const Contact = () => {
 
       // Map: the frame opens like a curtain while the city zooms out behind the card.
       gsap.fromTo('.ct-map__frame', { clipPath: 'inset(14% 10% 14% 10%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none', scrollTrigger: scrub('.ct-map', 'top bottom', 'top 25%') });
-      gsap.fromTo('.ct-map__frame iframe', { scale: 1.45 }, { scale: 1, ease: 'none', scrollTrigger: scrub('.ct-map', 'top bottom', 'bottom 60%') });
       gsap.from('.ct-map__card > *', {
         y: 34, autoAlpha: 0, duration: 1, stagger: 0.1, ease: 'power3.out',
         scrollTrigger: { trigger: '.ct-map', start: 'top 55%', once: true },
@@ -266,7 +287,10 @@ const Contact = () => {
     }
   };
 
-  const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollToForm = () => {
+    if (lenisRef.current) lenisRef.current.scrollTo(formRef.current, { offset: -90, duration: 1.6 });
+    else formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div ref={rootRef} className="ct">
@@ -411,7 +435,7 @@ const Contact = () => {
                   <Field label={w.name} name="name" value={formData.name} onChange={handleChange} autoComplete="name" required />
                   <Field label={w.phone} name="phone" type="tel" value={formData.phone} onChange={handleChange} autoComplete="tel" required />
                 </div>
-                <Field label={w.message} as="textarea" name="message" rows={4} value={formData.message} onChange={handleChange} required />
+                <Field label={w.message} as="textarea" data-lenis-prevent name="message" rows={4} value={formData.message} onChange={handleChange} required />
 
                 {error && <p className="ct-form__error" role="alert">{error}</p>}
 
