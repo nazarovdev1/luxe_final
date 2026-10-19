@@ -58,11 +58,9 @@ const imageFallback = (event) => { if (!event.currentTarget.src.endsWith(FALLBAC
 // Frames shown through the opening aperture; the last one is the hero image itself.
 const HERO_IMAGE = '/editorial/lookbook-mood-v2.png';
 const OPENING_FRAMES = [
-  '/editorial/story-softness-v2.png',
-  '/editorial/private-edit-evening.png',
-  '/editorial/story-posture-v2.png',
-  '/editorial/lookbook-detail-v2.png',
-  '/editorial/story-presence-v2.png',
+  '/editorial/lookbook-opening-ivory-2026.webp',
+  '/editorial/lookbook-opening-tailoring-2026.webp',
+  '/editorial/lookbook-opening-evening-2026.webp',
   HERO_IMAGE,
 ];
 
@@ -133,7 +131,7 @@ export default function Lookbooks() {
     // Portrait lens geometry in pixels (GSAP interpolates matching inset() values).
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const lensH = Math.min(vh * 0.56, 560);
+    const lensH = Math.min(vh * 0.56, 560, vw * 0.82 / 0.74);
     const lensW = lensH * 0.74;
     const insetY = (vh - lensH) / 2;
     const insetX = (vw - lensW) / 2;
@@ -145,7 +143,15 @@ export default function Lookbooks() {
     };
     applyIris();
     gsap.set(lens, { top: insetY, left: insetX, width: lensW, height: lensH, autoAlpha: 0, scale: 0.92 });
-    gsap.set(frames, { autoAlpha: 0, scale: 1.12 });
+    // Fit each photo to the portrait lens, rather than cropping the middle of a
+    // viewport-sized photo (which cuts away the model's face and silhouette).
+    gsap.set(frames, {
+      top: insetY, left: insetX, width: lensW, height: lensH,
+      autoAlpha: 0, scale: 1.035, objectPosition: '50% 50%',
+    });
+    const finalFrame = frames[frames.length - 1];
+    // The landscape hero keeps its model on the right while inside the lens.
+    gsap.set(finalFrame, { objectPosition: '100% 50%' });
     gsap.set(flash, { autoAlpha: 0 });
     gsap.set(shade, { autoAlpha: 0 });
     gsap.set(wordLeft, { xPercent: -60, autoAlpha: 0 });
@@ -186,7 +192,7 @@ export default function Lookbooks() {
 
     // Frames flicker in like a fashion shoot, each with a soft flash
     const firstFrameAt = 0.45;
-    const frameStep = 0.36;
+    const frameStep = 0.54;
     frames.forEach((frame, index) => {
       const at = firstFrameAt + index * frameStep;
       tl.call(() => setFrameCount(index), null, at)
@@ -201,6 +207,11 @@ export default function Lookbooks() {
     tl.to(lens, { autoAlpha: 0, scale: 1.08, duration: 0.35, ease: 'power2.in' }, expandAt - 0.1)
       .to(caption, { autoAlpha: 0, y: -10, duration: 0.3, ease: 'power2.in' }, expandAt - 0.1)
       .to(iris, { top: 0, right: 0, bottom: 0, left: 0, duration: 1.15, ease: 'expo.inOut', onUpdate: applyIris }, expandAt)
+      .to(finalFrame, {
+        top: 0, left: 0, width: vw, height: vh,
+        objectPosition: heroImage ? window.getComputedStyle(heroImage).objectPosition : '72% 35px',
+        duration: 1.15, ease: 'expo.inOut',
+      }, expandAt)
       .to(shade, { autoAlpha: 1, duration: 0.9, ease: 'power2.inOut' }, expandAt + 0.35)
       .to(wordLeft, { xPercent: -130, autoAlpha: 0, duration: 1.1, ease: 'expo.in' }, expandAt - 0.05)
       .to(wordRight, { xPercent: 130, autoAlpha: 0, duration: 1.1, ease: 'expo.in' }, expandAt - 0.05)
