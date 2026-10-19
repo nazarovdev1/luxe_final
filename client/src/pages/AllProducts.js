@@ -40,7 +40,10 @@ const AllProducts = () => {
   const filterFromUrl = searchParams.get('filter');
   const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || t('products.all'));
   const [isNewOnly, setIsNewOnly] = useState(filterFromUrl === 'new');
-  const [searchText, setSearchText] = useState('');
+  const queryFromUrl = searchParams.get('q') || '';
+  const [searchText, setSearchText] = useState(queryFromUrl);
+  // The search panel links here with ?q=; follow it when it changes while the page is open.
+  useEffect(() => { setSearchText(queryFromUrl); }, [queryFromUrl]);
   const [sortBy, setSortBy] = useState('featured');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [compareList, setCompareList] = useState([]);

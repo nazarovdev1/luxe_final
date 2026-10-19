@@ -236,12 +236,17 @@ const Navbar = ({ entrance = false, onSearchClick, onCartClick, onVisualSearch }
             <div ref={actionsRef} className="flex items-center gap-3 lg:gap-4 shrink-0">
               <button
                 onClick={handleSearchClick}
-                className="hidden lg:flex items-center gap-2.5 h-9 pl-3.5 pr-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200 cursor-pointer group"
+                className="group relative hidden lg:flex items-center gap-3 h-10 pl-1 pr-1 cursor-pointer"
                 aria-label="Qidiruv"
               >
-                <Search className="w-4 h-4 text-[#fff] group-hover:text-[#d6b47c] transition-colors" />
-                <span className="text-[13px] text-[#fff] group-hover:text-[#666] transition-colors">{t('nav.searchPlaceholder')}</span>
-                <kbd className="px-2 py-0.5 rounded-md bg-white/[0.06] text-[10px] text-[#fff] font-mono">{isMacOS ? '⌘K' : 'Ctrl K'}</kbd>
+                <Search className="w-[17px] h-[17px] text-white/85 transition-colors duration-300 group-hover:text-[#d6b47c]" strokeWidth={1.6} />
+                <span className="font-serif italic text-[15px] text-white/75 transition-colors duration-300 group-hover:text-white">
+                  {t('nav.searchPlaceholder').replace(/\.+$/, '')}
+                </span>
+                <kbd className="font-mono text-[10px] leading-none text-white/45 border border-white/15 rounded-[5px] px-1.5 py-[3px] transition-colors duration-300 group-hover:text-[#d6b47c] group-hover:border-[#d6b47c]/50">{isMacOS ? '⌘K' : 'Ctrl K'}</kbd>
+                <span aria-hidden="true" className="absolute left-0 right-0 bottom-1 h-px bg-white/15 overflow-hidden">
+                  <span className="block h-full w-full origin-left scale-x-0 bg-[#d6b47c] transition-transform duration-500 ease-out group-hover:scale-x-100" />
+                </span>
               </button>
               <button
                 onClick={handleSearchClick}

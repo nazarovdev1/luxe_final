@@ -1,430 +1,390 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { gsap } from 'gsap';
+import { ArrowUpRight, X } from 'lucide-react';
 import { useProducts } from '../contexts/ProductContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { 
-  Search, 
-  X, 
-  Clock, 
-  TrendingUp, 
-  Package, 
-  ArrowRight, 
-  ShoppingBag, 
-  Gem, 
-  Crown,
-  CornerDownLeft,
-  ChevronRight
-} from 'lucide-react';
+import { getImageUrl } from '../utils/image';
+import { formatPrice, getActiveSale } from '../utils/productDisplay';
+import './searchPanel.css';
 
 const RECENT_KEY = 'luxx_recent_searches';
-const MAX_RECENT = 6;
+const MAX_RECENT = 5;
+const MAX_RESULTS = 8;
+
+const WORDS = {
+  uz: {
+    kicker: 'Luxx · Qidiruv',
+    placeholder: 'Nimani qidiryapsiz?',
+    close: 'Yopish',
+    popular: 'Ko\'p qidiriladi',
+    terms: ['Palto', 'Kostyum', "Ko'ylak", 'Bluzka', 'Yubka'],
+    recent: 'Siz qidirgansiz',
+    clear: 'Tozalash',
+    arrivals: 'Yangi kelganlar',
+    found: (n) => `${n} ta topildi`,
+    viewAll: (n) => `Barcha ${n} natijani ko'rish`,
+    none: (q) => `"${q}" bo'yicha hech narsa topilmadi.`,
+    noneHint: "Boshqa so'z bilan urinib ko'ring yoki konsyerjga yozing — topib beramiz.",
+    catalogue: "Katalogni ko'rish",
+    hints: ['harakat', 'ochish', 'yopish'],
+  },
+  ru: {
+    kicker: 'Luxx · Поиск',
+    placeholder: 'Что вы ищете?',
+    close: 'Закрыть',
+    popular: 'Часто ищут',
+    terms: ['Пальто', 'Костюм', 'Платье', 'Блузка', 'Юбка'],
+    recent: 'Вы искали',
+    clear: 'Очистить',
+    arrivals: 'Новые поступления',
+    found: (n) => `Найдено: ${n}`,
+    viewAll: (n) => `Смотреть все ${n}`,
+    none: (q) => `По запросу «${q}» ничего не найдено.`,
+    noneHint: 'Попробуйте другое слово или напишите консьержу — мы найдём.',
+    catalogue: 'Открыть каталог',
+    hints: ['выбор', 'открыть', 'закрыть'],
+  },
+  en: {
+    kicker: 'Luxx · Search',
+    placeholder: 'What are you looking for?',
+    close: 'Close',
+    popular: 'Often searched',
+    terms: ['Coat', 'Suit', 'Dress', 'Blouse', 'Skirt'],
+    recent: 'Your searches',
+    clear: 'Clear',
+    arrivals: 'New arrivals',
+    found: (n) => `${n} found`,
+    viewAll: (n) => `View all ${n}`,
+    none: (q) => `Nothing found for "${q}".`,
+    noneHint: 'Try another word, or write to the concierge — we will find it.',
+    catalogue: 'Browse the catalogue',
+    hints: ['move', 'open', 'close'],
+  },
+};
+
+// Uzbek is typed with several apostrophe variants (o' o‘ o`); treat them as one.
+const normalize = (value) => String(value || '')
+  .toLowerCase()
+  .replace(/[‘’ʻʼ`´]/g, "'")
+  .trim();
+
+const searchable = (product) => normalize([product.name, product.category, product.brand].filter(Boolean).join(' '));
+
+const productId = (product) => product.id || product._id;
+
+const readRecent = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    return Array.isArray(saved) ? saved.slice(0, MAX_RECENT) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeRecent = (list) => {
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch { /* storage unavailable */ }
+};
+
+// Wraps the matched part of a name in a gold mark.
+const Highlight = ({ text, query }) => {
+  const source = String(text || '');
+  const index = normalize(source).indexOf(normalize(query));
+  if (!query || index < 0) return source;
+  return (
+    <>
+      {source.slice(0, index)}
+      <mark>{source.slice(index, index + query.trim().length)}</mark>
+      {source.slice(index + query.trim().length)}
+    </>
+  );
+};
+
+const ResultCard = ({ product, query, active, onOpen, onHover }) => {
+  const sale = getActiveSale(product);
+  return (
+    <button
+      type="button"
+      className={`sp-card ${active ? 'is-active' : ''}`}
+      onClick={onOpen}
+      onMouseEnter={onHover}
+      data-sp-reveal
+    >
+      <span className="sp-card__frame">
+        <img src={getImageUrl(product)} alt="" loading="lazy" decoding="async" />
+      </span>
+      <span className="sp-card__meta">
+        {product.brand && <span className="sp-card__brand">{product.brand}</span>}
+        <span className="sp-card__name"><Highlight text={product.name} query={query} /></span>
+        <span className="sp-card__price">
+          {formatPrice(product.price)}
+          {sale.active && <s>{formatPrice(sale.originalPrice)}</s>}
+        </span>
+      </span>
+    </button>
+  );
+};
 
 const SearchModal = ({ isOpen, onClose }) => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [recent, setRecent] = useState([]);
-  const [selected, setSelected] = useState(-1);
   const { products } = useProducts();
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const w = WORDS[language] || WORDS.uz;
   const navigate = useNavigate();
+
+  const [mounted, setMounted] = useState(false);
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState(-1);
+  const [recent, setRecent] = useState(readRecent);
+
+  const rootRef = useRef(null);
   const inputRef = useRef(null);
-  const listRef = useRef(null);
+  const closingRef = useRef(false);
 
-  const TRENDING_TERMS = [
-    { label: t('search.trending1', 'Kostyum'), icon: Crown },
-    { label: t('search.trending2', "Ko'ylak"), icon: Gem },
-    { label: t('search.trending3', 'Poyabzal'), icon: ShoppingBag },
-    { label: t('search.trending4', 'Sumka'), icon: ShoppingBag },
-    { label: t('search.trending5', 'Kurtka'), icon: Package }
-  ];
+  const index = useMemo(
+    () => (products || []).filter(Boolean).map((product) => ({ product, text: searchable(product) })),
+    [products],
+  );
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(RECENT_KEY);
-      if (saved) setRecent(JSON.parse(saved));
-    } catch {}
-  }, []);
+  const term = normalize(query);
+  const matches = useMemo(
+    () => (term ? index.filter((item) => item.text.includes(term)).map((item) => item.product) : []),
+    [index, term],
+  );
+  const results = matches.slice(0, MAX_RESULTS);
+  const arrivals = useMemo(() => (products || []).filter(Boolean).slice(-4).reverse(), [products]);
 
-  const saveRecent = useCallback((term) => {
-    if (!term || !term.trim()) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-      const updated = [term.trim(), ...saved.filter(t => t.toLowerCase() !== term.trim().toLowerCase())].slice(0, MAX_RECENT);
-      localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-      setRecent(updated);
-    } catch {}
-  }, []);
-
-  const removeRecent = (termToRemove, e) => {
-    e.stopPropagation();
-    try {
-      const updated = recent.filter(t => t !== termToRemove);
-      localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-      setRecent(updated);
-    } catch {}
-  };
-
-  const clearAllRecent = () => {
-    try {
-      localStorage.removeItem(RECENT_KEY);
-      setRecent([]);
-    } catch {}
-  };
-
-  useEffect(() => {
-    if (!query.trim()) { 
-      setResults([]); 
-      return; 
-    }
-    const q = query.toLowerCase().trim();
-    const matched = (products || []).filter(p => {
-      const nameMatch = p.name && p.name.toLowerCase().includes(q);
-      const catMatch = p.category && p.category.toLowerCase().includes(q);
-      return nameMatch || catMatch;
-    });
-    setResults(matched);
-    setSelected(-1);
-  }, [query, products]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e) => {
-      if (e.key === 'Escape') { 
-        onClose(); 
-        return; 
-      }
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelected(i => results.length ? (i + 1) % results.length : -1);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelected(i => results.length ? (i - 1 + results.length) % results.length : -1);
-      } else if (e.key === 'Enter' && selected >= 0 && results[selected]) {
-        e.preventDefault();
-        goProduct(results[selected].id || results[selected]._id);
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose, results, selected]);
-
+  // Mount on open; on close, play the exit before unmounting.
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      document.body.style.overflow = '';
-      setQuery('');
-      setSelected(-1);
+      closingRef.current = false;
+      setMounted(true);
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (selected >= 0 && listRef.current) {
-      const el = listRef.current.children[selected];
-      el?.scrollIntoView({ block: 'nearest' });
-    }
-  }, [selected]);
-
-  const goProduct = (id) => {
-    if (query.trim()) {
-      saveRecent(query);
-    }
-    navigate(`/product/${id}`);
-    onClose();
+  const finishClose = useCallback(() => {
+    setMounted(false);
     setQuery('');
-  };
+    setSelected(-1);
+  }, []);
 
-  const formatPrice = (price) => {
-    if (typeof price === 'number') {
-      return `${price.toLocaleString('uz-UZ')} so'm`;
+  useEffect(() => {
+    if (isOpen || !mounted || closingRef.current) return;
+    closingRef.current = true;
+    const root = rootRef.current;
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishClose();
+      return;
     }
-    return price || '';
+    gsap.timeline({ onComplete: finishClose })
+      .to(root.querySelectorAll('[data-sp-reveal]'), { y: -12, autoAlpha: 0, duration: 0.25, stagger: 0.015, ease: 'power2.in' }, 0)
+      .to(root.querySelector('.sp-panel'), { clipPath: 'inset(0% 0% 100% 0%)', duration: 0.55, ease: 'expo.inOut' }, 0.05)
+      .to(root.querySelector('.sp-scrim'), { autoAlpha: 0, duration: 0.4 }, 0.2);
+  }, [isOpen, mounted, finishClose]);
+
+  // Entrance: the curtain drops from under the navbar, then the words and pieces settle in.
+  useLayoutEffect(() => {
+    if (!mounted || !isOpen) return undefined;
+    const root = rootRef.current;
+    document.body.style.overflow = 'hidden';
+    inputRef.current?.focus({ preventScroll: true });
+    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return () => { document.body.style.overflow = ''; };
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.timeline({ defaults: { ease: 'expo.out' } })
+        .fromTo('.sp-scrim', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: 'power2.out' }, 0)
+        .fromTo('.sp-panel', { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.9, ease: 'expo.inOut' }, 0)
+        .from('.sp-head__line', { scaleX: 0, duration: 1.1, ease: 'expo.inOut' }, 0.35)
+        .from('[data-sp-reveal]', { y: 26, autoAlpha: 0, duration: 0.8, stagger: 0.035 }, 0.4);
+    }, root);
+
+    return () => {
+      ctx.revert();
+      document.body.style.overflow = '';
+    };
+  }, [mounted, isOpen]);
+
+  // New results rise in as the query changes.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || !term || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    gsap.fromTo(root.querySelectorAll('.sp-results [data-sp-reveal]'),
+      { y: 18, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.55, stagger: 0.03, ease: 'power3.out', overwrite: true });
+  }, [term, results.length]);
+
+  const remember = (value) => {
+    const clean = value.trim();
+    if (!clean) return;
+    const next = [clean, ...recent.filter((item) => normalize(item) !== normalize(clean))].slice(0, MAX_RECENT);
+    setRecent(next);
+    writeRecent(next);
   };
 
-  if (!isOpen || typeof document === 'undefined') return null;
+  const openProduct = (product) => {
+    remember(query);
+    navigate(`/product/${productId(product)}`);
+    onClose();
+  };
+
+  const openAll = () => {
+    remember(query);
+    navigate(query.trim() ? `/products?q=${encodeURIComponent(query.trim())}` : '/products');
+    onClose();
+  };
+
+  const onKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+    } else if (event.key === 'ArrowDown' && results.length) {
+      event.preventDefault();
+      setSelected((i) => (i + 1) % results.length);
+    } else if (event.key === 'ArrowUp' && results.length) {
+      event.preventDefault();
+      setSelected((i) => (i - 1 + results.length) % results.length);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      if (selected >= 0 && results.at(selected)) openProduct(results.at(selected));
+      else if (results.length === 1) openProduct(results.at(0));
+      else if (term) openAll();
+    }
+  };
+
+  const pick = (value) => {
+    setQuery(value);
+    setSelected(-1);
+    inputRef.current?.focus();
+  };
+
+  if (!mounted || typeof document === 'undefined') return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-start justify-center pt-[7vh] sm:pt-[12vh] px-4 bg-black/80 backdrop-blur-2xl transition-all duration-300 overflow-y-auto"
-      onClick={e => e.target === e.currentTarget && onClose()}
-      style={{ animation: 'searchFadeIn .2s cubic-bezier(0.16, 1, 0.3, 1)' }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Mahsulot qidirish"
-    >
-      {/* Ambient gold glow behind modal */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#d6b47c]/15 via-transparent to-transparent blur-3xl pointer-events-none -z-10" />
-
-      <div
-        className="relative w-full max-w-2xl rounded-[32px] bg-[#0c0d12]/95 border border-[#d6b47c]/25 shadow-[0_30px_100px_rgba(0,0,0,0.9),0_0_60px_rgba(214,180,124,0.1)] overflow-hidden backdrop-blur-3xl transition-all mb-12"
-        style={{ animation: 'searchScaleIn .25s cubic-bezier(0.16, 1, 0.3, 1)' }}
-      >
-        {/* Top gold accent line with subtle shimmer */}
-        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#d6b47c] to-transparent pointer-events-none" />
-
-        {/* Search Header Bar */}
-        <div className="flex items-center gap-3.5 px-6 h-[72px] border-b border-white/[0.08] bg-white/[0.01]">
-          <div className="w-10 h-10 rounded-2xl bg-[#d6b47c]/10 border border-[#d6b47c]/25 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(214,180,124,0.15)]">
-            <Search className="w-5 h-5 text-[#d6b47c]" />
-          </div>
-          
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder={t('search.placeholder', 'Mahsulot qidirish...')}
-            className="flex-1 bg-transparent text-[#f4f1eb] text-base sm:text-lg font-medium placeholder:text-[#555] focus:outline-none"
-            autoFocus
-          />
-
-          {query && (
-            <button
-              onClick={() => { setQuery(''); inputRef.current?.focus(); }}
-              className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-gray-400 hover:text-white transition-all active:scale-90"
-              aria-label="Tozalash"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-
-          <div className="flex items-center gap-2">
-            <kbd className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/10 text-[10px] text-[#ad9b91] font-mono tracking-wider shadow-inner">
-              ESC
-            </kbd>
-            <button
-              onClick={onClose}
-              className="sm:hidden p-2 rounded-xl bg-white/[0.04] text-gray-400 active:scale-90"
-              aria-label="Yopish"
-            >
-              <X className="w-5 h-5" />
+    <div ref={rootRef} className="sp" role="dialog" aria-modal="true" aria-label={w.placeholder} onKeyDown={onKeyDown}>
+      <div className="sp-scrim" onClick={onClose} aria-hidden="true" />
+      <div className="sp-panel" data-lenis-prevent>
+        <div className="sp-inner">
+          <div className="sp-top" data-sp-reveal>
+            <span className="sp-kicker">{w.kicker}</span>
+            <button type="button" className="sp-close" onClick={onClose}>
+              {w.close}
+              <kbd>Esc</kbd>
+              <X className="h-4 w-4" />
             </button>
           </div>
-        </div>
 
-        {/* Modal Body */}
-        <div className="max-h-[60vh] overflow-y-auto overscroll-contain luxury-scrollbar">
-          {!query.trim() ? (
-            <div className="p-6 sm:p-7 space-y-7">
-              {/* Recent searches */}
-              {recent.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3.5">
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c] font-bold flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-[#d6b47c]" />
-                      {t('search.recentTitle', "So'nggi qidiruvlar")}
-                    </span>
-                    <button
-                      onClick={clearAllRecent}
-                      className="text-[10px] uppercase tracking-[0.18em] text-[#888] hover:text-[#d6b47c] transition-colors"
-                    >
-                      {t('search.recentClear', 'Barchasini tozalash')}
+          <label className="sp-head">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(event) => { setQuery(event.target.value); setSelected(-1); }}
+              placeholder={w.placeholder}
+              className="sp-input"
+              spellCheck="false"
+              autoComplete="off"
+              aria-label={w.placeholder}
+            />
+            {query && (
+              <button type="button" className="sp-clear" onClick={() => pick('')} aria-label={w.clear}>
+                <X className="h-5 w-5" />
+              </button>
+            )}
+            <span className="sp-head__line" aria-hidden="true" />
+          </label>
+
+          {!term ? (
+            <div className="sp-idle">
+              <div className="sp-col">
+                <p className="sp-label" data-sp-reveal>{w.popular}</p>
+                <ol className="sp-terms">
+                  {w.terms.map((item, i) => (
+                    <li key={item} data-sp-reveal>
+                      <button type="button" onClick={() => pick(item)}>
+                        <span className="sp-terms__num">{String(i + 1).padStart(2, '0')}</span>
+                        {item}
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+                {recent.length > 0 && (
+                  <div className="sp-recent" data-sp-reveal>
+                    <div className="sp-recent__head">
+                      <p className="sp-label">{w.recent}</p>
+                      <button type="button" onClick={() => { setRecent([]); writeRecent([]); }}>{w.clear}</button>
+                    </div>
+                    <div className="sp-recent__list">
+                      {recent.map((item) => (
+                        <button key={item} type="button" onClick={() => pick(item)}>{item}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {arrivals.length > 0 && (
+                <div className="sp-col sp-col--wide">
+                  <div className="sp-row-head" data-sp-reveal>
+                    <p className="sp-label">{w.arrivals}</p>
+                    <button type="button" className="sp-link" onClick={openAll}>
+                      {w.catalogue}
+                      <ArrowUpRight className="h-4 w-4" />
                     </button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {recent.map(term => (
-                      <div
-                        key={term}
-                        onClick={() => setQuery(term)}
-                        className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/[0.03] border border-white/10 text-xs text-gray-300 hover:text-white hover:border-[#d6b47c]/40 hover:bg-[#d6b47c]/10 transition-all cursor-pointer shadow-sm"
-                      >
-                        <Clock className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#d6b47c] transition-colors" />
-                        <span>{term}</span>
-                        <button
-                          onClick={(e) => removeRecent(term, e)}
-                          className="w-4 h-4 rounded-full hover:bg-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-colors"
-                        >
-                          <X className="w-2.5 h-2.5" />
-                        </button>
-                      </div>
+                  <div className="sp-grid sp-grid--four">
+                    {arrivals.map((product) => (
+                      <ResultCard key={productId(product)} product={product} query="" onOpen={() => openProduct(product)} />
                     ))}
                   </div>
                 </div>
               )}
-
-              {/* Trending searches & categories */}
-              <div>
-                <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c] font-bold flex items-center gap-2 mb-3.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-[#d6b47c]" />
-                  {t('search.trendingTitle', 'Mashhur qidiruvlar')}
-                </span>
-                <div className="flex flex-wrap gap-2.5">
-                  {TRENDING_TERMS.map(({ label, icon: IconComponent }) => (
-                    <button
-                      key={label}
-                      onClick={() => setQuery(label)}
-                      className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/[0.03] border border-white/10 text-xs sm:text-sm text-gray-300 hover:text-[#d6b47c] hover:border-[#d6b47c]/40 hover:bg-[#d6b47c]/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm"
-                    >
-                      <IconComponent className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#d6b47c] transition-colors" />
-                      <span className="font-medium">{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Editorial discovery note */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-white/[0.03] to-transparent border border-white/[0.06] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 flex items-center justify-center text-[#d6b47c]">
-                    <Crown className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-[#f4f1eb]">Yangi Kolleksiya 2026</p>
-                    <p className="text-[11px] text-[#888]">Eng sara premium ayollar kiyimlari</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { navigate('/products'); onClose(); }}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#d6b47c] hover:text-white transition-colors"
-                >
-                  <span>Katalog</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
             </div>
-          ) : results.length === 0 ? (
-            <div className="py-14 px-6 text-center">
-              <div className="mx-auto mb-4 w-16 h-16 rounded-3xl bg-[#d6b47c]/10 border border-[#d6b47c]/25 flex items-center justify-center shadow-[0_0_30px_rgba(214,180,124,0.15)]">
-                <Package className="w-7 h-7 text-[#d6b47c]" />
+          ) : results.length ? (
+            <div className="sp-results">
+              <div className="sp-row-head" data-sp-reveal>
+                <p className="sp-label">{w.found(matches.length)}</p>
+                {matches.length > results.length && (
+                  <button type="button" className="sp-link" onClick={openAll}>
+                    {w.viewAll(matches.length)}
+                    <ArrowUpRight className="h-4 w-4" />
+                  </button>
+                )}
               </div>
-              <h3 className="font-serif text-xl text-[#f4f1eb] font-normal mb-2">Mahsulot topilmadi</h3>
-              <p className="text-sm text-[#888] max-w-sm mx-auto mb-6">
-                <span className="text-[#f4f1eb] font-semibold">"{query}"</span> {t('search.noResults', "uchun hech narsa topilmadi. Boshqa so'z bilan qidirib ko'ring.")}
-              </p>
-              <button
-                onClick={() => { navigate('/products'); onClose(); }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#d6b47c] text-black font-bold text-xs uppercase tracking-widest hover:bg-white transition-all shadow-lg active:scale-95"
-              >
-                <span>Barcha mahsulotlar</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="sp-grid">
+                {results.map((product, i) => (
+                  <ResultCard
+                    key={productId(product)}
+                    product={product}
+                    query={query}
+                    active={selected === i}
+                    onOpen={() => openProduct(product)}
+                    onHover={() => setSelected(i)}
+                  />
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="p-4 sm:p-5">
-              <div className="flex items-center justify-between px-3 pb-3 mb-2 border-b border-white/[0.06]">
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d6b47c]">
-                  {results.length} {t('search.resultsCount', 'ta natija')}
-                </span>
-                <span className="text-[11px] text-[#888] font-medium">Tanlash uchun ustiga bosing</span>
-              </div>
-
-              <div ref={listRef} className="space-y-1.5">
-                {results.map((product, i) => {
-                  const productId = product.id || product._id;
-                  const imageUrl = product.image || product.images?.[0]?.url || product.images?.[0] || '/placeholder.jpg';
-                  const isSelected = selected === i;
-
-                  return (
-                    <button
-                      key={productId || i}
-                      onClick={() => goProduct(productId)}
-                      className={`flex items-center gap-4 w-full p-3 rounded-2xl transition-all duration-200 group text-left ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-[#d6b47c]/20 via-white/[0.05] to-transparent border-l-4 border-[#d6b47c] shadow-lg translate-x-1'
-                          : 'hover:bg-white/[0.04] border-l-4 border-transparent'
-                      }`}
-                    >
-                      <div className="relative w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-[#161618] border border-white/10 shrink-0">
-                        <img
-                          src={imageUrl}
-                          alt={product.name}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {product.badge && (
-                            <span className="shrink-0 text-[8px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider bg-[#d6b47c]/20 text-[#d6b47c] border border-[#d6b47c]/30">
-                              {product.badge}
-                            </span>
-                          )}
-                          <span className="text-sm sm:text-base text-[#f4f1eb] font-medium truncate group-hover:text-[#d6b47c] transition-colors">
-                            {product.name}
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#888] mb-1.5">{product.category || 'Luxe Collection'}</p>
-                        <div className="text-sm sm:text-base font-bold text-[#d6b47c]">
-                          {formatPrice(product.price)}
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 pl-2">
-                        <div className="w-9 h-9 rounded-full bg-white/[0.04] group-hover:bg-[#d6b47c] text-gray-400 group-hover:text-black flex items-center justify-center transition-all duration-300 shadow-md">
-                          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+            <div className="sp-results sp-empty">
+              <p className="sp-empty__title" data-sp-reveal>{w.none(query.trim())}</p>
+              <p className="sp-empty__hint" data-sp-reveal>{w.noneHint}</p>
+              <div className="sp-recent__list" data-sp-reveal>
+                {w.terms.map((item) => (
+                  <button key={item} type="button" onClick={() => pick(item)}>{item}</button>
+                ))}
               </div>
             </div>
           )}
-        </div>
 
-        {/* Footer Navigation Hints */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-t border-white/[0.06] bg-black/40">
-          <div className="flex items-center gap-5">
-            <span className="flex items-center gap-1.5 text-[11px] text-[#888]">
-              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/10 text-white/80 font-mono text-[9px] shadow-sm">↑</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/10 text-white/80 font-mono text-[9px] shadow-sm">↓</kbd>
-              <span className="text-gray-300">{t('searchModal.navigate', 'harakatlanish')}</span>
-            </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-[#888]">
-              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/10 text-white/80 font-mono text-[9px] shadow-sm flex items-center gap-0.5">
-                <CornerDownLeft className="w-2.5 h-2.5" />
-              </kbd>
-              <span className="text-gray-300">{t('searchModal.select', 'tanlash')}</span>
-            </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-[#888]">
-              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/10 text-white/80 font-mono text-[9px] shadow-sm">esc</kbd>
-              <span className="text-gray-300">{t('searchModal.close', 'yopish')}</span>
-            </span>
+          <div className="sp-foot" data-sp-reveal>
+            <span><kbd>↑</kbd><kbd>↓</kbd>{w.hints[0]}</span>
+            <span><kbd>Enter</kbd>{w.hints[1]}</span>
+            <span><kbd>Esc</kbd>{w.hints[2]}</span>
           </div>
-
-          <span className="hidden sm:inline-block text-[10px] uppercase tracking-[0.2em] font-bold text-[#d6b47c]/60">
-            LUXX COUTURE
-          </span>
         </div>
       </div>
-
-      <style>{`
-        @keyframes searchFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes searchScaleIn {
-          from { 
-            opacity: 0; 
-            transform: scale(0.95) translateY(-14px); 
-          }
-          to { 
-            opacity: 1; 
-            transform: scale(1) translateY(0); 
-          }
-        }
-        .luxury-scrollbar::-webkit-scrollbar {
-          width: 5px;
-        }
-        .luxury-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .luxury-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(214, 180, 124, 0.25);
-          border-radius: 9999px;
-        }
-        .luxury-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(214, 180, 124, 0.45);
-        }
-      `}</style>
     </div>,
-    document.body
+    document.body,
   );
 };
 
