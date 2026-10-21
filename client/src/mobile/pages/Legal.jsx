@@ -34,7 +34,7 @@ export default function LegalPage({ seo, label, kicker, title, lead, updated, hi
   };
 
   return (
-    <div className="m-page mlg">
+    <div className="m-page m-reveal mlg">
       <SEO {...seo} />
       <TopBar
         title={title}

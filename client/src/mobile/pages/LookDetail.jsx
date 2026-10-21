@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowUpRight, Camera, Eye, ShoppingBag, X } from 'lucide-react';
+import { AlertCircle, ArrowUpRight, Camera, Check, Eye, ShoppingBag, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import SEO from '../../components/SEO';
 import { useProducts } from '../../contexts/ProductContext';
@@ -33,6 +33,8 @@ const WORDS = {
     total: 'Obraz narxi',
     addAll: "Savatga qo'shish",
     adding: "Qo'shilmoqda",
+    done: 'Savatda',
+    more: 'Batafsil',
     noPieces: "Bu obraz buyumlari hozir sotuvda yo'q.",
     notFound: 'Obraz topilmadi',
     notFoundText: "Bu obraz olib tashlangan yoki havola noto'g'ri.",
@@ -58,6 +60,8 @@ const WORDS = {
     total: 'Цена образа',
     addAll: 'В корзину',
     adding: 'Добавляем',
+    done: 'В корзине',
+    more: 'Подробнее',
     noPieces: 'Вещей из этого образа сейчас нет в продаже.',
     notFound: 'Образ не найден',
     notFoundText: 'Этот образ убран или ссылка неверна.',
@@ -83,6 +87,8 @@ const WORDS = {
     total: 'Look total',
     addAll: 'Add to bag',
     adding: 'Adding',
+    done: 'In your bag',
+    more: 'Read more',
     noPieces: 'The pieces in this look are not on sale right now.',
     notFound: 'Look not found',
     notFoundText: 'This look was removed or the link is wrong.',
@@ -165,7 +171,7 @@ const LookItem = ({ product, selection, error, onSelect, w }) => {
 
 const DetailSkeleton = () => (
   <div aria-hidden="true">
-    <div className="m-skel" style={{ aspectRatio: '4 / 5', maxHeight: '72svh' }} />
+    <div className="m-skel" style={{ aspectRatio: '3 / 4', maxHeight: '70svh', margin: '18px 18px 0', borderRadius: 'var(--m-arch)' }} />
     <div className="m-pad">
       <div className="m-skel m-skel--line" style={{ width: '25%', marginTop: 26 }} />
       <div className="m-skel m-skel--line" style={{ width: '75%', height: 30 }} />
@@ -188,6 +194,8 @@ export default function LookDetail() {
   const [errors, setErrors] = useState({});
   const [adding, setAdding] = useState(false);
   const [viewer, setViewer] = useState(false);
+  const [done, setDone] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
@@ -308,7 +316,11 @@ export default function LookDetail() {
       }
     }
     setAdding(false);
-    if (added > 0) toast.success(w.added(added));
+    if (added > 0) {
+      toast.success(w.added(added));
+      setDone(true);
+      window.setTimeout(() => setDone(false), 2400);
+    }
   };
 
   const bagLink = (
@@ -319,7 +331,7 @@ export default function LookDetail() {
 
   if (loading) {
     return (
-      <div className="m-page--bare mld">
+      <div className="m-page--bare m-reveal mld">
         <TopBar title={w.look} onBack={() => navigate('/mobile/lookbooks')} right={bagLink} />
         <DetailSkeleton />
       </div>
@@ -328,7 +340,7 @@ export default function LookDetail() {
 
   if (!look) {
     return (
-      <div className="m-page--bare">
+      <div className="m-page--bare m-reveal">
         <TopBar title={w.look} onBack={() => navigate('/mobile/lookbooks')} />
         <Empty
           icon={Camera}
@@ -345,7 +357,7 @@ export default function LookDetail() {
   const lookNo = look.id && String(look.id).length <= 3 ? ` ${String(look.id).padStart(2, '0')}` : '';
 
   return (
-    <div className="m-page--bare mld">
+    <div className="m-page--bare m-reveal mld">
       <SEO title={look.title} description={look.description} image={hero} />
       <TopBar title={look.title} subtitle={w.look} onBack={() => navigate('/mobile/lookbooks')} right={bagLink} />
 
@@ -354,10 +366,13 @@ export default function LookDetail() {
         <span className="mld-hero__hint"><Eye className="h-4 w-4" strokeWidth={1.5} />{w.zoomHint}</span>
       </button>
 
-      <header className="mld-intro m-pad">
+      <header className={`mld-intro m-pad ${moreOpen ? 'is-open' : ''}`}>
         <p className="m-kicker">{w.look}{lookNo}</p>
         <h1 className="m-h1">{look.title}</h1>
         {look.description && <p className="m-body">{look.description}</p>}
+        {look.description?.length > 260 && !moreOpen && (
+          <button type="button" className="m-link mld-more" onClick={() => setMoreOpen(true)}>{w.more}</button>
+        )}
       </header>
 
       <section className="m-pad">
@@ -390,11 +405,12 @@ export default function LookDetail() {
         </div>
         <button
           type="button"
-          className={`m-btn m-btn--solid ${adding ? 'is-busy' : ''}`}
+          className={`m-btn m-btn--solid ${adding ? 'is-busy' : ''} ${done ? 'is-done' : ''}`}
           onClick={addAll}
           disabled={adding || !lookProducts.length}
         >
-          <ShoppingBag className="h-4 w-4" />{adding ? w.adding : w.addAll}
+          {done ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
+          {adding ? w.adding : done ? w.done : w.addAll}
         </button>
       </div>
 

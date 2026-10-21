@@ -4,7 +4,7 @@ import SEO from '../../components/SEO';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { CONTACT } from '../../config/policies';
 import { API_BASE_URL } from '../../services/api';
-import { Field, TopBar } from '../ui';
+import { Field, SoftImage, TopBar } from '../ui';
 import './contact.css';
 
 // Same hours and map link as the desktop contact page.
@@ -112,7 +112,7 @@ export default function Contact() {
 
   const [topic, setTopic] = useState(0);
   const [form, setForm] = useState({ name: '', phone: '', message: '' });
-  const [status, setStatus] = useState('idle'); // idle | sending | sent
+  const [status, setStatus] = useState('idle'); // idle | sending | done | sent
   const [error, setError] = useState('');
   const [sentName, setSentName] = useState('');
 
@@ -150,7 +150,9 @@ export default function Contact() {
       if (!response.ok) throw new Error(result.message || 'Server error');
       setSentName(name);
       setForm({ name: '', phone: '', message: '' });
-      setStatus('sent');
+      // Let the gold button fill with ink before the thank-you replaces the form.
+      setStatus('done');
+      window.setTimeout(() => setStatus('sent'), 900);
     } catch (err) {
       console.error('Error submitting form:', err);
       setError(w.failed);
@@ -159,7 +161,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="m-page mct">
+    <div className="m-page m-reveal mct">
       <SEO title={w.title} description={w.lead} canonicalPath="/contact" />
       <TopBar title={w.title} />
 
@@ -170,6 +172,10 @@ export default function Contact() {
         <p className={`mct-status ${open ? 'is-open' : ''}`}><span aria-hidden="true" />{open ? w.open : w.closed}</p>
         <a href={CONTACT.phoneHref} className="m-btn m-btn--solid m-btn--block"><Phone className="h-4 w-4" />{w.call}</a>
       </header>
+
+      <div className="mct-arch">
+        <SoftImage src="/editorial/atelier-concierge-v2.png" alt={w.kicker} />
+      </div>
 
       <section className="m-section m-pad">
         <p className="m-kicker">{w.direct}</p>
@@ -217,7 +223,12 @@ export default function Contact() {
             <Field label={w.phone} name="phone" type="tel" inputMode="tel" value={form.phone} onChange={change} autoComplete="tel" required />
             <Field label={w.message} name="message" as="textarea" rows={3} value={form.message} onChange={change} required />
             {error && <p className="mct-error" role="alert">{error}</p>}
-            <button type="submit" className={`m-btn m-btn--solid m-btn--block ${status === 'sending' ? 'is-busy' : ''}`} disabled={status === 'sending'}>
+            <button
+              type="submit"
+              className={`m-btn m-btn--solid m-btn--block ${status === 'sending' ? 'is-busy' : ''} ${status === 'done' ? 'is-done' : ''}`}
+              disabled={status === 'sending' || status === 'done'}
+            >
+              {status === 'done' && <CheckCircle2 className="h-4 w-4" />}
               {status === 'sending' ? w.sending : w.submit}
             </button>
             <p className="m-small mct-privacy">{w.privacy}</p>

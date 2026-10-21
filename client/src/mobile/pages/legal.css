@@ -1,21 +1,21 @@
 /* Mobile legal pages (privacy, terms) */
 .mlg-head { display: grid; gap: 14px; padding-top: 30px; }
 .mlg-head .m-h1 { font-size: clamp(34px, 10vw, 42px); }
-.mlg-date { display: flex; align-items: center; gap: 8px; margin: 0; font: 500 12px/1 var(--m-sans); color: var(--m-faint); }
+.mlg-date { display: flex; align-items: center; gap: 8px; margin: 0; font: 400 12.5px/1 var(--m-sans); color: var(--m-mute); }
 .mlg-date svg { color: var(--m-gold); }
 
 .mlg-highlights { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 30px 0 0; list-style: none; }
 .mlg-highlights li { display: grid; align-content: start; gap: 6px; padding: 18px 14px 18px 0; border-top: 1px solid var(--m-line-soft); }
 .mlg-highlights li:nth-child(even) { padding-left: 14px; padding-right: 0; border-left: 1px solid var(--m-line-soft); }
 .mlg-highlights li:nth-child(-n+2) { border-top-color: var(--m-line); }
-.mlg-highlights__num { font: 600 9.5px/1 var(--m-sans); letter-spacing: .2em; color: var(--m-gold); }
-.mlg-highlights strong { font: 400 18px/1.15 var(--m-serif); font-weight: 400; }
+.mlg-highlights__num { font: 500 10.5px/1 var(--m-sans); letter-spacing: .2em; color: var(--m-gold); }
+.mlg-highlights strong { font: 400 19px/1.15 var(--m-serif); font-weight: 400; }
 .mlg-highlights span:last-child { font-size: 12.5px; line-height: 1.45; color: var(--m-mute); }
 
 .mlg-sections { margin-top: 14px; border-top: 1px solid var(--m-line-soft); }
 .mlg-acc summary { gap: 16px; min-height: 72px; padding: 14px 0; }
 .mlg-acc summary > span { display: grid; gap: 7px; }
-.mlg-acc summary small { font: 600 9px/1 var(--m-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--m-gold); }
+.mlg-acc summary small { font: 500 10px/1 var(--m-sans); letter-spacing: .22em; text-transform: uppercase; color: var(--m-gold); }
 .mlg-acc summary svg { flex: none; }
 .mlg-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .mlg-list li { position: relative; padding-left: 20px; }

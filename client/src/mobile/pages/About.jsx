@@ -93,17 +93,18 @@ export default function About() {
   const pillarText = [w.pillars[0][1], w.pillars[1][1], `${policy.delivery}.`, `${policy.tryOn}. ${policy.returns}.`];
 
   return (
-    <div className="m-page mab">
+    <div className="m-page m-reveal mab">
       <SEO title={w.title} description={w.manifesto} canonicalPath="/about" />
       <TopBar title={w.title} />
 
       <section className="mab-hero">
-        <SoftImage src="/second_pose.jpg" alt="Luxx" eager className="mab-hero__img" />
-        <span className="mab-hero__shade" aria-hidden="true" />
         <div className="mab-hero__copy m-pad">
           <p className="m-kicker">{w.kicker}</p>
           <h1 className="mab-hero__title">Luxx</h1>
           <p className="mab-hero__lead">{w.lead}</p>
+        </div>
+        <div className="mab-hero__arch">
+          <SoftImage src="/second_pose.jpg" alt="Luxx" eager className="mab-hero__img" />
         </div>
       </section>
 

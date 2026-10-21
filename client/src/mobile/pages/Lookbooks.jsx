@@ -69,7 +69,7 @@ const pieceCount = (look) => (look.products?.length
 
 const LookSkeleton = () => (
   <div className="mlb-card" aria-hidden="true">
-    <div className="m-skel" style={{ aspectRatio: '4 / 5' }} />
+    <div className="m-skel" style={{ aspectRatio: '4 / 5', borderRadius: 'var(--m-arch)' }} />
     <div className="m-skel m-skel--line" style={{ width: '30%' }} />
     <div className="m-skel m-skel--line" style={{ width: '70%', height: 20 }} />
   </div>
@@ -114,7 +114,7 @@ export default function Lookbooks() {
     : looks.filter((look) => (look.items || []).some((item) => item.category === filter))), [looks, filter]);
 
   return (
-    <div className="m-page mlb">
+    <div className="m-page m-reveal mlb">
       <SEO title={w.title} canonicalPath="/lookbooks" />
       <TopBar title={w.title} back={false} />
 
@@ -154,13 +154,12 @@ export default function Lookbooks() {
                   <Link key={lookIdOf(look)} to={`/mobile/lookbooks/${lookIdOf(look)}`} className="mlb-card">
                     <span className="mlb-card__frame">
                       <SoftImage src={lookImageOf(look)} alt={look.title} eager={index === 0} />
-                      <span className="mlb-card__no">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="mlb-card__cap">
+                        <span className="mlb-card__no">{String(index + 1).padStart(2, '0')} · {w.look}{count ? ` · ${w.pieces(count)}` : ''}</span>
+                        <span className="mlb-card__title">{look.title}</span>
+                      </span>
                     </span>
-                    <span className="mlb-card__meta">
-                      <span className="m-kicker">{w.look}{count ? ` · ${w.pieces(count)}` : ''}</span>
-                      <span className="mlb-card__title">{look.title}</span>
-                      {look.description && <span className="mlb-card__text">{look.description}</span>}
-                    </span>
+                    {look.description && <span className="mlb-card__text">{look.description}</span>}
                   </Link>
                 );
               })}
