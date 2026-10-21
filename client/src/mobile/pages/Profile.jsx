@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Bell, ChevronRight, FileText, Gift, Globe, Heart, HelpCircle, LayoutDashboard, LogOut, Mail, Package, Phone, Shield } from 'lucide-react';
+import { Bell, ChevronRight, FileText, Gem, Gift, Globe, Heart, HelpCircle, LayoutDashboard, LogOut, Mail, MessageSquare, Package, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useProducts } from '../../contexts/ProductContext';
@@ -36,6 +36,8 @@ const WORDS = {
     terms: 'Foydalanish shartlari',
     logout: 'Chiqish',
     contact: 'Aloqa',
+    write: 'Bizga yozish',
+    about: 'Biz haqimizda',
     savedEmpty: "Hali sevimli model yo'q. Yoqqanini yurakcha bilan belgilang.",
     faqItems: (p) => [
       ['Yetkazish qancha vaqt oladi?', `${p.delivery}.`],
@@ -64,6 +66,8 @@ const WORDS = {
     terms: 'Условия',
     logout: 'Выйти',
     contact: 'Связь',
+    write: 'Написать нам',
+    about: 'О нас',
     savedEmpty: 'В избранном пока пусто. Отмечайте модели сердечком.',
     faqItems: (p) => [
       ['Сколько идёт доставка?', `${p.delivery}.`],
@@ -92,6 +96,8 @@ const WORDS = {
     terms: 'Terms of use',
     logout: 'Sign out',
     contact: 'Contact',
+    write: 'Write to us',
+    about: 'About Luxx',
     savedEmpty: 'Nothing saved yet. Tap the heart on a piece you love.',
     faqItems: (p) => [
       ['How long is delivery?', `${p.delivery}.`],
@@ -179,8 +185,10 @@ export default function Profile() {
       <section className="m-section m-pad">
         <p className="m-kicker" style={{ marginBottom: 14 }}>{w.contact}</p>
         <div className="m-rows">
+          <Link to="/mobile/contact" className="m-row"><MessageSquare className="h-5 w-5" strokeWidth={1.4} />{w.write}<span className="m-row__end"><ChevronRight className="h-4 w-4" /></span></Link>
           <a href={CONTACT.phoneHref} className="m-row"><Phone className="h-5 w-5" strokeWidth={1.4} />{CONTACT.phone}</a>
           <a href={`mailto:${CONTACT.email}`} className="m-row"><Mail className="h-5 w-5" strokeWidth={1.4} />{CONTACT.email}</a>
+          <Link to="/mobile/about" className="m-row"><Gem className="h-5 w-5" strokeWidth={1.4} />{w.about}</Link>
           <Link to="/mobile/privacy-policy" className="m-row"><Shield className="h-5 w-5" strokeWidth={1.4} />{w.privacy}</Link>
           <Link to="/mobile/terms" className="m-row"><FileText className="h-5 w-5" strokeWidth={1.4} />{w.terms}</Link>
         </div>

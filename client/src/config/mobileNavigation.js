@@ -25,6 +25,8 @@ export const MOBILE_NAV_ROUTE_GROUPS = {
       '/mobile/register',
       '/mobile/privacy-policy',
       '/mobile/terms',
+      '/mobile/about',
+      '/mobile/contact',
     ],
   },
 };

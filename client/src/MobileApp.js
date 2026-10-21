@@ -18,6 +18,7 @@ const MobileAdminEdit = lazy(() => import('./pages/mobile/MobileAdminEdit'));
 const MobileProfile = lazy(() => import('./pages/mobile/MobileProfile'));
 const MobileOrders = lazy(() => import('./pages/mobile/MobileOrders'));
 const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
+const MobileContact = lazy(() => import('./pages/mobile/MobileContact'));
 const MobileAuth = lazy(() => import('./mobile/pages/Auth'));
 const MobilePrivacyPolicy = lazy(() => import('./pages/mobile/MobileLegalPrivacy'));
 const MobileTermsOfService = lazy(() => import('./pages/mobile/MobileLegalTerms'));
@@ -76,7 +77,7 @@ const MobileApp = () => {
                     <Route path="/bundle/:id" element={<MobileBundleDetail />} />
                     <Route path="/blog/:slug" element={<MobileBlogPost />} />
                     <Route path="/faq" element={<Navigate to="/mobile/profile" replace />} />
-                    <Route path="/contact" element={<Navigate to="/mobile/profile" replace />} />
+                    <Route path="/contact" element={<MobileContact />} />
                     <Route path="/lookbook-builder" element={<Navigate to="/mobile/lookbooks" replace />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
