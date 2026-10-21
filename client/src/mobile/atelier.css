@@ -71,7 +71,7 @@
   align-items: center;
   min-height: 58px;
   padding: env(safe-area-inset-top, 0px) 6px 0;
-  background: rgba(42, 14, 20, .78);
+  background: rgba(42, 14, 20, .96);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
 }
@@ -349,7 +349,8 @@
 @keyframes m-rise { from { transform: translateY(100%); } }
 
 /* Page entrance: the atelier's circular reveal. */
-.m-reveal { animation: m-reveal .85s cubic-bezier(.7, 0, .2, 1) both; }
+/* backwards, not both: once it ends no clip-path stays behind to cut off fixed bars. */
+.m-reveal { animation: m-reveal .85s cubic-bezier(.7, 0, .2, 1) backwards; }
 @keyframes m-reveal { from { clip-path: circle(0% at 50% 45%); } to { clip-path: circle(150% at 50% 45%); } }
 
 /* Sticky action bar above the bottom navigation (or the screen edge on bare pages). */
