@@ -9,7 +9,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 // Lazy load pages to avoid circular dependencies and improve performance
 const MobileHome = lazy(() => import('./pages/mobile/MobileHome'));
 const MobileProducts = lazy(() => import('./pages/mobile/MobileProducts'));
-const MobileSearch = lazy(() => import('./pages/mobile/MobileSearch'));
 const MobileEvents = lazy(() => import('./pages/mobile/MobileEvents'));
 const MobileProductView = lazy(() => import('./pages/mobile/MobileProductView'));
 const MobileCart = lazy(() => import('./pages/mobile/MobileCart'));
@@ -19,8 +18,7 @@ const MobileAdminEdit = lazy(() => import('./pages/mobile/MobileAdminEdit'));
 const MobileProfile = lazy(() => import('./pages/mobile/MobileProfile'));
 const MobileOrders = lazy(() => import('./pages/mobile/MobileOrders'));
 const MobileAbout = lazy(() => import('./pages/mobile/MobileAbout'));
-const LoginForm = lazy(() => import('./components/LoginForm'));
-const RegisterForm = lazy(() => import('./components/RegisterForm'));
+const MobileAuth = lazy(() => import('./mobile/pages/Auth'));
 const MobilePrivacyPolicy = lazy(() => import('./pages/mobile/MobileLegalPrivacy'));
 const MobileTermsOfService = lazy(() => import('./pages/mobile/MobileLegalTerms'));
 const MobileLookDetail = lazy(() => import('./pages/mobile/MobileLookDetail'));
@@ -48,15 +46,15 @@ const MobileApp = () => {
                     <Route path="/" element={<MobileHome />} />
                     <Route path="about" element={<MobileAbout />} />
                     <Route path="/products" element={<MobileProducts />} />
-                    <Route path="/search" element={<MobileSearch />} />
+                    <Route path="/search" element={<Navigate to="/mobile/products" replace />} />
                     <Route path="/events" element={<MobileEvents />} />
                     <Route path="/product/:id" element={<MobileProductView />} />
                     <Route path="/cart" element={<MobileCart />} />
                     <Route path="/checkout" element={<MobileCheckout />} />
                     <Route path="/profile" element={<MobileProfile />} />
                     <Route path="/orders" element={<MobileOrders />} />
-                    <Route path="/login" element={<LoginForm />} />
-                    <Route path="/register" element={<RegisterForm />} />
+                    <Route path="/login" element={<MobileAuth mode="login" />} />
+                    <Route path="/register" element={<MobileAuth mode="register" />} />
                     <Route path="/admin" element={<MobileAdmin />} />
                     <Route path="/admin/new" element={<MobileAdminEdit />} />
                     <Route path="/admin/edit/:id" element={<MobileAdminEdit />} />
