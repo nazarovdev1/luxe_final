@@ -1,10 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ArrowDownToLine, Share2, X } from 'lucide-react'
+import { Share, X } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import './InstallPrompt.css'
 
 const DISMISS_KEY = 'luxe_install_dismissed'
-const EXIT_DURATION = 140
+const EXIT_DURATION = 220
+
+const BENEFITS = [
+  'Yangi kelganlar birinchi bo‘lib',
+  'Buyurtmalaringiz bir joyda',
+  'To‘liq ekranda, brauzersiz',
+]
 
 const InstallPrompt = ({ isInstallable, onInstall }) => {
   const [show, setShow] = useState(false)
@@ -63,58 +69,53 @@ const InstallPrompt = ({ isInstallable, onInstall }) => {
   if (!show || dismissed) return null
 
   return (
-    <aside
-      className={`luxx-install ${isMobilePath ? 'luxx-install--mobile' : ''} ${isClosing ? 'is-closing' : ''}`}
-      role="dialog"
-      aria-modal="false"
-      aria-labelledby="luxx-install-title"
-    >
-      <div className="luxx-install__card">
-        <div className="luxx-install__topline">
-          <span>LUXX / PRIVATE ACCESS</span>
-          <span aria-hidden="true">01</span>
-        </div>
-
+    <div className={`luxx-install ${isMobilePath ? 'luxx-install--mobile' : ''} ${isClosing ? 'is-closing' : ''}`}>
+      {isMobilePath && (
         <button
           type="button"
-          className="luxx-install__close"
+          className="luxx-install__scrim"
           onClick={() => closePrompt(true)}
+          tabIndex={-1}
           aria-label="O‘rnatish oynasini yopish"
-        >
-          <X size={16} strokeWidth={1.5} />
-        </button>
+        />
+      )}
+
+      <aside className="luxx-install__sheet" role="dialog" aria-modal="false" aria-labelledby="luxx-install-title">
+        <div className="luxx-install__photo">
+          <img src="/mobile.jpg" alt="" decoding="async" />
+          <button
+            type="button"
+            className="luxx-install__close"
+            onClick={() => closePrompt(true)}
+            aria-label="O‘rnatish oynasini yopish"
+          >
+            <X size={18} strokeWidth={1.5} />
+          </button>
+        </div>
 
         <div className="luxx-install__body">
-          <div className="luxx-install__monogram" aria-hidden="true"><span>L</span></div>
+          <p className="luxx-install__eyebrow">LUXX ilovasi</p>
+          <h2 id="luxx-install-title">Kolleksiya — <em>cho‘ntagingizda</em></h2>
 
-          <div className="luxx-install__copy">
-            <p className="luxx-install__eyebrow">Mobil atelier</p>
-            <h2 id="luxx-install-title">LUXX har doim yoningizda</h2>
+          <ol className="luxx-install__list">
+            {BENEFITS.map((benefit, index) => (
+              <li key={benefit}><span>{String(index + 1).padStart(2, '0')}</span>{benefit}</li>
+            ))}
+          </ol>
 
-            {isIOS ? (
-              <div className="luxx-install__ios">
-                <p>Safari’da <strong>Ulashish</strong> tugmasini, so‘ng <strong>Bosh ekranga qo‘shish</strong> bandini tanlang.</p>
-                <div className="luxx-install__steps" aria-label="O‘rnatish bosqichlari">
-                  <span><b>01</b><Share2 size={15} />Ulashish</span>
-                  <i aria-hidden="true" />
-                  <span><b>02</b><ArrowDownToLine size={15} />Bosh ekranga</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p className="luxx-install__description">
-                  Kolleksiyalar, buyurtmalar va maxsus takliflarga bir tegishda kiring.
-                </p>
-                <button type="button" className="luxx-install__action" onClick={handleInstall}>
-                  <span>Bosh ekranga o‘rnatish</span>
-                  <ArrowDownToLine size={17} strokeWidth={1.6} />
-                </button>
-              </>
-            )}
-          </div>
+          {isIOS ? (
+            <p className="luxx-install__ios">
+              Safari’da <Share size={14} strokeWidth={1.6} aria-hidden="true" /> <strong>Ulashish</strong>,
+              so‘ng <strong>Bosh ekranga qo‘shish</strong> bandini tanlang.
+            </p>
+          ) : (
+            <button type="button" className="luxx-install__action" onClick={handleInstall}>
+              Bosh ekranga qo‘shish
+            </button>
+          )}
         </div>
-      </div>
-    </aside>
+      </aside>
+    </div>
   )
 }
 
