@@ -69,8 +69,7 @@ const LegalTerms = () => {
       intro: "Xaridor o'ziga eng ma'qul bo'lgan to'lov shaklini tanlash huquqiga ega:",
       items: [
         { label: "Qabul qilganda naqd to'lov", desc: "Tovar qo'lingizga yetib bargach, kuryerga naqd pul orqali to'lash." },
-        { label: "Kuryer terminali (Karta)", desc: "Yetkazib beruvchi xodimning mobil POS-terminali orqali (Uzcard, Humo, Visa)." },
-        { label: "Onlayn to'lov (Click / Payme)", desc: "Saytda yoki to'lov ilovalarida qo'shimcha komissiyalarsiz sof narxda to'lash." },
+        { label: "Avval kiyib ko'rish", desc: "Kuryer oldida kiyib ko'rasiz va faqat yoqqanini to'laysiz." },
         { label: "Fiskal kvitansiya", desc: "Har bir to'langan xarid uchun qonuniy elektron chek beriladi." }
       ],
       legalNote: "Barcha narxlar milliy valyuta (so'm) da ko'rsatilgan va barcha soliqlarni o'z ichiga oladi."
@@ -81,11 +80,11 @@ const LegalTerms = () => {
       title: t('terms.section3Title') || "Yetkazib berish va qabul qilish",
       intro: "Biz xaridlarni o'z vaqtida va benuqson holatda yetkazib berishni ta'minlaymiz:",
       items: [
-        { label: "Toshkent shahri bo'ylab", desc: "Buyurtma tasdiqlangan vaqtdan boshlab 24 soat ichida yetkaziladi." },
-        { label: "O'zbekiston viloyatlariga", desc: "Pochta yoki viloyatlararo ekspress xizmatlar orqali 2-3 ish kunida yetkaziladi." },
+        { label: "Toshkent shahri bo'ylab", desc: "Buyurtma tasdiqlangan kuni, bepul yetkaziladi." },
+        { label: "Viloyatlarga", desc: "Hozircha faqat Toshkent shahri bo'ylab yetkazib beramiz." },
         { label: "Tekshirish huquqi", desc: "Xaridor kuryer oldida qadoqni ochib, tovarning butunligini tekshirib olishga to'liq haqli." }
       ],
-      legalNote: "Muayyan summadan oshgan xaridlar uchun bepul yetkazib berish shartlari amal qiladi."
+      legalNote: "Toshkent shahri bo'ylab yetkazib berish bepul."
     },
     {
       id: 'sec-returns-policy',
@@ -320,7 +319,7 @@ const LegalTerms = () => {
               <span className="font-mono text-xs text-[#c9a96e] block print:text-black print:font-bold">01 / XARID</span>
               <h2 className="text-base font-medium text-white tracking-tight print:text-black print:font-bold print:text-xs">Oson va Tezkor Buyurtma</h2>
               <p className="text-xs text-neutral-400 font-light leading-relaxed print:text-neutral-800 print:text-[10pt]">
-                Minimal buyurtma 50,000 so'm. Operator tomonidan daqiqalar ichida tasdiqlash.
+                Saytda yoki telefon orqali buyurtma bering, operator qo'ng'iroq qilib tasdiqlaydi.
               </p>
             </div>
 
@@ -334,9 +333,9 @@ const LegalTerms = () => {
 
             <div data-pillar-item className="border-t border-[#c9a96e]/40 pt-5 space-y-2 print:border-t-0 print:pt-0 print:space-y-1">
               <span className="font-mono text-xs text-[#c9a96e] block print:text-black print:font-bold">03 / LOGISTIKA</span>
-              <h2 className="text-base font-medium text-white tracking-tight print:text-black print:font-bold print:text-xs">24 Soatda Yetkazish</h2>
+              <h2 className="text-base font-medium text-white tracking-tight print:text-black print:font-bold print:text-xs">Shu Kuni Yetkazish</h2>
               <p className="text-xs text-neutral-400 font-light leading-relaxed print:text-neutral-800 print:text-[10pt]">
-                Toshkent bo'ylab 24 soatda, O'zbekiston viloyatlariga 2-3 ish kunida kuryer bilan.
+                Toshkent bo'ylab buyurtma kuni, bepul kuryer bilan.
               </p>
             </div>
 

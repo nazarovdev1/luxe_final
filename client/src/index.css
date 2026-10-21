@@ -1765,6 +1765,11 @@ body {
 .clean-size-heading button { display: flex; align-items: center; gap: 5px; color: #d5bb88; font-size: 11px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
 .clean-sizes button { min-width: 48px; height: 40px; border: 1px solid rgba(255,255,255,.17); color: rgba(255,255,255,.72); font-size: 12px; transition: all .2s ease; }
 .clean-sizes button:hover, .clean-sizes button.is-selected { border-color: #d5bb88; background: #d5bb88; color: #171511; }
+.clean-product-promise { display: flex; align-items: center; gap: 8px; margin: 10px 0 16px; color: rgba(255,255,255,.78); font-size: 13px; }
+.clean-product-promise svg { flex-shrink: 0; color: #d5bb88; }
+.clean-size-model { margin: 10px 0 0; color: rgba(255,255,255,.55); font-size: 12px; }
+.clean-size-help { display: inline-block; margin-top: 8px; color: rgba(255,255,255,.78); font-size: 12px; text-decoration: underline; text-decoration-color: rgba(213,187,136,.6); text-underline-offset: 4px; }
+.clean-size-help:hover { color: #fff; }
 .clean-buy-row { display: flex; gap: 9px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,.10); }
 .clean-quantity { display: flex; align-items: center; justify-content: space-between; width: 108px; border: 1px solid rgba(255,255,255,.17); }
 .clean-quantity button { display: grid; place-items: center; width: 34px; height: 48px; color: rgba(255,255,255,.72); transition: background .2s ease; }

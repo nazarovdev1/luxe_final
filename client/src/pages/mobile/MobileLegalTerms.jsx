@@ -51,9 +51,9 @@ const MobileLegalTerms = () => {
   };
 
   const highlights = useMemo(() => [
-    { num: '01', title: "50,000 so'm", desc: "Minimal xarid miqdori" },
-    { num: '02', title: "Naqd & Karta", desc: "Qulay to'lov shakllari" },
-    { num: '03', title: "24 Soatda", desc: "Toshkent bo'ylab yetkazish" },
+    { num: '01', title: "Uyda", desc: "Kiyib ko'rib, keyin to'lash" },
+    { num: '02', title: "Naqd", desc: "Yetkazilganda to'lov" },
+    { num: '03', title: "Shu kuni", desc: "Toshkent bo'ylab yetkazish" },
     { num: '04', title: "14 Kun", desc: "Qaytarish va almashtirish" }
   ], []);
 
@@ -87,8 +87,8 @@ const MobileLegalTerms = () => {
       number: '03',
       title: t('terms.section3Title') || "Yetkazib berish",
       items: [
-        "Toshkent bo'ylab 24 soat ichida yetkazish",
-        "O'zbekiston viloyatlariga tezkor pochta (2-3 kun)",
+        "Toshkent bo'ylab buyurtma kuni, bepul yetkazish",
+        "Viloyatlarga hozircha yetkazmaymiz",
         "Kuryer oldida mahsulotni ko'rib olish imkoni"
       ]
     },

@@ -14,7 +14,7 @@ import {
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getProductOptions } from '../../utils/productVariants';
 import { formatPrice, formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from '../../utils/productDisplay';
-import { getPolicyCopy } from '../../config/policies';
+import { CONTACT, getPolicyCopy } from '../../config/policies';
 
 export default function ProductInfoPanel({
   product,
@@ -118,6 +118,7 @@ export default function ProductInfoPanel({
         {sale.active && <del>{formatPrice(sale.originalPrice)} so'm</del>}
       </div>
       {sale.active && <p className="clean-product-sale-note">{formatSaleNote(sale.endsAt, language)}</p>}
+      <p className="clean-product-promise"><ShieldCheck size={15} aria-hidden="true" /> {policy.tryOn}. {policy.payment}.</p>
 
       {colors.length > 0 && (
         <div className="clean-choice">
@@ -145,6 +146,8 @@ export default function ProductInfoPanel({
           <div className="clean-sizes">
             {sizes.map((size) => <button key={size} onClick={() => setSelectedSize(size)} className={selectedSize === size ? 'is-selected' : ''}>{size}</button>)}
           </div>
+          {modelDetails && <p className="clean-size-model">Model: {modelDetails}</p>}
+          <a className="clean-size-help" href={CONTACT.phoneHref}>O‘lchamda ikkilanyapsizmi? Stilistga qo‘ng‘iroq qiling · {CONTACT.phone}</a>
         </div>
       )}
 

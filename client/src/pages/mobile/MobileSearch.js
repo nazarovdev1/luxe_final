@@ -18,9 +18,8 @@ const MobileSearch = () => {
     }, [categories, t]);
 
     const trendingProducts = useMemo(() => {
-        const best = products.filter((product) => product.badge === 'BESTSELLER');
-        if (best.length >= 4) return best.slice(0, 4);
-        return products.slice(0, 4);
+        // Newest arrivals: there is no sales data to rank by yet.
+        return [...products].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)).slice(0, 4);
     }, [products]);
 
     useEffect(() => {

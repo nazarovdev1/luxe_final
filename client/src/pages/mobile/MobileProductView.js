@@ -42,7 +42,7 @@ import { showCartToast } from '../../utils/toast';
 import { findVariant, getProductOptions } from '../../utils/productVariants';
 import { trackEvent, productAnalyticsPayload } from '../../utils/analytics';
 import { formatSaleNote, getActiveSale, getDisplayBadge } from '../../utils/productDisplay';
-import { getPolicyCopy } from '../../config/policies';
+import { CONTACT, getPolicyCopy } from '../../config/policies';
 
 import { API_BASE_URL } from '../../services/api';
 
@@ -414,6 +414,10 @@ const MobileProductView = () => {
             {hasDiscount && (
               <p className="-mt-4 mb-6 text-[10px] font-bold uppercase tracking-[0.18em] text-[#c9a96e]">{formatSaleNote(sale.endsAt, language)}</p>
             )}
+            <p className="-mt-2 mb-7 flex items-start gap-2 text-[13px] leading-snug text-[#d8d4cc]">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#c9a96e]" aria-hidden="true" />
+              <span>{policy.tryOn}. {policy.payment}.</span>
+            </p>
 
             {/* Description */}
             {product.description && (
@@ -484,6 +488,10 @@ const MobileProductView = () => {
                     </button>
                   ))}
                 </div>
+                {modelDetails && <p className="mt-3 text-xs text-[#8a8a8d]">{modelDetails}</p>}
+                <a href={CONTACT.phoneHref} className="mt-3 inline-flex min-h-[44px] items-center text-xs text-[#d8d4cc] underline decoration-[#c9a96e]/60 underline-offset-4">
+                  O‘lchamda ikkilanyapsizmi? Stilistga qo‘ng‘iroq qiling
+                </a>
               </div>
             )}
 

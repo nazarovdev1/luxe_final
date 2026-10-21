@@ -120,7 +120,9 @@ const AllProducts = () => {
   const sortedProducts = useMemo(() => {
     const productScore = (product) => {
       const badge = (product.badge || '').toUpperCase();
-      return (product.rating || 0) * 100 + (badge === 'BESTSELLER' ? 30 : badge === 'NEW' ? 20 : 10);
+      // Ratings count only when backed by reviews; a legacy BESTSELLER badge earns nothing.
+      const rated = Number(product.numOfReviews) > 0 ? Number(product.rating) || 0 : 0;
+      return rated * 100 + (badge === 'NEW' ? 20 : 10);
     };
     const list = [...filteredProducts];
     switch (sortBy) {

@@ -6,7 +6,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useProducts } from '../../contexts/ProductContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { CONTACT, getPolicyCopy } from '../../config/policies';
+import { CONTACT, RETURN_DAYS, getPolicyCopy } from '../../config/policies';
 import useProductService from '../../server/server';
 import toast from 'react-hot-toast';
 import {
@@ -157,10 +157,10 @@ const MobileProfile = () => {
     ];
 
     const faqItems = [
-        { q: 'Yetkazib berish qancha vaqt oladi?', a: 'Toshkent bo\'ylab 2-3 Soat, viloyatlarga hozircha mavjud emas' },
-        { q: 'To\'lov qanday amalga oshiriladi?', a: 'Naqd pul, plastik karta yoki Click/Payme orqali to\'lov tez orada mavjud bo\'ladi' },
-        { q: 'Mahsulotni qaytarish mumkinmi?', a: 'Ha, sifat muammosi bo\'lsa 14 kun ichida qaytarish mumkin.' },
-        { q: 'Chegirmalar bo\'ladimi?', a: 'Maxsus drop va aksiyalar doimiy ravishda yangilanib boriladi.' },
+        { q: 'Yetkazib berish qancha vaqt oladi?', a: 'Toshkent bo\'ylab buyurtma kuni, bepul. Viloyatlarga hozircha yetkazmaymiz.' },
+        { q: 'To\'lov qanday amalga oshiriladi?', a: 'Kuryer olib kelganda kiyib ko\'rasiz va yoqqanini naqd to\'laysiz.' },
+        { q: 'Mahsulotni qaytarish mumkinmi?', a: `Ha, ${RETURN_DAYS} kun ichida, asl ko'rinishida bo'lsa qaytarish yoki almashtirish mumkin.` },
+        { q: 'O\'lcham to\'g\'ri kelmasa-chi?', a: "Kuryer oldida kiyib ko'rasiz: to'g'ri kelmasa olmaysiz. Tanlashda ikkilansangiz, qo'ng'iroq qiling: stilist o'lcham bo'yicha maslahat beradi." },
     ];
 
     const BackButton = () => (
