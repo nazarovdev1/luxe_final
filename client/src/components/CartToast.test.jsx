@@ -18,7 +18,7 @@ describe('CartToast', () => {
       />,
     );
 
-    expect(screen.getByText('SAVAT')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText("Savatga qo'shildi")).toBeInTheDocument();
     expect(screen.getByText('Bordo Elegant Blazer')).toBeInTheDocument();
     expect(screen.getByText('2 dona')).toBeInTheDocument();
