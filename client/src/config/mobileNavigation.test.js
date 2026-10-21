@@ -9,8 +9,12 @@ describe('mobile navigation route state', () => {
     ['/mobile/', 'home'],
     ['/mobile/products', 'shop'],
     ['/mobile/bundles', 'shop'],
-    ['/mobile/lookbooks', 'looks'],
-    ['/mobile/lookbooks/abc', 'looks'],
+    ['/mobile/events', 'explore'],
+    ['/mobile/lookbooks', 'explore'],
+    ['/mobile/vip-club', 'explore'],
+    ['/mobile/live', 'explore'],
+    ['/mobile/style-feed', 'explore'],
+    ['/mobile/blog/a-premium-look', 'explore'],
     ['/mobile/cart', 'cart'],
     ['/mobile/profile', 'profile'],
     ['/mobile/orders', 'profile'],
@@ -20,12 +24,9 @@ describe('mobile navigation route state', () => {
     expect(getActiveMobileNavId(pathname)).toBe(expectedId);
   });
 
-  test.each(['/mobile/admin', '/mobile/events', '/mobile/live', '/mobile/reels', '/mobile/blog/a-premium-look'])(
-    '%s has no tab (hidden from the menu)',
-    (pathname) => {
-      expect(getActiveMobileNavId(pathname)).toBeNull();
-    },
-  );
+  test('unknown mobile routes do not force an active tab', () => {
+    expect(getActiveMobileNavId('/mobile/admin')).toBeNull();
+  });
 });
 
 describe('mobile navigation visibility', () => {

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ArrowUpRight, X } from 'lucide-react';
 import { useProducts } from '../contexts/ProductContext';
@@ -131,8 +131,6 @@ const SearchModal = ({ isOpen, onClose }) => {
   const { language } = useLanguage();
   const w = WORDS[language] || WORDS.uz;
   const navigate = useNavigate();
-  // The same panel serves the phone app, whose routes live under /mobile.
-  const base = useLocation().pathname.startsWith('/mobile') ? '/mobile' : '';
 
   const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState('');
@@ -227,13 +225,13 @@ const SearchModal = ({ isOpen, onClose }) => {
 
   const openProduct = (product) => {
     remember(query);
-    navigate(`${base}/product/${productId(product)}`);
+    navigate(`/product/${productId(product)}`);
     onClose();
   };
 
   const openAll = () => {
     remember(query);
-    navigate(query.trim() ? `${base}/products?q=${encodeURIComponent(query.trim())}` : `${base}/products`);
+    navigate(query.trim() ? `/products?q=${encodeURIComponent(query.trim())}` : '/products');
     onClose();
   };
 

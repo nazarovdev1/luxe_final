@@ -1,7 +1,7 @@
 import React from 'react';
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
@@ -12,10 +12,25 @@ vi.mock('../../contexts/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('../../contexts/CartContext', () => ({ useCart: vi.fn() }));
 vi.mock('../../contexts/LanguageContext', () => ({ useLanguage: vi.fn() }));
 
-const renderNavbar = ({ route = '/mobile', isAuthenticated = false, totalItems = 0 } = {}) => {
+const setLanguage = vi.fn();
+
+const renderNavbar = ({
+  route = '/mobile',
+  isAuthenticated = false,
+  totalItems = 0,
+} = {}) => {
   useAuth.mockReturnValue({ isAuthenticated });
   useCart.mockReturnValue({ totalItems });
-  useLanguage.mockReturnValue({ t: (_key, fallback) => fallback, language: 'uz' });
+  useLanguage.mockReturnValue({
+    t: (_key, fallback) => fallback,
+    language: 'uz',
+    setLanguage,
+    availableLanguages: [
+      { code: 'uz', label: 'UZ' },
+      { code: 'ru', label: 'RU' },
+      { code: 'en', label: 'EN' },
+    ],
+  });
 
   return render(
     <MemoryRouter initialEntries={[route]}>
@@ -26,21 +41,18 @@ const renderNavbar = ({ route = '/mobile', isAuthenticated = false, totalItems =
 
 describe('MobileNavbar', () => {
   test.each([
-    ['/mobile', 'Asosiy'],
-    ['/mobile/products', 'Katalog'],
-    ['/mobile/lookbooks', 'Looklar'],
-    ['/mobile/cart', 'Savat'],
-    ['/mobile/profile', 'Profil'],
-  ])('marks %s as the current tab', (route, label) => {
+    ['/mobile', 'Asosiy', '0'],
+    ['/mobile/products', "Do'kon", '1'],
+    ['/mobile/events', 'Kashf et', '2'],
+    ['/mobile/cart', 'Savat', '3'],
+    ['/mobile/profile', 'Profil', '4'],
+  ])('moves the active capsule for %s', (route, label, index) => {
     const { container } = renderNavbar({ route });
-    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page');
-    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
-  });
 
-  test('experimental pages have no tab and mark nothing as current', () => {
-    const { container } = renderNavbar({ route: '/mobile/events' });
-    expect(screen.queryByRole('link', { name: 'Kashf et' })).not.toBeInTheDocument();
-    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(0);
+    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page');
+    expect(container.querySelector('.mobile-bottom-nav__pill')).toHaveStyle(`--active-index: ${index}`);
+    expect(container.querySelector('.mobile-bottom-nav__indicator')).toHaveClass('mobile-bottom-nav__indicator--visible');
+    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
   });
 
   test('routes guests to login and authenticated users to profile', () => {
@@ -59,8 +71,25 @@ describe('MobileNavbar', () => {
     [10, '9+'],
   ])('renders cart count %s as %s', (totalItems, expected) => {
     const { container } = renderNavbar({ totalItems });
-    const badge = container.querySelector('.m-nav__badge');
-    if (expected === null) expect(badge).not.toBeInTheDocument();
-    else expect(badge).toHaveTextContent(expected);
+    const badge = container.querySelector('.mobile-bottom-nav__badge');
+
+    if (expected === null) {
+      expect(badge).not.toBeInTheDocument();
+    } else {
+      expect(badge).toHaveTextContent(expected);
+    }
+  });
+
+  test('opens the detached language menu and changes language', () => {
+    renderNavbar();
+    const trigger = screen.getByRole('button', { name: "Tilni o'zgartirish" });
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'RU' }));
+    expect(setLanguage).toHaveBeenCalledWith('ru');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

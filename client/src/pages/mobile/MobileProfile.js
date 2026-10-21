@@ -1,1 +1,466 @@
-export { default } from '../../mobile/pages/Profile';
+import React, { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
+import { useProducts } from '../../contexts/ProductContext';
+import { useNotifications } from '../../contexts/NotificationContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { CONTACT, getPolicyCopy } from '../../config/policies';
+import useProductService from '../../server/server';
+import toast from 'react-hot-toast';
+import {
+    ShoppingBag,
+    Phone,
+    HelpCircle,
+    Info,
+    LogOut,
+    ChevronRight,
+    ArrowLeft,
+    Mail,
+    Gift,
+    MessageSquare,
+    Globe,
+    Star,
+    Heart,
+    Bell,
+    Shield,
+    FileText,
+    LayoutDashboard,
+    Gem,
+    Crown,
+    Leaf,
+    Radio,
+    Camera,
+    Swords,
+    Clock,
+    Play,
+} from 'lucide-react';
+import LoginForm from '../../components/LoginForm';
+import MyGiftCards from '../../components/MyGiftCards';
+import { eventNavItems, resolveNavLabel } from '../../config/navigation';
+
+const formatMoney = (value) => {
+    if (typeof value === 'string') {
+        return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString();
+    }
+    return (Number(value || 0) || 0).toLocaleString();
+};
+
+const EVENT_ICONS = {
+    Camera,
+    Crown,
+    Gift,
+    Leaf,
+    MessageSquare,
+    Play,
+    Radio,
+    Swords,
+};
+
+const MobileProfile = () => {
+    const { t, language } = useLanguage();
+    const { isAuthenticated, user, logout } = useAuth();
+    const { favorites, toggleFavorite } = useFavorites();
+    const { products } = useProducts();
+    const { notificationPermission, enableNotifications, isSupported } = useNotifications();
+    const navigate = useNavigate();
+    const { getMyOrders } = useProductService();
+
+    const [activeSection, setActiveSection] = useState(null);
+    const [orders, setOrders] = useState([]);
+
+    const savedProducts = useMemo(
+        () => products.filter((product) => favorites.includes(product.id)),
+        [products, favorites]
+    );
+
+    const [points, setPoints] = useState(null);
+
+    const fetchOrdersAndPoints = async () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const [ordersRes, pointsRes] = await Promise.all([
+                    getMyOrders(token),
+                    axios.get('/api/points', config)
+                ]);
+
+                if (ordersRes.success) setOrders(ordersRes.data || []);
+                if (pointsRes.data.success) setPoints(pointsRes.data.points);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchOrdersAndPoints();
+        }
+    }, [isAuthenticated]);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/mobile');
+    };
+
+    const handleMenuSelect = (item) => {
+        if (item.isLink) {
+            navigate(item.linkTo);
+            return;
+        }
+
+        if (item.isNotification) {
+            if (!isSupported) {
+                toast.error(t('mobileProfile.notif_not_supported'));
+                return;
+            }
+
+            if (notificationPermission === 'granted') {
+                toast.success(t('mobileProfile.notif_already_on'));
+            } else {
+                enableNotifications();
+            }
+            return;
+        }
+
+        setActiveSection(item.id);
+    };
+
+    if (!isAuthenticated) {
+        return <LoginForm />;
+    }
+
+    const platformItems = eventNavItems.map((item) => ({
+        id: item.id,
+        label: resolveNavLabel(item, t),
+        icon: EVENT_ICONS[item.icon] || Gem,
+        subtitle: item.subtitle,
+        isLink: true,
+        linkTo: item.mobilePath,
+        color: item.color,
+    }));
+
+    const menuItems = [
+        { id: 'orders', label: t('profile.myOrders'), icon: ShoppingBag, subtitle: t('profile.orderHistory'), isLink: true, linkTo: '/mobile/orders' },
+        { id: 'saved', label: t('profile.saved'), icon: Heart, subtitle: 'Wishlist', count: favorites.length },
+        ...platformItems,
+        { id: 'notifications', label: t('mobileProfile.notifications'), icon: Bell, subtitle: t('mobileProfile.push_status'), isNotification: true },
+        { id: 'contact', label: t('mobileProfile.contact'), icon: Phone, subtitle: t('mobileProfile.contact_subtitle') },
+        { id: 'faq', label: t('mobileProfile.faq'), icon: HelpCircle, subtitle: t('mobileProfile.faq_subtitle') },
+        { id: 'my-gift-cards', label: t('mobileProfile.my_gift_cards'), icon: Gift, subtitle: t('mobileProfile.my_gift_cards_sub') },
+        { id: 'about', label: t('mobileProfile.about'), icon: Info, subtitle: t('mobileProfile.about_sub') },
+        { id: 'privacy', label: t('mobileProfile.privacy'), icon: Shield, subtitle: t('mobileProfile.privacy_sub'), isLink: true, linkTo: '/mobile/privacy-policy' },
+        { id: 'terms', label: t('mobileProfile.terms'), icon: FileText, subtitle: t('mobileProfile.terms_sub'), isLink: true, linkTo: '/mobile/terms' },
+    ];
+
+    const faqItems = [
+        { q: 'Yetkazib berish qancha vaqt oladi?', a: 'Toshkent bo\'ylab 2-3 Soat, viloyatlarga hozircha mavjud emas' },
+        { q: 'To\'lov qanday amalga oshiriladi?', a: 'Naqd pul, plastik karta yoki Click/Payme orqali to\'lov tez orada mavjud bo\'ladi' },
+        { q: 'Mahsulotni qaytarish mumkinmi?', a: 'Ha, sifat muammosi bo\'lsa 14 kun ichida qaytarish mumkin.' },
+        { q: 'Chegirmalar bo\'ladimi?', a: 'Maxsus drop va aksiyalar doimiy ravishda yangilanib boriladi.' },
+    ];
+
+    const BackButton = () => (
+        <button
+            onClick={() => setActiveSection(null)}
+            className="mb-4 inline-flex items-center gap-2 rounded-xl bg-white/5 border border-white/5 px-3 py-2 text-sm text-gray-400 hover:bg-white/10 transition-colors"
+        >
+            <ArrowLeft className="h-4 w-4" />
+            {t('mobileProfile.back')}
+        </button>
+    );
+
+    if (!activeSection) {
+        return (
+            <div className="relative min-h-screen overflow-x-hidden bg-black pb-24">
+                <div className="pointer-events-none fixed inset-0 z-0">
+                    {/* Background blobs removed for neutral look */}
+                </div>
+
+                <div className="relative z-10 px-4 pt-5">
+                    <section className="rounded-[26px] bg-[#0f0f0f]/80 backdrop-blur-xl border border-white/10 p-5 shadow-2xl">
+                        <div className="flex items-center gap-4">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-2xl font-semibold text-white">
+                                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{t('mobileProfile.atelier_account')}</p>
+                                <h1 className="text-xl font-semibold text-white">{user?.username || t('profile.userFallback')}</h1>
+                                <p className="text-sm text-gray-400">{user?.phone || t('profile.phoneUnavailable')}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-3 gap-2">
+                            <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('profile.orders')}</p>
+                                <p className="mt-1 text-sm font-semibold text-white">{orders.length}</p>
+                            </div>
+                            <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('mobileProfile.balance')}</p>
+                                <p className="mt-1 text-sm font-semibold text-amber-300">{points?.balance?.toLocaleString() || 0}</p>
+                            </div>
+                            <div className="rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 p-2.5 text-center">
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-[#d6b47c]">{t('mobileProfile.level')}</p>
+                                <p className="mt-1 text-[11px] font-black text-white uppercase">{points?.level || 'Bronze'}</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {user?.isAdmin && (
+                        <button
+                            onClick={() => navigate('/mobile/admin')}
+                            className="mt-4 flex w-full items-center justify-between rounded-2xl bg-[#0f0f0f] border border-white/10 p-4 shadow-lg"
+                        >
+                            <div className="flex items-center gap-3">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                                    <LayoutDashboard className="h-5 w-5 text-white" />
+                                </span>
+                                <div className="text-left">
+                                    <p className="text-sm font-semibold text-white">{t('mobileProfile.admin_panel')}</p>
+                                    <p className="text-xs text-gray-400">{t('profile.adminCenter')}</p>
+                                </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-gray-500" />
+                        </button>
+                    )}
+
+                    <div className="mt-4 space-y-2.5">
+                        {/* Platform Features Section */}
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1">{t('mobileProfile.platform')}</p>
+                        {menuItems.filter(i => i.color).map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => handleMenuSelect(item)}
+                                className="flex w-full items-center justify-between rounded-2xl bg-[#0f0f0f]/80 backdrop-blur-md border border-white/5 px-4 py-3.5 text-left hover:bg-white/5 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${item.color}15` }}>
+                                        <item.icon className="h-4 w-4" style={{ color: item.color }} />
+                                    </span>
+                                    <div>
+                                        <p className="text-sm font-medium text-white">{item.label}</p>
+                                        <p className="text-xs text-gray-500">{item.subtitle}</p>
+                                    </div>
+                                </div>
+                                <ChevronRight className="h-4 w-4 text-gray-600" />
+                            </button>
+                        ))}
+
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1 pt-2">{t('mobileProfile.account')}</p>
+                        {menuItems.filter(i => !i.color).map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => handleMenuSelect(item)}
+                                className="flex w-full items-center justify-between rounded-2xl bg-[#0f0f0f]/80 backdrop-blur-md border border-white/5 px-4 py-3.5 text-left hover:bg-white/5 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                                        <item.icon className="h-4 w-4 text-white" />
+                                    </span>
+                                    <div>
+                                        <p className="text-sm font-medium text-white">{item.label}</p>
+                                        <p className="text-xs text-gray-500">{item.subtitle}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {item.count > 0 && (
+                                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white">
+                                            {item.count}
+                                        </span>
+                                    )}
+                                    {item.isNotification && notificationPermission === 'granted' && (
+                                        <span className="rounded-full bg-[#1f3b2d] px-2 py-0.5 text-[10px] text-[#7ce0a4]">
+                                            {t('mobileProfile.on')}
+                                        </span>
+                                    )}
+                                    <ChevronRight className="h-4 w-4 text-gray-600" />
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={handleLogout}
+                        className="mt-5 flex w-full items-center justify-between rounded-2xl bg-[#0f0f0f] border border-white/5 px-4 py-3.5"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10">
+                                <LogOut className="h-4 w-4 text-red-400" />
+                            </span>
+                            <span className="text-sm font-medium text-red-400">{t('mobileProfile.logout')}</span>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-red-400/50" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (activeSection === 'saved') {
+        return (
+            <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
+                <BackButton />
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.saved_title')}</h2>
+
+                {savedProducts.length === 0 ? (
+                    <div className="rounded-3xl bg-[#0f0f0f] border border-white/10 p-8 text-center">
+                        <Heart className="mx-auto h-12 w-12 text-gray-600" />
+                        <p className="mt-3 text-white">{t('mobileProfile.saved_empty')}</p>
+                        <button
+                            onClick={() => navigate('/mobile/products')}
+                            className="mt-4 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black"
+                        >
+                            {t('mobileProfile.saved_view_products')}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                        {savedProducts.map((product) => (
+                            <Link
+                                key={product.id}
+                                to={`/mobile/product/${product.id}`}
+                                className="overflow-hidden rounded-2xl bg-[#0f0f0f] border border-white/5 p-2"
+                            >
+                                <div className="relative aspect-[3/4] overflow-hidden rounded-xl">
+                                    <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            toggleFavorite(product.id);
+                                        }}
+                                        className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg"
+                                    >
+                                        <Heart className="h-4 w-4 fill-current" />
+                                    </button>
+                                </div>
+                                <div className="p-2.5">
+                                    <h3 className="line-clamp-1 text-sm font-medium text-white">{product.name}</h3>
+                                    <p className="mt-1 text-sm font-semibold text-white">
+                                        {formatMoney(product.price)} {t('common.sum')}
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (activeSection === 'contact') {
+        return (
+            <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
+                <BackButton />
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.contact_title')}</h2>
+
+                <div className="space-y-3">
+                    <a href={CONTACT.phoneHref} className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1f3b2d]">
+                            <Phone className="h-5 w-5 text-[#7ce0a4]" />
+                        </span>
+                        <div>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_phone')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_phone_value')}</p>
+                        </div>
+                    </a>
+
+                    <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2a3044]">
+                            <Mail className="h-5 w-5 text-[#c7ceda]" />
+                        </span>
+                        <div>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_email')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_email_value')}</p>
+                        </div>
+                    </a>
+
+                    <div className="flex items-center gap-3 rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#2f2d26]">
+                            <Clock className="h-5 w-5 text-[#e8cb95]" />
+                        </span>
+                        <div>
+                            <p className="text-sm font-medium text-white">{t('mobileProfile.contact_hours')}</p>
+                            <p className="text-xs text-gray-400">{t('mobileProfile.contact_hours_value')}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (activeSection === 'my-gift-cards') {
+        return (
+            <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
+                <BackButton />
+                <h2 className="mb-4 text-xl font-semibold text-white">{t('mobileProfile.my_gift_cards')}</h2>
+                <MyGiftCards />
+            </div>
+        );
+    }
+
+    if (activeSection === 'faq') {
+        return (
+            <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
+                <BackButton />
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.faq')}</h2>
+                <div className="space-y-3">
+                    {faqItems.map((item, idx) => (
+                        <div key={idx} className="rounded-2xl bg-[#0f0f0f] border border-white/5 p-4">
+                            <h3 className="text-sm font-semibold text-white">{item.q}</h3>
+                            <p className="mt-2 text-sm leading-relaxed text-gray-400">{item.a}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (activeSection === 'about') {
+        return (
+            <div className="min-h-screen overflow-x-hidden bg-black pb-24 px-4 pt-4">
+                <BackButton />
+                <h2 className="mb-3 text-xl font-semibold text-white">{t('mobileProfile.about_title')}</h2>
+                <div className="rounded-[26px] bg-[#0f0f0f] border border-white/5 p-6 shadow-lg">
+                    <div className="mb-5 flex items-center gap-3">
+                        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+                            <Star className="h-7 w-7 text-white" />
+                        </span>
+                        <div>
+                            <h3 className="text-xl font-semibold text-white">{t('mobileProfile.about_brand')}</h3>
+                            <p className="text-xs uppercase tracking-[0.16em] text-gray-500">{t('mobileProfile.about_tag')}</p>
+                        </div>
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-gray-300">
+                        {t('mobileProfile.about_description')}
+                    </p>
+
+                    <div className="mt-5 grid grid-cols-3 gap-2">
+                        {getPolicyCopy(language).facts.map(([value, label]) => (
+                            <div key={label} className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
+                                <p className="text-sm font-semibold text-white">{value}</p>
+                                <p className="text-[11px] text-gray-400">{label}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-5 rounded-2xl bg-white/5 border border-white/5 p-4">
+                        <p className="text-sm text-white">{t('mobileProfile.about_quote')}</p>
+                        <span className="mt-2 inline-flex items-center gap-1 text-xs text-gray-400">
+                            <Gem className="h-3.5 w-3.5" />
+                            {t('mobileProfile.about_manifest')}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
+};
+
+export default MobileProfile;

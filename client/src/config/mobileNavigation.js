@@ -7,10 +7,20 @@ export const MOBILE_NAV_ROUTE_GROUPS = {
     exact: ['/mobile/products', '/mobile/bundles'],
     prefixes: ['/mobile/bundles/'],
   },
-  // Experimental pages (events, live, reels, challenges…) stay reachable by link but have no tab.
-  looks: {
+  explore: {
     exact: [],
-    prefixes: ['/mobile/lookbooks'],
+    prefixes: [
+      '/mobile/events',
+      '/mobile/lookbooks',
+      '/mobile/vip-club',
+      '/mobile/eco-impact',
+      '/mobile/live',
+      '/mobile/style-feed',
+      '/mobile/challenges',
+      '/mobile/reels',
+      '/mobile/gift-cards',
+      '/mobile/blog',
+    ],
   },
   cart: {
     exact: ['/mobile/cart'],
@@ -25,8 +35,6 @@ export const MOBILE_NAV_ROUTE_GROUPS = {
       '/mobile/register',
       '/mobile/privacy-policy',
       '/mobile/terms',
-      '/mobile/about',
-      '/mobile/contact',
     ],
   },
 };

@@ -33,19 +33,9 @@ const InstallPrompt = ({ isInstallable, onInstall }) => {
       }
     }
 
-    // A first-time visitor came to look at clothes, not to install an app: ask only from the
-    // second visit on, and only after she has spent a while on the page.
-    let visits = 1
-    try {
-      if (!sessionStorage.getItem('luxx_visit_counted')) {
-        sessionStorage.setItem('luxx_visit_counted', '1')
-        localStorage.setItem('luxx_visits', String(Number(localStorage.getItem('luxx_visits') || 0) + 1))
-      }
-      visits = Number(localStorage.getItem('luxx_visits') || 1)
-    } catch { /* storage unavailable: treat as a first visit */ }
-    if (visits < 2 && !isTestMode) return undefined
-
-    const revealDelay = isMobilePath ? 20000 : 12000
+    // Keep the desktop maison's opening choreography unobstructed; mobile retains
+    // the shorter install invitation because its experience is intentionally app-led.
+    const revealDelay = isMobilePath ? 3000 : 12000
     const timer = window.setTimeout(() => setShow(true), revealDelay)
     return () => window.clearTimeout(timer)
   }, [isInstallable, isIOS, isMobilePath])
