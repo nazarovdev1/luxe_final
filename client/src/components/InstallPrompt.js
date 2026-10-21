@@ -104,10 +104,20 @@ const InstallPrompt = ({ isInstallable, onInstall }) => {
           </ol>
 
           {isIOS ? (
-            <p className="luxx-install__ios">
-              Safari’da <Share size={14} strokeWidth={1.6} aria-hidden="true" /> <strong>Ulashish</strong>,
-              so‘ng <strong>Bosh ekranga qo‘shish</strong> bandini tanlang.
-            </p>
+            <div className="luxx-install__ios">
+              <p className="luxx-install__ios-title">Safari’da o‘rnatish</p>
+              <ol>
+                <li>
+                  <span>1</span>
+                  <p>Pastdagi <strong>Ulashish</strong> tugmasini bosing</p>
+                  <Share size={18} strokeWidth={1.5} aria-hidden="true" />
+                </li>
+                <li>
+                  <span>2</span>
+                  <p><strong>Bosh ekranga qo‘shish</strong> bandini tanlang</p>
+                </li>
+              </ol>
+            </div>
           ) : (
             <button type="button" className="luxx-install__action" onClick={handleInstall}>
               Bosh ekranga qo‘shish

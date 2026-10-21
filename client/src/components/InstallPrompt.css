@@ -113,14 +113,53 @@
 
 .luxx-install__action:active { transform: scale(.985); }
 
-.luxx-install__ios {
-  margin: 20px 0 0;
-  color: var(--install-muted);
-  font-size: 13px;
-  line-height: 1.6;
+.luxx-install__ios { margin-top: 22px; }
+
+.luxx-install__ios-title {
+  margin: 0 0 4px;
+  color: var(--install-gold);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
 }
 
-.luxx-install__ios svg { vertical-align: -2px; color: var(--install-ivory); }
+.luxx-install__ios ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.luxx-install__ios li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--install-rule);
+}
+
+.luxx-install__ios li > span {
+  flex-shrink: 0;
+  width: 18px;
+  color: var(--install-gold);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.luxx-install__ios li > p {
+  flex-grow: 1;
+  margin: 0;
+  color: var(--install-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.luxx-install__ios li > svg {
+  flex-shrink: 0;
+  color: var(--install-ivory);
+}
+
 .luxx-install__ios strong { color: var(--install-ivory); font-weight: 600; }
 
 .luxx-install__close:focus-visible,
