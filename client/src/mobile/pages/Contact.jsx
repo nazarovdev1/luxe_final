@@ -179,7 +179,7 @@ export default function Contact() {
 
       <section className="m-section m-pad">
         <p className="m-kicker">{w.direct}</p>
-        <ul className="mct-rows">
+        <ul className="m-rows mct-rows">
           {rows.map(({ id, icon: Icon, label, value, href, external }) => {
             const body = (
               <>
@@ -191,8 +191,8 @@ export default function Contact() {
             return (
               <li key={id}>
                 {href
-                  ? <a className="mct-row" href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{body}</a>
-                  : <div className="mct-row">{body}</div>}
+                  ? <a className="m-row mct-row" href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{body}</a>
+                  : <div className="m-row mct-row">{body}</div>}
               </li>
             );
           })}
