@@ -107,16 +107,16 @@ export const ProductCard = ({ product, eager = false }) => {
       <span className="m-card__frame">
         <SoftImage src={getImageUrl(product)} alt={product.name} eager={eager} />
         {tag && <span className="m-card__tag">{labels[tag]}</span>}
+        <button
+          type="button"
+          className={`m-card__fav ${fav ? 'is-on' : ''}`}
+          aria-label="Sevimli"
+          aria-pressed={Boolean(fav)}
+          onClick={(event) => { event.preventDefault(); event.stopPropagation(); toggleFavorite?.(id); }}
+        >
+          <Heart className="h-[17px] w-[17px]" strokeWidth={1.6} fill={fav ? 'currentColor' : 'none'} />
+        </button>
       </span>
-      <button
-        type="button"
-        className={`m-card__fav ${fav ? 'is-on' : ''}`}
-        aria-label="Sevimli"
-        aria-pressed={Boolean(fav)}
-        onClick={(event) => { event.preventDefault(); event.stopPropagation(); toggleFavorite?.(id); }}
-      >
-        <Heart className="h-[18px] w-[18px]" strokeWidth={1.6} fill={fav ? 'currentColor' : 'none'} />
-      </button>
       <span className="m-card__meta">
         {product.brand && <span className="m-card__brand">{product.brand}</span>}
         <span className="m-card__name">{product.name}</span>
@@ -128,7 +128,7 @@ export const ProductCard = ({ product, eager = false }) => {
 
 export const CardSkeleton = () => (
   <div aria-hidden="true">
-    <div className="m-skel" style={{ aspectRatio: '3 / 4' }} />
+    <div className="m-skel" style={{ aspectRatio: '3 / 4.3', borderRadius: 'var(--m-arch-sm)' }} />
     <div className="m-skel m-skel--line" style={{ width: '80%' }} />
     <div className="m-skel m-skel--line" style={{ width: '45%' }} />
   </div>

@@ -667,7 +667,7 @@ const MobileCheckout = () => {
                             <Suspense fallback={<div className="m-skel" style={{ height: '100%' }} />}>
                                 <CheckoutMap
                                     className="z-0 h-full w-full"
-                                    style={{ background: '#1a1310' }}
+                                    style={{ background: '#3a1620' }}
                                     position={formData.location}
                                     onPositionChange={(pos) => setFormData((prev) => ({ ...prev, location: pos }))}
                                 />

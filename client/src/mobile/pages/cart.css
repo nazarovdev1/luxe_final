@@ -1,23 +1,23 @@
 /* Mobile bag */
 .mk-list { margin: 0; padding-top: 8px; list-style: none; }
 .mk-item { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--m-line-soft); }
-.mk-item__img { display: block; aspect-ratio: 3 / 4; overflow: hidden; background: var(--m-bg-2); }
+.mk-item__img { display: block; aspect-ratio: 3 / 4.2; overflow: hidden; border-radius: 46px 46px 12px 12px; background: var(--m-bg-2); }
 .mk-item__img img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .mk-item__body { display: grid; align-content: start; gap: 6px; min-width: 0; padding-right: 30px; }
 .mk-item__name { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font: 400 16px/1.3 var(--m-serif); }
 .mk-item__meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--m-mute); }
 .mk-dot { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--m-line); border-radius: 50%; }
 .mk-item__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
-.mk-item__sum { font: 600 13px/1 var(--m-sans); white-space: nowrap; }
+.mk-item__sum { font: 400 14px/1 var(--m-sans); color: var(--m-gold); white-space: nowrap; }
 .mk-remove { position: absolute; top: 16px; right: -8px; display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: none; color: var(--m-faint); cursor: pointer; }
-.mk-qty { display: inline-flex; align-items: center; border: 1px solid var(--m-line-soft); }
+.mk-qty { display: inline-flex; align-items: center; border: 1px solid rgba(246, 228, 220, .2); border-radius: 999px; }
 .mk-qty button { display: grid; place-items: center; width: 36px; height: 36px; border: 0; background: none; color: var(--m-ink); cursor: pointer; }
 .mk-qty button:disabled { color: var(--m-faint); }
 .mk-qty span { min-width: 26px; text-align: center; font: 600 13px/1 var(--m-sans); }
 
 .mk-item--look { grid-template-columns: 92px 1fr; }
 .mk-look__thumbs { position: relative; aspect-ratio: 3 / 4; }
-.mk-look__thumbs img { position: absolute; width: 70%; aspect-ratio: 3 / 4; object-fit: cover; border: 2px solid var(--m-bg); }
+.mk-look__thumbs img { position: absolute; width: 70%; aspect-ratio: 3 / 4; object-fit: cover; border: 2px solid var(--m-bg); border-radius: 30px 30px 10px 10px; }
 .mk-look__thumbs img:nth-child(1) { left: 0; top: 0; z-index: 3; }
 .mk-look__thumbs img:nth-child(2) { left: 15%; top: 10%; z-index: 2; }
 .mk-look__thumbs img:nth-child(3) { left: 30%; top: 20%; z-index: 1; }

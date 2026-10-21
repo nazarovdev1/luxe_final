@@ -29,6 +29,7 @@ const WORDS = {
     sizeGuide: "O'lcham jadvali",
     add: "Savatga qo'shish",
     adding: "Qo'shilmoqda",
+    added: 'Savatda ✓',
     soldOut: 'Tugagan',
     few: (n) => `Faqat ${n} ta qoldi`,
     pickColor: 'Rangni tanlang',
@@ -54,6 +55,7 @@ const WORDS = {
     sizeGuide: 'Таблица размеров',
     add: 'В корзину',
     adding: 'Добавляем',
+    added: 'В корзине ✓',
     soldOut: 'Нет в наличии',
     few: (n) => `Осталось ${n} шт.`,
     pickColor: 'Выберите цвет',
@@ -79,6 +81,7 @@ const WORDS = {
     sizeGuide: 'Size guide',
     add: 'Add to bag',
     adding: 'Adding',
+    added: 'In your bag ✓',
     soldOut: 'Sold out',
     few: (n) => `Only ${n} left`,
     pickColor: 'Choose a colour',
@@ -132,6 +135,7 @@ export default function Product() {
   const [color, setColor] = useState('');
   const [size, setSize] = useState('');
   const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
   const [slide, setSlide] = useState(0);
   const [viewer, setViewer] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -204,7 +208,8 @@ export default function Product() {
 
   const onGalleryScroll = (event) => {
     const el = event.currentTarget;
-    setSlide(Math.round(el.scrollLeft / el.clientWidth));
+    const slideWidth = el.firstElementChild ? el.firstElementChild.clientWidth + 12 : el.clientWidth;
+    setSlide(Math.round(el.scrollLeft / slideWidth));
   };
 
   const share = async () => {
@@ -224,6 +229,8 @@ export default function Product() {
       await addToCart(product, color, size, 1, variant);
       trackEvent('add_to_cart', productAnalyticsPayload(product, { item_variant: variant?.sku || [color, size].filter(Boolean).join(' / '), quantity: 1 }));
       showCartToast({ itemName: product.name, quantity: 1 });
+      setAdded(true);
+      window.setTimeout(() => setAdded(false), 2200);
     } catch {
       toast.error(w.error);
     } finally {
@@ -232,7 +239,7 @@ export default function Product() {
   };
 
   return (
-    <div className="m-page--bare mp">
+    <div className="m-page--bare mp m-reveal">
       <SEO
         title={product.name}
         description={product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari.`}
@@ -402,8 +409,8 @@ export default function Product() {
           <small>{product.brand || 'Luxx'}</small>
           <strong>{money(product.price, language)}</strong>
         </div>
-        <button type="button" className={`m-btn m-btn--solid ${adding ? 'is-busy' : ''}`} onClick={add} disabled={adding || !inStock}>
-          {!inStock ? w.soldOut : adding ? w.adding : w.add}
+        <button type="button" className={`m-btn m-btn--solid ${adding ? 'is-busy' : ''} ${added ? 'is-done' : ''}`} onClick={add} disabled={adding || !inStock}>
+          {!inStock ? w.soldOut : adding ? w.adding : added ? w.added : w.add}
         </button>
       </div>
 

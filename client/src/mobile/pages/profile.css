@@ -7,15 +7,16 @@
   width: 68px;
   height: 68px;
   border: 1px solid var(--m-gold);
-  font: italic 400 34px/1 var(--m-serif);
+  font: 400 34px/1 var(--m-serif);
+  border-radius: 50%;
   color: var(--m-gold);
 }
 .mpf-id .m-h2 { margin-top: 8px; font-size: 26px; }
 .mpf-id .m-small { margin: 4px 0 0; }
-.mpf-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 26px 0 0; padding-top: 0; padding-bottom: 0; }
-.mpf-stats div { display: grid; gap: 6px; padding: 16px 8px; text-align: center; border-top: 1px solid var(--m-line-soft); border-bottom: 1px solid var(--m-line-soft); border-right: 1px solid var(--m-line-soft); }
-.mpf-stats div:last-child { border-right: 0; }
-.mpf-stats dt { font: 600 9px/1 var(--m-sans); letter-spacing: .2em; text-transform: uppercase; color: var(--m-faint); }
+.mpf-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 26px 0 0; padding-top: 0; padding-bottom: 0; }
+.mpf-stats div { display: grid; gap: 6px; padding: 16px 8px; text-align: center; border-radius: 18px; background: rgba(246, 228, 220, .05); }
+
+.mpf-stats dt { font: 400 11px/1 var(--m-sans); color: var(--m-blush); }
 .mpf-stats dd { margin: 0; font: 400 20px/1 var(--m-serif); }
 .mpf-menu { margin-top: 28px; }
 .mpf-menu .m-acc summary svg { transform: none; }

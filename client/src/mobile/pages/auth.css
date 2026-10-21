@@ -14,7 +14,7 @@
 .ma-password { position: relative; }
 .ma-password .m-field__input { padding-right: 44px; }
 .ma-password .m-icon-btn { position: absolute; right: -10px; bottom: 2px; color: var(--m-mute); }
-.ma-error { margin: 0; font: italic 400 14px/1.4 var(--m-serif); color: var(--m-danger); }
+.ma-error { margin: 0; font: 400 13.5px/1.4 var(--m-sans); color: var(--m-danger); }
 .ma-or { display: flex; align-items: center; gap: 14px; margin: 28px 0 18px; font: 600 9.5px/1 var(--m-sans); letter-spacing: .24em; text-transform: uppercase; color: var(--m-faint); }
 .ma-or::before, .ma-or::after { content: ''; flex: 1; height: 1px; background: var(--m-line-soft); }
 .ma-telegram { display: flex; justify-content: center; min-height: 44px; }
