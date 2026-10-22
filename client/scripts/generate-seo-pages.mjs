@@ -15,6 +15,7 @@ const staticPages = [
   ['/about', 'Luxx.uz haqida | Premium ayollar modasi', "Luxx.uz brendi, sifat standartlari va O'zbekiston ayollari uchun yaratilgan premium fashion kolleksiyalari haqida."],
   ['/blog', 'Moda va uslub bo‘yicha maslahatlar | Luxx.uz Blog', "Ayollar modasi, kiyim kombinatsiyalari, trendlar, o'lcham tanlash va kiyim parvarishi bo'yicha foydali maqolalar."],
   ['/lookbooks', 'Ayollar uchun tayyor obrazlar va lookbook | Luxx.uz', "Premium ayollar kiyimlaridan tuzilgan tayyor obrazlar, mavsumiy lookbooklar va uslub g'oyalari."],
+  ['/bundles', "Tayyor to'plamlar | Luxx.uz", "Bir-biriga mos kiyimlardan tuzilgan tayyor to'plamlar. Birga olsangiz, alohida olgandan arzonroq."],
   ['/faq', "Buyurtma va yetkazib berish savollari | Luxx.uz", "Luxx.uz buyurtma, to'lov, Toshkent bo'ylab yetkazib berish, o'lcham va qaytarish bo'yicha savollarga javoblar."],
   ['/contact', "Luxx.uz bilan bog'lanish", "Luxx.uz bilan telefon, Telegram yoki sayt orqali bog'laning. Mahsulot, o'lcham va buyurtma bo'yicha yordam oling."],
   ['/gift-cards', "Premium sovg'a kartalari | Luxx.uz", "Yaqinlaringiz uchun Luxx.uz premium fashion sovg'a kartasini tanlang."],

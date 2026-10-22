@@ -35,6 +35,7 @@ router.get('/sitemap.xml', async (req, res) => {
             { url: '/', changefreq: 'daily', priority: '1.0' },
             { url: '/products', changefreq: 'daily', priority: '0.8' },
             { url: '/lookbooks', changefreq: 'weekly', priority: '0.8' },
+            { url: '/bundles', changefreq: 'weekly', priority: '0.8' },
             { url: '/blog', changefreq: 'weekly', priority: '0.8' },
             { url: '/gift-cards', changefreq: 'monthly', priority: '0.6' },
             { url: '/vip-club', changefreq: 'monthly', priority: '0.6' },
