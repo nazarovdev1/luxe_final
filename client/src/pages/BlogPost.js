@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowUpRight, BookOpen, Check, ChevronRight, Copy, Eye, Send, Tag } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookOpen, Check, ChevronRight, Copy, Send, Tag } from 'lucide-react';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
@@ -124,7 +124,6 @@ const BlogPost = () => {
           <div className="article-byline">
             <div className="article-byline__avatar">L</div>
             <span><b>LUXX</b><small>Moda muharririyati</small></span>
-            <span className="article-byline__views"><Eye size={14} /> {blog.viewCount || 0} ko‘rish</span>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Eye, ArrowLeft, Share2, ChevronRight, BookOpen, Tag, Send } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Share2, ChevronRight, BookOpen, Tag, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { sanitizeHtml } from '../../utils/sanitizeHtml';
@@ -176,10 +176,6 @@ const MobileBlogPost = () => {
             <Clock className="w-3 h-3" />
             <span>{blog.readTime} {t('mobileBlogPost.minutesShort')}</span>
           </div>
-          <div className="flex items-center gap-1 text-[#9aa3b2]">
-            <Eye className="w-3 h-3" />
-            <span>{blog.viewCount}</span>
-          </div>
         </div>
 
         {/* Content */}
@@ -200,6 +196,25 @@ const MobileBlogPost = () => {
           "
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
         />
+
+        {/* Share — inline so it never covers the app's bottom navigation */}
+        <div className="mb-8 flex items-center gap-6 border-y border-white/5 py-4 text-xs text-[#9aa3b2]">
+          <span className="uppercase tracking-[0.2em] text-[10px]">Ulashish</span>
+          <button
+            type="button"
+            onClick={() => handleShare('telegram')}
+            className="flex min-h-[44px] items-center gap-2 text-[#f4f1eb]"
+          >
+            <Send className="w-4 h-4" strokeWidth={1.5} /> Telegram
+          </button>
+          <button
+            type="button"
+            onClick={() => handleShare('copy')}
+            className="flex min-h-[44px] items-center gap-2 text-[#f4f1eb]"
+          >
+            <Share2 className="w-4 h-4" strokeWidth={1.5} /> Havola
+          </button>
+        </div>
 
         {/* Image Gallery */}
         {blog.images && blog.images.length > 0 && (
@@ -237,13 +252,12 @@ const MobileBlogPost = () => {
 
         {/* CTA */}
         <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-[#d6b47c]/10 via-[#11131e]/50 to-[#d6b47c]/5 border border-[#d6b47c]/15 text-center">
-          <h3 className="text-base font-light text-[#f4f1eb] mb-2">{t('mobileBlogPost.ctaTitle')}</h3>
-          <p className="text-xs text-[#9aa3b2] mb-4">{t('mobileBlogPost.ctaSubtitle')}</p>
+          <h3 className="text-base font-light text-[#f4f1eb] mb-4">Maqoladagi maslahatlarni kolleksiyada sinab ko‘ring.</h3>
           <Link
             to="/mobile/products"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#d6b47c] text-black text-xs font-semibold"
           >
-            {t('mobileBlogPost.ctaButton')}
+            Kolleksiyani ko‘rish
           </Link>
         </div>
 
@@ -286,31 +300,6 @@ const MobileBlogPost = () => {
         )}
       </div>
 
-      {/* Bottom Share Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#11131e]/95 backdrop-blur-xl border-t border-white/5 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-[#9aa3b2]">
-            <Eye className="w-3.5 h-3.5" />
-            <span>{blog.viewCount} {t('mobileBlogPost.viewsLabel')}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleShare('telegram')}
-              aria-label="Telegram orqali ulashish"
-              className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#2AABEE]/10 text-[#2AABEE] text-xs font-medium"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => handleShare('copy')}
-              aria-label="Ulashish"
-              className="flex items-center gap-1 px-3 py-2 rounded-lg bg-white/[0.03] text-[#9aa3b2] text-xs font-medium"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

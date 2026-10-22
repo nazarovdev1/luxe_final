@@ -90,9 +90,8 @@ const BundleCardSkeleton = () => (
   </div>
 );
 
-const Bundles = () => {
-  const { language } = useLanguage();
-  const copy = COPY[language] || COPY.uz;
+// Active sets from the API; shared by the desktop page and the mobile app.
+export const useActiveBundles = () => {
   const { getAllBundles } = useProductService();
   const [bundles, setBundles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,84 +111,107 @@ const Bundles = () => {
     // Load once: getAllBundles is recreated on every render by the service hook.
   }, []);
 
+  return { bundles, isLoading };
+};
+
+export const BundleList = ({ basePath = '' }) => {
+  const { language } = useLanguage();
+  const copy = COPY[language] || COPY.uz;
+  const { bundles, isLoading } = useActiveBundles();
+
+  return (
+    <section className="bundles-list" aria-busy={isLoading}>
+      {isLoading && <BundleCardSkeleton />}
+
+      {!isLoading && bundles.length === 0 && (
+        <div className="bundles-empty">
+          <h2>{copy.emptyTitle}</h2>
+          <p>{copy.emptyText}</p>
+          <Link to={`${basePath}/products`}>{copy.emptyCta} <ArrowRight size={16} strokeWidth={1.5} /></Link>
+        </div>
+      )}
+
+      {!isLoading && bundles.map((bundle) => {
+        const id = bundle._id || bundle.id;
+        const title = localize(bundle.title, language);
+        const description = localize(bundle.description, language);
+        const products = bundle.products.slice(0, 4);
+        const original = Number(bundle.originalPrice) || bundle.products.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        const price = Number(bundle.discountedPrice) || original;
+        const savings = Math.max(0, original - price);
+
+        return (
+          <Link key={id} to={`${basePath}/bundle/${id}`} className="bundles-card">
+            <div className="bundles-card__photos">
+              {products.map((product, index) => (
+                <img
+                  key={product._id || index}
+                  src={productImage(product) || '/placeholder.jpg'}
+                  alt={product.name || ''}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ))}
+            </div>
+
+            <div className="bundles-card__body">
+              <p className="bundles-card__count">{bundle.products.length} {copy.items}</p>
+              <h2>{title}</h2>
+              {description && <p className="bundles-card__description">{description}</p>}
+
+              <ul className="bundles-card__items">
+                {bundle.products.map((product, index) => (
+                  <li key={product._id || index}>
+                    <span>{product.name}</span>
+                    <span>{formatPrice(product.price)} {copy.currency}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <dl className="bundles-card__prices">
+                {savings > 0 && (
+                  <div>
+                    <dt>{copy.separately}</dt>
+                    <dd><s>{formatPrice(original)} {copy.currency}</s></dd>
+                  </div>
+                )}
+                <div className="bundles-card__total">
+                  <dt>{copy.bundlePrice}</dt>
+                  <dd>{formatPrice(price)} {copy.currency}</dd>
+                </div>
+              </dl>
+              {savings > 0 && <p className="bundles-card__save">{formatPrice(savings)} {copy.currency} {copy.save}</p>}
+
+              <span className="bundles-card__cta">{copy.view} <ArrowRight size={16} strokeWidth={1.5} /></span>
+            </div>
+          </Link>
+        );
+      })}
+    </section>
+  );
+};
+
+export const BundlesIntro = () => {
+  const { language } = useLanguage();
+  const copy = COPY[language] || COPY.uz;
+  return (
+    <header className="bundles-intro">
+      <p className="bundles-kicker">{copy.kicker}</p>
+      <h1>{copy.title} <em>{copy.accent}</em></h1>
+      <p className="bundles-lead">{copy.lead}</p>
+    </header>
+  );
+};
+
+const Bundles = () => {
+  const { language } = useLanguage();
+  const copy = COPY[language] || COPY.uz;
+
   return (
     <main className="bundles-page">
       <SEO title={copy.seoTitle} description={copy.seoDescription} canonicalPath="/bundles" />
-
-      <header className="bundles-intro">
-        <p className="bundles-kicker">{copy.kicker}</p>
-        <h1>{copy.title} <em>{copy.accent}</em></h1>
-        <p className="bundles-lead">{copy.lead}</p>
-      </header>
-
-      <section className="bundles-list" aria-busy={isLoading}>
-        {isLoading && <BundleCardSkeleton />}
-
-        {!isLoading && bundles.length === 0 && (
-          <div className="bundles-empty">
-            <h2>{copy.emptyTitle}</h2>
-            <p>{copy.emptyText}</p>
-            <Link to="/products">{copy.emptyCta} <ArrowRight size={16} strokeWidth={1.5} /></Link>
-          </div>
-        )}
-
-        {!isLoading && bundles.map((bundle) => {
-          const id = bundle._id || bundle.id;
-          const title = localize(bundle.title, language);
-          const description = localize(bundle.description, language);
-          const products = bundle.products.slice(0, 4);
-          const original = Number(bundle.originalPrice) || bundle.products.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-          const price = Number(bundle.discountedPrice) || original;
-          const savings = Math.max(0, original - price);
-
-          return (
-            <Link key={id} to={`/bundle/${id}`} className="bundles-card">
-              <div className="bundles-card__photos">
-                {products.map((product, index) => (
-                  <img
-                    key={product._id || index}
-                    src={productImage(product) || '/placeholder.jpg'}
-                    alt={product.name || ''}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ))}
-              </div>
-
-              <div className="bundles-card__body">
-                <p className="bundles-card__count">{bundle.products.length} {copy.items}</p>
-                <h2>{title}</h2>
-                {description && <p className="bundles-card__description">{description}</p>}
-
-                <ul className="bundles-card__items">
-                  {bundle.products.map((product, index) => (
-                    <li key={product._id || index}>
-                      <span>{product.name}</span>
-                      <span>{formatPrice(product.price)} {copy.currency}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <dl className="bundles-card__prices">
-                  {savings > 0 && (
-                    <div>
-                      <dt>{copy.separately}</dt>
-                      <dd><s>{formatPrice(original)} {copy.currency}</s></dd>
-                    </div>
-                  )}
-                  <div className="bundles-card__total">
-                    <dt>{copy.bundlePrice}</dt>
-                    <dd>{formatPrice(price)} {copy.currency}</dd>
-                  </div>
-                </dl>
-                {savings > 0 && <p className="bundles-card__save">{formatPrice(savings)} {copy.currency} {copy.save}</p>}
-
-                <span className="bundles-card__cta">{copy.view} <ArrowRight size={16} strokeWidth={1.5} /></span>
-              </div>
-            </Link>
-          );
-        })}
-      </section>
+      <BundlesIntro />
+      <BundleList />
     </main>
   );
 };

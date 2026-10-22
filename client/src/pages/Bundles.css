@@ -269,6 +269,40 @@
   .bundles-card__body h2 { font-size: 26px; }
 }
 
+/* Mobile app: its own top bar instead of the site navbar, room for the tab bar. */
+.bundles-page--mobile { padding: 0 16px 120px; }
+.bundles-page--mobile .bundles-intro { padding-top: 24px; }
+.bundles-page--mobile .bundles-intro h1 { font-size: 34px; }
+.bundles-page--mobile .bundles-lead { font-size: 15px; }
+.bundles-page--mobile .bundles-list { margin-top: 36px; }
+
+.bundles-mobile-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--bundles-rule);
+  background: rgba(7, 8, 12, 0.92);
+  backdrop-filter: blur(16px);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.bundles-mobile-bar button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  margin-left: -10px;
+  border: 0;
+  color: var(--bundles-ivory);
+  background: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bundles-card__photos img,
   .bundles-card__cta svg { transition: none; }
