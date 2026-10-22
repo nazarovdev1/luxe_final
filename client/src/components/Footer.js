@@ -4,9 +4,10 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useProducts } from '../contexts/ProductContext';
 import { CONTACT } from '../config/policies';
+import { BUNDLES_LABEL } from '../config/navigation';
 
 const Footer = ({ variant = 'default' }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   // Categories come from the live catalogue so the footer never links to empty pages.
   const { categories = [] } = useProducts();
   const isEditorial = variant === 'editorial';
@@ -70,6 +71,11 @@ const Footer = ({ variant = 'default' }) => {
               <li>
                 <Link to="/products" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
                   Premium ayollar kiyimlari
+                </Link>
+              </li>
+              <li>
+                <Link to="/bundles" className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}>
+                  {BUNDLES_LABEL[language] || BUNDLES_LABEL.uz}
                 </Link>
               </li>
               <li>

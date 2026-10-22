@@ -1,6 +1,7 @@
 import React from 'react';
 import { Package, Clock, Truck, CheckCircle, MapPin, Phone } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { formatUzDate } from '../utils/formatDate';
 
 const OrderTimeline = ({ order }) => {
   const { t } = useLanguage();
@@ -20,7 +21,7 @@ const OrderTimeline = ({ order }) => {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return formatUzDate(d, { short: true, time: true });
   };
 
   const formatPrice = (value) => {

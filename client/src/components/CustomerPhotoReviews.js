@@ -8,6 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import useProductService from '../server/server';
 
 import { API_BASE_URL } from '../services/api';
+import { formatUzDate } from '../utils/formatDate';
 
 const API_BASE = API_BASE_URL;
 
@@ -39,7 +40,7 @@ const isPostOwner = (post, user) => {
 
 const formatDate = (value) => {
   if (!value) return '';
-  return new Date(value).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long', year: 'numeric' });
+  return formatUzDate(value);
 };
 
 const useBodyLock = (locked) => {

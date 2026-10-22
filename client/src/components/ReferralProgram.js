@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Share2, Users, Gift, TrendingUp, CheckCircle, Send, Link2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { formatUzDate } from '../utils/formatDate';
 
 const ReferralProgram = ({ user }) => {
   const [copied, setCopied] = useState(false);
@@ -61,10 +62,7 @@ const ReferralProgram = ({ user }) => {
   };
 
   const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('uz-UZ', {
-      day: 'numeric',
-      month: 'short',
-    });
+    return formatUzDate(dateStr, { short: true, year: false });
   };
 
   return (

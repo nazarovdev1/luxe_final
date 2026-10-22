@@ -7,6 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import ReferralProgram from '../components/ReferralProgram';
 import MyGiftCards from '../components/MyGiftCards';
 import BadgeIcon from '../components/BadgeIcon';
+import { formatUzDate } from '../utils/formatDate';
 
 const Profile = () => {
     const [badges, setBadges] = useState([]);
@@ -166,7 +167,7 @@ const Profile = () => {
                                     <div key={tx._id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
                                         <div className="min-w-0">
                                             <p className="text-xs text-white truncate">{tx.description}</p>
-                                            <p className="text-[10px] text-gray-500">{new Date(tx.createdAt || tx.date).toLocaleDateString('uz-UZ')}</p>
+                                            <p className="text-[10px] text-gray-500">{formatUzDate(tx.createdAt || tx.date)}</p>
                                         </div>
                                         <span className={`text-xs font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                             {tx.amount > 0 ? '+' : ''}{tx.amount}

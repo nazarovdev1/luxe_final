@@ -19,7 +19,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { eventNavItems, resolveNavLabel } from '../config/navigation';
+import { BUNDLES_LABEL, eventNavItems, resolveNavLabel } from '../config/navigation';
 import SplitText from './ui/SplitText';
 
 const isMacOS = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform || '');
@@ -77,7 +77,7 @@ const Navbar = ({ entrance = false, onSearchClick, onCartClick, onVisualSearch }
   }, []);
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { totalItems } = useCart();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const userMenuRef = useRef(null);
@@ -86,6 +86,7 @@ const Navbar = ({ entrance = false, onSearchClick, onCartClick, onVisualSearch }
     { name: t('nav.home'), sectionId: 'hero' },
     { name: t('nav.clothes'), link: '/products' },
     { name: t('nav.looks'), link: '/lookbooks' },
+    { name: BUNDLES_LABEL[language] || BUNDLES_LABEL.uz, link: '/bundles' },
     {
       name: t('nav.events'),
       dropdown: eventNavItems.map((item) => ({

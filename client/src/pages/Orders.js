@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import OrderTimeline from '../components/OrderTimeline';
 import ReturnRequestModal from '../components/ReturnRequestModal';
+import { formatUzDate } from '../utils/formatDate';
 
 const getStatusClass = (status) => {
     if (status === 'Yetkazildi') return 'bg-green-500/5 text-green-400 border-green-500/20';
@@ -140,13 +141,7 @@ const Orders = () => {
                                     </div>
                                     <div className="flex items-center text-gray-500 text-sm font-light">
                                         <Calendar className="w-4 h-4 mr-2 opacity-70" />
-                                        {new Date(order.createdAt).toLocaleDateString('uz-UZ', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
+                                        {formatUzDate(order.createdAt, { time: true })}
                                     </div>
                                 </div>
                                 <div className="text-right">

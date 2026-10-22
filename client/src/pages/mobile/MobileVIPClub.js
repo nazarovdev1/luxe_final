@@ -12,6 +12,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { MobileVIPClubSkeleton } from '../../components/EventSkeletons';
 import './mobileExperiences.css';
 import BadgeIcon from '../../components/BadgeIcon';
+import { formatUzDate } from '../../utils/formatDate';
 
 const VIP_TIER_DEFS = [
   {
@@ -419,7 +420,7 @@ export default function MobileVIPClub() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-white truncate">{tx.description || tx.type}</p>
-                      <p className="text-[10px] text-gray-500">{new Date(tx.createdAt).toLocaleDateString('uz-UZ')}</p>
+                      <p className="text-[10px] text-gray-500">{formatUzDate(tx.createdAt)}</p>
                     </div>
                     <span className={`text-sm font-black shrink-0 ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {tx.amount > 0 ? '+' : ''}{tx.amount}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Calendar, Clock, ArrowRight, BookOpen, Search, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { gsap } from 'gsap';
@@ -9,6 +9,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { EventOpening } from '../components/PageOpenings';
 import SEO from '../components/SEO';
 import './Blog.css';
+import { formatUzDate } from '../utils/formatDate';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -21,8 +22,56 @@ const CATEGORIES = [
   { slug: 'Aksessuarlar',    labelKey: 'blogPage.categories.Aksessuarlar' },
 ];
 
+const INTRO = {
+  uz: {
+    subtitle: "Kiyim tanlash, o‘lcham, mato va parvarish haqida qisqa va tushunarli maqolalar.",
+    note: 'Har bir maqola bitta amaliy savolga javob beradi: nimani kiyish, qanday tanlash va qanday asrash.',
+    chapterKicker: 'Maqolalar',
+    chapterTitle: <>Savolingizga <em>javob</em> shu yerda.</>,
+    chapterText: "Qaysi o‘lcham to‘g‘ri keladi, matoni qanday tanlash kerak, sviterni qanday yuvish kerak — oddiy tilda, ortiqcha so‘zlarsiz.",
+    featured: 'Tavsiya etamiz',
+    afterKicker: 'Kolleksiya',
+    afterTitle: <>Maqoladagi maslahatlarni<br /><em>kolleksiyada sinab ko‘ring.</em></>,
+    afterCta: "Kolleksiyani ko‘rish",
+    count: 'maqola',
+  },
+  ru: {
+    subtitle: 'Короткие и понятные статьи о выборе одежды, размерах, тканях и уходе.',
+    note: 'Каждая статья отвечает на один практический вопрос: что носить, как выбрать и как сохранить.',
+    chapterKicker: 'Статьи',
+    chapterTitle: <>Ответ на ваш <em>вопрос</em> здесь.</>,
+    chapterText: 'Какой размер подойдёт, как выбрать ткань, как стирать свитер — простым языком, без лишних слов.',
+    featured: 'Рекомендуем',
+    afterKicker: 'Коллекция',
+    afterTitle: <>Попробуйте советы из статьи<br /><em>на вещах из коллекции.</em></>,
+    afterCta: 'Смотреть коллекцию',
+    count: 'статей',
+  },
+  en: {
+    subtitle: 'Short, clear articles on choosing clothes, sizing, fabrics and care.',
+    note: 'Each article answers one practical question: what to wear, how to choose it and how to look after it.',
+    chapterKicker: 'Articles',
+    chapterTitle: <>The <em>answer</em> to your question.</>,
+    chapterText: 'Which size fits, how to pick a fabric, how to wash a sweater — in plain words.',
+    featured: 'Editor’s pick',
+    afterKicker: 'Collection',
+    afterTitle: <>Try the advice<br /><em>with pieces from the collection.</em></>,
+    afterCta: 'View the collection',
+    count: 'articles',
+  },
+};
+
+const localized = (value, language) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  return value[language] || value.uz || value.ru || value.en || '';
+};
+
 const Blog = () => {
   const { t, language } = useLanguage();
+  const copy = INTRO[language] || INTRO.uz;
+  // The mobile app reuses this page under /mobile; keep its links inside the mobile shell.
+  const basePath = useLocation().pathname.startsWith('/mobile') ? '/mobile' : '';
   const [activeCategory, setActiveCategory] = useState('Barchasi');
   const [searchQuery, setSearchQuery] = useState('');
   const [blogs, setBlogs] = useState([]);
@@ -109,11 +158,7 @@ const Blog = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('uz-UZ', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
+    return formatUzDate(dateStr);
   };
 
   const gridPosts = blogs.filter((p) => {
@@ -236,7 +281,7 @@ const Blog = () => {
       <EventOpening variant="blog" language={language} />
       <SEO
         title="Blog | Luxx.uz"
-        description="Eng so'nggi moda yangiliklari, uslub maslahatlari, trendlar va kombinatsiyalar. Luxx.uz blogi — premium fashion haqida hamma narsa."
+        description="Kiyim tanlash, o‘lcham, mato va parvarish haqida qisqa, tushunarli maqolalar. LUXX moda blogi."
         keywords="moda blogi, fashion blog, uslub maslahatlari, trendlar, ayollar kiyimlari, luxx.uz blog"
         canonicalPath="/blog"
       />
@@ -248,7 +293,7 @@ const Blog = () => {
         <section className="blog-intro">
           <div className="blog-press-rule" aria-hidden="true" />
           <div className="blog-intro-visual" aria-hidden="true"><img src="/editorial/journal-editorial-2026.png" alt="" /></div>
-          <div className="blog-intro-issue">ISSUE <span>01</span> — 2026</div>
+          <div className="blog-intro-issue">TOSHKENT <span>·</span> 2026</div>
           <div className="blog-intro-eyebrow">
             <BookOpen className="w-3.5 h-3.5" />
             <span>{t('blog.journalLabel')}</span>
@@ -257,10 +302,10 @@ const Blog = () => {
             <span>{t('blog.fashion')}</span>
             <span className="blog-intro-gold">{t('blog.blog')}</span>
           </h1>
-          <p className="blog-intro-copy">{t('blog.subtitle')}</p>
+          <p className="blog-intro-copy">{copy.subtitle}</p>
           <div className="blog-intro-bottom">
-            <p>Har bir obrazning o‘z hikoyasi bor. Uni o‘qish, his qilish va o‘zingizniki qilish uchun.</p>
-            <div className="blog-intro-count"><span>{String(total).padStart(2, '0')}</span> maqola</div>
+            <p>{copy.note}</p>
+            <div className="blog-intro-count"><span>{String(total).padStart(2, '0')}</span> {copy.count}</div>
           </div>
         </section>
 
@@ -293,9 +338,9 @@ const Blog = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <div className="blog-chapter blog-reveal">
-          <span>01 / LUXX JOURNAL</span>
-          <h2>O‘qishga <em>arziydigan</em> uslub.</h2>
-          <p>Trenddan ko‘ra uzoq yashaydigan fikrlar. Kiyim, did va o‘zingizga bo‘lgan munosabat haqida.</p>
+          <span>{copy.chapterKicker}</span>
+          <h2>{copy.chapterTitle}</h2>
+          <p>{copy.chapterText}</p>
         </div>
 
         {/* Loading State */}
@@ -313,19 +358,19 @@ const Blog = () => {
             {/* Featured Post */}
             {featuredPost && activeCategory === 'Barchasi' && !searchQuery && (
               <Link
-                to={`/blog/${featuredPost.slug}`}
+                to={`${basePath}/blog/${featuredPost.slug}`}
                 className="blog-featured blog-reveal block mb-14 group"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   <div className="relative aspect-[16/10] lg:aspect-auto overflow-hidden">
                     <img
-                      src="/editorial/journal-feature-2026.png"
-                      alt={featuredPost.title?.uz || featuredPost.title?.en || ''}
+                      src={featuredPost.coverImage || '/editorial/journal-feature-2026.png'}
+                      alt={localized(featuredPost.title, language)}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute top-5 left-5">
                       <span className="blog-featured-badge">
-                        {t('blog.featured')}
+                        {copy.featured}
                       </span>
                     </div>
                   </div>
@@ -344,10 +389,10 @@ const Blog = () => {
                       </div>
                     </div>
                     <h2 className="blog-featured-title text-2xl font-semibold text-[#f4f1eb] mb-3 group-hover:text-[#d6b47c] transition-colors">
-                      {featuredPost.title?.uz || featuredPost.title?.en || ''}
+                      {localized(featuredPost.title, language)}
                     </h2>
                     <p className="text-sm text-[#9aa3b2] leading-relaxed mb-6">
-                      {featuredPost.excerpt?.uz || featuredPost.excerpt?.en || ''}
+                      {localized(featuredPost.excerpt, language)}
                     </p>
                     <div className="flex items-center gap-2 text-[#d6b47c] text-sm font-medium">
                       {t('blog.continueReading')} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -363,14 +408,14 @@ const Blog = () => {
                 {gridPosts.map((post) => (
                   <Link
                     key={post._id}
-                    to={`/blog/${post.slug}`}
+                    to={`${basePath}/blog/${post.slug}`}
                     className="blog-card blog-reveal group"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
                         src={post.coverImage || '/editorial/journal-feature-2026.png'}
                         onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/editorial/journal-feature-2026.png'; }}
-                        alt={post.title?.uz || post.title?.en || ''}
+                        alt={localized(post.title, language)}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#11131e] via-transparent to-transparent opacity-60" />
@@ -383,10 +428,10 @@ const Blog = () => {
                         <span className="text-[10px] text-[#9aa3b2]">{formatDate(post.publishedAt || post.createdAt)}</span>
                       </div>
                       <h3 className="text-base font-semibold text-[#f4f1eb] mb-2 line-clamp-2 group-hover:text-[#d6b47c] transition-colors">
-                        {post.title?.uz || post.title?.en || ''}
+                        {localized(post.title, language)}
                       </h3>
                       <p className="text-xs text-[#9aa3b2] leading-relaxed line-clamp-2 mb-3">
-                        {post.excerpt?.uz || post.excerpt?.en || ''}
+                        {localized(post.excerpt, language)}
                       </p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5 text-[#9aa3b2]">
@@ -403,9 +448,9 @@ const Blog = () => {
               </div>
             ) : featuredPost && activeCategory === 'Barchasi' && !searchQuery ? (
               <div className="blog-afterword blog-reveal">
-                <span>THE NEXT CHAPTER</span>
-                <h3>Ilhomni o‘qidingiz.<br /><em>Endi uni kiying.</em></h3>
-                <Link to="/products">Kolleksiyani ko‘rish <ArrowRight size={18} /></Link>
+                <span>{copy.afterKicker}</span>
+                <h3>{copy.afterTitle}</h3>
+                <Link to={`${basePath}/products`}>{copy.afterCta} <ArrowRight size={18} /></Link>
               </div>
             ) : (
               <div className="blog-empty blog-reveal text-center py-20">

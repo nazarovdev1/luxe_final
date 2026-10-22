@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatUzDate, formatUzWeekday } from '../utils/formatDate';
 
 export const GIFT_WRAP_OPTIONS = {
   classic: { name: 'Klassik qadoqlash', price: 25000, desc: "Chiroyli qog'oz va lenta bilan" },
@@ -26,8 +27,8 @@ export const getDeliveryDates = () => (
     date.setDate(date.getDate() + index);
     return {
       value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
-      day: date.toLocaleDateString('uz-UZ', { weekday: 'short' }),
-      date: date.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short' }),
+      day: formatUzWeekday(date),
+      date: formatUzDate(date, { short: true, year: false }),
     };
   })
 );

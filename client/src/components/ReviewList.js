@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import toast from 'react-hot-toast';
 
 import { API_BASE_URL } from '../services/api';
+import { formatUzDate } from '../utils/formatDate';
 
 const API_BASE = API_BASE_URL;
 
@@ -63,7 +64,7 @@ const ReviewList = ({ reviews, onReviewDeleted }) => {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-[#f5f5f3] tracking-wide">{review.user?.username || t('reviewList.userFallback')}</h4>
-                <p className="text-[10px] text-[#8a8a8d] uppercase tracking-[0.1em] mt-0.5">{new Date(review.createdAt).toLocaleDateString('uz-UZ')}</p>
+                <p className="text-[10px] text-[#8a8a8d] uppercase tracking-[0.1em] mt-0.5">{formatUzDate(review.createdAt)}</p>
               </div>
             </div>
 

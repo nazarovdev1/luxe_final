@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { MobileLiveSkeleton } from '../../components/EventSkeletons';
 import './mobileExperiences.css';
+import { formatUzDate } from '../../utils/formatDate';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -81,7 +82,7 @@ const StreamCard = ({ stream, isAdmin, onDelete, onNavigate, t }) => {
           {stream.scheduledAt && (
             <span className="flex items-center gap-1">
               <CalendarClock className="w-3 h-3" />
-              {new Date(stream.scheduledAt).toLocaleDateString('uz-UZ')}
+              {formatUzDate(stream.scheduledAt)}
             </span>
           )}
           {stream.viewerCount > 0 && (

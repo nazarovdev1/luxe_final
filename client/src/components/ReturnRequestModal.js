@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, RotateCcw, RefreshCw, AlertCircle, CheckCircle, Camera, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { formatUzDate } from '../utils/formatDate';
 
 const ReturnRequestModal = ({ order, onClose }) => {
   const [step, setStep] = useState(1); // 1: select items, 2: reason, 3: type, 4: confirm
@@ -74,11 +75,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString('uz-UZ', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
+    return formatUzDate(dateStr);
   };
 
   const formatPrice = (val) => Number(val || 0).toLocaleString();

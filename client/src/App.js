@@ -36,6 +36,7 @@ const GiftCards = React.lazy(() => import('./pages/GiftCards'));
 const Blog = React.lazy(() => import('./pages/Blog'));
 const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const BundleDetail = React.lazy(() => import('./pages/BundleDetail'));
+const Bundles = React.lazy(() => import('./pages/Bundles'));
 const MobileApp = lazyWithRetry(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
@@ -213,6 +214,7 @@ function MainContent() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/products" element={<AllProducts />} />
             <Route path="/product/:id" element={<ProductView />} />
+            <Route path="/bundles" element={<React.Suspense fallback={<Loading />}><Bundles /></React.Suspense>} />
             <Route path="/bundle/:id" element={<React.Suspense fallback={<Loading />}><BundleDetail /></React.Suspense>} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/profile" element={<Profile />} />

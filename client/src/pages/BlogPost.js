@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowUpRight, BookOpen, Calendar, Check, ChevronRight, Clock, Copy, Eye, Instagram, Send, Share2, Tag } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, BookOpen, Check, ChevronRight, Copy, Eye, Send, Tag } from 'lucide-react';
 import axios from 'axios';
 import { useLanguage } from '../contexts/LanguageContext';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
 import SEO from '../components/SEO';
 import './BlogPost.css';
+import { formatUzDate } from '../utils/formatDate';
 
 const getLocalizedValue = (value, language) => {
   if (typeof value === 'string') return value.trim();
@@ -54,7 +55,7 @@ const BlogPost = () => {
   const isExcerptFallback = !articleSource && Boolean(excerpt);
 
   const formatDate = (dateStr) => dateStr
-    ? new Date(dateStr).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long', year: 'numeric' })
+    ? formatUzDate(dateStr)
     : '';
 
   const copyLink = async () => {
@@ -101,7 +102,7 @@ const BlogPost = () => {
           '@context': 'https://schema.org', '@type': 'BlogPosting', headline: title,
           description: blog.seoDescription || excerpt, image: blog.coverImage ? [blog.coverImage] : undefined,
           datePublished: blog.publishedAt || blog.createdAt || '', dateModified: blog.updatedAt || blog.publishedAt || blog.createdAt || '',
-          author: { '@type': 'Person', name: blog.author?.username || 'Luxx.uz Editorial' },
+          author: { '@type': 'Organization', name: 'Luxx.uz' },
           publisher: { '@type': 'Organization', name: 'Luxx.uz' },
           mainEntityOfPage: { '@type': 'WebPage', '@id': `https://luxx.uz/blog/${slug}` },
         }}
@@ -111,18 +112,18 @@ const BlogPost = () => {
       <section className="article-hero">
         <div className="article-hero__intro">
           <nav className="article-crumbs" aria-label="Breadcrumb">
-            <Link to="/">Bosh sahifa</Link><ChevronRight size={13} /><Link to="/blog">Journal</Link><ChevronRight size={13} /><span>{blog.category}</span>
+            <Link to="/">Bosh sahifa</Link><ChevronRight size={13} /><Link to="/blog">Blog</Link><ChevronRight size={13} /><span>{blog.category}</span>
           </nav>
           <button className="article-back" onClick={() => navigate('/blog')}><ArrowLeft size={15} /> Blogga qaytish</button>
 
-          <div className="article-kicker"><span>{blog.featured ? 'TAVSIYA ETILGAN' : 'LUXX JOURNAL'}</span><i /></div>
+          <div className="article-kicker"><span>{blog.featured ? 'TAVSIYA ETAMIZ' : 'LUXX BLOGI'}</span><i /></div>
           <div className="article-hero__meta"><span>{blog.category}</span><span>{formatDate(blog.publishedAt || blog.createdAt)}</span><span>{blog.readTime || 1} daqiqa o‘qish</span></div>
           <h1>{title}</h1>
           <div className="article-hero__rule" />
           {excerpt && <p className="article-dek">{excerpt}</p>}
           <div className="article-byline">
-            <div className="article-byline__avatar">{blog.author?.profileImage ? <img src={blog.author.profileImage} alt="" /> : 'L'}</div>
-            <span><b>{blog.author?.username || 'LUXX Editorial'}</b><small>Moda muharririyati</small></span>
+            <div className="article-byline__avatar">L</div>
+            <span><b>LUXX</b><small>Moda muharririyati</small></span>
             <span className="article-byline__views"><Eye size={14} /> {blog.viewCount || 0} ko‘rish</span>
           </div>
         </div>
@@ -130,7 +131,6 @@ const BlogPost = () => {
         <div className="article-hero__visual">
           {blog.coverImage ? <img src={blog.coverImage} alt={title} /> : <div className="article-hero__placeholder"><span>LUXX</span><small>JOURNAL / EDITION</small></div>}
           <div className="article-hero__visual-shade" />
-          <span className="article-hero__issue">ISSUE <b>0{Math.max(1, String(blog.viewCount || 1).length)}</b></span>
         </div>
       </section>
 
@@ -138,16 +138,15 @@ const BlogPost = () => {
         <aside className="article-rail" aria-label="Maqola boshqaruvlari">
           <span>ULASHISH</span>
           <button onClick={shareTelegram} aria-label="Telegram orqali ulashish"><Send size={17} /></button>
-          <button onClick={() => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer')} aria-label="Instagram"><Instagram size={17} /></button>
           <button onClick={copyLink} aria-label="Havolani nusxalash">{copied ? <Check size={17} /> : <Copy size={17} />}</button>
           <i />
-          <span>{blog.readTime || 1} MIN</span>
+          <span>{blog.readTime || 1} daq</span>
         </aside>
 
         <article className="article-body">
           {isExcerptFallback && (
             <div className="article-body__note">
-              <BookOpen size={18} /><div><span>EDITOR’S NOTE</span><p>Ushbu maqola uchun qisqa ta’rif kiritilgan. To‘liq matn qo‘shilganda aynan shu joyda o‘qiladigan maqola ko‘rinishida chiqadi.</p></div>
+              <BookOpen size={18} /><div><span>QISQACHA</span><p>Bu maqolaning hozircha qisqa mazmuni bor. To‘liq matni tez orada qo‘shiladi.</p></div>
             </div>
           )}
           {articleHtml ? <div className="article-rich" dangerouslySetInnerHTML={{ __html: articleHtml }} /> : (
@@ -162,13 +161,13 @@ const BlogPost = () => {
 
           {blog.tags?.length > 0 && <div className="article-tags"><Tag size={15} />{blog.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}
 
-          <div className="article-end"><span>LUXX JOURNAL</span><h2>Har bir detal — sizning uslubingiz uchun.</h2><Link to="/products">Kolleksiyani kashf etish <ArrowUpRight size={17} /></Link></div>
+          <div className="article-end"><span>KOLLEKSIYA</span><h2>Maqoladagi maslahatlarni kolleksiyada sinab ko‘ring.</h2><Link to="/products">Kolleksiyani ko‘rish <ArrowUpRight size={17} /></Link></div>
         </article>
       </section>
 
       {related.length > 0 && (
         <section className="article-related">
-          <div><span>DAVOM ETTIRING</span><h2>Keyingi o‘qishlar</h2></div>
+          <div><span>YANA O‘QING</span><h2>Shu mavzudagi maqolalar</h2></div>
           <div className="article-related__grid">
             {related.map((post, index) => (
               <Link key={post._id} to={`/blog/${post.slug}`} className="article-related__card">

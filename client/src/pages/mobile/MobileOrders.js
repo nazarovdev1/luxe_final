@@ -7,6 +7,7 @@ import useProductService from '../../server/server';
 import LoginForm from '../../components/LoginForm';
 import OrderTimeline from '../../components/OrderTimeline';
 import ReturnRequestModal from '../../components/ReturnRequestModal';
+import { formatUzDate } from '../../utils/formatDate';
 
 const getStatusClass = (status) => {
     switch (status) {
@@ -162,7 +163,7 @@ const MobileOrders = () => {
                                     <h3 className="text-sm font-black text-white tracking-widest">ID #{order._id.slice(-6).toUpperCase()}</h3>
                                     <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
                                         <Calendar className="h-3 w-3" />
-                                        {new Date(order.createdAt).toLocaleDateString('uz-UZ')}
+                                        {formatUzDate(order.createdAt)}
                                     </div>
                                 </div>
                                 <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider ${getStatusClass(order.status)}`}>
@@ -241,7 +242,7 @@ const MobileOrders = () => {
                             </div>
                             <div className="text-right">
                                 <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">{t('mobileOrders.date_label')}</p>
-                                <p className="text-sm font-bold text-white">{new Date(selectedOrder.createdAt).toLocaleDateString('uz-UZ')}</p>
+                                <p className="text-sm font-bold text-white">{formatUzDate(selectedOrder.createdAt)}</p>
                             </div>
                         </div>
 

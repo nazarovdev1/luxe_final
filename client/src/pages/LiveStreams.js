@@ -8,6 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import CommunityOpening, { CommunityChapter, useCommunityMotion } from '../components/CommunityOpening';
 import { LiveStreamsSkeleton } from '../components/EventSkeletons';
+import { formatUzDate } from '../utils/formatDate';
 
 const extractYouTubeId = (url) => {
   if (!url) return null;
@@ -179,7 +180,7 @@ const StreamCard = ({ stream, isAdmin, onStatusChange, onDelete, isLive, ended, 
 
   const formatDate = (date) => {
     if (!date) return '';
-    return new Date(date).toLocaleString('uz-UZ', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    return formatUzDate(date, { year: false, time: true });
   };
 
   return (

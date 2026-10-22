@@ -26,6 +26,7 @@ import { getPolicyCopy } from '../config/policies';
 import useProductService from '../server/server';
 import OrderSuccessModal from '../components/OrderSuccessModal';
 import { trackEvent } from '../utils/analytics';
+import { formatUzDate, formatUzMonthShort, formatUzWeekday } from '../utils/formatDate';
 
 const CheckoutMap = React.lazy(() => import('../components/CheckoutMap'));
 
@@ -674,9 +675,9 @@ const Checkout = () => {
                             {[...Array(4)].map((_, i) => {
                               const date = getTashkentDate();
                               date.setDate(date.getDate() + i + 1);
-                              const dayName = date.toLocaleDateString('uz-UZ', { weekday: 'short' });
+                              const dayName = formatUzWeekday(date);
                               const dayNum = date.getDate();
-                              const monthName = date.toLocaleDateString('uz-UZ', { month: 'short' });
+                              const monthName = formatUzMonthShort(date);
                               const dateValue = toLocalDateValue(date);
                               const isToday = i === 0;
                               return (
@@ -751,7 +752,7 @@ const Checkout = () => {
                             <Clock className="w-4 h-4 text-[#d6b47c] flex-shrink-0" />
                             <p className="text-xs text-[#c7ceda]">
                               {t('checkoutPage.deliveryScheduleLine')} <span className="text-[#d6b47c] font-semibold">
-                                {new Date(deliveryDate).toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' })}
+                                {formatUzDate(deliveryDate, { year: false })}
                                 {' '}{deliveryTimeSlot === 'express' ? t('checkoutPage.expressTime') :
                                   deliveryTimeSlot === 'morning' ? t('checkoutPage.morningTime') :
                                   deliveryTimeSlot === 'afternoon' ? t('checkoutPage.afternoonTime') :

@@ -76,6 +76,8 @@ const allEventNavItems = [
   },
 ];
 
-export const eventNavItems = allEventNavItems.filter((item) => !item.feature || isFeatureEnabled(item.feature));
+export const BUNDLES_LABEL = { uz: "To'plamlar", ru: 'Комплекты', en: 'Sets' };
+
+export const eventNavItems =allEventNavItems.filter((item) => !item.feature || isFeatureEnabled(item.feature));
 
 export const resolveNavLabel = (item, t) => t(item.labelKey, item.fallbackLabel);
