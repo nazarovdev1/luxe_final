@@ -215,7 +215,7 @@ const VIPClub = () => {
 
                       <div className="flex flex-col items-end text-right">
                         <p className="text-8xl md:text-9xl font-brilliant text-[#d6b47c] leading-none mb-3">
-                          {pointsData.points.balance.toLocaleString()}
+                          {pointsData.points.balance.toLocaleString('ru-RU')}
                         </p>
                         <p className="text-[12px] uppercase tracking-[0.4em] text-gray-400 font-black">{t('vip.accumulatedPoints')}</p>
                       </div>
@@ -231,7 +231,7 @@ const VIPClub = () => {
                           </div>
                           <div className="text-right">
                             <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-2 font-black">{t('vip.toNextLevel')}</p>
-                            <p className="text-xl font-black text-white">{ (nextTier.threshold - pointsData.points.totalEarned).toLocaleString() } <span className="text-xs font-normal text-gray-500">{t('vip.points')}</span></p>
+                            <p className="text-xl font-black text-white">{ (nextTier.threshold - pointsData.points.totalEarned).toLocaleString('ru-RU') } <span className="text-xs font-normal text-gray-500">{t('vip.points')}</span></p>
                           </div>
                         </div>
                         <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
@@ -241,8 +241,8 @@ const VIPClub = () => {
                           />
                         </div>
                         <div className="flex justify-between mt-4 px-1">
-                          <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">{currentTier.level} ({currentTier.threshold.toLocaleString()})</span>
-                          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-black">{nextTier.level} ({nextTier.threshold.toLocaleString()})</span>
+                          <span className="text-[10px] uppercase tracking-widest text-gray-400 font-black">{currentTier.level} ({currentTier.threshold.toLocaleString('ru-RU')})</span>
+                          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-black">{nextTier.level} ({nextTier.threshold.toLocaleString('ru-RU')})</span>
                         </div>
                       </div>
                     )}
@@ -315,7 +315,7 @@ const VIPClub = () => {
 
                       <h3 className="text-4xl font-brilliant text-white mb-3">{tier.level}</h3>
                       <p className="text-[12px] font-black uppercase tracking-widest text-gray-400 mb-10">
-                        {tier.threshold.toLocaleString()} <span className="opacity-50">{t('vip.points')} {t('vip.from')}</span>
+                        {tier.threshold.toLocaleString('ru-RU')} <span className="opacity-50">{t('vip.points')} {t('vip.from')}</span>
                       </p>
 
                       <div className="space-y-5 mb-12">
@@ -400,7 +400,7 @@ const VIPClub = () => {
                 </div>
                 <div className="text-right">
                   <p className={`font-black ${tx.type === 'earned' ? 'text-green-400' : 'text-red-400'}`}>
-                    {tx.type === 'earned' ? '+' : '-'}{tx.amount.toLocaleString()}
+                    {tx.type === 'earned' ? '+' : '-'}{tx.amount.toLocaleString('ru-RU')}
                   </p>
                   <p className="text-[10px] text-gray-600">{t('vip.points')}</p>
                 </div>
@@ -434,7 +434,7 @@ const VIPClub = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-black text-[#d6b47c]">{entry.balance?.toLocaleString()}</p>
+                    <p className="font-black text-[#d6b47c]">{entry.balance?.toLocaleString('ru-RU')}</p>
                     <p className="text-xs text-gray-500">{t('vip.points')}</p>
                   </div>
                 </div>

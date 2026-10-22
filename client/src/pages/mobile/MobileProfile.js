@@ -42,9 +42,9 @@ import { eventNavItems, resolveNavLabel } from '../../config/navigation';
 
 const formatMoney = (value) => {
     if (typeof value === 'string') {
-        return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString();
+        return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString('ru-RU');
     }
-    return (Number(value || 0) || 0).toLocaleString();
+    return (Number(value || 0) || 0).toLocaleString('ru-RU');
 };
 
 const EVENT_ICONS = {
@@ -200,7 +200,7 @@ const MobileProfile = () => {
                             </div>
                             <div className="rounded-xl bg-white/5 border border-white/5 p-2.5 text-center">
                                 <p className="text-[10px] uppercase tracking-[0.12em] text-gray-500">{t('mobileProfile.balance')}</p>
-                                <p className="mt-1 text-sm font-semibold text-amber-300">{points?.balance?.toLocaleString() || 0}</p>
+                                <p className="mt-1 text-sm font-semibold text-amber-300">{points?.balance?.toLocaleString('ru-RU') || 0}</p>
                             </div>
                             <div className="rounded-xl bg-[#d6b47c]/10 border border-[#d6b47c]/20 p-2.5 text-center">
                                 <p className="text-[10px] uppercase tracking-[0.12em] text-[#d6b47c]">{t('mobileProfile.level')}</p>

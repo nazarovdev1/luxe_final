@@ -189,7 +189,7 @@ export default function RelatedProducts({
                     {item.name}
                   </p>
                   <p className="text-xs text-purple-300/80 font-bold mt-0.5">
-                    {Number(item.price).toLocaleString()} {t('common.sum')}
+                    {Number(item.price).toLocaleString('ru-RU')} {t('common.sum')}
                   </p>
                 </div>
               </Link>

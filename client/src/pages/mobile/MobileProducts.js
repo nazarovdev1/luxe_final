@@ -30,7 +30,7 @@ const productId = (product) => product?._id || product?.id;
 const parsePrice = (value) => typeof value === 'string'
   ? Number((value.match(/\d+/g) || []).join('')) || 0
   : Number(value || 0);
-const formatPrice = (value) => parsePrice(value).toLocaleString();
+const formatPrice = (value) => parsePrice(value).toLocaleString('ru-RU');
 const getProductImage = (product) => {
   if (product?.image) return product.image;
   if (Array.isArray(product?.images) && product.images.length) {

@@ -183,7 +183,7 @@ const MobileCheckout = () => {
                     source: 'giftcard'
                 });
                 setPromoCode(giftCardResult.code);
-                toast.success(`${t('common.giftCardApplied')}! ${giftCardResult.amount.toLocaleString()} ${t('common.sum')}`);
+                toast.success(`${t('common.giftCardApplied')}! ${giftCardResult.amount.toLocaleString('ru-RU')} ${t('common.sum')}`);
                 setIsValidatingPromo(false);
                 return;
             } else if (giftCardResult.message && !giftCardResult.message.includes('mavjud emas')) {
@@ -724,7 +724,7 @@ const MobileCheckout = () => {
                                                 className={`rounded-2xl border p-3 text-left ${giftWrapType === key ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12' : 'border-white/10 bg-white/[0.03]'}`}
                                             >
                                                 <span className="block text-[11px] font-semibold text-[#f6f1e8]">{option.name}</span>
-                                                <span className="mt-1 block text-[10px] text-[#8e98a8]">{option.price.toLocaleString()} {t('checkoutPage.soM')}</span>
+                                                <span className="mt-1 block text-[10px] text-[#8e98a8]">{option.price.toLocaleString('ru-RU')} {t('checkoutPage.soM')}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -768,7 +768,7 @@ const MobileCheckout = () => {
                                             </p>
                                             <p className="mt-1 text-xs text-[#9ba4b4]">
                                                 {appliedPromo.type === 'giftcard'
-                                                    ? `-${appliedPromo.discountAmount.toLocaleString()} ${t('common.sum')}`
+                                                    ? `-${appliedPromo.discountAmount.toLocaleString('ru-RU')} ${t('common.sum')}`
                                                     : `-${appliedPromo.discountPercentage}% ${t('common.discount')}`}
                                             </p>
                                         </div>
@@ -803,7 +803,7 @@ const MobileCheckout = () => {
                                         <div className="min-w-0 flex-1">
                                             <p className="line-clamp-1 text-sm font-medium text-[#e5ded1]">{item.name}</p>
                                             <p className="mt-0.5 text-xs text-[#758092]">
-                                                {item.lookTitle ? `${item.lookTitle} · ` : ''}{item.quantity} x {(parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0).toLocaleString()}
+                                                {item.lookTitle ? `${item.lookTitle} · ` : ''}{item.quantity} x {(parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0).toLocaleString('ru-RU')}
                                             </p>
                                         </div>
                                     </div>
@@ -814,35 +814,35 @@ const MobileCheckout = () => {
                             <div className="space-y-2 pt-4">
                                 <div className="flex items-center justify-between text-sm text-[#9ba4b4]">
                                     <span>{t('common.price')}</span>
-                                    <span>{summaryTotal.toLocaleString()} {t('common.sum')}</span>
+                                    <span>{summaryTotal.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                 </div>
                                 {appliedPromo && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                                         <span>{t('common.discount')}</span>
-                                        <span>-{promoDiscountAmount.toLocaleString()} {t('common.sum')}</span>
+                                        <span>-{promoDiscountAmount.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {tierDiscountAmount > 0 && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                                         <span>{t('checkoutPage.memberDiscountShort').replace('{level}', userTier?.level || '')}</span>
-                                        <span>-{tierDiscountAmount.toLocaleString()} {t('common.sum')}</span>
+                                        <span>-{tierDiscountAmount.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {giftWrap && giftWrapCost > 0 && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                                         <span>{t('checkoutPage.giftWrapShort')}</span>
-                                        <span>{giftWrapCost.toLocaleString()} {t('common.sum')}</span>
+                                        <span>{giftWrapCost.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {expressDeliveryFee > 0 && (
                                     <div className="flex items-center justify-between text-sm text-[#d6b47c]">
                                         <span>{t('checkoutPage.expressDeliveryLabel')}</span>
-                                        <span>{expressDeliveryFee.toLocaleString()} {t('common.sum')}</span>
+                                        <span>{expressDeliveryFee.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 <div className="flex items-end justify-between pt-2">
                                     <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#7d8591]">{t('checkoutPage.total')}</span>
-                                    <span className="text-2xl font-semibold text-[#f6f1e8]">{Math.max(finalTotal, 0).toLocaleString()} <span className="text-sm font-normal text-[#9ba4b4]">{t('common.sum')}</span></span>
+                                    <span className="text-2xl font-semibold text-[#f6f1e8]">{Math.max(finalTotal, 0).toLocaleString('ru-RU')} <span className="text-sm font-normal text-[#9ba4b4]">{t('common.sum')}</span></span>
                                 </div>
                             </div>
                         </div>

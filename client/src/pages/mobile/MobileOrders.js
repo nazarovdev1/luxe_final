@@ -35,9 +35,9 @@ const getStatusLabel = (status, t) => t(STATUS_KEYS[status] || 'mobileOrders.def
 
 const formatMoney = (value) => {
     if (typeof value === 'string') {
-        return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString();
+        return (Number((value.match(/\d+/g) || []).join('')) || 0).toLocaleString('ru-RU');
     }
-    return (Number(value || 0) || 0).toLocaleString();
+    return (Number(value || 0) || 0).toLocaleString('ru-RU');
 };
 
 const getProductId = (item) => {

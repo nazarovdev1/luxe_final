@@ -110,7 +110,7 @@ const Orders = () => {
                         </div>
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
                             <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('orders.totalSpent')}</p>
-                            <p className="mt-2 text-2xl font-semibold text-[#d6b47c]">{orderStats.totalSpent.toLocaleString()} <span className="text-xs text-gray-500">so'm</span></p>
+                            <p className="mt-2 text-2xl font-semibold text-[#d6b47c]">{orderStats.totalSpent.toLocaleString('ru-RU')} <span className="text-xs text-gray-500">so'm</span></p>
                         </div>
                     </div>
                 </div>
@@ -147,7 +147,7 @@ const Orders = () => {
                                 <div className="text-right">
                                     <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">{t('checkoutPage.total')}</p>
                                     <p className="text-2xl font-light text-white">
-                                        {(order.totals?.total || order.totalAmount || 0).toLocaleString()} <span className="text-sm text-gray-500 font-normal">so'm</span>
+                                        {(order.totals?.total || order.totalAmount || 0).toLocaleString('ru-RU')} <span className="text-sm text-gray-500 font-normal">so'm</span>
                                     </p>
                                 </div>
                             </div>
@@ -169,7 +169,7 @@ const Orders = () => {
                                             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-400 font-light">
                                                 <span className="text-white">{item.quantity} {t('orders.pieces')}</span>
                                                 <span className="w-1 h-1 rounded-full bg-gray-700"></span>
-                                                <span>{(item.price || 0).toLocaleString()} so'm</span>
+                                                <span>{(item.price || 0).toLocaleString('ru-RU')} so'm</span>
                                                 {item.selectedSize && (
                                                     <>
                                                         <span className="w-1 h-1 rounded-full bg-gray-700"></span>

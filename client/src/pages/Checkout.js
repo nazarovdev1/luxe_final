@@ -870,7 +870,7 @@ const Checkout = () => {
                               </p>
                               <p className="text-[10px] text-[#9aa3b2] mt-0.5">{opt.desc}</p>
                               <p className={`text-xs font-bold mt-1.5 ${giftWrapType === key ? 'text-[#d6b47c]' : 'text-[#c7ceda]'}`}>
-                                {opt.price.toLocaleString()} {t('checkoutPage.soM')}
+                                {opt.price.toLocaleString('ru-RU')} {t('checkoutPage.soM')}
                               </p>
                             </button>
                           ))}

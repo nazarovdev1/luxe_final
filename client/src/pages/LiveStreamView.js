@@ -202,7 +202,7 @@ const LiveStreamView = () => {
                     </div>
                     <div className="p-3">
                       <p className="text-xs font-bold line-clamp-1 mb-1">{product.name}</p>
-                      <p className="text-[10px] text-[#d6b47c] font-black mb-2">{product.price?.toLocaleString()} so'm</p>
+                      <p className="text-[10px] text-[#d6b47c] font-black mb-2">{product.price?.toLocaleString('ru-RU')} so'm</p>
                       <button
                         onClick={() => handleAddToCart(product)}
                         className="w-full py-1.5 bg-[#d6b47c] text-black rounded-full text-[10px] font-black hover:bg-[#e8c98a] transition-all flex items-center justify-center gap-1"

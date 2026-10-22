@@ -602,7 +602,7 @@ const MobileProductView = () => {
                         )}
                       </div>
                       <p className="text-[10px] text-[#f5f5f3] font-medium truncate mt-2">{item.name}</p>
-                      <p className="text-[10px] text-purple-300 font-bold">{Number(item.price).toLocaleString()} {t('common.sum')}</p>
+                      <p className="text-[10px] text-purple-300 font-bold">{Number(item.price).toLocaleString('ru-RU')} {t('common.sum')}</p>
                     </Link>
                   ))}
                 </div>

@@ -26,7 +26,7 @@ const ProductComparison = ({ products = [], onClose, productPathPrefix = '' }) =
   const [compareProducts, setCompareProducts] = useState(products.slice(0, 3));
   const { t } = useLanguage();
 
-  const formatPrice = (val) => normalizeNumber(val).toLocaleString();
+  const formatPrice = (val) => normalizeNumber(val).toLocaleString('ru-RU');
 
   const removeProduct = (idx) => {
     setCompareProducts((prev) => prev.filter((_, i) => i !== idx));

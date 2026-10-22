@@ -23,7 +23,7 @@ const StatCard = ({ icon, value, label, color, unit }) => (
         {React.cloneElement(icon, { className: 'w-6 h-6' })}
       </div>
       <p className="text-3xl font-brilliant mb-1 leading-none" style={{ color }}>
-        {typeof value === 'number' ? value.toLocaleString() : value}
+        {typeof value === 'number' ? value.toLocaleString('ru-RU') : value}
       </p>
       {unit && <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-1">{unit}</p>}
       <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400 font-black">{label}</p>

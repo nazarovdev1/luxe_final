@@ -218,7 +218,7 @@ export default function MobileVIPClub() {
                         <div className="bg-white/5 rounded-2xl p-4 mb-4 border border-white/5">
                           <p className="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-black mb-1">{t('mobileVip.accumulatedPoints')}</p>
                           <p className="text-5xl font-brilliant" style={{ color: currentTier.color }}>
-                            {pointsData.points.balance.toLocaleString()}
+                            {pointsData.points.balance.toLocaleString('ru-RU')}
                           </p>
                         </div>
 
@@ -237,7 +237,7 @@ export default function MobileVIPClub() {
                               />
                             </div>
                             <p className="text-[10px] text-gray-500 mt-2 text-center">
-                              {t('mobileVip.nextLevelBefore')} <span className="font-black" style={{ color: currentTier.color }}>{(nextTier.threshold - pointsData.points.totalEarned).toLocaleString()} {t('mobileVip.nextLevelSuffix')}</span> {t('mobileVip.nextLevelAfter')}
+                              {t('mobileVip.nextLevelBefore')} <span className="font-black" style={{ color: currentTier.color }}>{(nextTier.threshold - pointsData.points.totalEarned).toLocaleString('ru-RU')} {t('mobileVip.nextLevelSuffix')}</span> {t('mobileVip.nextLevelAfter')}
                             </p>
                           </div>
                         )}
@@ -385,7 +385,7 @@ export default function MobileVIPClub() {
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-black text-[#d6b47c]">{entry.balance?.toLocaleString()}</p>
+                        <p className="text-sm font-black text-[#d6b47c]">{entry.balance?.toLocaleString('ru-RU')}</p>
                         <p className="text-[9px] text-gray-500 uppercase tracking-wider">{t('mobileVip.pointsSuffix')}</p>
                       </div>
                     </div>

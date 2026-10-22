@@ -25,7 +25,7 @@ const OrderTimeline = ({ order }) => {
   };
 
   const formatPrice = (value) => {
-    return Number(value || 0).toLocaleString();
+    return Number(value || 0).toLocaleString('ru-RU');
   };
 
   return (

@@ -42,7 +42,7 @@ const MobileProductComparison = ({ products = [], onClose, productPathPrefix = '
   const { t } = useLanguage();
   const scrollRef = useRef(null);
 
-  const fmt = (val) => normalizeNumber(val).toLocaleString();
+  const fmt = (val) => normalizeNumber(val).toLocaleString('ru-RU');
 
   const removeProduct = (idx) => {
     const next = compareProducts.filter((_, i) => i !== idx);

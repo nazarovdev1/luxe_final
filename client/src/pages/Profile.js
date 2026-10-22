@@ -95,11 +95,11 @@ const Profile = () => {
                     <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
                             <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('profile.points')}</p>
-                            <p className="mt-2 text-2xl font-semibold text-[#d6b47c]">{pointsBalance.toLocaleString()}</p>
+                            <p className="mt-2 text-2xl font-semibold text-[#d6b47c]">{pointsBalance.toLocaleString('ru-RU')}</p>
                         </div>
                         <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
                             <p className="text-[11px] uppercase tracking-[0.16em] text-gray-500">{t('profile.totalEarned')}</p>
-                            <p className="mt-2 text-2xl font-semibold text-white">{totalEarned.toLocaleString()} <span className="text-xs text-gray-500">{t('profile.ball')}</span></p>
+                            <p className="mt-2 text-2xl font-semibold text-white">{totalEarned.toLocaleString('ru-RU')} <span className="text-xs text-gray-500">{t('profile.ball')}</span></p>
                         </div>
                         <div className="rounded-2xl border border-[#d6b47c]/20 bg-[#d6b47c]/10 p-4">
                             <p className="text-[11px] uppercase tracking-[0.16em] text-[#d6b47c]">{t('profile.vipStatus')}</p>
@@ -149,10 +149,10 @@ const Profile = () => {
                         )}
 
                         <div className="flex items-center justify-between mt-4">
-                            <p className="text-sm text-gray-400">{t('profile.totalEarned')}: <span className="text-white font-semibold">{totalEarned.toLocaleString()} {t('profile.ball')}</span></p>
+                            <p className="text-sm text-gray-400">{t('profile.totalEarned')}: <span className="text-white font-semibold">{totalEarned.toLocaleString('ru-RU')} {t('profile.ball')}</span></p>
                             <div className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full text-xs text-white">
                                 <Gem className="w-3.5 h-3.5 text-amber-300" />
-                                {pointsBalance.toLocaleString()} {t('profile.balance')}
+                                {pointsBalance.toLocaleString('ru-RU')} {t('profile.balance')}
                             </div>
                         </div>
                     </Link>

@@ -759,7 +759,7 @@ const PostDetailModal = ({ post, onClose, onLike, onDelete, currentUserId, isAdm
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-bold truncate group-hover:text-[#d6b47c] transition-colors">{prod.name}</p>
-                                                <p className="text-[10px] text-gray-500">{prod.price?.toLocaleString()} so'm</p>
+                                                <p className="text-[10px] text-gray-500">{prod.price?.toLocaleString('ru-RU')} so'm</p>
                                             </div>
                                             <ShoppingBag className="w-4 h-4 text-gray-600 group-hover:text-[#d6b47c] transition-colors" />
                                         </div>

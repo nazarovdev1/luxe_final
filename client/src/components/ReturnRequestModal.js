@@ -78,7 +78,7 @@ const ReturnRequestModal = ({ order, onClose }) => {
     return formatUzDate(dateStr);
   };
 
-  const formatPrice = (val) => Number(val || 0).toLocaleString();
+  const formatPrice = (val) => Number(val || 0).toLocaleString('ru-RU');
 
   // Check if order is within return window (14 days from deliveredAt)
   const deliveredDate = order.deliveredAt ? new Date(order.deliveredAt) : null;

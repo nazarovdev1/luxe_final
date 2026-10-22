@@ -10,10 +10,17 @@ const toNumber = (value) => {
     return Number(value || 0);
 };
 
-const formatPrice = (value) => toNumber(value).toLocaleString();
+const formatPrice = (value) => toNumber(value).toLocaleString('ru-RU');
+
+const EMPTY_COPY = {
+    uz: { text: "Yoqqan kiyimni savatga qo'shing — buyurtma berishdan oldin shu yerda ko'rib chiqasiz.", cta: "Kolleksiyani ko'rish" },
+    ru: { text: 'Добавьте понравившуюся вещь — перед заказом вы увидите её здесь.', cta: 'Смотреть коллекцию' },
+    en: { text: 'Add a piece you like — you will review it here before ordering.', cta: 'View the collection' },
+};
 
 const MobileCart = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const emptyCopy = EMPTY_COPY[language] || EMPTY_COPY.uz;
     const { items: cartItems, lookItems, removeFromCart, removeLookFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
     const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
@@ -33,18 +40,16 @@ const MobileCart = () => {
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[50%] bg-[radial-gradient(circle_at_50%_120%,#d6b47c10,transparent_70%)]" />
 
                 <div className="relative z-10 w-full animate-in fade-in zoom-in duration-700">
-                    <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-[32px] bg-white/[0.03] border border-white/10 backdrop-blur-xl shadow-2xl">
-                        <ShoppingBag className="h-10 w-10 text-[#d6b47c]" />
-                    </div>
+                    <ShoppingBag className="mx-auto mb-8 h-10 w-10 text-[#d6b47c]" strokeWidth={1.25} />
                     <h2 className="text-3xl font-brilliant text-white mb-3">{t('mobileCart.empty_title')}</h2>
-                    <p className="text-gray-500 mb-10 font-medium max-w-[240px] mx-auto leading-relaxed">
-                        {t('mobileCart.empty_desc')}
+                    <p className="text-gray-500 mb-10 font-medium max-w-[260px] mx-auto leading-relaxed">
+                        {emptyCopy.text}
                     </p>
                     <button
                         onClick={() => navigate('/mobile/products')}
-                        className="group relative inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-4 text-xs font-black tracking-[0.2em] text-black transition-all active:scale-95 shadow-[0_10px_40px_rgba(255,255,255,0.2)]"
+                        className="group relative inline-flex min-h-[52px] items-center gap-3 bg-[#f4f1eb] px-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#0f0e0d] transition-all active:scale-95"
                     >
-                        {t('mobileCart.shop_collection')}
+                        {emptyCopy.cta}
                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </button>
                 </div>

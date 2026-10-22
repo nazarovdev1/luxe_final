@@ -307,7 +307,7 @@ const VisualSearch = ({ onClose }) => {
                             {product.name}
                           </p>
                           <p className="text-[#d6b47c] font-medium text-sm">
-                            {product.price?.toLocaleString()} UZS
+                            {product.price?.toLocaleString('ru-RU')} UZS
                           </p>
                         </div>
                       </div>

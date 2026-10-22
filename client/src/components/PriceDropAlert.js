@@ -180,7 +180,7 @@ const PriceDropAlert = ({ product }) => {
     return '/placeholder.jpg';
   };
 
-  const formatSum = (val) => `${Number(val || 0).toLocaleString()} ${t('common.sum', "so'm")}`;
+  const formatSum = (val) => `${Number(val || 0).toLocaleString('ru-RU')} ${t('common.sum', "so'm")}`;
 
   const handlePhoneChange = (e) => {
     const formatted = formatUzPhone(e.target.value);
@@ -428,7 +428,7 @@ const PriceDropAlert = ({ product }) => {
                       >
                         <span className="block text-xs font-bold">{label}</span>
                         <span className="block text-[8px] text-white/40 mt-0.5 tracking-tight truncate">
-                          {(calculated / 1000).toLocaleString()}k
+                          {(calculated / 1000).toLocaleString('ru-RU')}k
                         </span>
                       </button>
                     );

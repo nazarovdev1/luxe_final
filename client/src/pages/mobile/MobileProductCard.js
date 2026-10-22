@@ -17,7 +17,7 @@ const MobileProductCard = ({ product, index = 0 }) => {
         return Number(value || 0);
     };
 
-    const formatPrice = (value) => `${parsePrice(value).toLocaleString()} ${t('common.sum')}`;
+    const formatPrice = (value) => `${parsePrice(value).toLocaleString('ru-RU')} ${t('common.sum')}`;
     const sale = getActiveSale({ ...product, price: parsePrice(product.price), originalPrice: parsePrice(product.originalPrice) });
 
     const handleAddToCart = (e) => {

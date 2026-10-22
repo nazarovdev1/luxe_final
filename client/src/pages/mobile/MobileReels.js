@@ -797,7 +797,7 @@ const MobileReels = () => {
                           <img src={product.images?.[0]?.url} alt="" className="w-6 h-6 rounded object-cover" />
                           <div className="text-left overflow-hidden">
                             <p className="text-white text-[9px] font-bold truncate">{product.name}</p>
-                            <p className="text-amber-400 text-[8px] font-black">{product.price?.toLocaleString()} {t('common.sum')}</p>
+                            <p className="text-amber-400 text-[8px] font-black">{product.price?.toLocaleString('ru-RU')} {t('common.sum')}</p>
                           </div>
                         </button>
                       ))}
