@@ -176,7 +176,7 @@ const MobileEvents = () => {
 
         <section className="relative mt-3 h-[166px] overflow-hidden rounded-[18px] border border-white/10 bg-[#07080b] shadow-[0_18px_48px_rgba(0,0,0,.34)]">
           <img
-            src="/mobile_explore_background.png"
+            src="/mobile_explore_background.webp"
             alt=""
             aria-hidden="true"
             loading="lazy"

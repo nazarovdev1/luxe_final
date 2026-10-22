@@ -1,16 +1,16 @@
 // Never cache Vite's hashed JS/CSS bundles. A new deployment removes the
 // previous hashes, so serving an old entry bundle here would make lazy routes
 // request CSS files that no longer exist.
-const CACHE_NAME = 'luxe-v9'
-const STATIC_CACHE = 'luxe-static-v9'
-const API_CACHE = 'luxe-api-v9'
-const IMAGE_CACHE = 'luxe-images-v9'
+const CACHE_NAME = 'luxe-v10'
+const STATIC_CACHE = 'luxe-static-v10'
+const API_CACHE = 'luxe-api-v10'
+const IMAGE_CACHE = 'luxe-images-v10'
 
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/logoweb2.png',
-  '/logoweb3.png',
+  '/icon-512.png',
+  '/favicon-192.png',
   '/placeholder.svg',
   '/placeholder.jpg'
 ]
@@ -179,8 +179,8 @@ self.addEventListener('push', (event) => {
     const title = data.notification?.title || 'LUXE'
     const options = {
       body: data.notification?.body || 'Yangilik!',
-      icon: '/logoweb2.png',
-      badge: '/logoweb3.png',
+      icon: '/icon-512.png',
+      badge: '/favicon-192.png',
       vibrate: [100, 50, 100],
       data: data.data || {}
     }
@@ -227,8 +227,8 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification?.title || 'LUXE'
   const notificationOptions = {
     body: payload.notification?.body || 'Yangi xabar!',
-    icon: '/logoweb2.png',
-    badge: '/logoweb3.png',
+    icon: '/icon-512.png',
+    badge: '/favicon-192.png',
     vibrate: [100, 50, 100],
     data: payload.data,
     actions: [{ action: 'open', title: "Ko'rish" }]

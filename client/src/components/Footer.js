@@ -51,7 +51,7 @@ const Footer = ({ variant = 'default' }) => {
           {/* Company Info */}
           <div className="lg:col-span-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-6">
-              <img src="/logoweb.png" alt="Logo" className="w-9 h-9 object-contain" />
+              <img src="/logoweb-144.webp" alt="Logo" className="w-9 h-9 object-contain" />
               <span className={`${palette.brand} font-serif text-2xl tracking-wide`}>LUXX</span>
             </div>
             <p className={`${palette.body} text-[13px] leading-relaxed max-w-sm`}>

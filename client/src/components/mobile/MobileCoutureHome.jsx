@@ -57,7 +57,7 @@ const CoutureHero = ({ product, returning }) => {
   return (
     <section className="mch-hero" ref={heroRef} aria-label="LUXX couture collection">
       <div className="mch-hero__media" aria-hidden="true">
-        <img className="mch-hero__image" src="/hero-back.png" alt="" fetchpriority="high" />
+        <img className="mch-hero__image" src="/hero-back.webp" alt="" fetchpriority="high" />
         <div className="mch-hero__shade" />
         <div className="mch-hero__light" />
       </div>

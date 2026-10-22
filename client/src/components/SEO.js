@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const SITE_NAME = 'Luxx.uz';
 const SITE_URL = 'https://luxx.uz';
-const SITE_LOGO = `${SITE_URL}/logoweb2.png`;
+const SITE_LOGO = `${SITE_URL}/icon-512.png`;
 
 const toAbsoluteUrl = (value) => {
     if (!value) return SITE_LOGO;

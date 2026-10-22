@@ -180,7 +180,7 @@ const Navbar = ({ entrance = false, onSearchClick, onCartClick, onVisualSearch }
         <div className="w-full">
             <div className="relative h-[76px] flex items-center justify-between">
             <Link ref={logoRef} to="/" className="flex items-center shrink-0">
-              <img src="/logonav.png" alt="Luxx logo" className="h-16 w-[90px] object-contain" />
+              <img src="/logonav.webp" alt="Luxx logo" className="h-16 w-[90px] object-contain" />
             </Link>
 
             <div ref={linksRef} className="hidden lg:flex flex-1 items-center justify-center gap-8 xl:gap-10 mx-8">

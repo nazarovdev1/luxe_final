@@ -260,7 +260,7 @@ const MobileBlogPost = () => {
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <img
-                      src={post.coverImage || '/editorial/journal-feature-2026.png'}
+                      src={post.coverImage || '/editorial/journal-feature-2026.webp'}
                       alt={localized(post.title, language)}
                       loading="lazy"
                       decoding="async"

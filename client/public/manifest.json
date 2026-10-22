@@ -1,27 +1,36 @@
 {
-  "short_name": "LUXE",
-  "name": "LUXE - Premium Ayollar Kiyimlari",
-  "description": "O'zbekistondagi eng zamonaviy premium ayollar kiyimlari onlayn do'koni. 3 soatda yetkazib berish.",
+  "short_name": "LUXX",
+  "name": "LUXX — premium ayollar kiyimlari",
+  "description": "Toshkentdagi premium ayollar kiyimlari do'koni. Toshkent bo'ylab shu kuni yetkazib beramiz, uyda kiyib ko'rib to'laysiz.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#2c114f",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
   "lang": "uz",
   "dir": "ltr",
-  "categories": ["shopping", "fashion"],
+  "categories": [
+    "shopping",
+    "fashion"
+  ],
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/logoweb2.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/logoweb3.png",
+      "src": "/favicon-192.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     }
@@ -32,7 +41,7 @@
       "sizes": "390x844",
       "type": "image/jpeg",
       "form_factor": "narrow",
-      "label": "LUXE Mobile"
+      "label": "LUXX"
     }
   ],
   "shortcuts": [

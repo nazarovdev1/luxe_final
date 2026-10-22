@@ -292,7 +292,7 @@ const Blog = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <section className="blog-intro">
           <div className="blog-press-rule" aria-hidden="true" />
-          <div className="blog-intro-visual" aria-hidden="true"><img src="/editorial/journal-editorial-2026.png" alt="" /></div>
+          <div className="blog-intro-visual" aria-hidden="true"><img src="/editorial/journal-editorial-2026.webp" alt="" /></div>
           <div className="blog-intro-issue">TOSHKENT <span>·</span> 2026</div>
           <div className="blog-intro-eyebrow">
             <BookOpen className="w-3.5 h-3.5" />
@@ -364,7 +364,7 @@ const Blog = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   <div className="relative aspect-[16/10] lg:aspect-auto overflow-hidden">
                     <img
-                      src={featuredPost.coverImage || '/editorial/journal-feature-2026.png'}
+                      src={featuredPost.coverImage || '/editorial/journal-feature-2026.webp'}
                       alt={localized(featuredPost.title, language)}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
@@ -413,8 +413,8 @@ const Blog = () => {
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
-                        src={post.coverImage || '/editorial/journal-feature-2026.png'}
-                        onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/editorial/journal-feature-2026.png'; }}
+                        src={post.coverImage || '/editorial/journal-feature-2026.webp'}
+                        onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/editorial/journal-feature-2026.webp'; }}
                         alt={localized(post.title, language)}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />

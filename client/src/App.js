@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Loading from './components/Loading';
-import Lookbooks from './pages/Lookbooks';
 
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -37,6 +36,7 @@ const Blog = React.lazy(() => import('./pages/Blog'));
 const BlogPost = React.lazy(() => import('./pages/BlogPost'));
 const BundleDetail = React.lazy(() => import('./pages/BundleDetail'));
 const Bundles = React.lazy(() => import('./pages/Bundles'));
+const Lookbooks = React.lazy(() => import('./pages/Lookbooks'));
 const MobileApp = lazyWithRetry(() => import('./MobileApp'));
 const AnnouncementBanner = React.lazy(() => import('./components/AnnouncementBanner'));
 const AboutPage = React.lazy(() => import('./pages/AboutPage'));
@@ -221,7 +221,7 @@ function MainContent() {
             <Route path="/orders" element={<Orders />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/lookbooks" element={<Lookbooks />} />
+            <Route path="/lookbooks" element={<React.Suspense fallback={<Loading />}><Lookbooks /></React.Suspense>} />
             <Route path="/lookbook-builder" element={<React.Suspense fallback={<Loading />}><LookbookBuilder /></React.Suspense>} />
             <Route path="/style-feed" element={<React.Suspense fallback={<Loading />}><StyleFeed /></React.Suspense>} />
             <Route path="/vip-club" element={<React.Suspense fallback={<Loading />}><VIPClub /></React.Suspense>} />

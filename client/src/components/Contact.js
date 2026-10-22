@@ -326,7 +326,7 @@ const Contact = () => {
           </svg>
           <div className="ct-arch__photo">
             <img
-              src="/editorial/atelier-concierge-v2.png"
+              src="/editorial/atelier-concierge-v2.webp"
               alt={w.caption}
               width="1122"
               height="1402"
@@ -398,7 +398,7 @@ const Contact = () => {
             ))}
           </h2>
           <figure className="ct-request__photo">
-            <img src="/editorial/atelier-fitting-v2.png" alt="" width="1122" height="1402" loading="lazy" decoding="async" />
+            <img src="/editorial/atelier-fitting-v2.webp" alt="" width="1122" height="1402" loading="lazy" decoding="async" />
           </figure>
         </div>
 

@@ -650,7 +650,7 @@ export const BrandJourney = () => {
 
         {/* Right-side image */}
         <div className="bj-img-panel" aria-hidden="true">
-          <img src="/luxxjarayon-background.png" alt="" loading="lazy" />
+          <img src="/luxxjarayon-background.webp" alt="" loading="lazy" />
           <div className="bj-ov-left" />
           <div className="bj-ov-top" />
           <div className="bj-ov-bottom" />

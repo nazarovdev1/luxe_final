@@ -14,8 +14,8 @@ import { getPolicyCopy } from '../../config/policies';
 
 const galleryImages = [
     '/second_pose.jpg',
-    '/editorial/about-atelier-v2.png',
-    '/editorial/about-manifesto-v2.png',
+    '/editorial/about-atelier-v2.webp',
+    '/editorial/about-manifesto-v2.webp',
 ];
 
 const usePrefersReducedMotion = () => {
