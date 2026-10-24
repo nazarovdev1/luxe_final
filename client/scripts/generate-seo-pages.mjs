@@ -134,7 +134,22 @@ const fetchData = async (endpoint) => {
 };
 
 const template = await fs.readFile(path.join(buildDir, 'index.html'), 'utf8');
-const [products, blogs] = await Promise.all([fetchData('/products?limit=500'), fetchData('/blogs?limit=500')]);
+const [products, blogList] = await Promise.all([fetchData('/products?limit=500'), fetchData('/blogs?limit=500')]);
+
+// The list endpoint leaves out article bodies; without them every post shell said
+// "matni tayyorlanmoqda" and posts were dropped from the sitemap. Load each post in full.
+const fetchBlog = async (slug) => {
+  try {
+    const response = await fetch(`${apiUrl}/blogs/${encodeURIComponent(slug)}`, { signal: AbortSignal.timeout(12000) });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return payload?.data || null;
+  } catch (error) {
+    console.warn(`[seo] /blogs/${slug} olinmadi: ${error.message}`);
+    return null;
+  }
+};
+const blogs = await Promise.all(blogList.filter((blog) => blog.slug).map(async (blog) => ({ ...blog, ...(await fetchBlog(blog.slug)) })));
 if ((process.env.VERCEL === '1' || process.env.SEO_STRICT === 'true') && products.length === 0) {
   throw new Error('[seo] Mahsulot API bo‘sh qaytdi. Noto‘liq sitemap bilan deploy bekor qilindi.');
 }
@@ -180,7 +195,7 @@ const dynamicPages = [
       '@context': 'https://schema.org', '@type': 'BlogPosting', headline: localizedValue(blog.title),
       description: stripHtml(localizedValue(blog.excerpt)), image: blog.coverImage ? [absoluteImage(blog.coverImage)] : undefined,
       datePublished: blog.publishedAt || blog.createdAt, dateModified: blog.updatedAt || blog.publishedAt || blog.createdAt,
-      author: { '@type': 'Person', name: blog.author?.username || 'Luxx.uz Editorial' },
+      author: { '@type': 'Organization', name: 'Luxx.uz' },
       publisher: { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'Luxx.uz' },
       mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/blog/${blog.slug}` },
     } : undefined,
