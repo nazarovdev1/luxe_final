@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import LoginForm from '../../components/LoginForm';
 import MyGiftCards from '../../components/MyGiftCards';
+import MobileLanguageSwitch from '../../components/mobile/MobileLanguageSwitch';
 import { eventNavItems, resolveNavLabel } from '../../config/navigation';
 
 const formatMoney = (value) => {
@@ -248,6 +249,16 @@ const MobileProfile = () => {
                                 <ChevronRight className="h-4 w-4 text-gray-600" />
                             </button>
                         ))}
+
+                        <div className="flex w-full items-center justify-between rounded-2xl bg-[#0f0f0f]/80 backdrop-blur-md border border-white/5 px-4 py-2.5">
+                            <div className="flex items-center gap-3">
+                                <span className="flex h-10 w-6 items-center justify-center">
+                                    <Globe className="h-4 w-4 text-white" aria-hidden="true" />
+                                </span>
+                                <p className="text-sm font-medium text-white">{t('mobileNav.language', 'Til')}</p>
+                            </div>
+                            <MobileLanguageSwitch tone="muted" />
+                        </div>
 
                         <p className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-black px-1 pb-1 pt-2">{t('mobileProfile.account')}</p>
                         {menuItems.filter(i => !i.color).map((item) => (

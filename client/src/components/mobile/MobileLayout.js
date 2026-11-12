@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MobileNavbar from './MobileNavbar';
+import MobileTabOpening from './MobileTabOpening';
 import SearchModal from '../SearchModal';
 
 import { useLocation } from 'react-router-dom';
@@ -22,6 +23,8 @@ const MobileLayout = ({ children }) => {
             <main>
                 {children}
             </main>
+
+            <MobileTabOpening />
 
             <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 

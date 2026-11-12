@@ -24,6 +24,16 @@ describe('AuthOpening Component', () => {
     expect(screen.getByText(/AUTHENTICATING PRIVATE CLIENT/i)).toBeDefined();
   });
 
+  it('stays out of the mobile app, which has its own section opening', () => {
+    window.history.pushState({}, '', '/mobile/login');
+    try {
+      const { container } = render(<AuthOpening variant="login" />);
+      expect(container.innerHTML).toBe('');
+    } finally {
+      window.history.pushState({}, '', '/');
+    }
+  });
+
   it('renders the register variant with 3D VIP Pass Noir details', () => {
     render(<AuthOpening variant="register" />);
     expect(screen.getByText('MAISON LUXX')).toBeDefined();

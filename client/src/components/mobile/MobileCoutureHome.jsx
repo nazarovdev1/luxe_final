@@ -7,6 +7,7 @@ import { useGSAP } from '@gsap/react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getReviewSummary } from '../../utils/productDisplay';
 import { RETURN_DAYS } from '../../config/policies';
+import MobileLanguageSwitch from './MobileLanguageSwitch';
 import './mobileCoutureHome.css';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -62,6 +63,7 @@ const CoutureHero = ({ product, returning }) => {
         <div className="mch-hero__light" />
       </div>
       <div className="mch-hero__edition"><span className="mch-hero__rail" />LUXX / 2026 EDITION</div>
+      <MobileLanguageSwitch className="mch-hero__lang" />
       <div className="mch-hero__copy">
         <h1 aria-label="Toshkentdagi premium ayollar kiyimlari">
           <span className="mch-hero__word"><span data-hero-reveal>LUXX</span></span>

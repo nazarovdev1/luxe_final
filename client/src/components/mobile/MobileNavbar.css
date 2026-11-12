@@ -216,115 +216,13 @@
   line-height: 1;
 }
 
-.mobile-bottom-nav__item:focus-visible,
-.mobile-bottom-nav__language-trigger:focus-visible,
-.mobile-bottom-nav__lang-option:focus-visible {
+.mobile-bottom-nav__item:focus-visible {
   outline: 2px solid var(--nav-accent-bright);
   outline-offset: 2px;
 }
 
-/* The language selector floats above the dock so primary actions stay uncluttered. */
-.mobile-bottom-nav__language-orb {
-  position: absolute;
-  right: 7px;
-  bottom: calc(100% + 9px);
-  z-index: 10;
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  transition: opacity 260ms ease, transform 360ms var(--nav-ease), visibility 0s linear 0s;
-  visibility: visible;
-}
-
-/* The compare dock owns this corner while products are selected. */
-body.mobile-compare-active .mobile-bottom-nav__language-orb {
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(0, 8px, 0) scale(0.88);
-  transition: opacity 220ms ease, transform 320ms var(--nav-ease), visibility 0s linear 320ms;
-  visibility: hidden;
-}
-
-.mobile-bottom-nav__language-trigger {
-  display: inline-flex;
-  min-width: 55px;
-  min-height: 34px;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding-inline: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 999px;
-  background: rgba(16, 16, 19, 0.7);
-  box-shadow: 0 9px 26px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.13);
-  color: rgba(248, 244, 237, 0.72);
-  font: 700 9px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  transition: color 200ms ease, border-color 200ms ease, background-color 200ms ease, transform 280ms var(--nav-ease);
-}
-
-.mobile-bottom-nav__language-trigger:active { transform: scale(0.94); }
-
-.mobile-bottom-nav__language-orb--open .mobile-bottom-nav__language-trigger {
-  border-color: rgba(240, 201, 127, 0.38);
-  background: rgba(40, 34, 25, 0.82);
-  color: var(--nav-accent-bright);
-}
-
-.mobile-bottom-nav__language-icon { width: 14px; height: 14px; stroke-width: 1.8; }
-
-.mobile-bottom-nav__lang-menu {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 8px);
-  display: flex;
-  min-width: 108px;
-  flex-direction: column;
-  gap: 3px;
-  padding: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;
-  background: rgba(15, 15, 18, 0.86);
-  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(26px) saturate(1.6);
-  -webkit-backdrop-filter: blur(26px) saturate(1.6);
-  transform-origin: right bottom;
-  animation: mobile-language-in 240ms var(--nav-ease) both;
-}
-
-.mobile-bottom-nav__lang-option {
-  display: flex;
-  min-height: 35px;
-  align-items: center;
-  gap: 8px;
-  padding-inline: 10px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: rgba(247, 244, 238, 0.7);
-  font-size: 11px;
-  font-weight: 650;
-  cursor: pointer;
-  transition: color 160ms ease, background-color 160ms ease;
-}
-
-.mobile-bottom-nav__lang-option:active,
-.mobile-bottom-nav__lang-option--active {
-  background: rgba(240, 201, 127, 0.12);
-  color: var(--nav-accent-bright);
-}
-
-.mobile-bottom-nav__lang-flag { font-size: 14px; line-height: 1; }
-
 @keyframes mobile-nav-arrive {
   from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.97); }
-  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-}
-
-@keyframes mobile-language-in {
-  from { opacity: 0; transform: translate3d(0, 6px, 0) scale(0.94); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
@@ -337,19 +235,15 @@ body.mobile-compare-active .mobile-bottom-nav__language-orb {
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .mobile-bottom-nav__pill,
-  .mobile-bottom-nav__language-trigger,
-  .mobile-bottom-nav__lang-menu { background-color: rgba(13, 13, 16, 0.96); }
+  .mobile-bottom-nav__pill { background-color: rgba(13, 13, 16, 0.96); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mobile-bottom-nav__pill,
-  .mobile-bottom-nav__lang-menu { animation: none; }
+  .mobile-bottom-nav__pill { animation: none; }
 
   .mobile-bottom-nav,
   .mobile-bottom-nav__indicator,
   .mobile-bottom-nav__content,
   .mobile-bottom-nav__icon,
-  .mobile-bottom-nav__active-dot,
-  .mobile-bottom-nav__language-trigger { transition-duration: 0.01ms !important; }
+  .mobile-bottom-nav__active-dot { transition-duration: 0.01ms !important; }
 }

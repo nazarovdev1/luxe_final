@@ -1,7 +1,7 @@
 import React from 'react';
 import { vi } from 'vitest';
 import '@testing-library/jest-dom';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
@@ -43,7 +43,7 @@ describe('MobileNavbar', () => {
   test.each([
     ['/mobile', 'Asosiy', '0'],
     ['/mobile/products', "Do'kon", '1'],
-    ['/mobile/events', 'Kashf et', '2'],
+    ['/mobile/lookbooks', 'Lookbook', '2'],
     ['/mobile/cart', 'Savat', '3'],
     ['/mobile/profile', 'Profil', '4'],
   ])('moves the active capsule for %s', (route, label, index) => {
@@ -53,6 +53,14 @@ describe('MobileNavbar', () => {
     expect(container.querySelector('.mobile-bottom-nav__pill')).toHaveStyle(`--active-index: ${index}`);
     expect(container.querySelector('.mobile-bottom-nav__indicator')).toHaveClass('mobile-bottom-nav__indicator--visible');
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+  });
+
+  test('opens lookbooks from the centre tab and does not mark unrelated pages as lookbooks', () => {
+    renderNavbar({ route: '/mobile/events' });
+    const link = screen.getByRole('link', { name: 'Lookbook' });
+    expect(link).toHaveAttribute('href', '/mobile/lookbooks');
+    expect(link).not.toHaveAttribute('aria-current');
+    expect(screen.queryByRole('link', { name: 'Kashf et' })).not.toBeInTheDocument();
   });
 
   test('routes guests to login and authenticated users to profile', () => {
@@ -80,16 +88,8 @@ describe('MobileNavbar', () => {
     }
   });
 
-  test('opens the detached language menu and changes language', () => {
+  test('keeps the language control out of the dock', () => {
     renderNavbar();
-    const trigger = screen.getByRole('button', { name: "Tilni o'zgartirish" });
-
-    expect(trigger).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(trigger);
-    expect(trigger).toHaveAttribute('aria-expanded', 'true');
-
-    fireEvent.click(screen.getByRole('menuitem', { name: 'RU' }));
-    expect(setLanguage).toHaveBeenCalledWith('ru');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: "Tilni o'zgartirish" })).not.toBeInTheDocument();
   });
 });

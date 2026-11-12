@@ -1,0 +1,86 @@
+/* Section opening: veil → gold hairline + name → the veil lifts upward. */
+.mobile-tab-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 9990; /* under the bottom nav (9999) so the dock stays tappable */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+  background: #07080c;
+  animation: mobile-tab-veil 820ms cubic-bezier(0.76, 0, 0.24, 1) both;
+  will-change: clip-path, opacity;
+}
+
+.mobile-tab-opening__glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 28% at 50% 50%, rgba(229, 194, 125, 0.16), transparent 70%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(120, 92, 160, 0.10), transparent 70%);
+  animation: mobile-tab-glow 820ms ease-out both;
+}
+
+.mobile-tab-opening__label {
+  position: relative;
+  color: #f4ede1;
+  font: 400 italic 30px/1 "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  letter-spacing: 0.02em;
+  animation: mobile-tab-label 820ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mobile-tab-opening__line {
+  position: relative;
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e5c27d 20%, #f6dfaa 50%, #e5c27d 80%, transparent);
+  transform-origin: center;
+  animation: mobile-tab-line 820ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mobile-tab-opening__brand {
+  position: relative;
+  color: rgba(229, 194, 125, 0.7);
+  font: 500 8px/1 "SF Mono", ui-monospace, Menlo, monospace;
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  animation: mobile-tab-brand 820ms ease-out both;
+}
+
+@keyframes mobile-tab-veil {
+  /* Opaque from the first frame so the new page never shows before the veil. */
+  0%, 56% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes mobile-tab-glow {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes mobile-tab-label {
+  0% { opacity: 0; transform: translate3d(0, 14px, 0); filter: blur(6px); }
+  45% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+  62% { opacity: 1; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: translate3d(0, -26px, 0); }
+}
+
+@keyframes mobile-tab-line {
+  0%, 8% { transform: scaleX(0); opacity: 1; }
+  48% { transform: scaleX(1); opacity: 1; }
+  62% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1.6); opacity: 0; }
+}
+
+@keyframes mobile-tab-brand {
+  0%, 18% { opacity: 0; }
+  45%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-tab-opening { display: none; }
+}

@@ -1,506 +1,244 @@
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import {
-  ArrowLeft,
-  ShoppingBag,
-  Check,
-  AlertCircle,
-  Gem,
-  ArrowUpRight,
-  ChevronRight,
-  X,
-} from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { AlertCircle, ArrowLeft, ArrowUpRight, Check, Maximize2, RefreshCw, ShoppingBag, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useProducts } from '../../contexts/ProductContext';
 import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { apiFetch } from '../../services/api';
+import { findVariant, getVariants } from '../../utils/productVariants';
+import { getAllImageUrls } from '../../utils/image';
+import LookbookImage from '../../components/mobile/LookbookImage';
+import './mobileLookbook.css';
 
-const formatPrice = (price) => {
-  if (typeof price !== 'number') {
-    return '';
-  }
+const imageOf = (product) => getAllImageUrls(product).find((url) => !url.includes('/placeholder'));
+const money = (value) => Number(value || 0).toLocaleString('uz-UZ').replace(/,/g, '.');
+const sizesOf = (product) => [...new Set((product.sizes || [])
+  .flatMap((size) => typeof size === 'string' ? size.split(/\s+/) : [size]).map(String).filter(Boolean))];
 
-  return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-};
-
-const getSizes = (product) =>
-  Array.isArray(product.sizes)
-    ? product.sizes
-        .flatMap((size) => (typeof size === 'string' && size.includes(' ') ? size.split(' ') : [size]))
-        .map(String)
-        .filter(Boolean)
-    : [];
-
-const LookProductCard = ({ product, selection, error, onSelect, onOpenProduct, t }) => {
-  const sizeOptions = getSizes(product);
-  const hasVariants = (product.colors?.length || 0) > 0 || sizeOptions.length > 0;
+function LookProduct({ product, selection = {}, error, onSelect, t }) {
+  const sizes = sizesOf(product);
+  const colors = product.colors || [];
 
   return (
-    <article
-      className={`rounded-2xl border p-3.5 transition-all ${
-        error
-          ? 'bg-red-950/25 border-red-400/40'
-          : 'bg-[#101b2d]/70 border-white/10 hover:border-white/20'
-      }`}
-    >
-      <div className="flex gap-3">
-        <img
-          src={product.image || product.images?.[0]?.url || '/placeholder.jpg'}
-          alt={product.name}
-          onError={(event) => {
-            event.target.src = '/placeholder.jpg';
-          }}
-          className="w-16 h-20 rounded-xl object-cover border border-white/10"
-        />
-
-        <div className="flex-1 min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.28em] text-[#56c4bb] mb-1">{product.category}</p>
-          <h3 className="text-sm font-medium text-[#f4efe7] line-clamp-1">{product.name}</h3>
-
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-sm font-semibold text-[#d6b47c]">{formatPrice(product.price)} {t('common.sum')}</p>
-            <button
-              type="button"
-              onClick={() => onOpenProduct(product.id)}
-              className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-white/70 hover:text-white transition-colors"
-            >
-              {t('mobileLookDetail.open_label')}
-              <ArrowUpRight className="w-3 h-3" />
-            </button>
-          </div>
+    <article className={`mlb-product ${error ? 'mlb-product--error' : ''}`} data-product-id={product.id}>
+      <div className="mlb-product__top">
+        <Link to={`/mobile/product/${product.id}`} tabIndex={-1} aria-hidden="true"><LookbookImage src={imageOf(product)} alt="" fallback="/placeholder.svg" /></Link>
+        <div className="mlb-product__copy">
+          <p className="mlb-product__category">{product.category}</p>
+          <Link to={`/mobile/product/${product.id}`} className="mlb-product__name"><h3>{product.name}</h3><ArrowUpRight size={14} aria-hidden="true" /></Link>
+          <p className="mlb-product__price">{money(product.price)} {t('common.sum')}</p>
         </div>
       </div>
-
-      {hasVariants ? (
-        <div className="mt-3 flex flex-wrap gap-3 border-t border-white/5 pt-3">
-          {product.colors?.length > 0 ? (
-            <div className="space-y-1.5">
-              <p className="text-[9px] uppercase tracking-[0.2em] text-neutral-500">{t('mobileLookDetail.color_label')}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {product.colors.map((color, index) => {
-                  const isHex = color.startsWith('#');
-                  const isSelected = selection?.color === color;
-
-                  return (
-                    <button
-                      key={`${color}-${index}`}
-                      type="button"
-                      title={color}
-                      onClick={() => onSelect(product.id, 'color', color)}
-                      className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all ${
-                        isSelected
-                          ? 'border-[#d6b47c] ring-2 ring-[#d6b47c]/40 scale-105'
-                          : 'border-white/20 hover:border-white/50'
-                      }`}
-                      style={{ backgroundColor: isHex ? color : '#263247' }}
-                    >
-                      {!isHex ? (
-                        <span className="text-[7px] text-white px-0.5 truncate">{color}</span>
-                      ) : null}
-                      {isSelected && isHex ? <Check className="w-3 h-3 text-white" /> : null}
-                    </button>
-                  );
-                })}
+      {(colors.length > 0 || sizes.length > 0) && (
+        <div className="mlb-product__options">
+          {colors.length > 0 && (
+            <fieldset>
+              <legend>{t('mobileLookDetail.color_label')}</legend>
+              <div className="mlb-product__choices">
+                {colors.map((color) => (
+                  <button key={color} type="button" className="mlb-product__choice" aria-label={color} title={color} aria-pressed={selection.color === color} onClick={() => onSelect(product.id, 'color', color)}>
+                    {/^#[0-9a-f]{3,8}$/i.test(color) ? <span className="mlb-product__swatch" style={{ backgroundColor: color }} /> : color}
+                    {selection.color === color && <Check size={12} aria-hidden="true" />}
+                  </button>
+                ))}
               </div>
-            </div>
-          ) : null}
-
-          {sizeOptions.length > 0 ? (
-            <div className="space-y-1.5">
-              <p className="text-[9px] uppercase tracking-[0.2em] text-neutral-500">{t('mobileLookDetail.size_label')}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {sizeOptions.map((size) => {
-                  const isSelected = selection?.size === size;
-
-                  return (
-                    <button
-                      key={size}
-                      type="button"
-                      onClick={() => onSelect(product.id, 'size', size)}
-                      className={`px-2.5 h-6 rounded-lg text-[11px] font-medium transition-all ${
-                        isSelected
-                          ? 'bg-[#d6b47c] text-[#060810]'
-                          : 'bg-white/5 text-neutral-300 border border-white/10'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
+            </fieldset>
+          )}
+          {sizes.length > 0 && (
+            <fieldset>
+              <legend>{t('mobileLookDetail.size_label')}</legend>
+              <div className="mlb-product__choices">{sizes.map((size) => (
+                <button key={size} type="button" className="mlb-product__choice" aria-pressed={selection.size === size} onClick={() => onSelect(product.id, 'size', size)}>{size}</button>
+              ))}</div>
+            </fieldset>
+          )}
         </div>
-      ) : null}
-
-      {error ? (
-        <div className="mt-2 text-[11px] text-red-300 inline-flex items-center gap-1.5">
-          <AlertCircle className="w-3.5 h-3.5" />
-          {error}
-        </div>
-      ) : null}
+      )}
+      {error && <p className="mlb-product__error" role="alert"><AlertCircle size={14} />{error}</p>}
     </article>
   );
-};
+}
 
-const MobileLookDetail = () => {
-  const { t } = useLanguage();
+export default function MobileLookDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const { t } = useLanguage();
   const { products } = useProducts();
-  const { addToCart } = useCart();
-
+  const { addToCart, totalItems } = useCart();
   const [look, setLook] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [selections, setSelections] = useState({});
   const [errors, setErrors] = useState({});
-  const [isAddingAll, setIsAddingAll] = useState(false);
-  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const dialogRef = useRef(null);
+  const contentRef = useRef(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0);
-    setTimeout(() => window.scrollTo(0, 0), 10);
-  }, [id]);
-
-  useEffect(() => {
-    const fetchLook = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/looks');
-        const result = await response.json();
-
-        if (result.success) {
-          const found = (result.data || []).find((item) => item._id === id || item.id === id);
-          setLook(found || null);
-        } else {
-          setLook(null);
-        }
-      } catch (error) {
-        console.error('Failed to fetch look:', error);
-        setLook(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchLook();
-  }, [id]);
-
-  useEffect(() => {
-    if (isImageFullscreen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
+    const controller = new AbortController();
+    let active = true;
+    setIsLoading(true);
+    setLoadError(false);
+    setLook(null);
+    setSelections({});
+    setErrors({});
+    setDescriptionExpanded(false);
+    const timeout = window.setTimeout(() => controller.abort(), 12000);
+    apiFetch(`/api/looks/${id}`, { signal: controller.signal }).then((result) => {
+      if (!active) return;
+      if (result.success && result.data && result.data.isActive !== false) setLook(result.data);
+      else setLoadError(result.status !== 404);
+    }).catch(() => {
+      if (active) setLoadError(true);
+    }).finally(() => {
+      window.clearTimeout(timeout);
+      if (active) setIsLoading(false);
+    });
     return () => {
-      document.body.style.overflow = '';
+      active = false;
+      window.clearTimeout(timeout);
+      controller.abort();
     };
-  }, [isImageFullscreen]);
+  }, [id, attempt]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!zoomed || !dialog) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog.showModal();
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [zoomed]);
 
   const lookProducts = useMemo(() => {
-    if (!look) {
-      return [];
+    if (!look) return [];
+    if (look.products?.length) {
+      return look.products.filter(Boolean).map((item) => {
+        const productId = typeof item === 'string' ? item : item._id || item.id;
+        const cached = products.find((product) => product.id === productId);
+        if (typeof item === 'string') return cached;
+        return { ...cached, ...item, id: productId, image: imageOf(item) || imageOf(cached) };
+      }).filter(Boolean);
     }
-
-    if (Array.isArray(look.products) && look.products.length > 0) {
-      const first = look.products[0];
-
-      if (typeof first === 'object') {
-        return look.products.map((item) => {
-          const productId = item.id || item._id;
-          const found = products.find((product) => product.id === productId);
-
-          return (
-            found || {
-              id: productId,
-              name: item.name,
-              price: item.price,
-              category: item.category,
-              colors: item.colors || [],
-              sizes: item.sizes || [],
-              images: item.images || [],
-              image: item.image || item.images?.[0] || '/placeholder.jpg',
-            }
-          );
-        });
+    const resolved = (look.items || []).flatMap((item) => {
+      if (item.product) {
+        const productId = item.product._id || item.product;
+        return products.filter((product) => product.id === productId);
       }
-
-      return products.filter((product) => look.products.includes(product.id));
-    }
-
-    const resolved = [];
-    (look.items || []).forEach((item) => {
-      const byCategory = products
-        .filter((product) => product.category === item.category)
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        .slice(0, item.count || 1);
-
-      resolved.push(...byCategory);
+      return products.filter((product) => product.category === item.category)
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, item.count || 1);
     });
-
-    return [...new Set(resolved)];
+    return [...new Map(resolved.map((product) => [product.id, product])).values()];
   }, [look, products]);
 
-  useEffect(() => {
-    if (!lookProducts.length) {
-      return;
-    }
-
-    const nextSelections = {};
-    lookProducts.forEach((product) => {
-      const next = {};
-      if ((product.colors || []).length === 1) {
-        next.color = product.colors[0];
-      }
-
-      const sizes = getSizes(product);
-      if (sizes.length === 1) {
-        next.size = sizes[0];
-      }
-
-      nextSelections[product.id] = next;
-    });
-
-    setSelections(nextSelections);
-  }, [lookProducts]);
-
-  const totalPrice = lookProducts.reduce(
-    (sum, product) => sum + (typeof product.price === 'number' ? product.price : 0),
-    0
-  );
-  const heroImage = look?.heroImage || look?.image || look?.images?.[0] || '/mobile.jpg';
+  const selectedByProduct = useMemo(() => Object.fromEntries(lookProducts.map((product) => {
+    const sizes = sizesOf(product);
+    const colors = product.colors || [];
+    return [product.id, {
+      color: colors.length === 1 ? colors[0] : selections[product.id]?.color,
+      size: sizes.length === 1 ? sizes[0] : selections[product.id]?.size,
+    }];
+  })), [lookProducts, selections]);
 
   const handleSelect = (productId, field, value) => {
-    setSelections((prev) => ({
-      ...prev,
-      [productId]: {
-        ...(prev[productId] || {}),
-        [field]: value,
-      },
-    }));
-
-    if (errors[productId]) {
-      setErrors((prev) => {
-        const next = { ...prev };
-        delete next[productId];
-        return next;
-      });
-    }
+    setSelections((previous) => ({ ...previous, [productId]: { ...previous[productId], [field]: value } }));
+    setErrors((previous) => ({ ...previous, [productId]: null }));
   };
 
   const handleAddAll = async () => {
-    if (!lookProducts.length) {
-      return;
-    }
-
+    if (isAdding || !lookProducts.length) return;
     const nextErrors = {};
-    let hasError = false;
-
+    const chosenVariants = {};
     lookProducts.forEach((product) => {
-      const selected = selections[product.id] || {};
-      if ((product.colors || []).length > 0 && !selected.color) {
-        nextErrors[product.id] = t('mobileLookDetail.error_color');
-        hasError = true;
-      }
-
-      const sizes = getSizes(product);
-      if (sizes.length > 0 && !selected.size) {
-        nextErrors[product.id] = nextErrors[product.id]
-          ? t('mobileLookDetail.error_both')
-          : t('mobileLookDetail.error_size');
-        hasError = true;
+      const selected = selectedByProduct[product.id] || {};
+      if ((product.colors || []).length && !selected.color) nextErrors[product.id] = t('mobileLookDetail.error_color');
+      if (sizesOf(product).length && !selected.size) nextErrors[product.id] = nextErrors[product.id] ? t('mobileLookDetail.error_both') : t('mobileLookDetail.error_size');
+      const variant = findVariant(product, selected.color, selected.size);
+      chosenVariants[product.id] = variant;
+      if (!nextErrors[product.id] && (getVariants(product).length ? !variant : product.stock !== undefined && product.stock <= 0)) {
+        nextErrors[product.id] = t('common.outOfStock');
       }
     });
-
-    if (hasError) {
+    if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
-      toast.error(t('mobileLookDetail.toast_variants'));
+      const firstInvalid = contentRef.current?.querySelector(`[data-product-id="${Object.keys(nextErrors)[0]}"]`);
+      firstInvalid?.scrollIntoView({ behavior: 'instant', block: 'center' });
       return;
     }
 
-    setIsAddingAll(true);
+    setIsAdding(true);
     let added = 0;
-
-    for (const product of lookProducts) {
-      const selected = selections[product.id] || {};
-      try {
-        // Add each product sequentially so cart state is updated in order.
-        await addToCart(product, selected.color, selected.size, 1);
+    try {
+      for (const product of lookProducts) {
+        const selected = selectedByProduct[product.id] || {};
+        await addToCart(product, selected.color, selected.size, 1, chosenVariants[product.id]);
         added += 1;
-      } catch (error) {
-        console.error('Failed to add look product:', error);
       }
-    }
-
-    setIsAddingAll(false);
-
-    if (added > 0) {
       toast.success(`${t('mobileLookDetail.toast_success')} (${added} ${t('mobileLookDetail.success_count')})`);
+    } catch {
+      toast.error(t('common.error'));
+    } finally {
+      setIsAdding(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#08090d] flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-2 border-[#d6b47c]/25 border-t-[#d6b47c] animate-spin" />
-      </div>
-    );
-  }
-
-  if (!look) {
-    return (
-      <div className="min-h-screen bg-[#08090d] flex flex-col items-center justify-center px-6 text-center">
-        <h2 className="text-xl font-semibold text-[#f4f1eb] mb-2">{t('mobileLookDetail.not_found_title')}</h2>
-        <p className="text-sm text-neutral-400 mb-6">{t('mobileLookDetail.not_found_desc')}</p>
-        <button
-          type="button"
-          onClick={() => navigate('/mobile/lookbooks')}
-          className="px-5 py-3 rounded-2xl bg-[#d6b47c] text-[#060810] font-semibold"
-        >
-          {t('mobileLookDetail.back_to_lookbook')}
-        </button>
-      </div>
-    );
-  }
+  const totalPrice = lookProducts.reduce((sum, product) => sum + (Number(product.price) || 0), 0);
+  const heroImage = look?.heroImage || look?.image;
 
   return (
-    <div className="bg-[#08090d] text-white">
-      <div className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
-        <button
-          type="button"
-          onClick={() => navigate('/mobile/lookbooks')}
-          className="w-10 h-10 rounded-full bg-black/35 backdrop-blur-md border border-white/15 flex items-center justify-center"
-        >
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
+    <div className="mlb-page mlb-detail">
+      <header className="mlb-topbar">
+        <Link to="/mobile/lookbooks" className="mlb-detail__back"><ArrowLeft size={19} strokeWidth={1.4} /><span>Lookbook</span></Link>
+        <Link to="/mobile/cart" className="mlb-detail__cart"><ShoppingBag size={18} strokeWidth={1.4} />{t('mobileLookDetail.cart_button')}{totalItems > 0 ? ` (${totalItems})` : ''}</Link>
+      </header>
 
-        <button
-          type="button"
-          onClick={() => navigate('/mobile/cart')}
-          className="h-10 px-4 rounded-full bg-black/35 backdrop-blur-md border border-white/15 inline-flex items-center gap-2 text-[11px] uppercase tracking-wider text-white/90"
-        >
-          <ShoppingBag className="w-4 h-4 text-[#d6b47c]" />
-          {t('mobileLookDetail.cart_button')}
-        </button>
-      </div>
-
-      <section className="relative h-[100svh] min-h-[32rem] bg-[#060810] overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setIsImageFullscreen(true)}
-          className="block w-full h-full cursor-zoom-in"
-          aria-label={t('mobileLookDetail.image_zoom_label')}
-        >
-          <img
-            src={heroImage}
-            alt={look.title}
-            onError={(event) => {
-              event.target.src = '/mobile.jpg';
-            }}
-            className="w-full h-full object-cover object-center"
-          />
-        </button>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-12 h-1 rounded-full bg-white/35 pointer-events-none" />
-      </section>
-
-      <section className="relative z-10 bg-[#08090d] border-t border-white/10 px-4 pt-7 pb-[8.5rem]">
-        <div className="mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d6b47c]/20 border border-[#d6b47c]/30 mb-3">
-            <Gem className="w-3.5 h-3.5 text-[#d6b47c]" />
-            <span className="text-[10px] uppercase tracking-[0.25em] text-[#d6b47c]">{t('mobileLookDetail.look_label')} {look.id || ''}</span>
-          </div>
-
-          <h1 className="font-brilliant text-[1.85rem] leading-[1.06] text-[#f4f1eb]">{look.title}</h1>
-          {look.description ? (
-            <p className="text-[15px] text-neutral-400 mt-2 leading-relaxed">{look.description}</p>
-          ) : null}
+      {isLoading ? (
+        <div className="mlb-content" role="status" aria-label={t('mobileLookbooks.loading')}>
+          <span className="sr-only">{t('mobileLookbooks.loading')}</span>
+          <div className="mlb-loading__image mlb-shimmer" />
+          <div className="mlb-loading__line mlb-shimmer" />
+          <div className="mlb-loading__line mlb-loading__line--short mlb-shimmer" />
         </div>
-
-        <div className="rounded-2xl bg-[#0e1625]/75 border border-white/10 p-3.5 mb-5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-neutral-500 uppercase tracking-[0.2em]">{t('mobileLookDetail.contents_label')}</span>
-            <span className="text-[#d6b47c] font-semibold">{lookProducts.length} {t('mobileLookDetail.success_count')}</span>
-          </div>
-        </div>
-
-        {lookProducts.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#0f1623]/65 p-8 text-center">
-            <p className="text-neutral-400 text-sm">{t('mobileLookDetail.no_products')}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {lookProducts.map((product) => (
-              <LookProductCard
-                key={product.id}
-                product={product}
-                selection={selections[product.id]}
-                error={errors[product.id]}
-                onSelect={handleSelect}
-                onOpenProduct={(productId) => navigate(`/mobile/product/${productId}`)}
-                t={t}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 pt-3 pb-[calc(0.9rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-[#070b13] via-[#070b13]/95 to-transparent">
-        <div className="rounded-2xl border border-white/10 bg-[#090f1c] p-3.5">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] uppercase tracking-[0.22em] text-neutral-500">{t('common.total')}</span>
-            <span className="text-lg font-semibold text-[#d6b47c]">{formatPrice(totalPrice)} {t('common.sum')}</span>
-          </div>
-
-          <div className="grid grid-cols-[1fr_auto] gap-2.5">
-            <button
-              type="button"
-              onClick={() => navigate('/mobile/lookbooks')}
-              className="h-12 rounded-xl border border-white/10 text-neutral-300 text-sm inline-flex items-center justify-center gap-1.5"
-            >
-              {t('mobileLookDetail.looks_label')}
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleAddAll}
-              disabled={isAddingAll || lookProducts.length === 0}
-              className="h-12 px-5 rounded-xl bg-[#d6b47c] text-[#060810] font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              {isAddingAll ? t('mobileLookDetail.adding') : t('mobileLookDetail.add_all')}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {isImageFullscreen ? (
-        <div
-          className="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center p-3"
-          onClick={() => setIsImageFullscreen(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setIsImageFullscreen(false)}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center"
-          >
-            <X className="w-5 h-5" />
+      ) : !look ? (
+        <div className="mlb-content"><div className="mlb-state" role={loadError ? 'alert' : undefined}>
+          <h1>{loadError ? t('mobileLookbooks.errorLoading') : t('mobileLookDetail.not_found_title')}</h1>
+          <p>{loadError ? t('mobileLookbooks.connectionError') : t('mobileLookDetail.not_found_desc')}</p>
+          {loadError ? <button type="button" className="mlb-button mlb-button--outline" onClick={() => setAttempt((value) => value + 1)}><RefreshCw size={16} />{t('mobileLookbooks.retry')}</button> : <Link to="/mobile/lookbooks" className="mlb-button mlb-button--outline">{t('mobileLookDetail.back_to_lookbook')}</Link>}
+        </div></div>
+      ) : (
+        <>
+          <button type="button" className="mlb-detail__hero" onClick={() => setZoomed(true)} aria-label={t('mobileLookDetail.image_zoom_label')}>
+            <LookbookImage src={heroImage} alt={look.title} />
+            <Maximize2 className="mlb-detail__zoom" size={20} strokeWidth={1.3} aria-hidden="true" />
           </button>
-
-          <img
-            src={heroImage}
-            alt={look.title}
-            onClick={(event) => event.stopPropagation()}
-            onError={(event) => {
-              event.target.src = '/mobile.jpg';
-            }}
-            className="max-w-full max-h-full object-contain rounded-xl"
-          />
-        </div>
-      ) : null}
+          <div className="mlb-content" ref={contentRef}>
+            <div className="mlb-detail__intro">
+              <h1>{look.title}</h1>
+              {look.description && <>
+                <p id="look-description" className={descriptionExpanded ? '' : 'mlb-detail__description--collapsed'}>{look.description}</p>
+                {look.description.length > 180 && <button type="button" className="mlb-detail__read-more" aria-expanded={descriptionExpanded} aria-controls="look-description" onClick={() => setDescriptionExpanded((value) => !value)}>{t(descriptionExpanded ? 'common.less' : 'common.more')}</button>}
+              </>}
+            </div>
+            <div className="mlb-detail__contents"><h2>{t('mobileLookDetail.contents_label')}</h2><span>{lookProducts.length} {t('mobileLookDetail.success_count')}</span></div>
+            {lookProducts.length ? lookProducts.map((product) => <LookProduct key={product.id} product={product} selection={selectedByProduct[product.id]} error={errors[product.id]} onSelect={handleSelect} t={t} />) : <p className="mlb-intro__lead">{t('mobileLookDetail.no_products')}</p>}
+          </div>
+          <div className="mlb-purchase"><div className="mlb-purchase__inner">
+            <div className="mlb-purchase__price"><span>{t('common.total')}</span><strong>{money(totalPrice)} {t('common.sum')}</strong></div>
+            <button type="button" className="mlb-button" onClick={handleAddAll} disabled={isAdding || !lookProducts.length}><ShoppingBag size={17} />{isAdding ? t('mobileLookDetail.adding') : t('mobileLookDetail.add_all')}</button>
+          </div></div>
+          <dialog ref={dialogRef} className="mlb-lightbox" aria-label={t('mobileLookDetail.image_zoom_label')} onClose={() => setZoomed(false)}>
+            <button type="button" onClick={() => setZoomed(false)} aria-label={t('common.close')}><X size={24} strokeWidth={1.3} /></button>
+            {zoomed && <LookbookImage src={heroImage} alt={look.title} />}
+          </dialog>
+        </>
+      )}
     </div>
   );
-};
-
-export default MobileLookDetail;
+}

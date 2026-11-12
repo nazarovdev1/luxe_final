@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Globe, Home, Navigation, ShoppingBag, ShoppingCart, User } from 'lucide-react';
+import { BookOpen, Home, ShoppingBag, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -10,20 +10,14 @@ import {
 } from '../../config/mobileNavigation';
 import './MobileNavbar.css';
 
-const LANGS = [
-  { code: 'uz', label: 'UZ' },
-  { code: 'ru', label: 'RU' },
-  { code: 'en', label: 'EN' },
-];
-
+// Language lives in the home hero and the profile page (MobileLanguageSwitch),
+// so nothing floats over the content above the dock.
 const MobileNavbar = () => {
   const { totalItems } = useCart();
   const { isAuthenticated } = useAuth();
-  const { t, language, setLanguage, availableLanguages } = useLanguage();
+  const { t } = useLanguage();
   const { pathname } = useLocation();
-  const [langOpen, setLangOpen] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
-  const languageRef = useRef(null);
 
   useEffect(() => {
     const viewport = window.visualViewport;
@@ -43,27 +37,6 @@ const MobileNavbar = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!langOpen) return undefined;
-
-    const closeLanguageMenu = (event) => {
-      if (event.key === 'Escape' || !languageRef.current?.contains(event.target)) {
-        setLangOpen(false);
-      }
-    };
-
-    document.addEventListener('pointerdown', closeLanguageMenu);
-    document.addEventListener('keydown', closeLanguageMenu);
-    return () => {
-      document.removeEventListener('pointerdown', closeLanguageMenu);
-      document.removeEventListener('keydown', closeLanguageMenu);
-    };
-  }, [langOpen]);
-
-  useEffect(() => {
-    setLangOpen(false);
-  }, [pathname]);
-
   const navItems = [
     {
       id: 'home',
@@ -80,11 +53,11 @@ const MobileNavbar = () => {
       label: t('nav.shop', "Do'kon"),
     },
     {
-      id: 'explore',
-      path: '/mobile/events',
-      matchPrefixes: MOBILE_NAV_ROUTE_GROUPS.explore,
-      icon: Navigation,
-      label: t('mobileNav.explore', 'Kashf et'),
+      id: 'lookbook',
+      path: '/mobile/lookbooks',
+      matchPrefixes: MOBILE_NAV_ROUTE_GROUPS.lookbook,
+      icon: BookOpen,
+      label: t('mobileLookbooks.title', 'Lookbook'),
     },
     {
       id: 'cart',
@@ -105,8 +78,6 @@ const MobileNavbar = () => {
 
   const activeId = getActiveMobileNavId(pathname);
   const activeIndex = navItems.findIndex((item) => item.id === activeId);
-
-  const currentLang = (availableLanguages || LANGS).find((l) => l.code === language) || { code: language, label: (language || 'uz').toUpperCase() };
 
   return (
     <nav className={`mobile-bottom-nav border-none${keyboardOpen ? ' mobile-bottom-nav--keyboard-hidden' : ''}`} aria-label={t('mobileNav.ariaLabel', 'Asosiy mobil navigatsiya')}>
@@ -151,41 +122,6 @@ const MobileNavbar = () => {
 
       </div>
 
-      {/* Language control lives outside the primary navigation */}
-        <div ref={languageRef} className={`mobile-bottom-nav__language-orb${langOpen ? ' mobile-bottom-nav__language-orb--open' : ''}`}>
-          <button
-            type="button"
-            onClick={() => setLangOpen((v) => !v)}
-            aria-label={t('mobileNav.changeLanguage', "Tilni o'zgartirish")}
-            title={t('mobileNav.changeLanguage', "Tilni o'zgartirish")}
-            aria-expanded={langOpen}
-            aria-controls="mobile-language-menu"
-            aria-haspopup="menu"
-            className="mobile-bottom-nav__language-trigger"
-          >
-            <Globe className="mobile-bottom-nav__language-icon" aria-hidden="true" />
-            <span>{currentLang.label}</span>
-          </button>
-          {langOpen && (
-            <div id="mobile-language-menu" className="mobile-bottom-nav__lang-menu" role="menu">
-              {(availableLanguages || LANGS).map((lng) => (
-                <button
-                  key={lng.code}
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setLanguage(lng.code);
-                    setLangOpen(false);
-                  }}
-                  className={`mobile-bottom-nav__lang-option${lng.code === language ? ' mobile-bottom-nav__lang-option--active' : ''}`}
-                >
-                  <span className="mobile-bottom-nav__lang-flag" aria-hidden="true">{lng.flag || ''}</span>
-                  <span>{(lng.label || lng.code).toUpperCase()}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
     </nav>
   );
 };

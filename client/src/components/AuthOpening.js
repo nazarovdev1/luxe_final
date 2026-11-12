@@ -17,10 +17,14 @@ import './AuthOpening.css';
  */
 export default function AuthOpening({ variant = 'login' }) {
   const rootRef = useRef(null);
-  const [isDone, setIsDone] = useState(false);
+  // The mobile app already plays its own section opening (MobileTabOpening)
+  // on the way here, so this cinematic would be a second intro in a row.
+  const [isDone, setIsDone] = useState(
+    () => typeof window !== 'undefined' && window.location.pathname.startsWith('/mobile'),
+  );
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || isDone) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setIsDone(true);
       return;
@@ -199,6 +203,7 @@ export default function AuthOpening({ variant = 'login' }) {
     return () => {
       tl.kill();
     };
+  // isDone only gates the first run; finishing must not restart the timeline.
   }, [variant]);
 
   if (isDone) return null;

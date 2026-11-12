@@ -1,0 +1,48 @@
+.bmt-photo { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in !important; }
+.bmt-photo__zoom { position: absolute; right: 17px; bottom: 17px; color: #fff; filter: drop-shadow(0 1px 4px #000); }
+
+/* Studio: title first, swipeable images, then a compact two-column shopping grid. */
+.bde--mobile.bde-template--studio { --bde-bg: #171615; --bde-line: rgba(214, 180, 124, .26); }
+.bde--mobile.bde-template--studio .bde-topline { border-bottom: 0; margin-bottom: 24px; }
+.bmt-studio__intro { order: -3; width: 100%; padding: 0 0 25px; }
+.bmt-studio__intro .bde-eyebrow { margin-bottom: 13px; font-size: 8px; }
+.bmt-studio__intro h1 { margin: 0; font: 400 clamp(26px, 8vw, 39px)/1.12 Inter, Arial, sans-serif; letter-spacing: -.055em; text-wrap: balance; overflow-wrap: anywhere; }
+.bmt-studio__intro .bde-summary__lead { margin-top: 14px; max-width: 30em; font-size: 11px; }
+.bde--mobile.bde-template--studio .bde-gallery { order: -2; width: calc(100% + 40px); margin-inline: -20px; }
+.bmt-studio__track { display: grid; grid-auto-flow: column; grid-auto-columns: 86%; gap: 13px; overflow-x: auto; padding: 0 20px 7px; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; overscroll-behavior-x: contain; scrollbar-width: thin; scrollbar-color: #806947 transparent; }
+.bmt-studio__track > figure { min-width: 0; margin: 0; scroll-snap-align: start; }
+.bmt-studio__track .bde-image { aspect-ratio: 4 / 5; }
+.bmt-studio__track figcaption { display: flex; align-items: baseline; gap: 15px; margin-top: 13px; padding-bottom: 13px; font-size: 9px; color: #b7afa2; }
+.bmt-studio__track figcaption > span:first-child { flex: none; color: #d6b47c; }
+.bmt-studio__track figcaption > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bde--mobile.bde-template--studio .bde-summary { display: contents; }
+.bde--mobile.bde-template--studio .bde-price { order: -1; width: 100%; margin-top: 16px; border-top: 0; padding: 13px 0 27px; }
+.bde--mobile.bde-template--studio .bde-price__amount strong { font-family: Inter, Arial, sans-serif; font-size: 29px; font-weight: 400; letter-spacing: -.055em; }
+.bde--mobile.bde-template--studio .bde-selection { order: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; margin-top: 0; }
+.bde--mobile.bde-template--studio .bde-selection__header { grid-column: 1 / -1; padding: 23px 0 0; }
+.bde--mobile.bde-template--studio .bde-selection__header h2 { font: 400 23px/1.2 Inter, Arial, sans-serif; letter-spacing: -.045em; }
+.bde--mobile.bde-template--studio .bde-selection__header p { font-size: 10px; }
+.bde--mobile.bde-template--studio .bde-product { display: block; min-width: 0; margin: 0; padding: 0 0 23px; }
+.bde--mobile.bde-template--studio .bde-product__image { display: block; }
+.bde--mobile.bde-template--studio .bde-product__body { padding-top: 14px; }
+.bde--mobile.bde-template--studio .bde-product__name { gap: 3px; }
+.bde--mobile.bde-template--studio .bde-product__name h3 { font-size: 11px; line-height: 1.65; }
+.bde--mobile.bde-template--studio .bde-product__category { font-size: 8px; }
+.bde--mobile.bde-template--studio .bde-product__price { font-size: 11px; }
+.bde--mobile.bde-template--studio .bde-choice { min-width: 40px; min-height: 42px; padding: 7px; }
+.bde--mobile.bde-template--studio .bde-product legend { flex-wrap: wrap; gap: 3px 7px; }
+.bde--mobile.bde-template--studio .bde-receipt { grid-column: 1 / -1; }
+.bde--mobile.bde-template--studio .bde-assurance { order: 1; width: 100%; padding: 30px 0 20px; }
+.bde--mobile.bde-template--studio .bde-policy { order: 2; width: 100%; }
+.bde--mobile.bde-template--studio .bde-help { order: 3; width: 100%; }
+.bde--mobile.bde-template--studio .bde-mobile-purchase { background: #211f1b; }
+
+
+@media (max-width: 359px) {
+  .bde--mobile.bde-template--studio .bde-gallery { width: calc(100% + 32px); margin-inline: -16px; }
+  .bmt-studio__track { padding-inline: 16px; scroll-padding-inline: 16px; }
+  .bde--mobile.bde-template--studio .bde-selection { gap: 22px 12px; }
+  .bde--mobile.bde-template--studio .bde-product__name h3 { font-size: 10px; }
+  .bde--mobile.bde-template--studio .bde-product__price { font-size: 10px; }
+}
+

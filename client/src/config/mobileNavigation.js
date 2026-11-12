@@ -7,19 +7,10 @@ export const MOBILE_NAV_ROUTE_GROUPS = {
     exact: ['/mobile/products', '/mobile/bundles'],
     prefixes: ['/mobile/bundles/'],
   },
-  explore: {
+  lookbook: {
     exact: [],
     prefixes: [
-      '/mobile/events',
       '/mobile/lookbooks',
-      '/mobile/vip-club',
-      '/mobile/eco-impact',
-      '/mobile/live',
-      '/mobile/style-feed',
-      '/mobile/challenges',
-      '/mobile/reels',
-      '/mobile/gift-cards',
-      '/mobile/blog',
     ],
   },
   cart: {

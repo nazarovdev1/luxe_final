@@ -1,0 +1,148 @@
+.mlb-page {
+  --mlb-ink: #0b0b0b;
+  --mlb-text: #f3efe8;
+  --mlb-gold: #d6b47c;
+  --mlb-muted: #aaa59d;
+  --mlb-line: rgba(214, 180, 124, .22);
+  min-height: 100dvh;
+  background: var(--mlb-ink);
+  color: var(--mlb-text);
+  padding-bottom: calc(146px + env(safe-area-inset-bottom));
+  font-family: Inter, Arial, sans-serif;
+}
+.mlb-page *, .mlb-lightbox * { box-sizing: border-box; }
+.mlb-page a { color: inherit; text-decoration: none; }
+.mlb-page button { font: inherit; }
+.mlb-page :is(a, button):focus-visible, .mlb-lightbox button:focus-visible {
+  outline: 2px solid #d6b47c;
+  outline-offset: 5px;
+}
+.mlb-topbar {
+  min-height: 68px;
+  padding: max(18px, env(safe-area-inset-top)) 22px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--mlb-line);
+}
+.mlb-wordmark { color: var(--mlb-gold) !important; font: 400 24px/1 Georgia, serif; letter-spacing: -.08em; }
+.mlb-text-link { display: inline-flex; align-items: center; gap: 9px; min-height: 36px; font-size: 11px; }
+.mlb-content { max-width: 680px; margin: 0 auto; padding: 0 20px; }
+.mlb-intro { padding: 32px 0 23px; }
+.mlb-eyebrow { margin: 0 0 13px; color: var(--mlb-gold); font-size: 9px; font-weight: 500; letter-spacing: .24em; }
+.mlb-intro h1 { margin: 0; font: 400 clamp(56px, 17.5vw, 94px)/1.02 Georgia, serif; letter-spacing: -.065em; }
+.mlb-intro h1 span { color: var(--mlb-gold); }
+.mlb-intro__lead { max-width: 260px; margin: 16px 0 0; color: var(--mlb-muted); font-size: 12px; line-height: 1.7; }
+.mlb-filter-bar { display: flex; align-items: center; gap: 14px; min-width: 0; border-top: 1px solid var(--mlb-line); margin-bottom: 20px; }
+.mlb-filters { display: flex; gap: 22px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+.mlb-filters::-webkit-scrollbar { display: none; }
+.mlb-filters button { min-height: 49px; flex: none; position: relative; background: none; border: 0; color: var(--mlb-muted); font-size: 11px; white-space: nowrap; }
+.mlb-filters button[aria-pressed="true"] { color: var(--mlb-text); }
+.mlb-filters button[aria-pressed="true"]::after { content: ''; position: absolute; inset: auto 0 0; height: 1px; background: var(--mlb-gold); }
+.mlb-filters button:focus-visible { outline-offset: -3px; }
+.mlb-result-count { color: var(--mlb-gold); font-size: 10px; font-variant-numeric: tabular-nums; }
+.mlb-image { position: relative; display: block; overflow: hidden; width: 100%; aspect-ratio: 3 / 4; background: #18181b; }
+.mlb-image img { width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: blur(8px); transform: scale(1.025); transition: opacity .65s ease, transform .9s ease, filter .65s ease; }
+.mlb-image--loaded img { opacity: 1; filter: blur(0); transform: scale(1); }
+.mlb-image > .mlb-shimmer { position: absolute; inset: 0; }
+.mlb-shimmer { position: relative; overflow: hidden; background: #18181b; }
+.mlb-shimmer::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(214, 180, 124, .1), transparent); animation: mlb-shimmer 2.2s infinite; }
+@keyframes mlb-shimmer { to { transform: translateX(100%); } }
+.mlb-look__link { display: block; }
+.mlb-look--featured > .mlb-look__link > .mlb-image { aspect-ratio: 4 / 4.8; }
+.mlb-look__caption { padding: 15px 0 0; }
+.mlb-look__meta { display: flex; justify-content: space-between; gap: 10px; color: var(--mlb-muted); font-size: 9px; line-height: 1.5; }
+.mlb-look--featured .mlb-look__meta > span:first-child { color: var(--mlb-gold); }
+.mlb-look__title { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 9px; }
+.mlb-look__title h2 { margin: 0; min-width: 0; overflow-wrap: anywhere; font: 400 24px/1.15 Georgia, serif; letter-spacing: -.04em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.mlb-look__title svg { flex: none; color: var(--mlb-gold); margin-top: 2px; transition: transform .2s ease; }
+.mlb-look--featured .mlb-look__title h2 { font-size: clamp(31px, 9vw, 43px); }
+.mlb-look__description { margin: 10px 0 0; max-width: 34em; color: var(--mlb-muted); font-size: 12px; line-height: 1.7; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.mlb-look__action { display: flex; align-items: center; gap: 12px; margin-top: 18px; font-size: 10px; color: var(--mlb-gold); }
+.mlb-archive { margin-top: 42px; }
+.mlb-archive__heading { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--mlb-line); padding: 21px 0; }
+.mlb-archive__heading h2 { margin: 0; font: 400 25px/1.2 Georgia, serif; letter-spacing: -.025em; }
+.mlb-archive__heading > span { color: var(--mlb-muted); font-size: 10px; }
+.mlb-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px 14px; align-items: start; }
+.mlb-grid .mlb-look:nth-child(even) { margin-top: 40px; }
+.mlb-grid .mlb-look__meta { flex-wrap: wrap; gap: 2px 8px; }
+.mlb-grid .mlb-look__title h2 { font-size: 21px; }
+.mlb-footer { margin-top: 54px; padding-top: 27px; border-top: 1px solid var(--mlb-line); text-align: center; }
+.mlb-footer > span { display: block; color: var(--mlb-gold); font: 400 30px/1 Georgia, serif; letter-spacing: -.08em; }
+.mlb-footer p { margin: 12px 0 0; color: var(--mlb-muted); font-size: 10px; }
+.mlb-state { display: flex; flex-direction: column; align-items: flex-start; min-height: 320px; justify-content: center; padding: 36px 0; }
+.mlb-state > svg { color: var(--mlb-gold); margin-bottom: 23px; }
+.mlb-state :is(h1, h2) { max-width: 340px; margin: 0; font: 400 31px/1.2 Georgia, serif; letter-spacing: -.03em; }
+.mlb-state p { color: var(--mlb-muted); font-size: 13px; line-height: 1.8; margin: 14px 0 25px; max-width: 320px; }
+.mlb-button { min-height: 48px; padding: 12px 18px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--mlb-gold); background: var(--mlb-gold); color: #111 !important; font-size: 12px !important; font-weight: 600 !important; }
+.mlb-button--outline { background: transparent; color: var(--mlb-text) !important; border-color: var(--mlb-line); }
+.mlb-button:disabled { opacity: .45; cursor: not-allowed; }
+.mlb-loading__image { aspect-ratio: 4 / 4.8; }
+.mlb-loading__line { width: 76%; height: 25px; margin-top: 21px; }
+.mlb-loading__line--short { width: 48%; height: 12px; margin-top: 12px; }
+
+/* The detail view uses the same unframed photographs and warm gold type. */
+.mlb-detail { padding-bottom: calc(126px + env(safe-area-inset-bottom)); }
+.mlb-detail .mlb-topbar { max-width: 720px; margin: 0 auto; }
+.mlb-detail__back { display: inline-flex; align-items: center; gap: 12px; min-height: 36px; font-size: 12px; }
+.mlb-detail__cart { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; font-size: 11px; }
+.mlb-detail__cart svg { color: var(--mlb-gold); }
+.mlb-detail__hero { position: relative; display: block; width: 100%; max-width: 720px; margin: 0 auto; border: 0; padding: 0; background: #18181b; cursor: zoom-in; }
+.mlb-detail__hero .mlb-image { aspect-ratio: 4 / 5; max-height: 72svh; }
+.mlb-detail__zoom { position: absolute; right: 19px; bottom: 19px; color: white; filter: drop-shadow(0 1px 4px #000); }
+.mlb-detail__intro { padding: 29px 0 30px; }
+.mlb-detail__intro h1 { font: 400 clamp(36px, 10vw, 48px)/1.08 Georgia, serif; letter-spacing: -.045em; margin: 0; overflow-wrap: anywhere; }
+.mlb-detail__intro p { margin: 15px 0 0; color: var(--mlb-muted); font-size: 13px; line-height: 1.8; }
+.mlb-detail__description--collapsed { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.mlb-detail__read-more { min-height: 40px; color: var(--mlb-gold); font-size: 11px !important; background: none; border: 0; }
+.mlb-detail__contents { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 20px 0; border-top: 1px solid var(--mlb-line); }
+.mlb-detail__contents h2 { margin: 0; font: 400 25px/1.2 Georgia, serif; letter-spacing: -.025em; }
+.mlb-detail__contents > span { color: var(--mlb-muted); font-size: 10px; }
+.mlb-product { padding: 0 0 23px; margin-bottom: 23px; border-bottom: 1px solid var(--mlb-line); }
+.mlb-product__top { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 16px; }
+.mlb-product__copy { min-width: 0; padding: 5px 0; }
+.mlb-product__category { margin: 0 0 8px; color: var(--mlb-muted); font-size: 9px; line-height: 1.5; }
+.mlb-product__name { display: flex; align-items: flex-start; gap: 8px; }
+.mlb-product__name h3 { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.6; }
+.mlb-product__name svg { color: var(--mlb-gold); flex: none; margin-top: 4px; }
+.mlb-product__price { margin: 12px 0 0; color: var(--mlb-gold); font-size: 13px; font-weight: 500; }
+.mlb-product__options { display: flex; flex-wrap: wrap; gap: 16px 25px; margin-top: 18px; }
+.mlb-product fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.mlb-product legend { margin-bottom: 7px; color: var(--mlb-muted); font-size: 10px; }
+.mlb-product__choices { display: flex; flex-wrap: wrap; gap: 7px; }
+.mlb-product__choice { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 42px; min-height: 42px; padding: 8px 10px; background: none; border: 1px solid #37342f; color: var(--mlb-text); font-size: 11px !important; }
+.mlb-product__choice[aria-pressed="true"] { border-color: var(--mlb-gold); color: var(--mlb-gold); }
+.mlb-product__swatch { width: 16px; height: 16px; border: 1px solid #777; display: block; }
+.mlb-product__error { display: flex; align-items: center; gap: 7px; color: #efb3a8; font-size: 11px; margin: 13px 0 0; }
+.mlb-product--error { border-bottom-color: #a86758; }
+.mlb-purchase { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; background: #111110; border-top: 1px solid var(--mlb-line); padding: 15px 20px calc(15px + env(safe-area-inset-bottom)); }
+.mlb-purchase__inner { max-width: 640px; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 0 auto; }
+.mlb-purchase__price { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.mlb-purchase__price span { color: var(--mlb-muted); font-size: 10px; }
+.mlb-purchase__price strong { color: var(--mlb-text); font-size: 15px; font-weight: 500; white-space: nowrap; }
+.mlb-purchase .mlb-button { flex: 0 0 auto; }
+.mlb-lightbox { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 52px 14px; background: #090909; color: #f3efe8; border: 0; }
+.mlb-lightbox::backdrop { background: #090909; }
+.mlb-lightbox .mlb-image { height: 100%; aspect-ratio: auto; background: transparent; }
+.mlb-lightbox .mlb-image img { object-fit: contain; }
+.mlb-lightbox > button { position: absolute; z-index: 1; right: 15px; top: 8px; min-height: 44px; min-width: 44px; display: grid; place-items: center; color: inherit; border: 0; background: transparent; }
+
+@media (hover: hover) {
+  .mlb-look__link:hover .mlb-image--loaded img { transform: scale(1.025); }
+  .mlb-look__link:hover .mlb-look__title svg { transform: translate(2px, -2px); }
+}
+@media (max-width: 359px) {
+  .mlb-content { padding: 0 16px; }
+  .mlb-topbar { padding-left: 16px; padding-right: 16px; }
+  .mlb-grid { gap: 26px 12px; }
+  .mlb-grid .mlb-look__title h2 { font-size: 18px; }
+  .mlb-purchase { padding-left: 14px; padding-right: 14px; }
+  .mlb-purchase__inner { gap: 8px; }
+  .mlb-purchase__price strong { font-size: 12px; }
+  .mlb-purchase .mlb-button { padding: 12px; font-size: 11px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mlb-shimmer::after { animation: none; }
+  .mlb-image img, .mlb-look__title svg { transition: none; filter: none; transform: none; }
+}
