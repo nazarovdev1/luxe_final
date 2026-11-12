@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { categoryPath, resolveLanding } from '../../config/categoryLandings';
+import { productPath } from '../../utils/productUrl';
 import {
   ArrowDownRight, ArrowUpRight, BarChart3, Check, Heart, Search,
   ShoppingBag, SlidersHorizontal, X,
@@ -107,8 +109,15 @@ const MobileProductFilter = ({
 };
 
 const MobileProducts = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { products, isLoading, categories } = useProducts();
+  // /mobile/kategoriya/:slug opens the catalogue on one department (phones land here from Google).
+  const { slug } = useParams();
+  const landing = slug ? resolveLanding(slug, products) : null;
+  const landingCopy = landing ? landing[language === 'ru' ? 'ru' : 'uz'] : null;
+  const landingCategory = landing
+    ? (products.find((product) => landing.match.includes(product.category))?.category || landing.match[0])
+    : null;
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addToCart } = useCart();
   const [searchParams] = useSearchParams();
@@ -119,7 +128,7 @@ const MobileProducts = () => {
     products,
     categories,
     allLabel: t('common.all'),
-    categoryFromUrl: searchParams.get('category'),
+    categoryFromUrl: landingCategory || searchParams.get('category'),
     filterFromUrl: searchParams.get('filter'),
     setSearchParams: undefined,
     initialSort: 'featured',
@@ -210,7 +219,7 @@ const MobileProducts = () => {
     const isCompared = isCompareSelected(product);
     return (
       <article className={`mcp-card ${isLead ? 'mcp-card--lead' : ''}`}>
-        <Link to={`/mobile/product/${id}`} className="mcp-card__link" aria-label={product.name}>
+        <Link to={productPath(product, { mobile: true })} className="mcp-card__link" aria-label={product.name}>
           <div className="mcp-card__image-wrap">
             <img src={getProductImage(product)} alt={product.name} loading={isLead ? 'eager' : 'lazy'} />
             <div className="mcp-card__shade" />
@@ -245,13 +254,13 @@ const MobileProducts = () => {
   return (
     <div className="mcp-page">
       <SEO
-        title="Premium ayollar kiyimlari katalogi"
-        description="Luxx.uz ayollar kiyimlari katalogi: premium kostyumlar, jaketlar, paltolar va zamonaviy to‘plamlarni Toshkent bo‘ylab yetkazib berish bilan xarid qiling."
-        canonicalPath="/products"
+        title={landingCopy ? landingCopy.title : 'Premium ayollar kiyimlari katalogi'}
+        description={landingCopy ? landingCopy.description : 'Luxx.uz ayollar kiyimlari katalogi: premium kostyumlar, jaketlar, paltolar va zamonaviy to‘plamlarni Toshkent bo‘ylab yetkazib berish bilan xarid qiling.'}
+        canonicalPath={landing ? categoryPath(landing) : '/products'}
       />
       <header className={`mcp-topbar ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="mcp-topbar__line"><span>LUXX / SARALANGAN LIBOSLAR</span><span>{editorialNumber} TA MAHSULOT</span></div>
-        <div className="mcp-topbar__title-row"><h1>Uslubingizni <em>tanlang</em></h1><button onClick={openFilters} aria-label={t('mobileProducts.filter_title')}><SlidersHorizontal /></button></div>
+        <div className="mcp-topbar__title-row"><h1>{landingCopy ? landingCopy.h1 : <>Uslubingizni <em>tanlang</em></>}</h1><button onClick={openFilters} aria-label={t('mobileProducts.filter_title')}><SlidersHorizontal /></button></div>
         <div className="mcp-category-rail" aria-label={t('mobileProducts.category_heading')}>
           {derivedCategories.map((category) => <button key={category} onClick={() => handleCategoryChange(category)} className={selectedCategory === category ? 'is-current' : ''}>{category}</button>)}
         </div>

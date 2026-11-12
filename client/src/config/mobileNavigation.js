@@ -5,7 +5,7 @@ export const MOBILE_NAV_ROUTE_GROUPS = {
   },
   shop: {
     exact: ['/mobile/products', '/mobile/bundles'],
-    prefixes: ['/mobile/bundles/'],
+    prefixes: ['/mobile/bundles/', '/mobile/kategoriya/'],
   },
   lookbook: {
     exact: [],

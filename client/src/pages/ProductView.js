@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { extractProductId, productPath, productSlugId } from '../utils/productUrl';
+import { categoryPath, landingForCategory } from '../config/categoryLandings';
 import { Helmet } from 'react-helmet';
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -54,7 +56,9 @@ const marqueeItems = [
 // ProductView — Ultra Luxury Cinematic Product Detail Page
 // ════════════════════════════════════════════════════════════
 export default function ProductView() {
-  const { id } = useParams();
+  // The address is /product/<name>-<id>; old /product/<id> links still resolve.
+  const { id: routeParam } = useParams();
+  const id = extractProductId(routeParam);
   const { getProduct, fetchProductDetails, isLoading, products } = useProducts();
   const { addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -62,6 +66,13 @@ export default function ProductView() {
   const { t } = useLanguage();
 
   const product = getProduct(id);
+  const canonicalProductPath = product ? productPath(product) : `/product/${id}`;
+  const categoryHref = product?.category ? categoryPath(landingForCategory(product.category)) : '/products';
+  const navigate = useNavigate();
+  // Old or shortened addresses move to the named one that Google indexes.
+  useEffect(() => {
+    if (product && routeParam !== productSlugId(product)) navigate(productPath(product), { replace: true });
+  }, [product, routeParam, navigate]);
   const isProductFavorite = product ? isFavorite(product.id) : false;
 
   // ── State ─────────────────────────────────────────────
@@ -256,10 +267,10 @@ export default function ProductView() {
         type="product"
         breadcrumbSteps={[
           { name: 'Kiyimlar', url: '/products' },
-          { name: product.category, url: `/products?category=${product.category}` },
-          { name: product.name, url: `/product/${id}` },
+          { name: product.category, url: categoryHref },
+          { name: product.name, url: canonicalProductPath },
         ]}
-        canonicalPath={`/product/${id}`}
+        canonicalPath={canonicalProductPath}
       />
 
       <Helmet>
@@ -267,7 +278,7 @@ export default function ProductView() {
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Product',
-            '@id': `https://luxx.uz/product/${id}#product`,
+            '@id': `https://luxx.uz${canonicalProductPath}#product`,
             name: product.name,
             image: images,
             description: product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari`,
@@ -276,7 +287,7 @@ export default function ProductView() {
             brand: { '@type': 'Brand', name: product.brand || 'Luxx.uz' },
             offers: {
               '@type': 'Offer',
-              url: `https://luxx.uz/product/${id}`,
+              url: `https://luxx.uz${canonicalProductPath}`,
               priceCurrency: 'UZS',
               price: product.price,
               availability: product.stock == null || Number(product.stock) > 0
@@ -310,7 +321,7 @@ export default function ProductView() {
             <>
               <ChevronRight className="h-3 w-3 text-white/20" />
               <Link
-                to={`/products?category=${product.category}`}
+                to={categoryHref}
                 className="hover:text-[#c9a96e] transition-colors font-medium"
               >
                 {product.category}

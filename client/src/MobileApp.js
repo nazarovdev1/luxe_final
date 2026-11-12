@@ -48,6 +48,7 @@ const MobileApp = () => {
                     <Route path="/" element={<MobileHome />} />
                     <Route path="about" element={<MobileAbout />} />
                     <Route path="/products" element={<MobileProducts />} />
+                    <Route path="/kategoriya/:slug" element={<MobileProducts />} />
                     <Route path="/search" element={<MobileSearch />} />
                     <Route path="/events" element={<MobileEvents />} />
                     <Route path="/product/:id" element={<MobileProductView />} />

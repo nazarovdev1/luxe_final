@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2, Gem, Eye } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getActiveSale, getDisplayBadge } from '../../utils/productDisplay';
+import { productPath } from '../../utils/productUrl';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -86,7 +87,7 @@ export default function RelatedProducts({
               return (
                 <Link
                   key={item.id || item._id}
-                  to={`/product/${item.id || item._id}`}
+                  to={productPath(item)}
                   className="group block"
                   style={{ animation: `fluid-fade-in 0.5s ease-out ${idx * 80}ms both` }}
                 >
@@ -167,7 +168,7 @@ export default function RelatedProducts({
             {visualResults.map((item, idx) => (
               <Link
                 key={item._id || item.id}
-                to={`/product/${item._id || item.id}`}
+                to={productPath(item)}
                 className="group block"
                 style={{ animation: `fluid-fade-in 0.4s ease-out ${idx * 60}ms both` }}
               >

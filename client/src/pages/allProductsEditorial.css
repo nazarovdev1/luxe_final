@@ -413,3 +413,38 @@
 @media (prefers-reduced-motion: reduce) {
   .catalogue-page *, .catalogue-page *::before, .catalogue-page *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Department copy and links under the grid (category landing pages and the full catalogue). */
+.catalogue-landing-copy {
+  padding: clamp(40px, 6vw, 88px) clamp(20px, 6vw, 96px) clamp(56px, 8vw, 120px);
+  border-top: 1px solid var(--cat-line);
+  background: var(--cat-paper);
+  color: var(--cat-ink);
+}
+.catalogue-landing-copy p {
+  max-width: 68ch;
+  margin: 0 0 18px;
+  font-family: Georgia, serif;
+  font-size: clamp(16px, 1.25vw, 19px);
+  line-height: 1.7;
+  color: rgba(23, 17, 15, 0.82);
+}
+.catalogue-landing-copy nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin-top: 28px;
+}
+.catalogue-landing-copy nav a {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--cat-line);
+  color: var(--cat-ink);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+.catalogue-landing-copy nav a:hover,
+.catalogue-landing-copy nav a:focus-visible { color: var(--cat-gold); border-color: var(--cat-gold); }

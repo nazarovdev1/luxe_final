@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Star, Heart, Eye, Gem } from 'lucide-react';
 import { Badge } from './ui';
 import { useLanguage } from '../contexts/LanguageContext';
+import { productPath } from '../utils/productUrl';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '';
@@ -23,7 +24,7 @@ const ProductCard = ({ product, onQuickView, onCompare, isCompareSelected }) => 
 
   return (
     <article className="group relative z-0">
-      <Link to={`/product/${product.id}`} className="block relative z-0">
+      <Link to={productPath(product)} className="block relative z-0">
         <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-[#141416] z-0">
           <img
             src={getImage(product)}
@@ -73,7 +74,7 @@ const ProductCard = ({ product, onQuickView, onCompare, isCompareSelected }) => 
           </span>
         </div>
 
-        <Link to={`/product/${product.id}`}>
+        <Link to={productPath(product)}>
           <h3 className="text-sm font-medium text-[#f5f5f3] truncate group-hover:text-[#c9a96e] transition-colors">
             {product.name}
           </h3>

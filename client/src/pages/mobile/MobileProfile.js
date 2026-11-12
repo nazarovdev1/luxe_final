@@ -40,6 +40,7 @@ import LoginForm from '../../components/LoginForm';
 import MyGiftCards from '../../components/MyGiftCards';
 import MobileLanguageSwitch from '../../components/mobile/MobileLanguageSwitch';
 import { eventNavItems, resolveNavLabel } from '../../config/navigation';
+import { productPath } from '../../utils/productUrl';
 
 const formatMoney = (value) => {
     if (typeof value === 'string') {
@@ -332,7 +333,7 @@ const MobileProfile = () => {
                         {savedProducts.map((product) => (
                             <Link
                                 key={product.id}
-                                to={`/mobile/product/${product.id}`}
+                                to={productPath(product, { mobile: true })}
                                 className="overflow-hidden rounded-2xl bg-[#0f0f0f] border border-white/5 p-2"
                             >
                                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl">

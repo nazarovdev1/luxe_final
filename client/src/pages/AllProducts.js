@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, Search, X, Check, ChevronDown, ArrowUpDown, ArrowDown } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,6 +11,8 @@ import ProductComparison from '../components/ProductComparison';
 import SEO from '../components/SEO';
 import PremiumProductCard from '../components/PremiumProductCard';
 import FilterDrawer from '../components/FilterDrawer';
+import { categoryPath, landingForCategory, landingsForProducts } from '../config/categoryLandings';
+import { productPath } from '../utils/productUrl';
 import './allProductsEditorial.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -31,12 +33,18 @@ const getProductImage = (product, fallback) => {
   return fallback;
 };
 
-const AllProducts = () => {
+const AllProducts = ({ landing = null }) => {
   const { products, isLoading } = useProducts();
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const copy = PAGE_COPY[language] || PAGE_COPY.uz;
+  // On /kategoriya/:slug the department is fixed by the address, not by ?category=.
+  const landingCopy = landing ? landing[language === 'ru' ? 'ru' : 'uz'] : null;
+  const landingCategory = landing
+    ? (products.find((product) => landing.match.includes(product.category))?.category || landing.match[0])
+    : null;
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryFromUrl = searchParams.get('category');
+  const categoryFromUrl = landingCategory || searchParams.get('category');
   const filterFromUrl = searchParams.get('filter');
   const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || t('products.all'));
   const [isNewOnly, setIsNewOnly] = useState(filterFromUrl === 'new');
@@ -94,11 +102,17 @@ const AllProducts = () => {
     setSearchParams(params);
   }, [allLabel, setSearchParams]);
 
+  // Each department has its own address, so choosing one opens its page.
   const handleCategoryChange = useCallback((category) => {
+    const target = category === allLabel ? null : landingForCategory(category);
+    if (landing || target) {
+      navigate(target ? categoryPath(target) : '/products');
+      return;
+    }
     setSelectedCategory(category);
     setVisibleCount(12);
     updateUrl(category, isNewOnly);
-  }, [isNewOnly, updateUrl]);
+  }, [allLabel, isNewOnly, landing, navigate, updateUrl]);
 
   const handleNewOnlyChange = () => {
     const next = !isNewOnly;
@@ -186,12 +200,20 @@ const AllProducts = () => {
     { product: products[1], image: getProductImage(products[1], '/editorial/private-edit-evening.webp'), fallbackName: 'Evening Architecture', fallbackCategory: 'Private Edit' },
     { product: products[2], image: getProductImage(products[2], '/editorial/story-presence-v2.webp'), fallbackName: 'Quiet Presence', fallbackCategory: 'Atelier' },
   ];
-  const seoData = useMemo(() => ({
+  const otherLandings = useMemo(() => landingsForProducts(products).filter((item) => item.slug !== landing?.slug), [products, landing]);
+  const seoData = useMemo(() => (landingCopy ? {
+    title: landingCopy.title,
+    description: landingCopy.description,
+    keywords: undefined,
+    canonicalPath: categoryPath(landing),
+    breadcrumbs: [{ name: t('products.clothing'), url: '/products' }, { name: landingCopy.name, url: categoryPath(landing) }],
+  } : {
+    canonicalPath: '/products',
     title: selectedCategory === allLabel ? 'Premium ayollar kiyimlari | Luxx.uz' : `${selectedCategory} | Luxx.uz`,
     description: selectedCategory === allLabel ? 'Luxx.uz premium katalogi: luxury kiyimlar, paltolar va eksklyuziv modellar.' : `Luxx.uz katalogida ${selectedCategory.toLowerCase()} kolleksiyasi.`,
     keywords: selectedCategory === allLabel ? 'luxury kiyimlar, ayollar kiyimlari, paltolar, premium katalog' : `${selectedCategory}, ayollar kiyimlari, luxx.uz`,
-    breadcrumbs: selectedCategory === allLabel ? [{ name: t('products.clothing'), url: '/products' }] : [{ name: t('products.clothing'), url: '/products' }, { name: selectedCategory, url: `/products?category=${selectedCategory}` }],
-  }), [selectedCategory, allLabel, t]);
+    breadcrumbs: selectedCategory === allLabel ? [{ name: t('products.clothing'), url: '/products' }] : [{ name: t('products.clothing'), url: '/products' }, { name: selectedCategory, url: categoryPath(landingForCategory(selectedCategory)) }],
+  }), [selectedCategory, allLabel, t, landing, landingCopy]);
   const sortOptions = [
     { label: t('products.sortFeatured'), value: 'featured' },
     { label: t('products.sortNewest'), value: 'newest' },
@@ -203,13 +225,13 @@ const AllProducts = () => {
   return (
     <main ref={pageRef} className="catalogue-page">
       <CatalogueOpening language={language} products={products} />
-      <SEO title={seoData.title} description={seoData.description} keywords={seoData.keywords} breadcrumbSteps={seoData.breadcrumbs} canonicalPath="/products" structuredData={{ '@context': 'https://schema.org', '@type': 'ItemList', '@id': 'https://luxx.uz/products#item-list', name: selectedCategory === allLabel ? 'Barcha mahsulotlar' : `${selectedCategory} mahsulotlari`, url: 'https://luxx.uz/products', numberOfItems: sortedProducts.length, itemListElement: displayedProducts.slice(0, 20).map((product, index) => ({ '@type': 'ListItem', position: index + 1, url: `https://luxx.uz/product/${product.id}`, name: product.name })) }} />
+      <SEO title={seoData.title} description={seoData.description} keywords={seoData.keywords} breadcrumbSteps={seoData.breadcrumbs} canonicalPath={seoData.canonicalPath} structuredData={{ '@context': 'https://schema.org', '@type': 'ItemList', '@id': `https://luxx.uz${seoData.canonicalPath}#item-list`, name: landingCopy ? landingCopy.h1 : selectedCategory === allLabel ? 'Barcha mahsulotlar' : `${selectedCategory} mahsulotlari`, url: `https://luxx.uz${seoData.canonicalPath}`, numberOfItems: sortedProducts.length, itemListElement: displayedProducts.slice(0, 20).map((product, index) => ({ '@type': 'ListItem', position: index + 1, url: `https://luxx.uz${productPath(product)}`, name: product.name })) }} />
 
       <section className="wardrobe-hero" aria-labelledby="catalogue-title">
         <header className="wardrobe-hero__top"><p className="catalogue-eyebrow"><span />{copy.eyebrow}</p><span>{copy.archive}</span></header>
         <div className="wardrobe-hero__masthead">
-          <div><p>{copy.overline}</p><h1 id="catalogue-title">{copy.title.split('\n').map((line) => <span key={line}>{line}</span>)}</h1></div>
-          <aside><span>001 / EDITOR'S NOTE</span><p>{copy.lead}</p></aside>
+          <div><p>{landingCopy ? landingCopy.name : copy.overline}</p><h1 id="catalogue-title">{landingCopy ? <span>{landingCopy.h1}</span> : copy.title.split('\n').map((line) => <span key={line}>{line}</span>)}</h1></div>
+          <aside><span>001 / EDITOR'S NOTE</span><p>{landingCopy ? landingCopy.intro[0] : copy.lead}</p></aside>
         </div>
         <div className="wardrobe-runway">
           {heroItems.map((item, index) => (
@@ -242,6 +264,18 @@ const AllProducts = () => {
 
         {isLoading ? <div className="catalogue-loading-grid" aria-label={t('products.loading')}>{Array.from({ length: 8 }, (_, index) => <div key={index}><span /></div>)}</div> : sortedProducts.length === 0 ? <div className="catalogue-empty"><Search aria-hidden="true" /><p>00 / ARCHIVE</p><h3>{t('products.noProductsFound')}</h3><span>{t('products.noProductsHint')}</span><button type="button" onClick={() => { setSearchText(''); setIsNewOnly(false); handleCategoryChange(allLabel); }}>{t('products.clearFilters')}</button></div> : <><div className="catalogue-product-grid">{displayedProducts.map((product, index) => <div className="catalogue-product-cell" key={product.id} style={{ '--card-index': index }}><PremiumProductCard product={product} index={index} priority={index < 4} onQuickView={setQuickViewProduct} onCompare={(item) => { setCompareList((current) => { const exists = current.find((entry) => (entry._id || entry.id) === (item._id || item.id)); if (exists) return current.filter((entry) => (entry._id || entry.id) !== (item._id || item.id)); return current.length >= 3 ? current : [...current, item]; }); }} isCompareSelected={compareList.some((item) => (item._id || item.id) === (product._id || product.id))} /></div>)}</div>{hasMore && <div ref={loadMoreRef} className="catalogue-loader"><span />{t('products.loading')}</div>}</>}
       </section>
+
+      {(landingCopy || otherLandings.length > 0) && (
+        <section className="catalogue-landing-copy" aria-label={landingCopy ? landingCopy.name : copy.catalogue}>
+          {landingCopy && landingCopy.intro.slice(1).map((paragraph) => <p key={paragraph.slice(0, 24)}>{paragraph}</p>)}
+          {otherLandings.length > 0 && (
+            <nav aria-label={language === 'ru' ? 'Разделы' : 'Bo‘limlar'}>
+              {otherLandings.map((item) => <Link key={item.slug} to={categoryPath(item)}>{item[language === 'ru' ? 'ru' : 'uz'].name}</Link>)}
+              {landing && <Link to="/products">{t('products.all')}</Link>}
+            </nav>
+          )}
+        </section>
+      )}
 
       <FilterDrawer isOpen={isFilterOpen} onClose={() => setIsFilterOpen(false)} categories={categories} selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} searchText={searchText} onSearchChange={setSearchText} sortBy={sortBy} onSortChange={setSortBy} />
       <QuickViewModal isOpen={Boolean(quickViewProduct)} onClose={() => setQuickViewProduct(null)} product={quickViewProduct} />

@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useProducts } from '../contexts/ProductContext';
 import { CONTACT } from '../config/policies';
 import { BUNDLES_LABEL } from '../config/navigation';
+import { categoryPath, landingForCategory } from '../config/categoryLandings';
 
 const Footer = ({ variant = 'default' }) => {
   const { t, language } = useLanguage();
@@ -103,7 +104,7 @@ const Footer = ({ variant = 'default' }) => {
               {categories.slice(0, 6).map((category) => (
                 <li key={category}>
                   <Link
-                    to={`/products?category=${encodeURIComponent(category)}`}
+                    to={categoryPath(landingForCategory(category))}
                     className={`text-[13px] ${palette.body} ${palette.hoverAccent} transition-colors`}
                   >
                     {category}

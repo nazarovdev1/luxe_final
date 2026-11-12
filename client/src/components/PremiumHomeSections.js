@@ -13,6 +13,8 @@ import { apiFetch } from '../services/api';
 import LookDetailModal from './LookDetailModal';
 import copy from '../data/atelierHomeCopy';
 import './atelierHome.css';
+import { productPath } from '../utils/productUrl';
+import { categoryPath, landingForCategory } from '../config/categoryLandings';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 const serial = (index) => String(index + 1).padStart(2, '0');
@@ -34,7 +36,7 @@ function ProductTile({ product, c, currency }) {
   return (
     <article className="atelier-product">
       <div className="atelier-product-photo">
-        <Link to={`/product/${product.id}`} className="atelier-product-image" aria-label={`${c.view}: ${product.name}`}>
+        <Link to={productPath(product)} className="atelier-product-image" aria-label={`${c.view}: ${product.name}`}>
           <img src={getImageUrl(product)} alt={product.name} loading="lazy" decoding="async" onError={fallbackImage} />
           {images[1] && <img className="atelier-product-alternate" src={images[1]} alt="" loading="lazy" decoding="async" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}
           <span className="atelier-product-discover">{c.view}<Plus size={17} aria-hidden="true" /></span>
@@ -45,7 +47,7 @@ function ProductTile({ product, c, currency }) {
         </button>
       </div>
       <div className="atelier-product-info"><span>{product.category}</span><span>{Number.isFinite(price) && price > 0 ? `${new Intl.NumberFormat('ru-RU').format(price)} ${currency}` : c.price}</span></div>
-      <Link to={`/product/${product.id}`}><h3>{product.name}</h3></Link>
+      <Link to={productPath(product)}><h3>{product.name}</h3></Link>
     </article>
   );
 }
@@ -85,7 +87,7 @@ function Collection({ c, language, currency }) {
       <div className="atelier-products" ref={root} aria-busy={isLoading}>
         {isLoading && !products.length ? <div className="atelier-product-loading" role="status"><span />{c.loading}</div> : selection.length ? selection.map(product => <ProductTile key={product.id} product={product} c={c} currency={currency} />) : <p className="atelier-empty" role="status">{c.empty}</p>}
       </div>
-      <div className="atelier-collection-bottom"><span>THE WARDROBE, RECONSIDERED.</span><TextLink to={category ? `/products?category=${encodeURIComponent(category)}` : '/products'}>{c.catalogue}</TextLink></div>
+      <div className="atelier-collection-bottom"><span>THE WARDROBE, RECONSIDERED.</span><TextLink to={category ? categoryPath(landingForCategory(category)) : '/products'}>{c.catalogue}</TextLink></div>
     </section>
   );
 }

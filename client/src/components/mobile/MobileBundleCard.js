@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Check } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { productPath } from '../../utils/productUrl';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -149,7 +150,7 @@ const MobileBundleCard = ({ product, index, selectedVariant, onVariantChange, bu
               )}
             </div>
             <Link
-              to={`/product/${product.id}`}
+              to={productPath(product)}
               className="flex items-center gap-0.5 text-[10px] text-[#d6b47c] font-medium"
             >
               {t('bundleDetail.productCardDetails')}

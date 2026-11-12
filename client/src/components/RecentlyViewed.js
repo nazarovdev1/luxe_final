@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clock, X, Star, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
+import { productPath } from '../utils/productUrl';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '';
@@ -71,7 +72,7 @@ const RecentlyViewed = ({ items, onClear }) => {
           {displayItems.map((item, index) => (
             <Link
               key={item.id}
-              to={`/product/${item.id}`}
+              to={productPath(item)}
               className="group flex-shrink-0 w-[200px] sm:w-auto overflow-hidden rounded-2xl border border-white/[0.06] bg-[#12121a] transition-all duration-500 hover:border-[#d6b47c]/30 hover:shadow-[0_0_30px_rgba(214,180,124,0.1)]"
               style={{
                 opacity: isVisible ? 1 : 0,

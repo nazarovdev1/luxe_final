@@ -9,6 +9,8 @@ import { getReviewSummary } from '../../utils/productDisplay';
 import { RETURN_DAYS } from '../../config/policies';
 import MobileLanguageSwitch from './MobileLanguageSwitch';
 import './mobileCoutureHome.css';
+import { productPath } from '../../utils/productUrl';
+import { categoryPath, landingForCategory } from '../../config/categoryLandings';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -72,7 +74,7 @@ const CoutureHero = ({ product, returning }) => {
         <p className="mch-hero__lead"><span data-hero-reveal>Nafislik shovqin qilmaydi.<br />U xonaga sizdan oldin kiradi.</span></p>
         <div className="mch-hero__actions">
           <Link to="/mobile/products" className="mch-button mch-button--gold">Kolleksiyani kashf etish<ArrowRight size={16} /></Link>
-          {product && <Link to={`/mobile/product/${idOf(product)}`} className="mch-button mch-button--ghost">Featured look</Link>}
+          {product && <Link to={productPath(product, { mobile: true })} className="mch-button mch-button--ghost">Featured look</Link>}
         </div>
       </div>
       <a href="#new-arrivals" className="mch-hero__scroll"><span>SCROLL TO DISCOVER</span><ArrowDown size={15} /></a>
@@ -85,7 +87,7 @@ const NewArrivals = ({ products }) => (
     <SectionHeading index="01" eyebrow="NEW IN ATELIER" title={<>Yangi <em>kelganlar</em></>} action="Barchasi" to="/mobile/products" />
     <div className="mch-runway">
       {products.slice(0, 3).map((product, index) => (
-        <Link to={`/mobile/product/${idOf(product)}`} className={`mch-runway__card mch-runway__card--${index + 1}`} key={idOf(product)} data-couture-card>
+        <Link to={productPath(product, { mobile: true })} className={`mch-runway__card mch-runway__card--${index + 1}`} key={idOf(product)} data-couture-card>
           <div className="mch-runway__image"><img src={imageOf(product)} alt={product.name} loading={index ? 'lazy' : 'eager'} /></div>
           <span className="mch-runway__number">0{index + 1}</span>
           <div className="mch-runway__copy">
@@ -135,7 +137,7 @@ const Departments = ({ categories }) => (
     <SectionHeading index="03" eyebrow="FASHION DEPARTMENTS" title={<>O‘z <em>uslubingizni</em><br />tanlang</>} action="Katalog" to="/mobile/products" />
     <div className="mch-departments__track">
       {categories.map((category, index) => (
-        <Link key={category.name} to={`/mobile/products?category=${encodeURIComponent(category.name)}`} className="mch-department" data-couture-card>
+        <Link key={category.name} to={`/mobile${categoryPath(landingForCategory(category.name))}`} className="mch-department" data-couture-card>
           <img src={category.image} alt={category.name} loading="lazy" />
           <div className="mch-department__veil" />
           <span>0{index + 1}</span>
@@ -165,7 +167,7 @@ const Bestsellers = ({ products }) => {
   return (
     <section className="mch-section mch-best">
       <SectionHeading index="05" eyebrow="SIGNATURE PIECES" title={<>Atelyening<br /><em>asosiy buyumlari</em></>} action="Ko‘rish" to="/mobile/products" />
-      <Link to={`/mobile/product/${idOf(products[0])}`} className="mch-best__lead" data-couture-card>
+      <Link to={productPath(products[0], { mobile: true })} className="mch-best__lead" data-couture-card>
         <div className="mch-best__picture"><img src={imageOf(products[0])} alt={products[0].name} loading="lazy" /><span>01</span></div>
         <div className="mch-best__lead-copy">
           <p>{products[0].authenticity?.isOriginal ? <><ShieldCheck size={13} /> {products[0].brand || 'Original'}</> : <><Crown size={13} /> {products[0].brand || products[0].category}</>}</p>
@@ -175,7 +177,7 @@ const Bestsellers = ({ products }) => {
       </Link>
       <div className="mch-best__list">
         {products.slice(1).map((product, index) => (
-          <Link to={`/mobile/product/${idOf(product)}`} key={idOf(product)} data-couture-reveal>
+          <Link to={productPath(product, { mobile: true })} key={idOf(product)} data-couture-reveal>
             <span>0{index + 2}</span><img src={imageOf(product)} alt={product.name} loading="lazy" />
             <div><p>{product.category}</p><h3>{product.name}</h3><strong>{money(product.price)} so‘m</strong></div><ArrowRight size={17} />
           </Link>
@@ -198,7 +200,7 @@ const Editorial = ({ looks, fallbackProducts, onOpenLook }) => {
               <img src={entry.image} alt={entry.title} loading="lazy" /><span>FRAME 0{index + 1}</span><strong>{entry.title}</strong>
             </button>
           ) : (
-            <Link key={idOf(entry)} to={`/mobile/product/${idOf(entry)}`} className="mch-film__frame">
+            <Link key={idOf(entry)} to={productPath(entry, { mobile: true })} className="mch-film__frame">
               <img src={imageOf(entry)} alt={entry.name} loading="lazy" /><span>FRAME 0{index + 1}</span><strong>{entry.name}</strong>
             </Link>
           ))}

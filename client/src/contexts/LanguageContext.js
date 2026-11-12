@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import i18n from '../i18n';
+import { pathForLanguage } from '../config/localizedRoutes';
 
 const LanguageContext = (typeof window !== 'undefined' && window.__LUXX_LANGUAGE_CONTEXT__)
   ? window.__LUXX_LANGUAGE_CONTEXT__
@@ -48,6 +49,13 @@ export const LanguageProvider = ({ children }) => {
         localStorage.setItem(LANGUAGE_KEY, lang);
       } catch (e) {
         // ignore
+      }
+      // Russian pages have their own /ru address. Moving across that boundary
+      // reloads the page under the right address so links, canonical and router agree.
+      if (typeof window !== 'undefined') {
+        const { pathname, search, hash } = window.location;
+        const target = pathForLanguage(pathname, lang);
+        if (target !== pathname) window.location.assign(`${target}${search}${hash}`);
       }
     }
   }, []);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ZoomIn, Check } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { productPath } from '../../utils/productUrl';
 
 const formatPrice = (price) => {
   if (typeof price !== 'number') return '0';
@@ -211,7 +212,7 @@ const BundleProductCard = ({ product, index, selectedVariant, onVariantChange, b
             )}
           </div>
           <Link
-            to={`/product/${product.id}`}
+            to={productPath(product)}
             className="flex items-center gap-1 text-xs text-[#d6b47c] hover:gap-2 transition-all"
           >
             {t('bundleDetail.productCardDetails')}

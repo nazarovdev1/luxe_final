@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { extractProductId, productPath, productSlugId } from '../../utils/productUrl';
 import { Helmet } from 'react-helmet';
 import { useSwipeable } from 'react-swipeable';
 import toast from 'react-hot-toast';
@@ -65,7 +66,9 @@ const getProductImage = (item) => {
 
 const MobileProductView = () => {
   const { t, language } = useLanguage();
-  const { id } = useParams();
+  // The address is /product/<name>-<id>; old /product/<id> links still resolve.
+  const { id: routeParam } = useParams();
+  const id = extractProductId(routeParam);
   const navigate = useNavigate();
   const location = useLocation();
   const { getProduct, fetchProductDetails, isLoading, products } = useProducts();
@@ -74,6 +77,13 @@ const MobileProductView = () => {
   const { isAuthenticated } = useAuth();
   const { addToRecentlyViewed } = useRecentlyViewed();
   const product = getProduct(id);
+  const canonicalProductPath = product ? productPath(product) : `/product/${id}`;
+  // Old or shortened addresses move to the named one.
+  useEffect(() => {
+    if (product && routeParam !== productSlugId(product)) {
+      navigate(productPath(product, { mobile: true }), { replace: true, state: location.state });
+    }
+  }, [product, routeParam, navigate, location.state]);
   const isProductFavorite = product ? isFavorite(product.id) : false;
 
   // Scroll to top on mount
@@ -180,7 +190,9 @@ const MobileProductView = () => {
 
   // Share handler
   const handleShare = async () => {
-    const url = window.location.href;
+    // Share the public address, not the /mobile one: it opens the right app on any device
+    // and gives Telegram/Instagram the product's own preview.
+    const url = `${window.location.origin}${canonicalProductPath}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: product.name, url });
@@ -286,18 +298,18 @@ const MobileProductView = () => {
         title={product.name}
         description={product.description || `${product.name} — Luxx.uz premium ayollar kiyimlari.`}
         image={product.image}
-        url={`/product/${id}`}
+        url={canonicalProductPath}
       />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify({
-            "@context": "https://schema.org", "@type": "Product", "@id": `https://luxx.uz/product/${id}#product`,
+            "@context": "https://schema.org", "@type": "Product", "@id": `https://luxx.uz${canonicalProductPath}#product`,
             "name": product.name,
             "image": images,
             "description": product.description,
             "sku": product.sku || product._id,
             "brand": { "@type": "Brand", "name": product.brand || "Luxx.uz" },
-            "offers": { "@type": "Offer", "url": `https://luxx.uz/product/${id}`, "priceCurrency": "UZS", "price": product.price, "availability": product.stock == null || Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }
+            "offers": { "@type": "Offer", "url": `https://luxx.uz${canonicalProductPath}`, "priceCurrency": "UZS", "price": product.price, "availability": product.stock == null || Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" }
           })}
         </script>
       </Helmet>
@@ -566,7 +578,7 @@ const MobileProductView = () => {
                 </div>
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2" style={{ scrollbarWidth: 'none' }}>
                   {relatedProducts.map((item) => (
-                    <Link key={item.id} to={`/mobile/product/${item.id}`} className="flex-shrink-0 w-40 group">
+                    <Link key={item.id} to={productPath(item, { mobile: true })} className="flex-shrink-0 w-40 group">
                       <div className="aspect-[3/4] overflow-hidden rounded-xl bg-[#141416]">
                         <img src={getProductImage(item)} alt={item.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                       </div>
@@ -592,7 +604,7 @@ const MobileProductView = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   {visualResults.map((item) => (
-                    <Link key={item._id} to={`/mobile/product/${item._id}`} className="group">
+                    <Link key={item._id} to={productPath(item, { mobile: true })} className="group">
                       <div className="aspect-[3/4] overflow-hidden rounded-xl bg-[#141416] relative border border-white/5">
                         <img src={item.images?.[0]?.url} alt={item.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                         {item.similarity && (

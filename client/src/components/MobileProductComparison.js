@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getReviewSummary } from '../utils/productDisplay';
+import { productPath } from '../utils/productUrl';
 
 /* ─── helpers ─────────────────────────────────────────── */
 const getProductImage = (product) => {
@@ -321,7 +322,7 @@ const MobileProductComparison = ({ products = [], onClose, productPathPrefix = '
               {compareProducts.map((product, idx) => (
                 <Link
                   key={product._id || product.id || idx}
-                  to={`${productPathPrefix}/product/${product._id || product.id}`}
+                  to={`${productPathPrefix}${productPath(product)}`}
                   onClick={onClose}
                   className="flex items-center justify-center gap-1.5 rounded-2xl border border-[#d6b47c]/25 bg-[#d6b47c]/8 py-3.5 text-[11px] font-bold uppercase tracking-wider text-[#d6b47c] transition-colors active:bg-[#d6b47c] active:text-black"
                 >

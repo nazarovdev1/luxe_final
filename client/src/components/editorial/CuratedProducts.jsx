@@ -8,6 +8,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getImageUrl, getAllImageUrls } from '../../utils/image';
+import { productPath } from '../../utils/productUrl';
 
 const formatPrice = (price) => {
   const num = Number(price);
@@ -146,7 +147,7 @@ export default function CuratedProducts({ onQuickView }) {
             {/* 1. Dominant Tall Product Card */}
             <article className="e-product-card-dominant">
               <div className="e-card-media-shell dominant">
-                <Link to={`/product/${dominantProduct.id}`} aria-label={dominantProduct.name}>
+                <Link to={productPath(dominantProduct)} aria-label={dominantProduct.name}>
                   <img
                     className="e-card-img-primary"
                     src={getImageUrl(dominantProduct)}
@@ -195,7 +196,7 @@ export default function CuratedProducts({ onQuickView }) {
 
               <div className="e-product-info">
                 <span className="e-product-cat">{dominantProduct.category || 'Atelier'}</span>
-                <Link to={`/product/${dominantProduct.id}`} className="e-product-name">
+                <Link to={productPath(dominantProduct)} className="e-product-name">
                   {dominantProduct.name}
                 </Link>
                 <div className="e-product-price">{formatPrice(dominantProduct.price)}</div>
@@ -210,7 +211,7 @@ export default function CuratedProducts({ onQuickView }) {
                 return (
                   <article key={item.id} className="e-product-card-secondary">
                     <div className="e-card-media-shell">
-                      <Link to={`/product/${item.id}`} aria-label={item.name}>
+                      <Link to={productPath(item)} aria-label={item.name}>
                         <img
                           className="e-card-img-primary"
                           src={getImageUrl(item)}
@@ -259,7 +260,7 @@ export default function CuratedProducts({ onQuickView }) {
 
                     <div className="e-product-info">
                       <span className="e-product-cat">{item.category || 'Atelier'}</span>
-                      <Link to={`/product/${item.id}`} className="e-product-name">
+                      <Link to={productPath(item)} className="e-product-name">
                         {item.name}
                       </Link>
                       <div className="e-product-price">{formatPrice(item.price)}</div>

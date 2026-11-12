@@ -5,6 +5,7 @@ import './i18n';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { languageRedirectTarget, SAVED_LANGUAGE_KEY } from './config/localizedRoutes';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -84,11 +85,22 @@ window.addEventListener('unhandledrejection', (e) => {
   }
 }, true);
 
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// A visitor who picked Russian before lands on the /ru twin of an Uzbek address.
+const languageTarget = (() => {
+  let saved = null;
+  try { saved = localStorage.getItem(SAVED_LANGUAGE_KEY); } catch (e) { /* ignore */ }
+  return languageRedirectTarget(window.location, saved, navigator.userAgent);
+})();
+
+if (languageTarget) {
+  window.location.replace(languageTarget);
+} else {
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}
 
 if (import.meta.env.DEV) {
   reportWebVitals(console.log);

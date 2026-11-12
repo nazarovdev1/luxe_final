@@ -23,6 +23,7 @@ import LookDetailModal from './LookDetailModal';
 import QuickViewModal from './QuickViewModal';
 import copy from '../data/atelierHomeCopy';
 import './coutureHome.css';
+import { productPath } from '../utils/productUrl';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -335,7 +336,7 @@ export default function CoutureHomeSections() {
                     data-reveal
                   >
                     <div className="couture-tile-photo">
-                      <Link to={`/product/${product.id}`}>
+                      <Link to={productPath(product)}>
                         <img
                           className="couture-photo-primary"
                           src={getImageUrl(product)}
@@ -390,7 +391,7 @@ export default function CoutureHomeSections() {
                     <div className="couture-tile-info">
                       <div className="couture-tile-cat">{product.category || 'Atelier'}</div>
                       <h3 className="couture-title couture-tile-title">
-                        <Link to={`/product/${product.id}`}>{product.name}</Link>
+                        <Link to={productPath(product)}>{product.name}</Link>
                       </h3>
                       <div className="couture-tile-price">
                         {Number.isFinite(priceNum) && priceNum > 0

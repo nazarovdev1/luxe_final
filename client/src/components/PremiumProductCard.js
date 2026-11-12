@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { formatPrice, formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
 // The card is reused outside the catalogue (home page), so it brings its own styles.
 import '../pages/allProductsEditorial.css';
+import { productPath } from '../utils/productUrl';
 
 const getImageUrl = (product) => {
   if (!product) return '/placeholder.jpg';
@@ -29,7 +30,7 @@ const PremiumProductCard = ({ product, onQuickView, onCompare, isCompareSelected
 
   return (
     <article className="catalogue-card">
-      <Link to={`/product/${product.id}`} className="catalogue-card__media" aria-label={product.name}>
+      <Link to={productPath(product)} className="catalogue-card__media" aria-label={product.name}>
         <img
           src={imageUrl}
           alt={product.name}
@@ -51,7 +52,7 @@ const PremiumProductCard = ({ product, onQuickView, onCompare, isCompareSelected
 
       <div className="catalogue-card__info">
         <div className="catalogue-card__meta"><span>{product.brand || product.category}</span>{reviews.show && <span><Star aria-hidden="true" />{reviews.rating.toFixed(1)}</span>}</div>
-        <Link to={`/product/${product.id}`} className="catalogue-card__title"><h3>{product.name}</h3><ArrowUpRight aria-hidden="true" /></Link>
+        <Link to={productPath(product)} className="catalogue-card__title"><h3>{product.name}</h3><ArrowUpRight aria-hidden="true" /></Link>
         <div className="catalogue-card__price"><strong>{formatPrice(product.price)} {t('common.sum', "so‘m")}</strong>{hasDiscount && <span>{formatPrice(sale.originalPrice)} {t('common.sum', "so‘m")}</span>}</div>
         {hasDiscount && <p className="catalogue-card__sale-note">{formatSaleNote(sale.endsAt, language)}</p>}
       </div>

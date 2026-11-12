@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { showCartToast } from '../utils/toast';
 import { formatSaleNote, getActiveSale, getDisplayBadge, getReviewSummary } from '../utils/productDisplay';
 import { RETURN_DAYS } from '../config/policies';
+import { productPath } from '../utils/productUrl';
 
 const formatPrice = (value) => {
   const numeric = Number(value);
@@ -179,7 +180,7 @@ const QuickViewModal = ({ isOpen, onClose, product, onSizeGuideOpen, productPath
     setCurrentImageIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
   };
 
-  const productUrl = `${productPathPrefix}/product/${productId}`;
+  const productUrl = `${productPathPrefix}${productPath(product)}`;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-5 overflow-y-auto">

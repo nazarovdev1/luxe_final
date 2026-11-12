@@ -11,6 +11,7 @@ const Home = React.lazy(() => import('./pages/Home'));
 const Admin = React.lazy(() => import('./pages/Admin'));
 const ProductView = React.lazy(() => import('./pages/ProductView'));
 const AllProducts = React.lazy(() => import('./pages/AllProducts'));
+const CategoryLanding = React.lazy(() => import('./pages/CategoryLanding'));
 const SearchModal = React.lazy(() => import('./components/SearchModal'));
 const CartDropdown = React.lazy(() => import('./components/CartDropdown'));
 const LoginForm = React.lazy(() => import('./components/LoginForm'));
@@ -48,6 +49,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import ScrollToTop from './components/ScrollToTop';
+import { urlLanguage, RU_PREFIX } from './config/localizedRoutes';
 
 
 import { useLocation } from 'react-router-dom';
@@ -213,6 +215,7 @@ function MainContent() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/products" element={<AllProducts />} />
+            <Route path="/kategoriya/:slug" element={<CategoryLanding />} />
             <Route path="/product/:id" element={<ProductView />} />
             <Route path="/bundles" element={<React.Suspense fallback={<Loading />}><Bundles /></React.Suspense>} />
             <Route path="/bundle/:id" element={<React.Suspense fallback={<Loading />}><BundleDetail /></React.Suspense>} />
@@ -290,7 +293,8 @@ function App() {
         <CartProvider>
           <FavoritesProvider>
             <NotificationProvider>
-              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              {/* Russian pages run the same app under /ru, so every in-app link stays Russian. */}
+              <Router basename={urlLanguage() === 'ru' ? RU_PREFIX : undefined} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <ScrollToTop />
                 <OfflineIndicator isOnline={pwa.isOnline} updateAvailable={pwa.updateAvailable} onUpdate={pwa.updateApp} />
                 <MainContent />

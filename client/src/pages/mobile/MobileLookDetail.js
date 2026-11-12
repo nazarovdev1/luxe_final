@@ -10,6 +10,7 @@ import { findVariant, getVariants } from '../../utils/productVariants';
 import { getAllImageUrls } from '../../utils/image';
 import LookbookImage from '../../components/mobile/LookbookImage';
 import './mobileLookbook.css';
+import { productPath } from '../../utils/productUrl';
 
 const imageOf = (product) => getAllImageUrls(product).find((url) => !url.includes('/placeholder'));
 const money = (value) => Number(value || 0).toLocaleString('uz-UZ').replace(/,/g, '.');
@@ -23,10 +24,10 @@ function LookProduct({ product, selection = {}, error, onSelect, t }) {
   return (
     <article className={`mlb-product ${error ? 'mlb-product--error' : ''}`} data-product-id={product.id}>
       <div className="mlb-product__top">
-        <Link to={`/mobile/product/${product.id}`} tabIndex={-1} aria-hidden="true"><LookbookImage src={imageOf(product)} alt="" fallback="/placeholder.svg" /></Link>
+        <Link to={productPath(product, { mobile: true })} tabIndex={-1} aria-hidden="true"><LookbookImage src={imageOf(product)} alt="" fallback="/placeholder.svg" /></Link>
         <div className="mlb-product__copy">
           <p className="mlb-product__category">{product.category}</p>
-          <Link to={`/mobile/product/${product.id}`} className="mlb-product__name"><h3>{product.name}</h3><ArrowUpRight size={14} aria-hidden="true" /></Link>
+          <Link to={productPath(product, { mobile: true })} className="mlb-product__name"><h3>{product.name}</h3><ArrowUpRight size={14} aria-hidden="true" /></Link>
           <p className="mlb-product__price">{money(product.price)} {t('common.sum')}</p>
         </div>
       </div>

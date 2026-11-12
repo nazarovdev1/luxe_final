@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getImageUrl } from '../../utils/image';
+import { categoryPath, landingForCategory } from '../../config/categoryLandings';
 
 export default function CategoryEditorial() {
   const { products } = useProducts();
@@ -59,7 +60,7 @@ export default function CategoryEditorial() {
     if (item.filterParam?.filter) {
       navigate(`/products?filter=${item.filterParam.filter}`);
     } else if (item.filterParam?.category) {
-      navigate(`/products?category=${encodeURIComponent(item.filterParam.category)}`);
+      navigate(categoryPath(landingForCategory(item.filterParam.category)));
     } else {
       navigate('/products');
     }

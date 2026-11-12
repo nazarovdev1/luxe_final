@@ -10,8 +10,15 @@
     }
   ],
   "rewrites": [
+    { "source": "/:lang(ru)?/mobile", "destination": "/index.html" },
+    { "source": "/:lang(ru)?/mobile/:path*", "destination": "/index.html" },
+    { "source": "/ru", "destination": "/index.html" },
     {
-      "source": "/((?!assets/|sw.js|favicon.ico|manifest.json|logoweb2.png|logoweb3.png).*)",
+      "source": "/:lang(ru)?/:page(about|login|register|admin|products|bundles|checkout|profile|orders|faq|contact|lookbooks|lookbook-builder|style-feed|vip-club|challenges|live|eco-impact|reels|privacy-policy|terms|gift-cards|blog)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:lang(ru)?/:section(product|bundle|live|reels|blog|kategoriya)/:id",
       "destination": "/index.html"
     }
   ],

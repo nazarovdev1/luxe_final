@@ -15,13 +15,14 @@ import BundleMobileOptions from './BundleMobileOptions';
 import { bundleEditorialCopy } from './bundleEditorialCopy';
 import { getBundleGallery, getEditorialPrices, isBundleOptionAvailable, localizeBundleField, normalizeEditorialProduct } from './bundleEditorialData';
 import './bundleEditorial.css';
+import { productPath as namedProductPath } from '../../utils/productUrl';
 
 const money = (value) => Math.round(value).toLocaleString('uz-UZ').replace(/,/g, '.');
 
 function ProductSelection({ product, selected, issue, showErrors, onSelect, mobile, copy, language }) {
   const name = localizeBundleField(product.name, language);
   const available = isBundleOptionAvailable(product);
-  const productPath = `${mobile ? '/mobile' : ''}/product/${product.id}`;
+  const productPath = namedProductPath(product, { mobile });
 
   return (
     <article className={`bde-product ${showErrors && issue ? 'bde-product--error' : ''}`} id={`bundle-piece-${product.id}`}>

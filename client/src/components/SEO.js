@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useLanguage } from '../contexts/LanguageContext';
+import { contentPath, hasRussianVersion, splitLanguagePrefix, withLanguagePrefix } from '../config/localizedRoutes';
 
 const SITE_NAME = 'Luxx.uz';
 const SITE_URL = 'https://luxx.uz';
@@ -30,6 +31,28 @@ const normalizePath = (value) => {
 const buildCanonicalUrl = (pathCandidate) => {
     const path = normalizePath(pathCandidate);
     return path === '/' ? `${SITE_URL}/` : `${SITE_URL}${path}`;
+};
+
+// index.html (and every pre-rendered shell) ships its own canonical/meta tags.
+// Helmet adds its own copies and never touches those, so after the app starts the
+// page would carry two canonicals; on pages without a shell the static one points
+// at the home page. Remove the static set once a page renders its own.
+const STATIC_HEAD_SELECTOR = [
+    'link[rel="canonical"]',
+    'link[rel="alternate"][hreflang]',
+    'meta[name="description"]',
+    'meta[name="keywords"]',
+    'meta[name="robots"]',
+    'meta[name="googlebot"]',
+    'meta[property^="og:"]',
+    'meta[name^="twitter:"]',
+].join(',');
+
+export const removeStaticHeadTags = (head = typeof document !== 'undefined' ? document.head : null) => {
+    if (!head) return;
+    head.querySelectorAll(STATIC_HEAD_SELECTOR).forEach((element) => {
+        if (!element.hasAttribute('data-react-helmet')) element.remove();
+    });
 };
 
 const LOCALE_MAP = {
@@ -68,12 +91,17 @@ const SEO = ({
 
     const runtimePath =
         typeof window !== 'undefined' ? window.location.pathname : '/';
-    const isMobilePath =
-        typeof window !== 'undefined' && window.location.pathname.startsWith('/mobile');
-    const canonicalRuntimePath = isMobilePath
-        ? (runtimePath.replace(/^\/mobile(?=\/|$)/, '') || '/')
-        : runtimePath;
-    const canonical = buildCanonicalUrl(canonicalPath || url || canonicalRuntimePath);
+    const { language: addressLanguage, path: pathWithoutLanguage } = splitLanguagePrefix(runtimePath);
+    const isMobilePath = /^\/mobile(\/|$)/.test(pathWithoutLanguage);
+    // Pages pass their path without /ru or /mobile; the Russian twin is added here.
+    const basePath = normalizePath(canonicalPath || url || contentPath(runtimePath));
+    const hasRussian = hasRussianVersion(basePath);
+    const canonical = buildCanonicalUrl(
+        addressLanguage === 'ru' && hasRussian ? withLanguagePrefix(basePath, 'ru') : basePath,
+    );
+    const alternates = hasRussian
+        ? [['uz', basePath], ['ru', withLanguagePrefix(basePath, 'ru')], ['x-default', basePath]]
+        : [];
     const shouldNoIndex = Boolean(noIndex || isMobilePath);
     const robots = shouldNoIndex ? 'noindex, nofollow' : 'index, follow';
 
@@ -113,13 +141,17 @@ const SEO = ({
     }
 
     return (
-        <Helmet htmlAttributes={{ lang: language }}>
+        // Static shell tags go only after Helmet has written its own, never before.
+        <Helmet htmlAttributes={{ lang: language }} onChangeClientState={() => removeStaticHeadTags()}>
             <title>{pageTitle}</title>
             <meta name="description" content={pageDescription} />
             {keywords && <meta name="keywords" content={keywords} />}
             <meta name="robots" content={robots} />
             <meta name="googlebot" content={robots} />
             <link rel="canonical" href={canonical} />
+            {!shouldNoIndex && alternates.map(([hreflang, path]) => (
+                <link key={hreflang} rel="alternate" hrefLang={hreflang} href={buildCanonicalUrl(path)} />
+            ))}
 
             <meta property="og:type" content={type} />
             <meta property="og:site_name" content={SITE_NAME} />

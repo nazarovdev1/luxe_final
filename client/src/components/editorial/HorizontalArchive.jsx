@@ -7,6 +7,7 @@ import { useGSAP } from '@gsap/react';
 import { useProducts } from '../../contexts/ProductContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getImageUrl } from '../../utils/image';
+import { productPath } from '../../utils/productUrl';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -36,7 +37,7 @@ export default function HorizontalArchive() {
         category: p1.category || 'Atelier Selection',
         price: formatPrice(p1.price),
         image: getImageUrl(p1, '/heroimg.jpg'),
-        link: p1.id ? `/product/${p1.id}` : '/products',
+        link: p1.id ? productPath(p1) : '/products',
         badge: 'ARCHIVE 01',
       },
       {
@@ -56,7 +57,7 @@ export default function HorizontalArchive() {
         category: p2.category || 'Atelier Selection',
         price: formatPrice(p2.price),
         image: getImageUrl(p2, '/second_pose.jpg'),
-        link: p2.id ? `/product/${p2.id}` : '/products',
+        link: p2.id ? productPath(p2) : '/products',
         badge: 'ARCHIVE 03',
       },
       {
@@ -76,7 +77,7 @@ export default function HorizontalArchive() {
         category: p3.category || 'Atelier Selection',
         price: formatPrice(p3.price),
         image: getImageUrl(p3, '/look.jpg'),
-        link: p3.id ? `/product/${p3.id}` : '/products',
+        link: p3.id ? productPath(p3) : '/products',
         badge: 'ARCHIVE 05',
       },
       {

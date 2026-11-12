@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Check, BarChart3, ArrowRight, Sparkles, Ruler, Palette, Star, PackageCheck, Tag, Gem } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getReviewSummary } from '../utils/productDisplay';
+import { productPath } from '../utils/productUrl';
 
 const getProductImage = (product) => {
   if (!product) return '/placeholder.jpg';
@@ -284,7 +285,7 @@ const ProductComparison = ({ products = [], onClose, productPathPrefix = '' }) =
                   {/* Action button */}
                   <div className="shrink-0 border-t border-white/[0.06] p-3">
                     <a
-                      href={`${productPathPrefix}/product/${product._id || product.id}`}
+                      href={`${productPathPrefix}${productPath(product)}`}
                       className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-white/[0.08] bg-white/[0.04] text-[#c8c8c8] hover:bg-[#d6b47c] hover:text-black hover:border-[#d6b47c] transition-all"
                     >
                       {t('common.more')} <ArrowRight className="w-3 h-3" />

@@ -8,6 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { getImageUrl } from '../utils/image';
 import { formatPrice, getActiveSale } from '../utils/productDisplay';
 import './searchPanel.css';
+import { productPath } from '../utils/productUrl';
 
 const RECENT_KEY = 'luxx_recent_searches';
 const MAX_RECENT = 5;
@@ -225,7 +226,7 @@ const SearchModal = ({ isOpen, onClose }) => {
 
   const openProduct = (product) => {
     remember(query);
-    navigate(`/product/${productId(product)}`);
+    navigate(productPath(product));
     onClose();
   };
 

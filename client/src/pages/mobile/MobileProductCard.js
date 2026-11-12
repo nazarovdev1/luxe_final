@@ -5,6 +5,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getActiveSale, getDisplayBadge } from '../../utils/productDisplay';
+import { productPath } from '../../utils/productUrl';
 
 const MobileProductCard = ({ product, index = 0 }) => {
     const { isFavorite, toggleFavorite } = useFavorites();
@@ -45,7 +46,7 @@ const MobileProductCard = ({ product, index = 0 }) => {
 
     return (
         <Link
-            to={`/mobile/product/${product.id}`}
+            to={productPath(product, { mobile: true })}
             className="group block relative mb-6"
             style={{
                 animation: 'fade-in 0.5s ease-out forwards',
