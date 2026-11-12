@@ -1,0 +1,26 @@
+name: Daily storefront rebuild
+
+# The storefront pre-renders a page and a sitemap entry for every product and
+# article at build time. The backend asks Vercel for a rebuild after each catalogue
+# change; this daily run catches anything a throttled or failed request missed.
+# Needs the repository secret VERCEL_DEPLOY_HOOK_URL (Vercel → Project → Settings →
+# Git → Deploy Hooks, branch "main"). Without it the job does nothing.
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # 06:00 Tashkent
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask Vercel to rebuild main
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "VERCEL_DEPLOY_HOOK_URL is not set; skipping."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK"

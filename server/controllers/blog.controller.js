@@ -2,6 +2,7 @@ import Blog from '../models/blog.model.js'
 import { generateUniqueSlug, calculateReadTime, getBlogCategories, getRelatedBlogs } from '../services/blog.service.js'
 import { blogCreateSchema, blogUpdateSchema } from '../validations/blog.validation.js'
 import logger from '../utils/logger.js'
+import { requestSiteRebuild } from '../utils/siteRebuild.js'
 
 // @desc    Get all published blogs (public)
 // @route   GET /api/blogs
@@ -198,6 +199,7 @@ export const createBlog = async (req, res) => {
     await createdBlog.populate('author', 'username profileImage')
 
     logger.info(`Blog created: ${slug} by user ${req.user?._id}`)
+    if (createdBlog.status === 'published') await requestSiteRebuild('article published')
     res.status(201).json({ success: true, data: createdBlog })
   } catch (error) {
     logger.error('Create blog error:', error)
@@ -257,6 +259,7 @@ export const updateBlog = async (req, res) => {
     await updatedBlog.populate('author', 'username profileImage')
 
     logger.info(`Blog updated: ${blog.slug} by user ${req.user?._id}`)
+    await requestSiteRebuild('article updated')
     res.json({ success: true, data: updatedBlog })
   } catch (error) {
     logger.error('Update blog error:', error)
@@ -277,6 +280,7 @@ export const deleteBlog = async (req, res) => {
 
     await blog.deleteOne()
     logger.info(`Blog deleted: ${blog.slug} by user ${req.user?._id}`)
+    await requestSiteRebuild('article deleted')
     res.json({ success: true, message: 'Maqola muvaffaqiyatli o\'chirildi' })
   } catch (error) {
     logger.error('Delete blog error:', error)

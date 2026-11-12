@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import Product from '../models/product.model.js'
 import Points from '../models/points.model.js'
 import logger from '../utils/logger.js'
+import { requestSiteRebuild } from '../utils/siteRebuild.js'
 import jwt from 'jsonwebtoken'
 import { getPagination, getSort } from '../utils/pagination.js'
 
@@ -316,6 +317,7 @@ export const postProduct = async (req, res) => {
     clearProductsCache()
 
     logger.info(`Product created: ${newProduct._id}`)
+    await requestSiteRebuild('product created')
 
     res.status(201).json({ success: true, data: normalizeProductResponse(newProduct.toObject()) })
   } catch (error) {
@@ -366,6 +368,7 @@ export const putProduct = async (req, res) => {
       .then(({ notifyBackInStock }) => notifyBackInStock(existing, updated))
       .catch((err) => logger.error('Back-in-stock notification failed:', err))
 
+    await requestSiteRebuild('product updated')
     res.status(200).json({ success: true, data: normalizeProductResponse(updated) })
   } catch (error) {
     logger.error('Error updating product:', error)
@@ -390,6 +393,7 @@ export const deleteProduct = async (req, res) => {
     clearProductsCache()
 
     logger.info(`Product deleted: ${id}`)
+    await requestSiteRebuild('product deleted')
 
     res.status(200).json({ success: true, message: 'Product deleted' })
   } catch (error) {
