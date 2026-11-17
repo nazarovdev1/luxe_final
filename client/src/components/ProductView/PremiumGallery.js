@@ -8,7 +8,7 @@ const BADGE_LABELS = { NEW: 'Yangi', LIMITED: 'Cheklangan son' };
  * PremiumGallery — Immersive luxury product image gallery
  * Features: hover zoom lens, thumbnail strip, optional product video, full-screen lightbox
  */
-export default function PremiumGallery({ images = [], productName = '', badge = '', videoUrl = '' }) {
+export default function PremiumGallery({ images = [], productName = '', badge = '', videoUrl = '', onShare }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -78,6 +78,7 @@ export default function PremiumGallery({ images = [], productName = '', badge = 
 
   const handleShare = async (e) => {
     e.stopPropagation();
+    if (onShare) { onShare(); return; }
     try {
       if (navigator.share) {
         await navigator.share({ title: productName, url: window.location.href });

@@ -27,6 +27,8 @@ import { findVariant, getProductOptions } from '../utils/productVariants';
 // Sub-components
 import PremiumGallery from '../components/ProductView/PremiumGallery';
 import ProductInfoPanel from '../components/ProductView/ProductInfoPanel';
+import ProductShareSheet from '../components/share/ProductShareSheet';
+import { productShareUrl } from '../utils/shareQr';
 import FloatingCTA from '../components/ProductView/FloatingCTA';
 import RelatedProducts from '../components/ProductView/RelatedProducts';
 import ReviewsSection from '../components/ProductView/ReviewsSection';
@@ -81,6 +83,9 @@ export default function ProductView() {
   const [visualResults, setVisualResults] = useState([]);
   const [visualLoading, setVisualLoading] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const openShare = useCallback(() => setIsShareOpen(true), []);
+  const closeShare = useCallback(() => setIsShareOpen(false), []);
   const [isQuickOrderOpen, setIsQuickOrderOpen] = useState(false);
   const [quickOrderVariant, setQuickOrderVariant] = useState({ color: '', size: '' });
   const [quantity, setQuantity] = useState(1);
@@ -338,7 +343,7 @@ export default function ProductView() {
 
           {/* Left Column: Gallery with Interactive Hotspots */}
           <div className="clean-gallery-shell animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <PremiumGallery images={images} productName={product.name} badge={getDisplayBadge(product)} videoUrl={product.videoUrl} />
+            <PremiumGallery images={images} productName={product.name} badge={getDisplayBadge(product)} videoUrl={product.videoUrl} onShare={openShare} />
           </div>
 
           {/* Right Column: Sticky Product Info with 1-Click Buy */}
@@ -359,6 +364,13 @@ export default function ProductView() {
                 onReviewClick={scrollToReviews}
                 onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
                 onOpenQuickOrder={handleOpenQuickOrder}
+                onShare={openShare}
+              />
+              <ProductShareSheet
+                open={isShareOpen}
+                onClose={closeShare}
+                product={product}
+                url={productShareUrl(product)}
               />
             </div>
           </div>

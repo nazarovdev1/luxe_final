@@ -39,6 +39,8 @@ import BackInStockButton from '../../components/BackInStockButton';
 import PriceDropAlert from '../../components/PriceDropAlert';
 import CustomerPhotoReviews from '../../components/CustomerPhotoReviews';
 import SizeGuideModal from '../../components/SizeGuideModal';
+import ProductShareSheet from '../../components/share/ProductShareSheet';
+import { productShareUrl } from '../../utils/shareQr';
 import { showCartToast } from '../../utils/toast';
 import { findVariant, getProductOptions } from '../../utils/productVariants';
 import { trackEvent, productAnalyticsPayload } from '../../utils/analytics';
@@ -113,7 +115,7 @@ const MobileProductView = () => {
   const [reviews, setReviews] = useState([]);
   const [visualResults, setVisualResults] = useState([]);
   const [visualLoading, setVisualLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const reviewsRef = React.useRef(null);
 
@@ -188,25 +190,9 @@ const MobileProductView = () => {
     finally { setVisualLoading(false); }
   };
 
-  // Share handler
-  const handleShare = async () => {
-    // Share the public address, not the /mobile one: it opens the right app on any device
-    // and gives Telegram/Instagram the product's own preview.
-    const url = `${window.location.origin}${canonicalProductPath}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: product.name, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
+  // Share sheet: link, Telegram, branded QR. It shares the public address, not the
+  // /mobile one, so it opens the right app on any device and previews the product.
+  const handleShare = () => setIsShareOpen(true);
 
   // ── Loading State ─────────────────────────────────────
   if (isLoading) {
@@ -362,10 +348,17 @@ const MobileProductView = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
+              aria-label="Ulashish"
               className="w-12 h-12 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white active:scale-90 transition-all"
             >
-              {copied ? <Check className="w-5 h-5 text-green-400" /> : <Share2 className="w-5 h-5" />}
+              <Share2 className="w-5 h-5" />
             </button>
+            <ProductShareSheet
+              open={isShareOpen}
+              onClose={() => setIsShareOpen(false)}
+              product={product}
+              url={productShareUrl(product)}
+            />
             <button
               onClick={() => toggleFavorite(product.id)}
               className={`w-12 h-12 rounded-2xl backdrop-blur-xl border border-white/10 flex items-center justify-center transition-all active:scale-90 ${isProductFavorite ? 'bg-[#c9a96e]/15 border-[#c9a96e]/30 text-[#c9a96e]' : 'bg-black/40 text-white'}`}

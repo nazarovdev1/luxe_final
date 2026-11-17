@@ -26,6 +26,7 @@ export default function ProductInfoPanel({
   onReviewClick,
   onOpenSizeGuide,
   onOpenQuickOrder,
+  onShare,
 }) {
   const { t, language } = useLanguage();
   const [selectedColor, setSelectedColor] = useState('');
@@ -59,6 +60,7 @@ export default function ProductInfoPanel({
   };
 
   const share = async () => {
+    if (onShare) { onShare(); return; }
     try {
       if (navigator.share) await navigator.share({ title: product.name, url: window.location.href });
       else {
