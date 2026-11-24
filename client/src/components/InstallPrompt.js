@@ -111,7 +111,7 @@ const InstallPrompt = ({ isInstallable, onInstall }) => {
           onPointerLeave={resetPhotoPointer}
         >
           <div className="luxx-install__stage">
-            <img src="/mobile.jpg" alt="" decoding="async" />
+            <img src="/desktop-photo-1100.jpg" alt="" decoding="async" />
           </div>
           <span className="luxx-install__veil" aria-hidden="true" />
           <span className="luxx-install__sheen" aria-hidden="true" />

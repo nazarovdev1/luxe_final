@@ -44,8 +44,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 15%;
-  transform-origin: 50% 30%;
+  object-position: 68% 40%;
+  transform-origin: 68% 45%;
   translate: calc(var(--px) * -8px) calc(var(--py) * -3px);
   transition: translate 500ms var(--install-ease-out);
   animation: luxx-photo-drift 16s ease-in-out 1.2s infinite alternate both;
@@ -106,10 +106,14 @@
   height: 44px;
   place-items: center;
   border: 0;
-  color: #141210;
+  color: var(--install-ivory);
   background: transparent;
+  filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.6));
   cursor: pointer;
+  transition: color 160ms ease;
 }
+
+.luxx-install__close:hover { color: var(--install-gold); }
 
 .luxx-install__body {
   display: flex;
