@@ -22,9 +22,21 @@
 }
 
 .luxx-install__photo {
+  --px: 0;
+  --py: 0;
   position: relative;
   height: 200px;
+  overflow: hidden;
   background: #1a1816;
+}
+
+/* The photo is unveiled like a curtain lifting, settles from a close crop, then keeps
+   breathing: a slow push-in with a gold light passing over it and motes drifting up. */
+.luxx-install__stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  animation: luxx-photo-unveil 1100ms var(--install-ease-out) 160ms both;
 }
 
 .luxx-install__photo img {
@@ -32,10 +44,60 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 18%;
+  object-position: center 15%;
+  transform-origin: 50% 30%;
+  translate: calc(var(--px) * -8px) calc(var(--py) * -3px);
+  transition: translate 500ms var(--install-ease-out);
+  animation: luxx-photo-drift 16s ease-in-out 1.2s infinite alternate both;
+  will-change: transform;
+}
+
+.luxx-install__veil {
+  position: absolute;
+  inset: auto 0 0;
+  height: 38%;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--install-ink) 2%, rgba(15, 14, 13, 0.5) 50%, transparent);
+}
+
+.luxx-install__sheen {
+  position: absolute;
+  inset: -10% -40%;
+  pointer-events: none;
+  background: linear-gradient(104deg, transparent 43%, rgba(237, 214, 170, 0.34) 50%, transparent 57%);
+  transform: translateX(-80%);
+  animation: luxx-photo-sheen 6.4s cubic-bezier(.45, 0, .2, 1) 1.6s infinite;
+}
+
+.luxx-install__frame {
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  border: 1px solid rgba(214, 180, 124, 0.55);
+  animation: luxx-photo-frame 900ms var(--install-ease-out) 700ms both;
+}
+
+.luxx-install__dust {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.luxx-install__dust i {
+  position: absolute;
+  bottom: -6px;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: var(--install-gold);
+  box-shadow: 0 0 8px 1px rgba(214, 180, 124, 0.7);
+  opacity: 0;
+  animation: luxx-photo-mote var(--rise) ease-in-out var(--delay) infinite;
 }
 
 .luxx-install__close {
+  z-index: 2;
   position: absolute;
   top: 6px;
   right: 6px;
@@ -73,7 +135,49 @@
   letter-spacing: -.01em;
 }
 
-.luxx-install__body h2 em { font-style: italic; }
+.luxx-install__body h2 em {
+  font-style: italic;
+  color: var(--install-gold);
+  background: linear-gradient(100deg, var(--install-ivory) 38%, #f6dca8 50%, var(--install-ivory) 62%) 100% 0 / 260% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Content follows the photo in order: eyebrow, title, rows, button. */
+.luxx-install__eyebrow,
+.luxx-install__body h2 span,
+.luxx-install__list li,
+.luxx-install__action,
+.luxx-install__ios {
+  animation: luxx-body-in 760ms var(--install-ease-out) both;
+}
+
+.luxx-install__body h2 span { display: inline-block; }
+.luxx-install__body h2 em {
+  display: inline-block;
+  animation:
+    luxx-body-in 760ms var(--install-ease-out) 740ms both,
+    luxx-title-shine 5.2s ease-in-out 2.4s infinite;
+}
+
+.luxx-install__eyebrow { animation-delay: 520ms; }
+.luxx-install__body h2 span { animation-delay: 620ms; }
+.luxx-install__list li { animation-delay: calc(860ms + var(--i, 0) * 110ms); }
+.luxx-install__action,
+.luxx-install__ios { animation-delay: 1250ms; }
+
+.luxx-install__action { position: relative; overflow: hidden; }
+
+.luxx-install__action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(214, 180, 124, 0.55) 50%, transparent 62%);
+  transform: translateX(-120%);
+  animation: luxx-action-sheen 4.8s ease-in-out 2.6s infinite;
+}
 
 .luxx-install__list {
   margin: 20px 0 0;
@@ -218,7 +322,62 @@
   to { opacity: 1; }
 }
 
+@keyframes luxx-photo-unveil {
+  from { clip-path: inset(100% 0 0 0); transform: scale(1.12); }
+  to { clip-path: inset(0 0 0 0); transform: scale(1); }
+}
+
+@keyframes luxx-photo-drift {
+  from { transform: scale(1.02) translate(0, 0); }
+  to { transform: scale(1.09) translate(-1.2%, 0); }
+}
+
+@keyframes luxx-photo-sheen {
+  0% { transform: translateX(-80%); }
+  30%, 100% { transform: translateX(80%); }
+}
+
+@keyframes luxx-photo-frame {
+  from { opacity: 0; transform: scale(1.06); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes luxx-photo-mote {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: 0.95; }
+  70% { opacity: 0.6; }
+  100% { opacity: 0; transform: translate(var(--sway), -250px) scale(1.15); }
+}
+
+@keyframes luxx-body-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes luxx-title-shine {
+  0%, 20% { background-position: 100% 0; }
+  70%, 100% { background-position: 0% 0; }
+}
+
+@keyframes luxx-action-sheen {
+  0% { transform: translateX(-120%); }
+  24%, 100% { transform: translateX(120%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .luxx-install__stage,
+  .luxx-install__photo img,
+  .luxx-install__sheen,
+  .luxx-install__frame,
+  .luxx-install__dust i,
+  .luxx-install__eyebrow,
+  .luxx-install__body h2 span,
+  .luxx-install__body h2 em,
+  .luxx-install__list li,
+  .luxx-install__action,
+  .luxx-install__action::after,
+  .luxx-install__ios { animation: none; }
+  .luxx-install__dust { display: none; }
   .luxx-install__sheet,
   .luxx-install__scrim,
   .luxx-install.is-closing .luxx-install__sheet,
