@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import SpringSubmitButton from '../components/motion/SpringSubmitButton';
+import useOrderCelebration from '../hooks/useOrderCelebration';
+import '../styles/atelierCheckout.css';
 import axios from 'axios';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,14 +34,14 @@ import { formatUzDate, formatUzMonthShort, formatUzWeekday } from '../utils/form
 const CheckoutMap = React.lazy(() => import('../components/CheckoutMap'));
 
 const THEME = {
-  bgBase: '#07090f',
-  panelA: '#121722',
-  panelB: '#1a202d',
-  accentIvory: '#f4f1eb',
-  accentGraphite: '#2d3442',
-  textMain: '#f4f1eb',
-  textMuted: '#9aa3b2',
-  textSoft: '#c7ceda',
+  bgBase: '#f3eee4',
+  panelA: '#f3eee4',
+  panelB: '#f3eee4',
+  accentIvory: '#1c1915',
+  accentGraphite: '#b9b0a0',
+  textMain: '#1c1915',
+  textMuted: '#6d665a',
+  textSoft: '#3a352c',
 };
 
 const REGIONS_KEYS = [
@@ -124,6 +127,10 @@ const Checkout = () => {
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState(null);
+  const { placed: orderPlaced, celebrate: celebrateOrder } = useOrderCelebration({
+    clearCart,
+    onReveal: () => setShowSuccessModal(true),
+  });
 
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -227,6 +234,7 @@ const Checkout = () => {
   const isStep1Valid = validateField(formData.firstName) && isUzbekPhone(formData.phone);
   const isStep2Valid = validateField(formData.region) && validateField(formData.street) && validateField(formData.house, false);
   const canSubmit = isStep1Valid && isStep2Valid && agreeTerms && !isSubmitting;
+  const canPlaceOrder = isStep1Valid && isStep2Valid && agreeTerms && !orderPlaced;
 
   useEffect(() => {
     if (cartItems.length || lookItems.length) {
@@ -329,6 +337,7 @@ const Checkout = () => {
 
   const handleSubmit = async (event) => {
     if (event) event.preventDefault();
+    if (orderPlaced) return;
 
     if (items.length === 0 && lookItems.length === 0) {
       toast.error(t('checkoutPage.toastCartEmpty'));
@@ -431,10 +440,9 @@ const Checkout = () => {
 
       if (result && result.success) {
         setCreatedOrderId(result.orderId);
-        setShowSuccessModal(true);
         trackEvent('purchase', { ecommerce: { transaction_id: result.orderId, currency: 'UZS', value: result.total || finalTotal } });
-        clearCart();
-        // Modal handles navigation
+        // The button plays its success animation, then the cart is cleared and the modal opens.
+        celebrateOrder();
       } else {
         trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: result?.message || 'order_create_failed' });
         if (result?.details) {
@@ -483,42 +491,36 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 pb-12 pt-6 animate-page-fade-in sm:px-6 lg:px-8" style={{ backgroundColor: THEME.bgBase }}>
+    <div className="atelier-checkout atelier-desktop min-h-screen px-4 pb-12 pt-6 animate-page-fade-in sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl">
-        <header className="sticky top-4 z-30 mb-6 rounded-[1.5rem] bg-[#111722]/85 px-4 py-3 backdrop-blur-xl shadow-[0_18px_36px_rgba(2,6,16,0.52)]">
+        <header className="sticky top-0 z-30 mb-8 border-b border-[#1c1915] bg-[#f3eee4] py-3">
           <div className="flex items-center justify-between gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 rounded-full bg-[#2d3442]/70 px-3 py-2 text-sm font-medium text-[#f4f1eb] transition-colors hover:bg-[#364053]"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[#1c1915] transition-opacity hover:opacity-60"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" strokeWidth={1.5} />
               {t('checkoutPage.back')}
             </button>
 
-            <div className="text-center">
-              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">{t('checkoutPage.headerCheckout')}</p>
-              <h1 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.conciergeActive')}</h1>
-            </div>
+            <p className="atelier-brand">Luxx</p>
 
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1f2532] px-3 py-1 text-xs font-semibold text-[#c7ceda]">
-
-              {currentStep}/3
-            </div>
+            <p className="atelier-serif text-lg italic text-[#7a2e2e]">{String(currentStep).padStart(2, '0')} <span className="text-[#6d665a]">/ 03</span></p>
           </div>
         </header>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)] sm:p-7">
+          <section className="rounded-none  p-6 sm:p-7">
             <div className="mb-6">
-              <p className="text-xs uppercase tracking-[0.15em] text-[#9aa3b2]">{t('checkoutPage.orderFlowTag')}</p>
-              <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#f4f1eb]">{t('checkoutPage.placeOrder')}</h2>
-              <p className="mt-2 text-sm text-[#9aa3b2]">{t('checkoutPage.step1')}</p>
+              <p className="text-xs uppercase tracking-[0.15em] text-[#6d665a]">{t('checkoutPage.orderFlowTag')}</p>
+              <h2 className="atelier-title">{t('checkoutPage.placeOrder')}</h2>
+              <p className="mt-2 text-sm text-[#6d665a]">{t('checkoutPage.step1')}</p>
 
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[1, 2, 3].map((step) => (
                   <div
                     key={step}
-                    className={`h-1.5 rounded-full transition-colors ${step <= currentStep ? 'bg-[#f4f1eb]' : 'bg-[#2d3442]'
+                    className={`h-1.5 rounded-full transition-colors ${step <= currentStep ? 'bg-[#1c1915]' : 'bg-[#d8cfbf]'
                       }`}
                   />
                 ))}
@@ -527,52 +529,51 @@ const Checkout = () => {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {currentStep === 1 && (
-                <div className="space-y-4 rounded-[1.4rem] bg-[#121722]/70 p-5 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                <div className="space-y-5 border-t border-[#1c1915] pt-4">
                   <div className="mb-1 flex items-center gap-2">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
+                    <span className="inline-flex h-9 w-6 items-center justify-center text-[#7a2e2e]">
                       <User className="h-4 w-4" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.personalInfoTitle')}</h3>
+                    <h3 className="text-lg font-semibold text-[#1c1915]">{t('checkoutPage.personalInfoTitle')}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <label className="block">
-                      <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.firstName')} *</span>
+                      <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.firstName')} *</span>
                       <input
                         type="text"
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                        className="w-full atelier-input px-4 py-3 text-[16px] lg:text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                         placeholder={t('checkoutPage.firstNamePlaceholder')}
                       />
                     </label>
 
                     <label className="block">
-                      <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.lastName')}</span>
+                      <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.lastName')}</span>
                       <input
                         type="text"
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                        className="w-full atelier-input px-4 py-3 text-[16px] lg:text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                         placeholder={t('checkoutPage.lastNamePlaceholder')}
                       />
                     </label>
                   </div>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.phone')} *</span>
+                    <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.phone')} *</span>
                     <div className="relative">
-                      <Phone className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9aa3b2]" />
                       <input
                         type="tel"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
                         required
-                        className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] py-3 pl-10 pr-4 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                        className="w-full atelier-input py-3 pl-10 pr-4 text-[16px] lg:text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                         placeholder="+998 90 123 45 67"
                       />
                     </div>
@@ -581,22 +582,22 @@ const Checkout = () => {
               )}
 
               {currentStep === 2 && (
-                <div className="space-y-4 rounded-[1.4rem] bg-[#121722]/70 p-5 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                <div className="space-y-5 border-t border-[#1c1915] pt-4">
                   <div className="mb-1 flex items-center gap-2">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
+                    <span className="inline-flex h-9 w-6 items-center justify-center text-[#7a2e2e]">
                       <MapPin className="h-4 w-4" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.step2')}</h3>
+                    <h3 className="text-lg font-semibold text-[#1c1915]">{t('checkoutPage.step2')}</h3>
                   </div>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.regionLabel')} *</span>
+                    <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.regionLabel')} *</span>
                     <select
                       name="region"
                       value={formData.region}
                       onChange={handleChange}
                       required
-                      className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      className="w-full atelier-input px-4 py-3 text-[16px] lg:text-sm text-[#1c1915] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                     >
                       <option value="">{t('checkoutPage.regionSelectPrompt')}</option>
                       {REGIONS_KEYS.map((key) => (
@@ -608,48 +609,48 @@ const Checkout = () => {
                   </label>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.streetLabel')} *</span>
+                    <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.streetLabel')} *</span>
                     <input
                       type="text"
                       name="street"
                       value={formData.street}
                       onChange={handleChange}
                       required
-                      className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      className="w-full atelier-input px-4 py-3 text-[16px] lg:text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                       placeholder={t('checkoutPage.streetPlaceholder')}
                     />
                   </label>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.landmarkLabel')}</span>
+                    <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.landmarkLabel')}</span>
                     <input
                       type="text"
                       name="house"
                       value={formData.house}
                       onChange={handleChange}
-                      className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      className="w-full atelier-input px-4 py-3 text-[16px] lg:text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                       placeholder={t('checkoutPage.landmarkPlaceholder')}
                     />
                   </label>
 
                   <div>
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.selectOnMap')}</span>
-                    <React.Suspense fallback={<div className="h-[230px] w-full rounded-xl bg-[#0e131d]" />}>
+                    <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.selectOnMap')}</span>
+                    <React.Suspense fallback={<div className="h-[230px] w-full rounded-none bg-transparent" />}>
                       <CheckoutMap
-                        className="h-[230px] w-full overflow-hidden rounded-xl bg-[#0e131d] shadow-[0_14px_30px_rgba(3,6,14,0.45)]"
+                        className="h-[230px] w-full overflow-hidden rounded-none bg-transparent"
                         position={formData.location}
                         onPositionChange={(position) => setFormData((prev) => ({ ...prev, location: position }))}
                       />
                     </React.Suspense>
-                    <p className="mt-2 text-xs text-[#9aa3b2]">{t('checkoutPage.mapHint')}</p>
+                    <p className="mt-2 text-xs text-[#6d665a]">{t('checkoutPage.mapHint')}</p>
                   </div>
 
                   {/* Scheduled Delivery */}
-                  <div className="mt-4 pt-4 border-t border-white/5">
+                  <div className="mt-4 pt-4 border-t border-[#b9b0a0]">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#d6b47c]" />
-                        <span className="text-sm text-[#c7ceda] font-medium">{t('checkoutPage.selectDeliveryTime')}</span>
+                        <Calendar className="w-4 h-4 text-[#7a2e2e]" />
+                        <span className="text-sm text-[#3a352c] font-medium">{t('checkoutPage.selectDeliveryTime')}</span>
                       </div>
                       <button
                         type="button"
@@ -660,7 +661,7 @@ const Checkout = () => {
                             setDeliveryTimeSlot('');
                           }
                         }}
-                        className={`relative w-11 h-6 rounded-full transition-colors ${scheduledDelivery ? 'bg-[#d6b47c]' : 'bg-[#2d3442]'}`}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${scheduledDelivery ? 'bg-[#1c1915]' : 'bg-[#d8cfbf]'}`}
                       >
                         <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${scheduledDelivery ? 'translate-x-5' : ''}`} />
                       </button>
@@ -670,7 +671,7 @@ const Checkout = () => {
                       <div className="space-y-3 animate-in fade-in duration-200">
                         {/* Date Selection */}
                         <div>
-                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('checkoutPage.selectDate')}</span>
+                          <span className="mb-1.5 block text-xs text-[#6d665a]">{t('checkoutPage.selectDate')}</span>
                           <div className="grid grid-cols-4 gap-2">
                             {[...Array(4)].map((_, i) => {
                               const date = getTashkentDate();
@@ -685,19 +686,19 @@ const Checkout = () => {
                                   key={i}
                                   type="button"
                                   onClick={() => setDeliveryDate(dateValue)}
-                                  className={`p-2.5 rounded-xl border text-center transition-all ${
+                                  className={`p-2.5 rounded-none border text-center transition-all ${
                                     deliveryDate === dateValue
-                                      ? 'bg-[#d6b47c]/10 border-[#d6b47c]/30'
-                                      : 'bg-[#0e131d] border-[#2d3442] hover:border-[#3f4a5c]'
+                                      ? 'bg-[#7a2e2e]/[0.06] border-[#b9b0a0]'
+                                      : 'bg-transparent border-[#b9b0a0] hover:border-[#1c1915]'
                                   }`}
                                 >
-                                  <p className={`text-[10px] uppercase ${deliveryDate === dateValue ? 'text-[#d6b47c]' : 'text-[#6f7c90]'}`}>
+                                  <p className={`text-[10px] uppercase ${deliveryDate === dateValue ? 'text-[#7a2e2e]' : 'text-[#6d665a]'}`}>
                                     {isToday ? t('checkoutPage.tomorrow') : dayName}
                                   </p>
-                                  <p className={`text-lg font-bold ${deliveryDate === dateValue ? 'text-[#d6b47c]' : 'text-[#f4f1eb]'}`}>
+                                  <p className={`text-lg font-bold ${deliveryDate === dateValue ? 'text-[#7a2e2e]' : 'text-[#1c1915]'}`}>
                                     {dayNum}
                                   </p>
-                                  <p className={`text-[10px] ${deliveryDate === dateValue ? 'text-[#d6b47c]/70' : 'text-[#6f7c90]'}`}>
+                                  <p className={`text-[10px] ${deliveryDate === dateValue ? 'text-[#7a2e2e]/70' : 'text-[#6d665a]'}`}>
                                     {monthName}
                                   </p>
                                 </button>
@@ -709,7 +710,7 @@ const Checkout = () => {
                         {/* Time Slot Selection */}
                         {deliveryDate && (
                           <div>
-                            <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('checkoutPage.selectTime')}</span>
+                            <span className="mb-1.5 block text-xs text-[#6d665a]">{t('checkoutPage.selectTime')}</span>
                             <div className="grid grid-cols-3 gap-2">
                               {[
                                 { value: 'morning', label: t('checkoutPage.morningTime'), icon: '🌅', name: t('checkoutPage.timeslot_morning') },
@@ -723,24 +724,24 @@ const Checkout = () => {
                                   key={slot.value}
                                   type="button"
                                   onClick={() => setDeliveryTimeSlot(slot.value)}
-                                  className={`p-2.5 rounded-xl border text-center transition-all ${
+                                  className={`p-2.5 rounded-none border text-center transition-all ${
                                     deliveryTimeSlot === slot.value
-                                      ? 'bg-[#d6b47c]/10 border-[#d6b47c]/30'
-                                      : 'bg-[#0e131d] border-[#2d3442] hover:border-[#3f4a5c]'
+                                      ? 'bg-[#7a2e2e]/[0.06] border-[#b9b0a0]'
+                                      : 'bg-transparent border-[#b9b0a0] hover:border-[#1c1915]'
                                   }`}
                                 >
                                   <span className="text-base">{slot.icon}</span>
-                                  <p className={`text-[10px] font-medium mt-1 ${deliveryTimeSlot === slot.value ? 'text-[#d6b47c]' : 'text-[#9aa3b2]'}`}>
+                                  <p className={`text-[10px] font-medium mt-1 ${deliveryTimeSlot === slot.value ? 'text-[#7a2e2e]' : 'text-[#6d665a]'}`}>
                                     {slot.name}
                                   </p>
-                                  <p className={`text-[9px] mt-0.5 ${deliveryTimeSlot === slot.value ? 'text-[#d6b47c]/70' : 'text-[#6f7c90]'}`}>
+                                  <p className={`text-[9px] mt-0.5 ${deliveryTimeSlot === slot.value ? 'text-[#7a2e2e]/70' : 'text-[#6d665a]'}`}>
                                     {slot.label}
                                   </p>
                                 </button>
                               ))}
                             </div>
                             {deliveryTimeSlot === 'express' && (
-                              <p className="mt-2 text-[11px] text-[#d6b47c] bg-[#d6b47c]/5 border border-[#d6b47c]/10 rounded-lg px-3 py-1.5">
+                              <p className="mt-2 text-[11px] text-[#7a2e2e] bg-[#7a2e2e]/[0.06] border border-[#b9b0a0] rounded-lg px-3 py-1.5">
                                 {t('checkoutPage.expressFeeNote')}
                               </p>
                             )}
@@ -748,10 +749,10 @@ const Checkout = () => {
                         )}
 
                         {deliveryDate && deliveryTimeSlot && (
-                          <div className="rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/20 p-3 flex items-center gap-3">
-                            <Clock className="w-4 h-4 text-[#d6b47c] flex-shrink-0" />
-                            <p className="text-xs text-[#c7ceda]">
-                              {t('checkoutPage.deliveryScheduleLine')} <span className="text-[#d6b47c] font-semibold">
+                          <div className="rounded-none bg-[#7a2e2e]/[0.06] border border-[#b9b0a0] p-3 flex items-center gap-3">
+                            <Clock className="w-4 h-4 text-[#7a2e2e] flex-shrink-0" />
+                            <p className="text-xs text-[#3a352c]">
+                              {t('checkoutPage.deliveryScheduleLine')} <span className="text-[#7a2e2e] font-semibold">
                                 {formatUzDate(deliveryDate, { year: false })}
                                 {' '}{deliveryTimeSlot === 'express' ? t('checkoutPage.expressTime') :
                                   deliveryTimeSlot === 'morning' ? t('checkoutPage.morningTime') :
@@ -769,12 +770,12 @@ const Checkout = () => {
               )}
 
               {currentStep === 3 && (
-                <div className="space-y-4 rounded-[1.4rem] bg-[#121722]/70 p-5 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                <div className="space-y-5 border-t border-[#1c1915] pt-4">
                   <div className="mb-1 flex items-center gap-2">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#2d3442]/70 text-[#f4f1eb]">
+                    <span className="inline-flex h-9 w-6 items-center justify-center text-[#7a2e2e]">
                       <CreditCard className="h-4 w-4" />
                     </span>
-                    <h3 className="text-lg font-semibold text-[#f4f1eb]">{t('checkoutPage.step3')}</h3>
+                    <h3 className="text-lg font-semibold text-[#1c1915]">{t('checkoutPage.step3')}</h3>
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -788,9 +789,9 @@ const Checkout = () => {
                         className="sr-only"
                       />
                       <div
-                        className={`rounded-xl p-4 text-center transition-all ${formData.paymentMethod === 'cash_on_delivery'
-                          ? 'bg-[#f4f1eb] text-[#111319] shadow-[0_10px_22px_rgba(244,241,235,0.24)]'
-                          : 'bg-[#1a202d] text-[#c7ceda]'
+                        className={`rounded-none p-4 text-center transition-all ${formData.paymentMethod === 'cash_on_delivery'
+                          ? 'bg-[#1c1915] text-[#f3eee4]'
+                          : 'bg-transparent text-[#3a352c]'
                           }`}
                       >
                         <Truck className="mx-auto mb-2 h-6 w-6" />
@@ -798,16 +799,16 @@ const Checkout = () => {
                       </div>
                     </label>
 
-                    <div className="relative rounded-xl bg-[#1a202d]/65 p-4 text-center text-[#9aa3b2] opacity-70">
-                      <span className="absolute right-2 top-2 rounded-full bg-[#2d3442] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#c7ceda]">
+                    <div className="relative rounded-none bg-transparent p-4 text-center text-[#6d665a] opacity-70">
+                      <span className="absolute right-2 top-2 rounded-full bg-[#d8cfbf] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#3a352c]">
                         {t('checkoutPage.paymentComingSoon')}
                       </span>
                       <p className="mb-2 text-base font-semibold">CLICK</p>
                       <p className="text-sm">{t('checkoutPage.clickPay')}</p>
                     </div>
 
-                    <div className="relative rounded-xl bg-[#1a202d]/65 p-4 text-center text-[#9aa3b2] opacity-70">
-                      <span className="absolute right-2 top-2 rounded-full bg-[#2d3442] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#c7ceda]">
+                    <div className="relative rounded-none bg-transparent p-4 text-center text-[#6d665a] opacity-70">
+                      <span className="absolute right-2 top-2 rounded-full bg-[#d8cfbf] px-2 py-0.5 text-[10px] uppercase tracking-[0.08em] text-[#3a352c]">
                         {t('checkoutPage.paymentComingSoon')}
                       </span>
                       <p className="mb-2 text-base font-semibold">Payme</p>
@@ -815,39 +816,39 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  <ul className="space-y-2 border-y border-white/10 py-4 text-sm text-[#c7ceda]">
+                  <ul className="space-y-2 border-y border-[#b9b0a0] py-4 text-sm text-[#3a352c]">
                     {[policy.tryOn, policy.delivery, policy.returns].map((line) => (
                       <li key={line} className="flex items-center gap-2.5">
-                        <Check className="h-4 w-4 shrink-0 text-[#d6b47c]" />
+                        <Check className="h-4 w-4 shrink-0 text-[#7a2e2e]" />
                         {line}
                       </li>
                     ))}
                   </ul>
 
                   <label className="block">
-                    <span className="mb-1.5 block text-sm text-[#c7ceda]">{t('checkoutPage.commentsLabel')}</span>
+                    <span className="mb-1.5 block text-sm text-[#3a352c]">{t('checkoutPage.commentsLabel')}</span>
                     <textarea
                       name="comments"
                       value={formData.comments}
                       onChange={handleChange}
                       rows={3}
-                      className="w-full resize-none rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-3 text-[16px] lg:text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-2 focus:ring-[#f4f1eb]/20"
+                      className="w-full resize-none atelier-input px-4 py-3 text-[16px] lg:text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-2 focus:ring-[#7a2e2e]/20"
                       placeholder={t('checkoutPage.commentsPlaceholder')}
                     />
                   </label>
 
                   {/* Gift Wrapping */}
-                  <div className="rounded-xl bg-[#121722]/70 p-4 space-y-3 shadow-[inset_0_0_24px_rgba(26,32,45,0.45)]">
+                  <div className="rounded-none bg-transparent p-4 space-y-3">
                     <label className="flex cursor-pointer items-center gap-3">
                       <div
                         onClick={() => setGiftWrap(!giftWrap)}
-                        className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-all cursor-pointer ${giftWrap ? 'bg-[#d6b47c]' : 'bg-[#2d3442]'}`}
+                        className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-all cursor-pointer ${giftWrap ? 'bg-[#1c1915]' : 'bg-[#d8cfbf]'}`}
                       >
                         <div className={`h-4 w-4 rounded-full bg-white transition-all ${giftWrap ? 'translate-x-4' : 'translate-x-0'}`} />
                       </div>
                       <div className="flex items-center gap-2">
-                        <Gift className="h-4 w-4 text-[#d6b47c]" />
-                        <span className="text-sm font-medium text-[#f4f1eb]">{t('checkoutPage.giftWrapTitle')}</span>
+                        <Gift className="h-4 w-4 text-[#7a2e2e]" />
+                        <span className="text-sm font-medium text-[#1c1915]">{t('checkoutPage.giftWrapTitle')}</span>
                       </div>
                     </label>
 
@@ -859,30 +860,30 @@ const Checkout = () => {
                               key={key}
                               type="button"
                               onClick={() => setGiftWrapType(key)}
-                              className={`rounded-xl p-3 text-left transition-all ${
+                              className={`rounded-none p-3 text-left transition-all ${
                                 giftWrapType === key
-                                  ? 'bg-[#d6b47c]/15 border border-[#d6b47c]/30'
-                                  : 'bg-[#0e131d] border border-[#2d3442] hover:border-[#3d4a5c]'
+                                  ? 'bg-[#7a2e2e]/[0.06] border border-[#b9b0a0]'
+                                  : 'bg-transparent border border-[#b9b0a0] hover:border-[#1c1915]'
                               }`}
                             >
-                              <p className={`text-xs font-semibold ${giftWrapType === key ? 'text-[#d6b47c]' : 'text-[#f4f1eb]'}`}>
+                              <p className={`text-xs font-semibold ${giftWrapType === key ? 'text-[#7a2e2e]' : 'text-[#1c1915]'}`}>
                                 {opt.name}
                               </p>
-                              <p className="text-[10px] text-[#9aa3b2] mt-0.5">{opt.desc}</p>
-                              <p className={`text-xs font-bold mt-1.5 ${giftWrapType === key ? 'text-[#d6b47c]' : 'text-[#c7ceda]'}`}>
+                              <p className="text-[10px] text-[#6d665a] mt-0.5">{opt.desc}</p>
+                              <p className={`text-xs font-bold mt-1.5 ${giftWrapType === key ? 'text-[#7a2e2e]' : 'text-[#3a352c]'}`}>
                                 {opt.price.toLocaleString('ru-RU')} {t('checkoutPage.soM')}
                               </p>
                             </button>
                           ))}
                         </div>
                         <label className="block">
-                          <span className="mb-1.5 block text-xs text-[#9aa3b2]">{t('checkoutPage.giftMessageLabel')}</span>
+                          <span className="mb-1.5 block text-xs text-[#6d665a]">{t('checkoutPage.giftMessageLabel')}</span>
                           <input
                             type="text"
                             value={giftMessage}
                             onChange={(e) => setGiftMessage(e.target.value)}
                             maxLength={200}
-                            className="w-full rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2.5 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#d6b47c] focus:ring-1 focus:ring-[#d6b47c]/20"
+                            className="w-full atelier-input px-4 py-2.5 text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-1 focus:ring-[#7a2e2e]/20"
                             placeholder={t('checkoutPage.giftMessagePlaceholder')}
                           />
                         </label>
@@ -892,7 +893,7 @@ const Checkout = () => {
 
                   <label
                     htmlFor="checkout-terms"
-                    className="group flex cursor-pointer items-start gap-3 rounded-xl bg-gradient-to-r from-[#1a202d]/75 to-[#151c29]/75 px-4 py-3 shadow-[inset_0_0_0_1px_rgba(94,108,134,0.26)] transition-all hover:shadow-[inset_0_0_0_1px_rgba(170,183,205,0.34)]"
+                    className="group flex cursor-pointer items-start gap-3 rounded-none  px-4 py-3 transition-all hover:shadow-[inset_0_0_0_1px_rgba(170,183,205,0.34)]"
                   >
                     <input
                       id="checkout-terms"
@@ -901,8 +902,8 @@ const Checkout = () => {
                       onChange={(event) => setAgreeTerms(event.target.checked)}
                       className="peer sr-only"
                     />
-                    <span className="relative mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border border-[#5f6c85] bg-[#0f1521] text-[#111319] transition-all after:content-['✓'] after:text-[12px] after:font-bold after:leading-none after:opacity-0 after:transition-opacity peer-checked:border-[#f4f1eb] peer-checked:bg-[#f4f1eb] peer-checked:after:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-[#f4f1eb]/35 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#151c29]" />
-                    <span className="text-sm leading-relaxed text-[#c7ceda]">
+                    <span className="relative mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border border-[#1c1915] bg-transparent text-[#f3eee4] transition-all after:content-['✓'] after:text-[12px] after:font-bold after:leading-none after:opacity-0 after:transition-opacity peer-checked:border-[#1c1915] peer-checked:bg-[#1c1915] peer-checked:after:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-[#1c1915]/35 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#f3eee4]" />
+                    <span className="text-sm leading-relaxed text-[#3a352c]">
                       {t('checkoutPage.agreeTerms')}
                     </span>
                   </label>
@@ -914,7 +915,7 @@ const Checkout = () => {
                   <button
                     type="button"
                     onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-                    className="rounded-full bg-[#2d3442]/70 px-5 py-2.5 text-sm font-semibold text-[#f4f1eb] transition-transform active:scale-[0.985]"
+                    className="rounded-full bg-[#d8cfbf] px-5 py-2.5 text-sm font-semibold text-[#1c1915] transition-transform active:scale-[0.985]"
                   >
                     {t('checkoutPage.back')}
                   </button>
@@ -926,71 +927,71 @@ const Checkout = () => {
                   <button
                     type="button"
                     onClick={currentStep === 1 ? nextFromStep1 : nextFromStep2}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#f4f1eb] px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.07em] text-[#111319] transition-transform active:scale-[0.985]"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#1c1915] px-5 py-2.5 text-sm font-semibold uppercase tracking-[0.07em] text-[#f3eee4] transition-transform active:scale-[0.985]"
                   >
                     {t('checkoutPage.next')}
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 ) : (
-                  <p className="text-sm text-[#9aa3b2]">{t('checkoutPage.finalConfirmHint')}</p>
+                  <p className="text-sm text-[#6d665a]">{t('checkoutPage.finalConfirmHint')}</p>
                 )}
               </div>
             </form>
           </section>
 
           <aside className="xl:sticky xl:top-20 xl:h-fit">
-            <div className="rounded-[2rem] bg-gradient-to-b from-[#151b27] to-[#10151f] p-6 shadow-[0_28px_56px_rgba(4,8,18,0.6)]">
-              <h3 className="text-xl font-semibold text-[#f4f1eb]">{t('checkoutPage.orderCapsule')}</h3>
-              <p className="mt-1 text-sm text-[#9aa3b2]">{t('checkoutPage.selectedProductsDesc')}</p>
+            <div className="rounded-none  p-6">
+              <h3 className="text-xl font-semibold text-[#1c1915]">{t('checkoutPage.orderCapsule')}</h3>
+              <p className="mt-1 text-sm text-[#6d665a]">{t('checkoutPage.selectedProductsDesc')}</p>
 
               <div className="mt-5 max-h-[340px] space-y-3 overflow-y-auto pr-1">
                 {lookItems.map((look) => (
-                  <div key={look.cartLookId} className="rounded-xl bg-[#d6b47c]/5 border border-[#d6b47c]/15 p-3">
+                  <div key={look.cartLookId} className="rounded-none bg-[#7a2e2e]/[0.06] border border-[#b9b0a0] p-3">
                     <div className="flex gap-3">
                       {look.heroImage && (
                         <img src={look.heroImage} alt={look.title} className="h-14 w-14 rounded-lg object-cover" />
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-[#d6b47c]">{look.title}</p>
-                        <p className="mt-0.5 text-xs text-[#9aa3b2]">{look.products.length} {t('checkoutPage.productCount')}</p>
+                        <p className="truncate text-sm font-semibold text-[#7a2e2e]">{look.title}</p>
+                        <p className="mt-0.5 text-xs text-[#6d665a]">{look.products.length} {t('checkoutPage.productCount')}</p>
                         <div className="mt-1 flex items-center gap-2">
                           {look.discountAmount > 0 && (
-                            <span className="text-[10px] text-[#9aa3b2] line-through">
+                            <span className="text-[10px] text-[#6d665a] line-through">
                               {formatMoney(look.originalPrice)} {t('checkoutPage.soM')}
                             </span>
                           )}
-                          <span className="text-sm font-semibold text-[#c7ceda]">{formatMoney(look.discountedPrice)} {t('checkoutPage.soM')}</span>
+                          <span className="text-sm font-semibold text-[#3a352c]">{formatMoney(look.discountedPrice)} {t('checkoutPage.soM')}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
                 {cartItems.map((item) => (
-                  <div key={item.id} className="flex gap-3 rounded-xl bg-[#1a202d]/70 p-3">
+                  <div key={item.id} className="flex gap-3 rounded-none bg-transparent p-3">
                     <img src={item.image} alt={item.name} className="h-14 w-14 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-[#f4f1eb]">{item.name}</p>
-                      <p className="mt-0.5 text-xs text-[#9aa3b2]">
+                      <p className="truncate text-sm font-semibold text-[#1c1915]">{item.name}</p>
+                      <p className="mt-0.5 text-xs text-[#6d665a]">
                         {item.quantity} {t('checkoutPage.piece')}
                         {item.selectedSize ? ` • ${item.selectedSize}` : ''}
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-[#c7ceda]">{formatMoney(item.parsedPrice * item.quantity)} {t('checkoutPage.soM')}</p>
+                      <p className="mt-1 text-sm font-semibold text-[#3a352c]">{formatMoney(item.parsedPrice * item.quantity)} {t('checkoutPage.soM')}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-5 space-y-3 border-t border-[#2d3442] pt-4">
+              <div className="mt-5 space-y-3 border-t border-[#b9b0a0] pt-4">
 
                 {/* Promo Code Input Field */}
                 <div className="mb-4">
                   {appliedPromo ? (
-                    <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 px-4 py-3 border border-emerald-500/20">
+                    <div className="flex items-center justify-between rounded-none bg-[#2f6b45]/10 px-4 py-3 border border-[#2f6b45]/30">
                       <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-emerald-400" />
+                        <Tag className="w-4 h-4 text-[#2f6b45]" />
                         <div>
-                          <p className="text-sm font-semibold text-emerald-400">{appliedPromo.code}</p>
-                          <p className="text-xs text-emerald-500/80">
+                          <p className="text-sm font-semibold text-[#2f6b45]">{appliedPromo.code}</p>
+                          <p className="text-xs text-[#2f6b45]">
                             {appliedPromo.type === 'giftcard' 
                               ? `-${formatMoney(appliedPromo.discountAmount)} ${t('checkoutPage.soM')}`
                               : `-${appliedPromo.discountPercentage}%`}
@@ -1011,13 +1012,13 @@ const Checkout = () => {
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                         placeholder={t('checkoutPage.promoPlaceholder')}
-                        className="w-full flex-1 rounded-xl border border-[#2d3442] bg-[#0e131d] px-4 py-2 text-sm text-[#f4f1eb] placeholder:text-[#6f7c90] outline-none transition focus:border-[#f4f1eb] focus:ring-1 focus:ring-[#f4f1eb]/20 uppercase"
+                        className="w-full flex-1 atelier-input px-4 py-2 text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none transition focus:border-[#7a2e2e] focus:ring-1 focus:ring-[#7a2e2e]/20 uppercase"
                       />
                       <button
                         type="button"
                         onClick={handleApplyPromo}
                         disabled={isValidatingPromo || !promoCode.trim()}
-                        className="rounded-xl border border-[#2d3442] bg-[#1a202d] px-4 py-2 text-sm font-semibold text-[#f4f1eb] hover:bg-[#2d3442] transition-colors disabled:opacity-50"
+                        className="rounded-none border border-[#b9b0a0] bg-transparent px-4 py-2 text-sm font-semibold text-[#1c1915] hover:bg-[#d8cfbf] transition-colors disabled:opacity-50"
                       >
                         {isValidatingPromo ? '...' : t('checkoutPage.applyButton')}
                       </button>
@@ -1025,13 +1026,13 @@ const Checkout = () => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
+                <div className="flex items-center justify-between text-sm text-[#6d665a]">
                   <span>{t('checkoutPage.productCount')}</span>
                   <span>{formatMoney(summaryTotal)} {t('checkoutPage.soM')}</span>
                 </div>
 
                 {userTier && tierDiscountAmount > 0 && (
-                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                  <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                     <div className="flex items-center gap-1.5">
                       <Gem className="w-3.5 h-3.5" />
                       <span>{t('checkoutPage.memberDiscount').replace('{level}', userTier.level)}</span>
@@ -1041,26 +1042,26 @@ const Checkout = () => {
                 )}
 
                 {appliedPromo && (
-                  <div className="flex items-center justify-between text-sm text-emerald-400">
+                  <div className="flex items-center justify-between text-sm text-[#2f6b45]">
                     <span>{t('checkoutPage.promoCodeSummary').replace('{code}', appliedPromo.code)}</span>
                     <span>-{formatMoney(discountAmount - tierDiscountAmount)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
                 {lookDiscountsTotal > 0 && (
-                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                  <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                     <span>{t('checkoutPage.lookDiscount').replace('{count}', lookItems.length)}</span>
                     <span>-{formatMoney(lookDiscountsTotal)} {t('checkoutPage.soM')}</span>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-[#9aa3b2]">
+                <div className="flex items-center justify-between text-sm text-[#6d665a]">
                   <span>{t('checkoutPage.delivery')}</span>
-                  <span className="text-emerald-400 font-medium">{t('checkoutPage.free')}</span>
+                  <span className="text-[#2f6b45] font-medium">{t('checkoutPage.free')}</span>
                 </div>
 
                 {giftWrap && giftWrapCost > 0 && (
-                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                  <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                     <div className="flex items-center gap-1.5">
                       <Gift className="w-3.5 h-3.5" />
                       <span>{t('checkoutPage.giftWrapSummary').replace('{type}', GIFT_WRAP_OPTIONS[giftWrapType]?.name)}</span>
@@ -1070,7 +1071,7 @@ const Checkout = () => {
                 )}
 
                 {expressDeliveryFee > 0 && (
-                  <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                  <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{t('checkoutPage.expressDeliveryLabel')}</span>
@@ -1079,32 +1080,33 @@ const Checkout = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between border-t border-[#2d3442] pt-3">
-                  <span className="text-base font-semibold text-[#f4f1eb]">{t('checkoutPage.total')}</span>
-                  <span className="text-2xl font-semibold text-[#f4f1eb]">{formatMoney(finalTotal)} {t('common.sum')}</span>
+                <div className="flex items-center justify-between border-t border-[#b9b0a0] pt-3">
+                  <span className="text-base font-semibold text-[#1c1915]">{t('checkoutPage.total')}</span>
+                  <span className="text-2xl font-semibold text-[#1c1915]">{formatMoney(finalTotal)} {t('common.sum')}</span>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={currentStep !== 3 || !canSubmit}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#f4f1eb] px-4 py-3.5 text-sm font-semibold uppercase tracking-[0.08em] text-[#111319] transition-all active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <>
-                    <DotLoader />
-                    <span>{t('checkoutPage.processing')}</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4" />
-                    <span>{t('checkoutPage.placeOrder')}</span>
-                  </>
-                )}
-              </button>
+              <div className="atelier-dock__in mt-6">
+                <div className="atelier-dock__sum">
+                  <small>{t('checkoutPage.total')}</small>
+                  <b>{formatMoney(finalTotal)} {t('checkoutPage.soM')}</b>
+                </div>
+                <SpringSubmitButton
+                  onClick={handleSubmit}
+                  disabled={currentStep !== 3 || !canPlaceOrder}
+                  status={orderPlaced ? 'success' : isSubmitting ? 'loading' : 'idle'}
+                  loadingLabel={t('checkoutPage.processing')}
+                  successLabel={t('checkoutPage.orderPlaced', 'Buyurtma qabul qilindi')}
+                  height={52}
+                  radius={26}
+                  wrapperClassName="min-w-0 flex-1"
+                  className="atelier-dock__go transition-[transform,opacity] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>{t('checkoutPage.placeOrder')}</span>
+                </SpringSubmitButton>
+              </div>
 
-              {currentStep !== 3 && <p className="mt-3 text-center text-xs text-[#9aa3b2]">{t('checkoutPage.finalConfirmStepHint')}</p>}
+              {currentStep !== 3 && <p className="mt-3 text-center text-xs text-[#6d665a]">{t('checkoutPage.finalConfirmStepHint')}</p>}
             </div>
           </aside>
         </div>

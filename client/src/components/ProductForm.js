@@ -702,7 +702,7 @@ const ProductForm = ({ product, onClose }) => {
           </div>
           {formData.variants.length === 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div><label className="block text-xs text-slate-300 mb-1">Umumiy qoldiq</label><input type="number" min="0" name="stock" value={formData.stock} onChange={handleChange} className="admin-input" /></div>
+              <div><label className="block text-xs text-slate-300 mb-1">Umumiy qoldiq</label><input type="number" min="0" name="stock" value={formData.stock} onChange={handleChange} className="admin-input" /><p className="mt-1 text-[11px] text-slate-400">Nechta dona borligini yozing. 0 bo'lsa, mahsulotni sotib bo'lmaydi.</p></div>
               <p className="admin-muted text-xs self-end pb-3">Legacy mahsulot uchun umumiy qoldiq ishlatiladi.</p>
             </div>
           ) : formData.variants.map((variant, index) => (

@@ -1,0 +1,83 @@
+/* Loading to success button. Colours, type and corner radius come from the caller's
+   className, so the button keeps whatever look the page already gives it. */
+.sbtn-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.sbtn {
+  position: relative;
+  display: block;
+  flex: none;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.sbtn:disabled { cursor: not-allowed; }
+
+.sbtn__fill {
+  position: absolute;
+  inset: 0;
+  background: var(--sbtn-success);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sbtn__layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+.sbtn__done { color: var(--sbtn-on-success); opacity: 0; }
+
+.sbtn__done-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sbtn__done svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sbtn__spin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(0, 0, 0, 0) 0 10%, currentColor 85%, rgba(0, 0, 0, 0) 85%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 68%, #000 72%);
+  mask: radial-gradient(circle closest-side, transparent 68%, #000 72%);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.sbtn:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}

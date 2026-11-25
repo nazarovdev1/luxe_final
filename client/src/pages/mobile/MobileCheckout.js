@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SpringSubmitButton from '../../components/motion/SpringSubmitButton';
+import useOrderCelebration from '../../hooks/useOrderCelebration';
 import axios from 'axios';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,23 +18,16 @@ import { getPolicyCopy } from '../../config/policies';
 import OrderSuccessModal from '../../components/OrderSuccessModal';
 import useCheckoutTotals, { DELIVERY_TIME_SLOTS, GIFT_WRAP_OPTIONS, getDeliveryDates } from '../../hooks/useCheckoutTotals';
 import { trackEvent } from '../../utils/analytics';
+import '../../styles/atelierCheckout.css';
 
 const CheckoutMap = React.lazy(() => import('../../components/CheckoutMap'));
 
-// Premium Input Component
-const InputField = ({ label, icon: Icon, ...props }) => (
-    <div className="group relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#777f8d] transition-colors group-focus-within:text-[#d6b47c]">
-            <Icon className="h-[18px] w-[18px]" />
-        </div>
-        <input
-            {...props}
-            className="h-14 w-full rounded-2xl border border-white/10 bg-[#0e141f]/90 py-3.5 pl-12 pr-4 text-[16px] text-[#f6f1e8] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] placeholder:text-[#5f6877] focus:outline-none focus:border-[#d6b47c]/60 focus:ring-2 focus:ring-[#d6b47c]/10 transition-all font-sans"
-        />
-        <label className="absolute -top-2 left-3 bg-[#070b12] px-2 text-[10px] uppercase font-bold tracking-[0.16em] text-[#7d8591] group-focus-within:text-[#d6b47c] transition-colors">
-            {label}
-        </label>
-    </div>
+// Underlined field: small-caps label above a serif value
+const InputField = ({ label, ...props }) => (
+    <label className="atelier-field">
+        <span className="atelier-field__label">{label}</span>
+        <input {...props} className="atelier-field__input" />
+    </label>
 );
 
 
@@ -66,6 +61,10 @@ const MobileCheckout = () => {
     const [showErrors, setShowErrors] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [createdOrderId, setCreatedOrderId] = useState(null);
+    const { placed: orderPlaced, celebrate: celebrateOrder } = useOrderCelebration({
+        clearCart,
+        onReveal: () => setShowSuccessModal(true),
+    });
     const [agreeTerms, setAgreeTerms] = useState(false);
     const [userTier, setUserTier] = useState(null);
 
@@ -219,6 +218,7 @@ const MobileCheckout = () => {
     };
 
     const handleSubmit = async () => {
+        if (orderPlaced) return;
         if (items.length === 0 && (!lookItems || lookItems.length === 0)) {
             toast.error(t('checkoutPage.toastCartEmpty'));
             return;
@@ -372,10 +372,9 @@ const MobileCheckout = () => {
 
             if (result && result.success) {
                 setCreatedOrderId(result.orderId);
-                setShowSuccessModal(true);
                 trackEvent('purchase', { ecommerce: { transaction_id: result.orderId, currency: 'UZS', value: result.total || verifiedFinalTotal } });
-                clearCart();
-                // We'll let the modal handle navigation
+                // The button plays its success animation, then the cart is cleared and the modal opens.
+                celebrateOrder();
             } else {
                 trackEvent('order_failed', { payment_type: 'cash_on_delivery', reason: result?.message || 'order_create_failed' });
                 if (result?.details) {
@@ -464,25 +463,16 @@ const MobileCheckout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#070b12] text-[#f6f1e8] pb-36 font-sans selection:bg-[#d6b47c]/30">
-            <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,rgba(214,180,124,0.10),transparent_34%),linear-gradient(180deg,#070b12_0%,#0b1018_42%,#05070b_100%)]" />
-            <div className="fixed inset-0 pointer-events-none opacity-[0.035]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '36px 36px' }} />
-
-            <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070b12]/90 px-5 pb-4 pt-3 backdrop-blur-2xl">
+        <div className="atelier-checkout min-h-screen pb-36 selection:bg-[#7a2e2e]/20">
+            <header className="sticky top-0 z-50 bg-[#f3eee4] px-6 pb-0 pt-3">
                 <div className="flex items-center justify-between">
-                    <button onClick={() => navigate(-1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-[#c9d0dc] active:scale-95 transition">
-                        <ArrowLeft className="w-5 h-5" />
+                    <button onClick={() => navigate(-1)} aria-label={t('checkoutPage.back', 'Ortga')} className="-ml-2 flex h-10 w-10 items-center justify-center text-[#1c1915] transition active:scale-95">
+                        <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
                     </button>
-                    <div className="text-center">
-                        <p className="text-[10px] uppercase tracking-[0.24em] text-[#d6b47c]">{t('checkoutPage.luxeCheckout')}</p>
-                        <p className="text-sm font-semibold text-[#f6f1e8]">{activeStep.title}</p>
-                    </div>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#d6b47c]/20 bg-[#d6b47c]/10 text-[#d6b47c]">
-                        <ActiveStepIcon className="h-[18px] w-[18px]" />
-                    </div>
+                    <p className="atelier-brand">Luxx</p>
+                    <span className="w-8" />
                 </div>
-
-                <div className="mt-4 grid grid-cols-3 gap-2">
+                <nav className="atelier-steps mt-2" aria-label={t('checkoutPage.luxeCheckout')}>
                     {stepMeta.map((step, index) => {
                         const stepNumber = index + 1;
                         const isActive = stepNumber === currentStep;
@@ -491,90 +481,57 @@ const MobileCheckout = () => {
                             <button
                                 key={step.label}
                                 type="button"
+                                aria-current={isActive ? 'step' : undefined}
                                 onClick={() => stepNumber < currentStep && setCurrentStep(stepNumber)}
-                                className={`h-9 rounded-xl border text-[10px] font-bold uppercase tracking-[0.12em] transition-all ${isActive
-                                    ? 'border-[#d6b47c]/50 bg-[#d6b47c]/15 text-[#f6f1e8]'
-                                    : isDone
-                                        ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
-                                        : 'border-white/10 bg-white/[0.03] text-[#6f7784]'
-                                    }`}
+                                className={`atelier-step ${isActive ? 'is-active' : ''} ${isDone ? 'is-done' : ''}`}
                             >
-                                {step.label}
+                                <i>{String(stepNumber).padStart(2, '0')}</i>{step.label}
                             </button>
                         );
                     })}
-                </div>
+                </nav>
             </header>
 
             <main className={`relative z-10 transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
-                <section className="px-5 pt-6">
-                    <div className="border-b border-white/10 pb-5">
-                        <div className="flex items-center gap-2 text-[#d6b47c]">
-                            <Gem className="h-4 w-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.22em]">{t('checkoutPage.conciergeOrder')}</span>
-                        </div>
-                        <h1 className="mt-2 text-3xl font-light leading-tight text-[#f6f1e8]">
-                            {t('checkoutPage.premiumFinishTitle')}
-                        </h1>
-                        <p className="mt-2 text-sm leading-6 text-[#8e98a8]">
-                            {t('checkoutPage.premiumFinishDesc')}
-                        </p>
-                    </div>
+                <section className="px-6 pt-6">
+                    <h1 className="atelier-title">{t('checkoutPage.placeOrder')}</h1>
+                    <p className="atelier-lead">{t('checkoutPage.premiumFinishDesc')}</p>
                 </section>
 
                 {currentStep === 1 && (
                     <section className="px-5 py-6 space-y-5 animate-fade-in-up">
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.step01')}</p>
-                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">{t('checkoutPage.contactInfoTitle')}</h2>
-                            </div>
-                            <span className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-[#9ba4b4]">{t('checkoutPage.secure')}</span>
-                        </div>
+                        <div className="atelier-sec"><i>01</i><h2>{t('checkoutPage.contactInfoTitle')}</h2><span className="atelier-note">{t('checkoutPage.secure')}</span></div>
 
-                        <InputField label={t('checkoutPage.mobileInputFirstName')} icon={User} name="firstName" value={formData.firstName} onChange={handleChange} placeholder={t('checkoutPage.firstNamePlaceholder')} />
-                        {showErrors && !formData.firstName && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterFirstName')}</p>}
-                        <InputField label={t('checkoutPage.mobileInputLastName')} icon={User} name="lastName" value={formData.lastName} onChange={handleChange} placeholder={t('checkoutPage.lastNamePlaceholder')} />
-                        <InputField label={t('checkoutPage.mobileInputPhone')} icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+998 90 123 45 67" />
-                        {showErrors && !formData.phone && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterPhone')}</p>}
+                        <InputField label={t('checkoutPage.mobileInputFirstName')} name="firstName" value={formData.firstName} onChange={handleChange} placeholder={t('checkoutPage.firstNamePlaceholder')} />
+                        {showErrors && !formData.firstName && <p className="text-xs font-medium text-[#a3281f]">{t('checkoutPage.enterFirstName')}</p>}
+                        <InputField label={t('checkoutPage.mobileInputLastName')} name="lastName" value={formData.lastName} onChange={handleChange} placeholder={t('checkoutPage.lastNamePlaceholder')} />
+                        <InputField label={t('checkoutPage.mobileInputPhone')} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+998 90 123 45 67" />
+                        {showErrors && !formData.phone && <p className="text-xs font-medium text-[#a3281f]">{t('checkoutPage.enterPhone')}</p>}
                     </section>
                 )}
 
                 {currentStep === 2 && (
                     <section className="px-5 py-6 space-y-5 animate-fade-in-up">
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.step02')}</p>
-                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">{t('checkoutPage.deliveryTitle')}</h2>
-                            </div>
-                            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.12em] text-emerald-300">{t('checkoutPage.freeLabel')}</span>
-                        </div>
+                        <div className="atelier-sec"><i>02</i><h2>{t('checkoutPage.deliveryTitle')}</h2><span className="atelier-note">{t('checkoutPage.freeLabel')}</span></div>
 
-                        <div className="relative">
-                            <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-[#d6b47c]">
-                                <MapPin className="h-[18px] w-[18px]" />
-                            </div>
-                            <select
-                                name="region"
-                                value={formData.region}
-                                onChange={handleChange}
-                                className="h-14 w-full appearance-none rounded-2xl border border-white/10 bg-[#0e141f]/90 py-3.5 pl-12 pr-10 text-[16px] text-[#f6f1e8] focus:outline-none focus:border-[#d6b47c]/60 focus:ring-2 focus:ring-[#d6b47c]/10 transition-all font-sans"
-                            >
+                        <label className="atelier-field relative">
+                            <span className="atelier-field__label">{t('checkoutPage.selectRegionPlaceholder')}</span>
+                            <select name="region" value={formData.region} onChange={handleChange} className="atelier-field__input pr-7">
                                 <option value="">{t('checkoutPage.selectRegionPlaceholder')}</option>
                                 {regions.map(r => <option key={r} value={r}>{r}</option>)}
                             </select>
-                            <ChevronRight className="absolute right-4 top-5 w-4 h-4 rotate-90 text-[#777f8d]" />
-                        </div>
-                        {showErrors && !formData.region && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterRegion')}</p>}
+                            <ChevronRight className="pointer-events-none absolute bottom-3 right-0 h-4 w-4 rotate-90 text-[#6d665a]" strokeWidth={1.5} />
+                        </label>
+                        {showErrors && !formData.region && <p className="text-xs font-medium text-[#a3281f]">{t('checkoutPage.enterRegion')}</p>}
 
-                        <InputField label={t('checkoutPage.mobileInputStreet')} icon={Navigation} name="street" value={formData.street} onChange={handleChange} placeholder={t('checkoutPage.streetPlaceholder')} />
-                        {showErrors && !formData.street && <p className="text-xs font-medium text-red-300">{t('checkoutPage.enterStreet')}</p>}
+                        <InputField label={t('checkoutPage.mobileInputStreet')} name="street" value={formData.street} onChange={handleChange} placeholder={t('checkoutPage.streetPlaceholder')} />
+                        {showErrors && !formData.street && <p className="text-xs font-medium text-[#a3281f]">{t('checkoutPage.enterStreet')}</p>}
 
-                        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e141f] shadow-[0_18px_44px_rgba(0,0,0,0.32)] relative h-[300px]">
-                            <div className="absolute left-4 top-4 z-[401] rounded-full border border-white/10 bg-[#070b12]/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d6b47c] backdrop-blur-xl">
+                        <div className="overflow-hidden rounded-none border border-[#b9b0a0] bg-transparent relative h-[300px]">
+                            <div className="absolute right-4 top-4 z-[401] rounded-full border border-[#b9b0a0] bg-[#f3eee4]/85 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#7a2e2e] backdrop-blur-xl">
                                 {t('checkoutPage.markOnMap')}
                             </div>
-                            <React.Suspense fallback={<div className="h-full w-full bg-[#0e141f]" />}>
+                            <React.Suspense fallback={<div className="h-full w-full bg-transparent" />}>
                                 <CheckoutMap
                                     className="z-0 h-full w-full"
                                     style={{ background: '#0e141f' }}
@@ -585,24 +542,24 @@ const MobileCheckout = () => {
                             <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
                             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#070b12]/70 to-transparent pointer-events-none z-[400]" />
                         </div>
-                        {showErrors && !formData.location && <p className="text-center text-xs font-medium text-red-300">{t('checkoutPage.selectMapLocation')}</p>}
+                        {showErrors && !formData.location && <p className="text-center text-xs font-medium text-[#a3281f]">{t('checkoutPage.selectMapLocation')}</p>}
 
-                        <div className="rounded-2xl border border-white/10 bg-[#0e141f]/90 p-4">
+                        <div className="rounded-none border border-[#b9b0a0] bg-transparent p-4">
                             <button
                                 type="button"
                                 onClick={() => setScheduledDelivery((value) => !value)}
                                 className="flex w-full items-center justify-between text-left"
                             >
                                 <span className="flex items-center gap-3">
-                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6b47c]/10 text-[#d6b47c]">
+                                    <span className="flex h-10 w-6 items-center justify-center text-[#7a2e2e]">
                                         <Calendar className="h-4 w-4" />
                                     </span>
                                     <span>
-                                        <span className="block text-sm font-semibold text-[#f6f1e8]">{t('checkoutPage.scheduledDelivery')}</span>
-                                        <span className="text-xs text-[#8e98a8]">{t('checkoutPage.selectDateAndTime')}</span>
+                                        <span className="block text-sm font-semibold text-[#1c1915]">{t('checkoutPage.scheduledDelivery')}</span>
+                                        <span className="text-xs text-[#6d665a]">{t('checkoutPage.selectDateAndTime')}</span>
                                     </span>
                                 </span>
-                                <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${scheduledDelivery ? 'bg-[#d6b47c]' : 'bg-white/10'}`}>
+                                <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${scheduledDelivery ? 'bg-[#1c1915]' : 'bg-[#1c1915]/15'}`}>
                                     <span className={`h-5 w-5 rounded-full bg-white transition-transform ${scheduledDelivery ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </span>
                             </button>
@@ -615,7 +572,7 @@ const MobileCheckout = () => {
                                                 key={date.value}
                                                 type="button"
                                                 onClick={() => setDeliveryDate(date.value)}
-                                                className={`min-w-[88px] rounded-2xl border px-3 py-2 text-left ${deliveryDate === date.value ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12 text-[#d6b47c]' : 'border-white/10 bg-white/[0.03] text-[#9ba4b4]'}`}
+                                                className={`min-w-[88px] rounded-none border px-3 py-2 text-left ${deliveryDate === date.value ? 'border-[#1c1915] bg-[#7a2e2e]/[0.07] text-[#7a2e2e]' : 'border-[#b9b0a0] bg-[#1c1915]/[0.04] text-[#6d665a]'}`}
                                             >
                                                 <span className="block text-[10px] uppercase tracking-[0.14em]">{date.day}</span>
                                                 <span className="mt-1 block text-sm font-semibold">{date.date}</span>
@@ -628,13 +585,13 @@ const MobileCheckout = () => {
                                                 key={slot.value}
                                                 type="button"
                                                 onClick={() => setDeliveryTimeSlot(slot.value)}
-                                                className={`rounded-2xl border p-3 text-left ${deliveryTimeSlot === slot.value ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12 text-[#f6f1e8]' : 'border-white/10 bg-white/[0.03] text-[#9ba4b4]'}`}
+                                                className={`rounded-none border p-3 text-left ${deliveryTimeSlot === slot.value ? 'border-[#1c1915] bg-[#7a2e2e]/[0.07] text-[#1c1915]' : 'border-[#b9b0a0] bg-[#1c1915]/[0.04] text-[#6d665a]'}`}
                                             >
                                                 <span className="flex items-center gap-1.5 text-xs font-bold">
                                                     <Clock className="h-3.5 w-3.5" />
                                                     {slot.label}
                                                 </span>
-                                                <span className="mt-1 block text-[10px] uppercase tracking-[0.12em] text-[#7d8591]">{slot.hint}</span>
+                                                <span className="mt-1 block text-[10px] uppercase tracking-[0.12em] text-[#6d665a]">{slot.hint}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -646,69 +603,63 @@ const MobileCheckout = () => {
 
                 {currentStep === 3 && (
                     <section className="px-5 py-6 space-y-5 animate-fade-in-up">
-                        <div className="flex items-end justify-between">
-                            <div>
-                                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.step03')}</p>
-                                <h2 className="mt-1 text-xl font-semibold text-[#f6f1e8]">{t('checkoutPage.receiptTitle')}</h2>
-                            </div>
-                            <ShieldCheck className="h-5 w-5 text-[#d6b47c]" />
-                        </div>
+                        <div className="atelier-sec"><i>03</i><h2>{t('checkoutPage.receiptTitle')}</h2><ShieldCheck className="ml-auto h-4 w-4 text-[#7a2e2e]" strokeWidth={1.5} /></div>
 
                         <div className="grid gap-3">
                             {[
-                                { value: 'cash_on_delivery', label: t('checkoutPage.cashLabel'), icon: Truck, hint: t('checkoutPage.cashHint'), color: 'text-[#d6b47c]' }
+                                { value: 'cash_on_delivery', label: t('checkoutPage.cashLabel'), icon: Truck, hint: t('checkoutPage.cashHint'), color: 'text-[#7a2e2e]' }
                             ].map((method) => (
                                 <button
                                     key={method.value}
                                     type="button"
                                     disabled={method.isComingSoon}
                                     onClick={() => setFormData(prev => ({ ...prev, paymentMethod: method.value }))}
-                                    className={`flex min-h-[72px] items-center gap-4 rounded-2xl border px-4 text-left transition-all ${method.isComingSoon
-                                        ? 'border-white/5 bg-white/[0.025] opacity-45'
+                                    className={`flex min-h-[72px] items-center gap-4 rounded-none border px-4 text-left transition-all ${method.isComingSoon
+                                        ? 'border-[#b9b0a0] bg-[#1c1915]/[0.04] opacity-45'
                                         : formData.paymentMethod === method.value
-                                            ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12 shadow-[0_14px_36px_rgba(214,180,124,0.10)]'
-                                            : 'border-white/10 bg-[#0e141f]/90 active:scale-[0.99]'
+                                            ? 'border-[#1c1915] bg-[#7a2e2e]/[0.07]'
+                                            : 'border-[#b9b0a0] bg-transparent active:scale-[0.99]'
                                         }`}
                                 >
-                                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] ${method.color}`}>
+                                    <span className={`flex h-11 w-6 shrink-0 items-center justify-center ${method.color}`}>
                                         <method.icon className="w-5 h-5" />
                                     </span>
                                     <span className="min-w-0 flex-1">
-                                        <span className="block text-sm font-semibold text-[#f6f1e8]">{method.label}</span>
-                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#7d8591]">{method.hint}</span>
+                                        <span className="block text-sm font-semibold text-[#1c1915]">{method.label}</span>
+                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-[#6d665a]">{method.hint}</span>
                                     </span>
-                                    {formData.paymentMethod === method.value && !method.isComingSoon && <CheckCircle className="h-5 w-5 text-[#d6b47c]" />}
+                                    {formData.paymentMethod === method.value && !method.isComingSoon && <CheckCircle className="h-5 w-5 text-[#7a2e2e]" />}
                                 </button>
                             ))}
                         </div>
 
-                        <ul className="space-y-2 border-y border-white/10 py-4 text-xs text-[#c7ceda]">
+                        <ul className="space-y-2 border-y border-[#b9b0a0] py-4 text-xs text-[#3a352c]">
                             {[policy.tryOn, policy.delivery, policy.returns].map((line) => (
                                 <li key={line} className="flex items-center gap-2.5">
-                                    <Check className="h-4 w-4 shrink-0 text-[#d6b47c]" />
+                                    <Check className="h-4 w-4 shrink-0 text-[#7a2e2e]" />
                                     {line}
                                 </li>
                             ))}
                         </ul>
 
-                        <InputField label={t('checkoutPage.mobileInputComments')} icon={MessageCircleIconFallback} name="comments" value={formData.comments} onChange={handleChange} placeholder={t('checkoutPage.mobileCommentsPlaceholder')} />
+                        <InputField label={t('checkoutPage.mobileInputComments')} name="comments" value={formData.comments} onChange={handleChange} placeholder={t('checkoutPage.mobileCommentsPlaceholder')} />
 
-                        <div className="rounded-2xl border border-white/10 bg-[#0e141f]/95 p-4">
+                        <div className="rounded-none border border-[#b9b0a0] bg-transparent p-4">
                             <button
                                 type="button"
                                 onClick={() => setGiftWrap((value) => !value)}
                                 className="flex w-full items-center justify-between text-left"
                             >
                                 <span className="flex items-center gap-3">
-                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6b47c]/10 text-[#d6b47c]">
+                                    <span className="flex h-10 w-6 items-center justify-center text-[#7a2e2e]">
                                         <Gift className="h-4 w-4" />
                                     </span>
                                     <span>
-                                        <span className="block text-sm font-semibold text-[#f6f1e8]">{t('checkoutPage.giftWrapShort')}</span>
-                                        <span className="text-xs text-[#8e98a8]">{t('checkoutPage.giftWrapDesc')}</span>
+                                        <span className="block text-sm font-semibold text-[#1c1915]">{t('checkoutPage.giftWrapShort')}</span>
+                                        <span className="text-xs text-[#6d665a]">{t('checkoutPage.giftWrapDesc')}</span>
                                     </span>
                                 </span>
-                                <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${giftWrap ? 'bg-[#d6b47c]' : 'bg-white/10'}`}>
+                                <span className={`flex h-6 w-11 items-center rounded-full p-0.5 transition-colors ${giftWrap ? 'bg-[#1c1915]' : 'bg-[#1c1915]/15'}`}>
                                     <span className={`h-5 w-5 rounded-full bg-white transition-transform ${giftWrap ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </span>
                             </button>
@@ -721,10 +672,10 @@ const MobileCheckout = () => {
                                                 key={key}
                                                 type="button"
                                                 onClick={() => setGiftWrapType(key)}
-                                                className={`rounded-2xl border p-3 text-left ${giftWrapType === key ? 'border-[#d6b47c]/50 bg-[#d6b47c]/12' : 'border-white/10 bg-white/[0.03]'}`}
+                                                className={`rounded-none border p-3 text-left ${giftWrapType === key ? 'border-[#1c1915] bg-[#7a2e2e]/[0.07]' : 'border-[#b9b0a0] bg-[#1c1915]/[0.04]'}`}
                                             >
-                                                <span className="block text-[11px] font-semibold text-[#f6f1e8]">{option.name}</span>
-                                                <span className="mt-1 block text-[10px] text-[#8e98a8]">{option.price.toLocaleString('ru-RU')} {t('checkoutPage.soM')}</span>
+                                                <span className="block text-[11px] font-semibold text-[#1c1915]">{option.name}</span>
+                                                <span className="mt-1 block text-[10px] text-[#6d665a]">{option.price.toLocaleString('ru-RU')} {t('checkoutPage.soM')}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -733,46 +684,46 @@ const MobileCheckout = () => {
                                         onChange={(event) => setGiftMessage(event.target.value)}
                                         maxLength={200}
                                         placeholder={t('checkoutPage.giftMessageLabel')}
-                                        className="h-12 w-full rounded-2xl border border-white/10 bg-[#070b12] px-4 text-sm text-[#f6f1e8] placeholder:text-[#606979] outline-none focus:border-[#d6b47c]/60"
+                                        className="h-12 w-full rounded-none border border-[#b9b0a0] bg-[#f3eee4] px-4 text-sm text-[#1c1915] placeholder:text-[#a49b8a] outline-none focus:border-[#7a2e2e]"
                                     />
                                 </div>
                             )}
                         </div>
 
-                        <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                        <label className="flex items-start gap-3 rounded-none border border-[#b9b0a0] bg-[#1c1915]/[0.04] p-4">
                             <input
                                 type="checkbox"
                                 checked={agreeTerms}
                                 onChange={(event) => setAgreeTerms(event.target.checked)}
-                                className="mt-1 h-4 w-4 accent-[#d6b47c]"
+                                className="mt-1 h-4 w-4 accent-[#7a2e2e]"
                             />
-                            <span className="text-sm leading-6 text-[#c8d0dc]">{t('checkoutPage.agreeTerms')}</span>
+                            <span className="text-sm leading-6 text-[#3a352c]">{t('checkoutPage.agreeTerms')}</span>
                         </label>
 
-                        <div className="rounded-2xl border border-white/10 bg-[#0e141f]/95 p-5 shadow-[0_20px_52px_rgba(0,0,0,0.34)]">
+                        <div className="border-t border-[#1c1915] pt-4">
                             <div className="mb-4 flex items-center justify-between">
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#7d8591]">{t('checkoutPage.orderSummaryTitle')}</p>
-                                    <h3 className="mt-1 text-lg font-semibold text-[#f6f1e8]">{t('checkoutPage.yourOrder')}</h3>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#6d665a]">{t('checkoutPage.orderSummaryTitle')}</p>
+                                    <h3 className="mt-1 text-lg font-semibold text-[#1c1915]">{t('checkoutPage.yourOrder')}</h3>
                                 </div>
-                                <span className="rounded-full bg-[#d6b47c]/12 px-3 py-1 text-xs font-semibold text-[#d6b47c]">{orderPreviewItems.length} {t('checkoutPage.itemsCount')}</span>
+                                <span className="rounded-full bg-[#7a2e2e]/[0.07] px-3 py-1 text-xs font-semibold text-[#7a2e2e]">{orderPreviewItems.length} {t('checkoutPage.itemsCount')}</span>
                             </div>
 
-                            <div className="mb-4 border-b border-white/10 pb-4">
+                            <div className="mb-4 border-b border-[#b9b0a0] pb-4">
                                 {appliedPromo ? (
-                                    <div className="flex items-center justify-between rounded-2xl border border-[#d6b47c]/25 bg-[#d6b47c]/10 p-3">
+                                    <div className="flex items-center justify-between rounded-none border border-[#1c1915] bg-[#7a2e2e]/[0.07] p-3">
                                         <div>
-                                            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#d6b47c]">
+                                            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#7a2e2e]">
                                                 <ShieldCheck className="w-3.5 h-3.5" />
                                                 {appliedPromo.code}
                                             </p>
-                                            <p className="mt-1 text-xs text-[#9ba4b4]">
+                                            <p className="mt-1 text-xs text-[#6d665a]">
                                                 {appliedPromo.type === 'giftcard'
                                                     ? `-${appliedPromo.discountAmount.toLocaleString('ru-RU')} ${t('common.sum')}`
                                                     : `-${appliedPromo.discountPercentage}% ${t('common.discount')}`}
                                             </p>
                                         </div>
-                                        <button onClick={handleRemovePromo} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-[#9ba4b4] active:scale-95">
+                                        <button onClick={handleRemovePromo} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#b9b0a0] text-[#6d665a] active:scale-95">
                                             <X className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -783,12 +734,12 @@ const MobileCheckout = () => {
                                             value={promoCode}
                                             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                                             placeholder={t('checkoutPage.promoCode')}
-                                            className="h-[52px] w-full rounded-2xl border border-white/10 bg-[#070b12] px-4 pr-24 text-sm uppercase text-[#f6f1e8] placeholder:text-[#606979] focus:outline-none focus:border-[#d6b47c]/60"
+                                            className="h-[52px] w-full rounded-none border border-[#b9b0a0] bg-[#f3eee4] px-4 pr-24 text-sm uppercase text-[#1c1915] placeholder:text-[#a49b8a] focus:outline-none focus:border-[#7a2e2e]"
                                         />
                                         <button
                                             onClick={handleApplyPromo}
                                             disabled={isValidatingPromo || !promoCode.trim()}
-                                            className="absolute bottom-1.5 right-1.5 top-1.5 rounded-xl bg-[#d6b47c] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[#070b12] transition disabled:opacity-45"
+                                            className="absolute bottom-1.5 right-1.5 top-1.5 rounded-none bg-[#1c1915] px-4 text-xs font-bold uppercase tracking-[0.12em] text-[#f3eee4] transition disabled:opacity-45"
                                         >
                                             {isValidatingPromo ? '...' : t('checkoutPage.applyButton')}
                                         </button>
@@ -796,53 +747,53 @@ const MobileCheckout = () => {
                                 )}
                             </div>
 
-                            <div className="space-y-3 border-b border-white/10 pb-4">
+                            <div className="space-y-3 border-b border-[#b9b0a0] pb-4">
                                 {orderPreviewItems.slice(0, 3).map((item, idx) => (
                                     <div key={item.id || item.productId || idx} className="flex items-center gap-3">
-                                        <img src={item.image || '/placeholder.jpg'} alt={item.name} className="h-11 w-11 rounded-xl object-cover ring-1 ring-white/10" />
+                                        <img src={item.image || '/placeholder.jpg'} alt={item.name} className="h-11 w-11 rounded-none object-cover ring-1 ring-[#b9b0a0]" />
                                         <div className="min-w-0 flex-1">
-                                            <p className="line-clamp-1 text-sm font-medium text-[#e5ded1]">{item.name}</p>
-                                            <p className="mt-0.5 text-xs text-[#758092]">
+                                            <p className="line-clamp-1 text-sm font-medium text-[#1c1915]">{item.name}</p>
+                                            <p className="mt-0.5 text-xs text-[#6d665a]">
                                                 {item.lookTitle ? `${item.lookTitle} · ` : ''}{item.quantity} x {(parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0).toLocaleString('ru-RU')}
                                             </p>
                                         </div>
                                     </div>
                                 ))}
-                                {orderPreviewItems.length > 3 && <p className="text-xs italic text-[#758092]">{t('checkoutPage.moreItems').replace('{count}', orderPreviewItems.length - 3)}</p>}
+                                {orderPreviewItems.length > 3 && <p className="text-xs italic text-[#6d665a]">{t('checkoutPage.moreItems').replace('{count}', orderPreviewItems.length - 3)}</p>}
                             </div>
 
                             <div className="space-y-2 pt-4">
-                                <div className="flex items-center justify-between text-sm text-[#9ba4b4]">
+                                <div className="flex items-center justify-between text-sm text-[#6d665a]">
                                     <span>{t('common.price')}</span>
                                     <span>{summaryTotal.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                 </div>
                                 {appliedPromo && (
-                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                    <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                                         <span>{t('common.discount')}</span>
                                         <span>-{promoDiscountAmount.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {tierDiscountAmount > 0 && (
-                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                    <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                                         <span>{t('checkoutPage.memberDiscountShort').replace('{level}', userTier?.level || '')}</span>
                                         <span>-{tierDiscountAmount.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {giftWrap && giftWrapCost > 0 && (
-                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                    <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                                         <span>{t('checkoutPage.giftWrapShort')}</span>
                                         <span>{giftWrapCost.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 {expressDeliveryFee > 0 && (
-                                    <div className="flex items-center justify-between text-sm text-[#d6b47c]">
+                                    <div className="flex items-center justify-between text-sm text-[#7a2e2e]">
                                         <span>{t('checkoutPage.expressDeliveryLabel')}</span>
                                         <span>{expressDeliveryFee.toLocaleString('ru-RU')} {t('common.sum')}</span>
                                     </div>
                                 )}
                                 <div className="flex items-end justify-between pt-2">
-                                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#7d8591]">{t('checkoutPage.total')}</span>
-                                    <span className="text-2xl font-semibold text-[#f6f1e8]">{Math.max(finalTotal, 0).toLocaleString('ru-RU')} <span className="text-sm font-normal text-[#9ba4b4]">{t('common.sum')}</span></span>
+                                    <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d665a]">{t('checkoutPage.total')}</span>
+                                    <span className="atelier-serif text-3xl italic text-[#1c1915]">{Math.max(finalTotal, 0).toLocaleString('ru-RU')} <span className="text-sm font-normal text-[#6d665a]">{t('common.sum')}</span></span>
                                 </div>
                             </div>
                         </div>
@@ -850,18 +801,24 @@ const MobileCheckout = () => {
                 )}
             </main>
 
-            <div className="fixed bottom-0 left-0 right-0 z-[100] border-t border-white/10 bg-[#070b12]/92 px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-4 backdrop-blur-2xl">
-                <div className="flex gap-3">
+            <div className="atelier-dock">
+                <div className="atelier-dock__in">
                     {currentStep > 1 && (
                         <button
                             onClick={() => setCurrentStep(prev => prev - 1)}
-                            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-[#f6f1e8] active:scale-95 transition-transform"
+                            aria-label={t('checkoutPage.back', 'Ortga')}
+                            className="atelier-dock__back active:scale-95 transition-transform"
                         >
-                            <ArrowLeft className="w-5 h-5" />
+                            <ArrowLeft className="h-5 w-5" strokeWidth={1.6} />
                         </button>
                     )}
 
-                    <button
+                    <div className="atelier-dock__sum">
+                        <small>{t('checkoutPage.total')}</small>
+                        <b>{Math.max(finalTotal, 0).toLocaleString('ru-RU')} {t('common.sum')}</b>
+                    </div>
+
+                    <SpringSubmitButton
                         onClick={() => {
                             if (currentStep === 1) {
                                 if (!validateField(formData.firstName) || !isUzbekPhone(formData.phone)) {
@@ -890,18 +847,17 @@ const MobileCheckout = () => {
                                 handleSubmit();
                             }
                         }}
-                        disabled={isSubmitting}
-                        className={`flex h-14 flex-1 items-center justify-center gap-3 rounded-full text-xs font-bold uppercase tracking-[0.16em] shadow-[0_18px_42px_rgba(0,0,0,0.35)] active:scale-[0.98] transition-all ${isSubmitting ? 'bg-[#1a2130] text-[#768092] cursor-wait' : 'bg-[#f6f1e8] text-[#070b12]'}`}
+                        disabled={orderPlaced}
+                        status={orderPlaced ? 'success' : isSubmitting ? 'loading' : 'idle'}
+                        loadingLabel={t('checkoutPage.processingButton')}
+                        successLabel={t('checkoutPage.orderPlaced', 'Buyurtma qabul qilindi')}
+                        height={52}
+                        radius={26}
+                        wrapperClassName="min-w-0 flex-1"
+                        className="atelier-dock__go transition-transform active:scale-[0.98]"
                     >
-                        {isSubmitting ? (
-                            <span className="animate-pulse">{t('checkoutPage.processingButton')}</span>
-                        ) : (
-                            <>
-                                {currentStep === 3 ? t('checkoutPage.placeOrder') : t('checkoutPage.next')}
-                                <ArrowLeft className="w-4 h-4 rotate-180" />
-                            </>
-                        )}
-                    </button>
+                        {currentStep === 3 ? t('checkoutPage.placeOrder') : t('checkoutPage.next')}
+                    </SpringSubmitButton>
                 </div>
             </div>
 

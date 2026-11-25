@@ -25,11 +25,12 @@
 
 .mobile-bottom-nav__pill {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
   overflow: hidden;
-  padding: 5px;
+  padding: 8px;
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 25px;
   background:
@@ -73,11 +74,11 @@
 
 .mobile-bottom-nav__indicator {
   position: absolute;
-  top: 5px;
-  bottom: 5px;
-  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
   z-index: 0;
-  width: calc((100% - 10px) / 5);
+  width: 0;
   border: 1px solid rgba(255, 238, 206, 0.19);
   border-radius: 20px;
   background:
@@ -88,9 +89,8 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -8px 18px rgba(232, 184, 101, 0.025);
   opacity: 0;
-  transform: translate3d(calc(var(--active-index, 0) * 100%), 0, 0);
-  transition: transform 520ms var(--nav-ease), opacity 180ms ease;
-  will-change: transform;
+  transition: opacity 180ms ease;
+  will-change: transform, width;
   pointer-events: none;
 }
 
@@ -112,8 +112,10 @@
   position: relative;
   z-index: 1;
   display: flex;
+  flex: none;
   min-width: 0;
-  min-height: 62px;
+  height: 52px;
+  padding: 0 clamp(10px, 3.4vw, 14px);
   align-items: center;
   justify-content: center;
   border-radius: 20px;
@@ -128,10 +130,10 @@
 .mobile-bottom-nav__content {
   display: flex;
   min-width: 0;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 0;
   transform: scale(1);
   transition: color 220ms ease, transform 280ms var(--nav-ease);
 }
@@ -141,10 +143,12 @@
 .mobile-bottom-nav__icon-wrap {
   position: relative;
   display: grid;
-  width: 32px;
-  height: 31px;
+  width: 26px;
+  height: 26px;
+  flex: none;
   place-items: center;
   border-radius: 12px;
+  will-change: transform;
 }
 
 .mobile-bottom-nav__icon {
@@ -152,46 +156,27 @@
   height: 23px;
   stroke-width: 1.65;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.28));
-  transition: stroke-width 220ms ease, filter 220ms ease, transform 420ms var(--nav-ease);
+  transition: stroke-width 220ms ease, filter 220ms ease;
 }
 
 .mobile-bottom-nav__item--active .mobile-bottom-nav__icon {
   stroke-width: 2;
   filter: drop-shadow(0 0 8px rgba(240, 201, 127, 0.28));
-  transform: translateY(-1px);
 }
 
-.mobile-bottom-nav__active-dot {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--nav-accent-bright);
-  box-shadow: 0 0 8px rgba(255, 220, 153, 0.8);
-  opacity: 0;
-  transform: translateX(-50%) scale(0);
-  transition: opacity 180ms ease, transform 300ms var(--nav-ease);
-}
-
-.mobile-bottom-nav__item--active .mobile-bottom-nav__active-dot {
-  opacity: 1;
-  transform: translateX(-50%) scale(1);
-}
-
+/* The name is closed by default: its width, padding and opacity are driven by a spring. */
 .mobile-bottom-nav__label {
   display: block;
-  width: 100%;
+  width: 0;
   overflow: hidden;
-  padding-inline: 2px;
-  font-size: clamp(8px, 2.25vw, 10px);
-  font-weight: 540;
+  padding-left: 0;
+  font-size: clamp(11px, 3.2vw, 13px);
+  font-weight: 560;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  text-align: center;
-  text-overflow: ellipsis;
+  text-align: left;
   white-space: nowrap;
+  opacity: 0;
   transition: color 220ms ease;
 }
 
@@ -228,9 +213,9 @@
 
 @media (max-width: 350px) {
   .mobile-bottom-nav { right: 6px; left: 6px; width: calc(100% - 12px); }
-  .mobile-bottom-nav__pill { min-height: 68px; padding-inline: 3px; border-radius: 23px; }
-  .mobile-bottom-nav__indicator { left: 3px; width: calc((100% - 6px) / 5); }
-  .mobile-bottom-nav__item { min-height: 58px; }
+  .mobile-bottom-nav__pill { min-height: 64px; padding: 6px; border-radius: 23px; }
+  .mobile-bottom-nav__indicator { top: 6px; bottom: 6px; }
+  .mobile-bottom-nav__item { height: 52px; padding: 0 10px; }
   .mobile-bottom-nav__icon { width: 21px; height: 21px; }
 }
 
@@ -244,6 +229,5 @@
   .mobile-bottom-nav,
   .mobile-bottom-nav__indicator,
   .mobile-bottom-nav__content,
-  .mobile-bottom-nav__icon,
-  .mobile-bottom-nav__active-dot { transition-duration: 0.01ms !important; }
+  .mobile-bottom-nav__icon { transition-duration: 0.01ms !important; }
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { ArrowRight, Check, Copy, Gift, Heart, LockKeyhole, Phone, Send, ShieldCheck, UserRound } from 'lucide-react';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { EventOpening } from '../components/PageOpenings';
 import GiftCardSvg from '../components/GiftCardSvg';
+import SpringSubmitButton from '../components/motion/SpringSubmitButton';
 import { GIFT_CARD_DESIGNS, getGiftCardDesign } from '../data/giftCardDesigns';
 import './GiftCards.css';
 import { gsap } from 'gsap';
@@ -30,6 +31,10 @@ const GiftCards = () => {
   const [message, setMessage] = useState('');
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [generatedCode, setGeneratedCode] = useState(null);
+  const [purchaseDone, setPurchaseDone] = useState(false);
+  const revealTimer = useRef(0);
+
+  useEffect(() => () => window.clearTimeout(revealTimer.current), []);
   const pageRef = useRef(null);
 
   useGSAP(() => {
@@ -131,7 +136,12 @@ const GiftCards = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) { setGeneratedCode(code); toast.success(t('giftCards.created')); }
+        if (data.success) {
+          // The button plays its success animation, then the finished card takes its place.
+          setPurchaseDone(true);
+          toast.success(t('giftCards.created'));
+          revealTimer.current = window.setTimeout(() => setGeneratedCode(code), 1400);
+        }
         else toast.error(data.message || t('giftCards.error'));
       })
       .catch(() => toast.error(t('giftCards.error')))
@@ -192,7 +202,19 @@ const GiftCards = () => {
           <div className="gift-preview__top"><span>LIVE PREVIEW</span><span>{activeDesign.name}</span></div>
           <div className="gift-preview__card"><GiftCardSvg design={activeDesign} amount={activeAmount} recipientName={recipientName} message={message} /></div>
           <p className="gift-preview__recipient">{recipientName ? `Aziz ${recipientName}, siz uchun.` : 'Kimnidir xursand qilishga tayyormisiz?'}</p>
-          {!generatedCode ? <button type="button" onClick={handlePurchase} disabled={isPurchasing} className="gift-preview__purchase"><span>{isPurchasing ? t('giftCards.processing') : 'SOVG‘A KARTASINI OLISH'}</span><b>{formatPrice(activeAmount)} SO‘M</b><ArrowRight size={19} /></button> : (
+          {!generatedCode ? (
+            <SpringSubmitButton
+              onClick={handlePurchase}
+              status={purchaseDone ? 'success' : isPurchasing ? 'loading' : 'idle'}
+              loadingLabel={t('giftCards.processing')}
+              successLabel="KARTANGIZ TAYYOR"
+              height={52}
+              radius={0}
+              className="gift-preview__purchase"
+            >
+              <span className="gift-purchase-row"><span>SOVG‘A KARTASINI OLISH</span><b>{formatPrice(activeAmount)} SO‘M</b><ArrowRight size={19} /></span>
+            </SpringSubmitButton>
+          ) : (
             <div className="gift-preview__complete"><Check size={21} /><span>KARTANGIZ TAYYOR</span><code>{generatedCode}</code><button type="button" onClick={copyCode}><Copy size={14} /> Kodni nusxalash</button></div>
           )}
           <div className="gift-preview__fine"><ShieldCheck size={14} /> Karta kodi xariddan so‘ng sizga va oluvchiga yetkaziladi.</div>

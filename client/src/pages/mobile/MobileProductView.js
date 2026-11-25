@@ -669,29 +669,40 @@ const MobileProductView = () => {
         </div>
 
         {/* ═══ 4. Sticky Footer CTA ═════════════════════════ */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/98 to-transparent pt-12 safe-area-bottom">
-          <div className="flex items-center gap-3 max-w-lg mx-auto">
-            <div className="flex items-center gap-4 bg-white/[0.03] h-14 rounded-2xl px-5 border border-white/10 backdrop-blur-2xl">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-[#8a8a8d] active:text-[#f5f5f3] active:scale-90 transition-all">
-                <Minus className="w-4 h-4" strokeWidth={2.5} />
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent px-3.5 pb-[max(12px,env(safe-area-inset-bottom))] pt-10">
+          <div className="pointer-events-auto mx-auto flex max-w-lg items-center gap-1.5 rounded-[22px] border border-white/10 bg-[#141416]/85 p-1.5 shadow-[0_14px_36px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+            <div className="flex h-12 shrink-0 items-center rounded-[16px] bg-white/[0.05]">
+              <button
+                type="button"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                aria-label="Kamaytirish"
+                className="grid h-12 w-10 place-items-center text-[#8a8a8d] transition-all active:scale-90 active:text-[#f5f5f3]"
+              >
+                <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
               </button>
-              <span className="text-base font-black text-[#f5f5f3] w-5 text-center tabular-nums">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="text-[#8a8a8d] active:text-[#f5f5f3] active:scale-90 transition-all">
-                <Plus className="w-4 h-4" strokeWidth={2.5} />
+              <span className="w-5 text-center text-sm font-bold tabular-nums text-[#f5f5f3]" aria-live="polite">{quantity}</span>
+              <button
+                type="button"
+                onClick={() => setQuantity(quantity + 1)}
+                aria-label="Ko'paytirish"
+                className="grid h-12 w-10 place-items-center text-[#8a8a8d] transition-all active:scale-90 active:text-[#f5f5f3]"
+              >
+                <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
               </button>
             </div>
 
             <button
+              type="button"
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="flex-1 h-14 bg-[#c9a96e] text-[#0a0a0b] rounded-2xl font-black text-xs tracking-[0.15em] uppercase shadow-[0_12px_24px_rgba(201,169,110,0.25)] active:scale-[0.97] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-[16px] bg-[#c9a96e] text-[11px] font-black uppercase tracking-[0.14em] text-[#0a0a0b] transition-transform active:scale-[0.97] disabled:opacity-50"
             >
               {isAddingToCart ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>{t('common.addToCart')}</span>
+                  <ShoppingCart className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{t('common.addToCart')}</span>
                 </>
               )}
             </button>

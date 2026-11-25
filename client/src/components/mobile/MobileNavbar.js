@@ -8,6 +8,7 @@ import {
   getActiveMobileNavId,
   MOBILE_NAV_ROUTE_GROUPS,
 } from '../../config/mobileNavigation';
+import useBottomBarSprings from '../../hooks/useBottomBarSprings';
 import './MobileNavbar.css';
 
 // Language lives in the home hero and the profile page (MobileLanguageSwitch),
@@ -78,10 +79,15 @@ const MobileNavbar = () => {
 
   const activeId = getActiveMobileNavId(pathname);
   const activeIndex = navItems.findIndex((item) => item.id === activeId);
+  const { barRef, highlightRef, itemRef, labelRef, iconRef } = useBottomBarSprings({
+    activeIndex,
+    labelsKey: navItems.map((item) => item.label).join('|'),
+  });
 
   return (
     <nav className={`mobile-bottom-nav border-none${keyboardOpen ? ' mobile-bottom-nav--keyboard-hidden' : ''}`} aria-label={t('mobileNav.ariaLabel', 'Asosiy mobil navigatsiya')}>
       <div
+        ref={barRef}
         className="mobile-bottom-nav__pill"
         style={{ '--active-index': Math.max(activeIndex, 0) }}
       >
@@ -89,32 +95,33 @@ const MobileNavbar = () => {
 
         {/* Animated "active capsule" that slides behind the current nav item */}
         <div
+          ref={highlightRef}
           className={`mobile-bottom-nav__indicator${activeIndex >= 0 ? ' mobile-bottom-nav__indicator--visible' : ''}`}
           aria-hidden="true"
         />
 
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = item.id === activeId;
 
           return (
             <Link
               key={item.id}
+              ref={itemRef(index)}
               to={item.path}
               aria-current={isActive ? 'page' : undefined}
               className={`mobile-bottom-nav__item${isActive ? ' mobile-bottom-nav__item--active' : ''}`}
             >
               <span className="mobile-bottom-nav__content">
-                <span className="mobile-bottom-nav__icon-wrap">
+                <span className="mobile-bottom-nav__icon-wrap" ref={iconRef(index)}>
                   <Icon className="mobile-bottom-nav__icon" aria-hidden="true" />
-                  <span className="mobile-bottom-nav__active-dot mb-[6px]" aria-hidden="true" />
                   {item.badge > 0 && (
                     <span className="mobile-bottom-nav__badge" aria-label={`${item.badge} ${item.label}`}>
                       {item.badge > 9 ? '9+' : item.badge}
                     </span>
                   )}
                 </span>
-                <span className="mobile-bottom-nav__label">{item.label}</span>
+                <span className="mobile-bottom-nav__label" ref={labelRef(index)}>{item.label}</span>
               </span>
             </Link>
           );
