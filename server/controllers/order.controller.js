@@ -11,6 +11,7 @@ import pointsService from '../services/points.service.js'
 import logger from '../utils/logger.js'
 import { getPagination } from '../utils/pagination.js'
 import { triggerRetryIfDue } from '../services/orderNotifier.js'
+import { buildReservation, isStockTracked, needsReservation, withoutInventoryFlags } from '../utils/inventory.js'
 
 const clampMoney = (value) => Math.max(0, Math.round((Number(value) || 0) * 100) / 100)
 const GIFT_WRAP_PRICES = Object.freeze({ classic: 25000, premium: 45000, minimal: 15000 })
@@ -192,7 +193,7 @@ const buildVerifiedItems = async (items = []) => {
       throw error
     }
     const availableStock = matchingVariant ? matchingVariant.stock : product.stock
-    if (typeof availableStock === 'number' && availableStock < quantity) {
+    if (isStockTracked(availableStock) && availableStock < quantity) {
       const error = new Error(`${product.name} uchun yetarli zaxira yo'q`)
       error.status = 400
       error.details = {
@@ -218,7 +219,9 @@ const buildVerifiedItems = async (items = []) => {
       lookId: item.lookId || null,
       lookTitle: item.lookTitle || null,
       lookDiscount: 0,
-      variantId: matchingVariant?._id || null
+      variantId: matchingVariant?._id || null,
+      // Catalogue entries without a stock number are sold without a limit and never reserved.
+      stockTracked: isStockTracked(availableStock)
     }
   })
 }
@@ -226,13 +229,8 @@ const buildVerifiedItems = async (items = []) => {
 const reserveInventory = async (items) => {
   const reservations = []
   for (const item of items) {
-    const query = item.variantId
-      ? { _id: item.product, variants: { $elemMatch: { _id: item.variantId, isActive: { $ne: false }, stock: { $gte: item.quantity } } } }
-      : { _id: item.product, stock: { $gte: item.quantity }, 'variants.0': { $exists: false } }
-    const update = item.variantId
-      ? { $inc: { 'variants.$[variant].stock': -item.quantity, stock: -item.quantity } }
-      : { $inc: { stock: -item.quantity } }
-    const options = item.variantId ? { arrayFilters: [{ 'variant._id': item.variantId, 'variant.isActive': { $ne: false } }] } : {}
+    if (!needsReservation(item)) continue
+    const { query, update, options } = buildReservation(item)
     const reserved = await Product.findOneAndUpdate(query, update, options)
     if (!reserved) {
       await releaseInventory(reservations)
@@ -390,7 +388,7 @@ export const createOrder = async (req, res) => {
 
     const newOrder = new Order({
       customer,
-      items: verifiedItems,
+      items: withoutInventoryFlags(verifiedItems),
       totals: orderTotals,
       paymentMethod: 'cash_on_delivery',
       paymentStatus: 'pending',
@@ -414,7 +412,7 @@ export const createOrder = async (req, res) => {
     // Build telegram data with look info
     const telegramData = {
       customer,
-      items: verifiedItems,
+      items: withoutInventoryFlags(verifiedItems),
       totals: orderTotals,
       orderId: newOrder._id,
       lookDiscounts: processedLookDiscounts,
