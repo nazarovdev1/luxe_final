@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowDown, ArrowRight, Check, Crown, Gem, ShieldCheck, Star, Truck } from 'lucide-react';
+import { ArrowRight, Check, Crown, Gem, ShieldCheck, Star, Truck } from 'lucide-react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -32,8 +32,39 @@ const SectionHeading = ({ index, eyebrow, title, action, to }) => (
   </header>
 );
 
-const CoutureHero = ({ product, returning }) => {
+const CoutureHero = ({ products = [], returning }) => {
   const heroRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const runwayLooks = useMemo(() => {
+    const first = products[0];
+    const second = products[1];
+    return [
+      {
+        id: 'flagship',
+        code: 'LOOK 01 // 2026',
+        title: 'LUXX COUTURE',
+        image: '/hero-back.webp',
+        to: first ? productPath(first, { mobile: true }) : '/mobile/products',
+      },
+      {
+        id: idOf(first) || 'look-2',
+        code: 'LOOK 02 // 2026',
+        title: first?.name || 'Noir Blazer',
+        image: first ? imageOf(first) : '/hero.jpg',
+        to: first ? productPath(first, { mobile: true }) : '/mobile/products',
+      },
+      {
+        id: idOf(second) || 'look-3',
+        code: 'LOOK 03 // 2026',
+        title: second?.name || 'Atelier Coat',
+        image: second ? imageOf(second) : '/about_photo.jpg',
+        to: second ? productPath(second, { mobile: true }) : '/mobile/products',
+      },
+    ];
+  }, [products]);
+
+  const activeLook = runwayLooks[activeIndex] || runwayLooks[0];
 
   useGSAP(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -45,7 +76,7 @@ const CoutureHero = ({ product, returning }) => {
     const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
     timeline
       .fromTo('.mch-hero__image', { scale: 1.09, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 1.35 })
-      .fromTo('.mch-hero__rail', { scaleX: 0 }, { scaleX: 1, duration: 0.8 }, 0.35)
+      .fromTo('.mch-hero__filmstrip', { x: 24, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.85 }, 0.45)
       .fromTo('[data-hero-reveal]', { yPercent: 110, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1.05, stagger: 0.09 }, 0.4)
       .fromTo('.mch-hero__actions', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.75 }, 1.05);
 
@@ -60,24 +91,65 @@ const CoutureHero = ({ product, returning }) => {
   return (
     <section className="mch-hero" ref={heroRef} aria-label="LUXX couture collection">
       <div className="mch-hero__media" aria-hidden="true">
-        <img className="mch-hero__image" src="/hero-back.webp" alt="" fetchpriority="high" />
+        <img
+          key={activeLook.id}
+          className="mch-hero__image"
+          src={activeLook.image}
+          alt=""
+          fetchpriority="high"
+        />
         <div className="mch-hero__shade" />
         <div className="mch-hero__light" />
       </div>
-      <div className="mch-hero__edition"><span className="mch-hero__rail" />LUXX / 2026 EDITION</div>
+
+      <div className="mch-hero__edition">
+        <span className="mch-hero__rail" />
+        <span>{activeLook.code}</span>
+      </div>
       <MobileLanguageSwitch className="mch-hero__lang" />
+
+      <div className="mch-hero__filmstrip" role="tablist" aria-label="Runway looks">
+        {runwayLooks.map((look, index) => (
+          <button
+            key={look.id}
+            type="button"
+            role="tab"
+            aria-selected={index === activeIndex}
+            aria-label={look.title}
+            className={`mch-hero__thumb${index === activeIndex ? ' is-active' : ''}`}
+            onClick={() => setActiveIndex(index)}
+          >
+            <img src={look.image} alt="" loading={index === 0 ? 'eager' : 'lazy'} />
+            <span>0{index + 1}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="mch-hero__copy">
+        <div className="mch-hero__ticker" aria-hidden="true">
+          <div className="mch-hero__ticker-track">
+            <span>LUXX COUTURE • 2026 RUNWAY CAPSULE • TASHKENT ATELIER • </span>
+            <span>LUXX COUTURE • 2026 RUNWAY CAPSULE • TASHKENT ATELIER • </span>
+          </div>
+        </div>
+
         <h1 aria-label="Toshkentdagi premium ayollar kiyimlari">
-          <span className="mch-hero__word"><span data-hero-reveal>LUXX</span></span>
-          <span className="mch-hero__word mch-hero__word--accent"><span data-hero-reveal>COUTURE</span></span>
+          <span className="mch-hero__word">
+            <span data-hero-reveal>{activeLook.title}</span>
+          </span>
         </h1>
-        <p className="mch-hero__lead"><span data-hero-reveal>Nafislik shovqin qilmaydi.<br />U xonaga sizdan oldin kiradi.</span></p>
+        <p className="mch-hero__lead">
+          <span data-hero-reveal>Nafislik shovqin qilmaydi.<br />U xonaga sizdan oldin kiradi.</span>
+        </p>
         <div className="mch-hero__actions">
-          <Link to="/mobile/products" className="mch-button mch-button--gold">Kolleksiyani kashf etish<ArrowRight size={16} /></Link>
-          {product && <Link to={productPath(product, { mobile: true })} className="mch-button mch-button--ghost">Featured look</Link>}
+          <Link to="/mobile/products" className="mch-button mch-button--gold">
+            Kashf etish<ArrowRight size={16} />
+          </Link>
+          <Link to={activeLook.to} className="mch-button mch-button--ghost">
+            Lookbook
+          </Link>
         </div>
       </div>
-      <a href="#new-arrivals" className="mch-hero__scroll"><span>SCROLL TO DISCOVER</span><ArrowDown size={15} /></a>
     </section>
   );
 };
@@ -285,7 +357,7 @@ export default function MobileCoutureHome({ products, newestProducts, categories
 
   return (
     <main className="mch" ref={root}>
-      <CoutureHero product={newestProducts[0]} returning={returning} />
+      <CoutureHero products={newestProducts} returning={returning} />
       <NewArrivals products={newestProducts} />
       <CuratedSet bundle={bundle} />
       <Departments categories={categories} />
