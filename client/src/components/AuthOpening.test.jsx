@@ -18,10 +18,11 @@ describe('AuthOpening Component', () => {
     }));
   });
 
-  it('renders the login variant with LUXX Monograph and Crown icon', () => {
-    render(<AuthOpening variant="login" />);
-    expect(screen.getByText('LUXX')).toBeDefined();
-    expect(screen.getByText(/AUTHENTICATING PRIVATE CLIENT/i)).toBeDefined();
+  it('renders the stitch opening for login, in the visitor\'s language', () => {
+    const { container } = render(<AuthOpening variant="login" language="ru" />);
+    expect(container.querySelectorAll('.stitch-op__half')).toHaveLength(2);
+    expect(screen.getAllByText('Luxx').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('ОТОБРАНО ВРУЧНУЮ · ТАШКЕНТ')).toHaveLength(2);
   });
 
   it('stays out of the mobile app, which has its own section opening', () => {

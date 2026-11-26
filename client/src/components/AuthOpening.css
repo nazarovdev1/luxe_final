@@ -1,7 +1,7 @@
 /* ==========================================================================
    LUXX CINEMATIC HAUTE COUTURE AUTH OPENINGS
    1. Register: 3D VIP Pass Noir Unboxing & Dimensional Portal
-   2. Login: Runway Spotlight & Anamorphic Monograph
+   (the login opening lives in AuthStitchOpening.css)
    ========================================================================== */
 
 .luxx-cinematic-opening-root {
@@ -184,110 +184,5 @@
   }
   .vip-card-brand {
     font-size: 1.25rem;
-  }
-}
-
-/* ──────────────────────────────────────────────────────────────────────────
-   2. LOGIN: Runway Spotlight & Anamorphic Monograph
-   ────────────────────────────────────────────────────────────────────────── */
-.login-backdrop {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, #0c1426 0%, #060914 65%, #020306 100%);
-  z-index: 10;
-  will-change: opacity;
-}
-
-.login-light-beam {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  transform: translateY(-50%);
-  background: linear-gradient(
-    90deg, 
-    transparent 0%, 
-    rgba(214, 180, 124, 0.4) 25%, 
-    #ffffff 50%, 
-    rgba(214, 180, 124, 0.4) 75%, 
-    transparent 100%
-  );
-  box-shadow: 0 0 50px 8px rgba(214, 180, 124, 0.7);
-  z-index: 15;
-  will-change: transform, opacity;
-}
-
-.login-mono-wrap {
-  position: relative;
-  z-index: 25;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  will-change: transform, opacity, filter;
-}
-
-.login-mono-atelier {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.45em;
-  color: rgba(214, 180, 124, 0.85);
-  text-transform: uppercase;
-  margin: 0 0 6px 0;
-}
-
-.login-mono-title {
-  font-family: 'Cinzel', 'Bodoni Moda', Georgia, serif;
-  font-size: 4.2rem;
-  letter-spacing: 0.35em;
-  font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 0%, #f7e7c4 35%, #d6b47c 65%, #b89355 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 60px rgba(214, 180, 124, 0.4);
-  margin: 0;
-  line-height: 1.1;
-}
-
-.login-progress-track {
-  width: 140px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-  margin: 18px auto 14px;
-  position: relative;
-}
-
-.login-progress-fill {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(90deg, #d6b47c, #ffffff);
-  transform-origin: left;
-  box-shadow: 0 0 10px #d6b47c;
-  will-change: transform;
-}
-
-.login-mono-status {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.35em;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  margin: 0;
-}
-
-@media (max-width: 640px) {
-  .login-mono-title {
-    font-size: 2.8rem;
-    letter-spacing: 0.25em;
-  }
-  .login-mono-atelier {
-    font-size: 8px;
-    letter-spacing: 0.3em;
   }
 }

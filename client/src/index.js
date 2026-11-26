@@ -100,6 +100,9 @@ if (languageTarget) {
       <App />
     </React.StrictMode>
   );
+  // The app is drawing now: retire the static skeleton from index.html.
+  window.__luxxBooted = true;
+  requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById('boot')?.remove()));
 }
 
 if (import.meta.env.DEV) {

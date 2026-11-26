@@ -79,7 +79,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { login } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -213,7 +213,7 @@ const LoginForm = () => {
   return (
     <div ref={containerRef} className={`relative min-h-screen overflow-hidden bg-[#060a14] ${isMobileRoute ? 'mobile-auth-shell mobile-auth-shell--login' : ''}`}>
       <SEO title={t('auth.loginTitle')} noIndex={true} />
-      <AuthOpening variant="login" />
+      <AuthOpening variant="login" language={language} />
 
       {/* ── inline keyframes ─────────────────────────────────────── */}
       <style>{`

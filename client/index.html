@@ -218,6 +218,33 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <title>Premium ayollar kiyimlari Toshkentda | Luxx.uz</title>
+  <script>
+    document.documentElement.classList.add('js');
+    // If the app never starts (blocked or broken script), show the page text instead of an endless skeleton.
+    setTimeout(function () { if (!window.__luxxBooted) document.documentElement.classList.remove('js'); }, 15000);
+  </script>
+  <style>
+    /* Until the app draws, the pre-rendered text for search engines stays out of sight
+       behind a quiet skeleton. Without JavaScript the text is shown as it is. */
+    html { background: #08090b; }
+    .js #root > [data-seo-shell] { display: none; }
+    html:not(.js) #boot, #boot:has(+ #root > :not([data-seo-shell])) { display: none; }
+    .boot { position: fixed; inset: 0; z-index: 9998; overflow: hidden; padding: 22px clamp(20px, 8vw, 140px); background: #08090b; }
+    .boot__s { display: block; position: relative; overflow: hidden; border-radius: 3px; background: #131316; }
+    .boot__s::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(214, 180, 124, 0.1), transparent); animation: boot-shimmer 2.2s infinite; }
+    .boot__bar { display: flex; align-items: center; justify-content: space-between; }
+    .boot__logo { width: 70px; height: 28px; }
+    .boot__nav { width: min(40vw, 300px); height: 12px; }
+    .boot__body { display: grid; gap: 18px; max-width: 520px; margin-top: 14vh; }
+    .boot__kicker { width: 130px; height: 10px; }
+    .boot__title { height: clamp(44px, 8vw, 92px); }
+    .boot__title--short { width: 62%; }
+    .boot__line { width: 80%; height: 12px; }
+    .boot__photo { height: 32vh; margin-top: 32px; }
+    @media (min-width: 900px) { .boot__body { max-width: min(520px, 40vw); } .boot__photo { position: absolute; top: 18vh; right: clamp(20px, 8vw, 140px); width: 34vw; height: 66vh; margin: 0; } }
+    @keyframes boot-shimmer { to { transform: translateX(100%); } }
+    @media (prefers-reduced-motion: reduce) { .boot__s::after { animation: none; } }
+  </style>
 </head>
 
 <body>
@@ -227,6 +254,16 @@
   <!-- End Google Tag Manager (noscript) -->
 
   <noscript>Luxx.uz mahsulotlarini ko‘rish uchun brauzeringizda JavaScript’ni yoqing.</noscript>
+  <div id="boot" class="boot" aria-hidden="true">
+    <div class="boot__bar"><span class="boot__s boot__logo"></span><span class="boot__s boot__nav"></span></div>
+    <div class="boot__body">
+      <span class="boot__s boot__kicker"></span>
+      <span class="boot__s boot__title"></span>
+      <span class="boot__s boot__title boot__title--short"></span>
+      <span class="boot__s boot__line"></span>
+    </div>
+    <span class="boot__s boot__photo"></span>
+  </div>
   <div id="root"></div>
   <script type="module" src="/src/index.js"></script>
 </body>

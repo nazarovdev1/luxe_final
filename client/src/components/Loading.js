@@ -1,29 +1,22 @@
 import React from 'react';
-import './loading.css';
 
-const Loading = () => {
-    return (
-        <div className="luxury-loader" role="status" aria-label="Luxx yuklanmoqda">
-            <div className="luxury-loader__grain" aria-hidden="true" />
-            <div className="luxury-loader__halo luxury-loader__halo--one" aria-hidden="true" />
-            <div className="luxury-loader__halo luxury-loader__halo--two" aria-hidden="true" />
-            <div className="luxury-loader__topline">
-                <span>LUXX ATELIER</span>
-                <span>EST. 2026</span>
-            </div>
-            <div className="luxury-loader__identity">
-                <span className="luxury-loader__eyebrow">PRIVATE COLLECTION · TASHKENT</span>
-                <div className="luxury-loader__wordmark" aria-hidden="true">
-                    <span>LU</span><i>X</i><span>X</span>
-                </div>
-                <p>Every woman, her own signature.</p>
-            </div>
-            <div className="luxury-loader__bottomline">
-                <span className="luxury-loader__rail" aria-hidden="true"><i /></span>
-                <span>LUXX · TOSHKENT</span>
-            </div>
+// Quiet shimmer skeleton shown while a page's code is loading. It uses the same classes as
+// the static skeleton in index.html, so a first visit moves from one to the other without a
+// jump. It is deliberately not an "opening": pages play their own openings once they load.
+const Loading = () => (
+    <div className="boot" role="status" aria-label="Luxx yuklanmoqda">
+        <div className="boot__bar">
+            <span className="boot__s boot__logo" />
+            <span className="boot__s boot__nav" />
         </div>
-    );
-};
+        <div className="boot__body">
+            <span className="boot__s boot__kicker" />
+            <span className="boot__s boot__title" />
+            <span className="boot__s boot__title boot__title--short" />
+            <span className="boot__s boot__line" />
+        </div>
+        <span className="boot__s boot__photo" />
+    </div>
+);
 
 export default Loading;
