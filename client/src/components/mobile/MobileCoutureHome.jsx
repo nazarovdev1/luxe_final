@@ -135,7 +135,8 @@ const CoutureHero = ({ products = [], returning }) => {
 
         <h1 aria-label="Toshkentdagi premium ayollar kiyimlari">
           <span className="mch-hero__word">
-            <span data-hero-reveal>{activeLook.title}</span>
+            {/* Product names can be long: set them smaller and stop at two lines. */}
+            <span data-hero-reveal className={activeLook.title.length > 18 ? 'is-long' : undefined}>{activeLook.title}</span>
           </span>
         </h1>
         <p className="mch-hero__lead">

@@ -47,6 +47,7 @@
 .mch-hero__copy h1 { margin: 0; padding: 0; font: inherit; }
 .mch-hero__word { display: block; overflow: hidden; }
 .mch-hero__word span { display: block; font: 500 clamp(38px, 11.5vw, 56px)/.95 var(--mch-editorial); letter-spacing: -.03em; color: var(--mch-paper); }
+.mch-hero__word span.is-long { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: clamp(28px, 8.2vw, 38px); line-height: 1.12; }
 .mch-hero__lead { width: 84%; margin: 10px 0 18px; overflow: hidden; color: #dedad3; font: 400 14px/1.4 var(--mch-ui); letter-spacing: .01em; }
 .mch-hero__lead span { display: block; }
 .mch-hero__actions { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; }

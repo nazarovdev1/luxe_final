@@ -271,9 +271,9 @@ const LoginForm = () => {
                 <div className="auth-editorial-content max-w-lg">
                   <p className="text-[13px] font-medium uppercase tracking-[0.3em] text-[#8a94a8]">{t('auth.privateClient')}</p>
                   <h2 className="mt-4 text-[5rem] font-light leading-[1.05] tracking-tight text-white/95">
-                    {t('auth.premiumAccess')}
+                    {t('auth.premiumAccess')}{' '}
                     <span
-                      className="font-brilliant ml-3 bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent"
+                      className="font-brilliant bg-gradient-to-r from-[#e8c87a] via-[#d6b47c] to-[#c49a5c] bg-clip-text text-transparent"
                       style={{ animation: 'float 4s ease-in-out infinite' }}
                     >
                       {t('auth.accessWord')}
